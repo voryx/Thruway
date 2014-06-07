@@ -1,0 +1,29 @@
+{
+    "name": "voryx/autobahnphp`"
+  , "type": "library"
+  , "description": "PHP WAMP2 library"
+  , "keywords": ["WebSockets", "Server", "Client", "WAMP", "WAMP2", "Autobahn", "Sockets"]
+  , "license": "MIT"
+  , "authors": [
+        {
+            "name": "Matt Bonneau"
+          , "email": "matt@bonneau.net"
+          , "role": "Developer"
+        },
+
+        {
+            "name": "David Dan"
+          , "email": "davidwdan@gmail.com"
+          , "role": "Developer"
+        }
+    ]
+  , "autoload": {
+        "psr-0": {
+            "AutobahnPHP": "src"
+        }
+    }
+  , "require": {
+        "php": ">=5.3.9"
+      , "react/socket": "0.3.*|0.4.*"
+    }
+}
