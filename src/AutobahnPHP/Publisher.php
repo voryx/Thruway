@@ -9,6 +9,6 @@
 namespace AutobahnPHP;
 
 
-class Publisher {
+class Publisher extends AbstractRole {
 
 } 

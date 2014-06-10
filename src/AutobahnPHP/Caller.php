@@ -9,6 +9,6 @@
 namespace AutobahnPHP;
 
 
-class Caller {
+class Caller extends AbstractRole {
 
 } 

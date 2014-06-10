@@ -9,6 +9,6 @@
 namespace AutobahnPHP;
 
 
-class Broker {
+class Broker extends AbstractRole {
 
 } 

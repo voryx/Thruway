@@ -9,6 +9,6 @@
 namespace AutobahnPHP;
 
 
-class Callee {
+class Callee extends AbstractRole {
 
 } 

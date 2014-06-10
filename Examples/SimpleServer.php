@@ -1,11 +1,18 @@
 <?php
 
-use AutobahnPHP\Peer;
-
 require '../vendor/autoload.php';
 
-$server = Server('localhost', '8080');
+$router = new \AutobahnPHP\Router();
+//
+//$router->addRole(new Broker());
 
-$server->addPeer(new BasicBroker());
+try {
+    $transport = new \AutobahnPHP\Transport\RatchetTransport();
 
-$server->run();
+    $transport->startTransport();
+} catch (Exception $e) {
+    echo $e->getMessage() . "\n";
+}
+
+
+//$router->run();

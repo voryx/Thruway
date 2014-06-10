@@ -3,6 +3,6 @@
 namespace AutobahnPHP;
 
 
-class Subscriber {
+class Subscriber extends AbstractRole {
 
 } 
