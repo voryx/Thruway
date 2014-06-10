@@ -12,5 +12,6 @@ namespace AutobahnPHP;
 use AutobahnPHP\Message\Message;
 
 abstract class AbstractRole {
-    abstract public function onMessage(Message $msg);
+    abstract public function onMessage(Session $session, Message $msg);
+    abstract public function handlesMessage(Message $msg);
 } 

@@ -8,7 +8,42 @@
 
 namespace AutobahnPHP;
 
+use AutobahnPHP\Message\HelloMessage;
+use AutobahnPHP\Message\Message;
 
-class Router extends Peer {
+class Router extends AbstractPeer {
 
-} 
+    /**
+     * @var RealmManager
+     */
+    private $realmManager;
+
+    function __construct()
+    {
+        $this->realmManager = new RealmManager();
+    }
+
+
+    public function onMessage(Session $session, Message $msg)
+    {
+        // see if the session is in a realm
+        if ($session->getRealm() === null) {
+            // hopefully this is a HelloMessage or we have no place for this message to go
+            if ($msg instanceof HelloMessage) {
+                if (RealmManager::validRealmName($msg->getRealm())) {
+                    $realm = $this->realmManager->getRealm($msg->getRealm());
+                    $realm->onMessage($session, $msg);
+                } else {
+                    // TODO send bad realm error back and shutdown
+                    $session->shutdown();
+                }
+            } else {
+                $session->shutdown();
+            }
+        } else {
+            $realm = $session->getRealm();
+
+            $realm->onMessage($session, $msg);
+        }
+    }
+}

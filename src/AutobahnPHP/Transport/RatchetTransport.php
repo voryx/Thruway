@@ -9,6 +9,7 @@
 namespace AutobahnPHP\Transport;
 
 
+use AutobahnPHP\AbstractPeer;
 use AutobahnPHP\Peer;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
@@ -20,7 +21,7 @@ class RatchetTransport extends AbstractTransport {
     private $address;
     private $port;
 
-    function __construct(Peer $peer, $address = "127.0.0.1", $port = 8080) {
+    function __construct(AbstractPeer $peer, $address = "127.0.0.1", $port = 8080) {
         $this->peer = $peer;
         $this->port = $port;
         $this->address = $address;

@@ -9,6 +9,7 @@
 namespace AutobahnPHP\Transport;
 
 
+use AutobahnPHP\AbstractPeer;
 use AutobahnPHP\Peer;
 use AutobahnPHP\Session;
 use Ratchet\ConnectionInterface;
@@ -27,7 +28,7 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
     }
 
     /**
-     * @var \AutobahnPHP\Peer
+     * @var \AutobahnPHP\AbstractPeer
      */
     private $peer;
 
@@ -37,7 +38,7 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
     private $sessions;
 
 
-    function __construct(Peer $peer)
+    function __construct(AbstractPeer $peer)
     {
         $this->peer = $peer;
         $this->sessions = new \SplObjectStorage();
@@ -53,7 +54,7 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
     {
         echo "onOpen...\n";
 
-        $session = new Session();
+        $session = new Session($conn);
 
         // TODO: add transport auth stuff to the session
 
