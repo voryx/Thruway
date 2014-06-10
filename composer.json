@@ -1,5 +1,5 @@
 {
-    "name": "voryx/autobahnphp`"
+    "name": "voryx/autobahnphp"
   , "type": "library"
   , "description": "PHP WAMP2 library"
   , "keywords": ["WebSockets", "Server", "Client", "WAMP", "WAMP2", "Autobahn", "Sockets"]
