@@ -41,6 +41,8 @@ class Session {
 
     private $subscriptions;
 
+    private $authenticationProvider;
+
     function __construct(ConnectionInterface $transport)
     {
         $this->transport = $transport;
@@ -152,6 +154,32 @@ class Session {
     {
         return $this->sessionId;
     }
+
+    /**
+     * @return ConnectionInterface
+     */
+    public function getTransport()
+    {
+        return $this->transport;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAuthenticationProvider()
+    {
+        return $this->authenticationProvider;
+    }
+
+    /**
+     * @param mixed $authenticationProvider
+     */
+    public function setAuthenticationProvider($authenticationProvider)
+    {
+        $this->authenticationProvider = $authenticationProvider;
+    }
+
+
 
 
 } 

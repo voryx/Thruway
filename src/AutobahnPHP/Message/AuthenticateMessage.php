@@ -5,6 +5,14 @@ namespace AutobahnPHP\Message;
 class AuthenticateMessage extends Message {
     const MSG_CODE = Message::MSG_AUTHENTICATE;
 
+    private $signature;
+
+    public function __construct($signature)
+    {
+        $this->signature = $signature;
+    }
+
+
     /**
      * @return int
      */
@@ -27,6 +35,14 @@ class AuthenticateMessage extends Message {
     public function getValidConnectionStates()
     {
         // TODO: Implement getValidConnectionStates() method.
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSignature()
+    {
+        return $this->signature;
     }
 
 

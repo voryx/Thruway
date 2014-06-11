@@ -34,4 +34,5 @@ class RatchetTransport extends AbstractTransport {
         $server = IoServer::factory(new HttpServer($ws), $this->port, $this->address);
         $server->run();
     }
+
 } 
