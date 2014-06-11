@@ -20,6 +20,14 @@ class Dealer extends AbstractRole {
 
     public function handlesMessage(Message $msg)
     {
-        return false;
+        $handledMessages = array(Message::MSG_CALL,
+            Message::MSG_ERROR,
+            Message::MSG_CANCEL,
+            Message::MSG_REGISTER,
+            Message::MSG_UNREGISTER,
+            Message::MSG_YIELD
+        );
+
+        return in_array($msg->getMsgCode(), $handledMessages);
     }
 }
