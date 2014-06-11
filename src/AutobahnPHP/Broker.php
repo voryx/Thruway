@@ -9,6 +9,7 @@
 namespace AutobahnPHP;
 
 
+use AutobahnPHP\Message\ErrorMessage;
 use AutobahnPHP\Message\EventMessage;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\Message\PublishedMessage;
@@ -18,7 +19,8 @@ use AutobahnPHP\Message\SubscribeMessage;
 use AutobahnPHP\Message\UnsubscribedMessage;
 use AutobahnPHP\Message\UnsubscribeMessage;
 
-class Broker extends AbstractRole {
+class Broker extends AbstractRole
+{
 
     /**
      * @var TopicManager
@@ -59,39 +61,48 @@ class Broker extends AbstractRole {
         } elseif ($msg instanceof PublishMessage) {
             echo "got publish\n";
             $topic = $this->topicManager->getTopic($msg->getTopicName());
-            $topic->publish($session, new EventMessage($topic->getTopicName(),
-                $msg->getRequestId(),
-                new \stdClass,
-                $msg->getArguments(),
-                $msg->getArgumentsKw()
-            ));
+            $topic->publish(
+                $session,
+                new EventMessage(
+                    $topic->getTopicName(),
+                    $msg->getRequestId(),
+                    new \stdClass,
+                    $msg->getArguments(),
+                    $msg->getArgumentsKw()
+                )
+            );
 
             // see if they wanted confirmation
             $options = $msg->getOptions();
-            if (is_object($options)) {
-                if (isset($options->acknowledge)) {
-                    if ($options->acknowledge == true) {
-                        $session->sendMessage(new PublishedMessage($topic->getTopicName(),
-                            $msg->getRequestId()
-                        ));
-                    }
+            if (is_array($options)) {
+                if (isset($options['acknowledge']) && $options['acknowledge'] == true) {
+                    $session->sendMessage(
+                        new PublishedMessage($topic->getTopicName(), $msg->getRequestId())
+                    );
+                } else {
+                    $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
                 }
 
+            } else {
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
             }
+
         }
     }
 
     public function handlesMessage(Message $msg)
     {
-        $handledMsgCodes = array(Message::MSG_SUBSCRIBE,
+        $handledMsgCodes = array(
+            Message::MSG_SUBSCRIBE,
             Message::MSG_UNSUBSCRIBE,
             Message::MSG_PUBLISH
         );
 
-        if (in_array($msg->getMsgCode(), $handledMsgCodes))
+        if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
             return true;
-        else
+        } else {
             return false;
+        }
 
     }
 
