@@ -22,5 +22,19 @@ interface AuthenticationProviderInterface
      */
     public function supports($type);
 
+    /**
+     * @return mixed
+     */
+    public function getAuthenticationId();
+
+    /**
+     * @return mixed
+     */
+    public function getAuthenticationRole();
+
+    /**
+     * @return mixed
+     */
+    public function getAuthenticationMethod();
 
 } 
