@@ -57,14 +57,19 @@ class Realm {
                     $session->setRealm($this);
                     $session->setState(Session::STATE_UP);
 
-                    // @todo if this realm requires auth send back a challange
-                    $session->sendMessage(new ChallengeMessage("jwt"));
+                    foreach($msg->getAuthMethods() as $authMethod){
+                        if ($session->getAuthenticationProvider()->supports($authMethod)){
+                            $session->sendMessage(new ChallengeMessage($authMethod));
+                            break;
+                        }
+                    }
 
                 }
             } else if($msg instanceof AuthenticateMessage){
 
                 // @todo really check to see if the user is authenticated
-                if ($msg->getSignature()){
+                $authenticationProvider = $session->getAuthenticationProvider();
+                if ($authenticationProvider && $authenticationProvider->authenticate($msg->getSignature())){
 
                     $session->setAuthenticated(true);
 

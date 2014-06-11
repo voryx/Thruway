@@ -11,12 +11,15 @@ namespace AutobahnPHP;
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
 
-class Router extends AbstractPeer {
+class Router extends AbstractPeer
+{
 
     /**
      * @var RealmManager
      */
     private $realmManager;
+
+    private $authenticationProvider;
 
     function __construct()
     {
@@ -31,6 +34,7 @@ class Router extends AbstractPeer {
             // hopefully this is a HelloMessage or we have no place for this message to go
             if ($msg instanceof HelloMessage) {
                 if (RealmManager::validRealmName($msg->getRealm())) {
+                    $session->setAuthenticationProvider($this->authenticationProvider);
                     $realm = $this->realmManager->getRealm($msg->getRealm());
                     $realm->onMessage($session, $msg);
                 } else {
@@ -46,4 +50,22 @@ class Router extends AbstractPeer {
             $realm->onMessage($session, $msg);
         }
     }
+
+    /**
+     * @return mixed
+     */
+    public function getAuthenticationProvider()
+    {
+        return $this->authenticationProvider;
+    }
+
+    /**
+     * @param mixed $authenticationProvider
+     */
+    public function setAuthenticationProvider($authenticationProvider)
+    {
+        $this->authenticationProvider = $authenticationProvider;
+    }
+
+
 }
