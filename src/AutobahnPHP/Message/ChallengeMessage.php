@@ -6,6 +6,13 @@ namespace AutobahnPHP\Message;
 class ChallengeMessage extends Message {
     const MSG_CODE = Message::MSG_CHALLENGE;
 
+    private $authMethod;
+
+    public function __construct($authMethod)
+    {
+        $this->authMethod = $authMethod;
+    }
+
     /**
      * @return int
      */
@@ -19,7 +26,7 @@ class ChallengeMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        // TODO: Implement getAdditionalMsgFields() method.
+        return array($this->getAuthMethod());
     }
 
     /**
@@ -28,6 +35,14 @@ class ChallengeMessage extends Message {
     public function getValidConnectionStates()
     {
         // TODO: Implement getValidConnectionStates() method.
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAuthMethod()
+    {
+        return $this->authMethod;
     }
 
 

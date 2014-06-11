@@ -9,6 +9,8 @@
 namespace AutobahnPHP;
 
 
+use AutobahnPHP\Message\AuthenticateMessage;
+use AutobahnPHP\Message\ChallengeMessage;
 use AutobahnPHP\Message\ErrorMessage;
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
@@ -54,6 +56,16 @@ class Realm {
                     $this->sessions->attach($session);
                     $session->setRealm($this);
                     $session->setState(Session::STATE_UP);
+
+                    // @todo if this realm requires auth send back a challange
+                    $session->sendMessage(new ChallengeMessage("jwt"));
+
+                }
+            } else if($msg instanceof AuthenticateMessage){
+
+                // @todo really check to see if the user is authenticated
+                if ($msg->getSignature()){
+
                     $session->setAuthenticated(true);
 
                     // TODO: this will probably be pulled apart so that
@@ -62,7 +74,12 @@ class Realm {
                     $roles = array("broker" => new \stdClass);
 
                     $session->sendMessage(new WelcomeMessage($session->getSessionId(), array("roles" => $roles)));
+                } else {
+                   //Send some message that says they were unable to authenticate
+                    echo "Unhandled message sent to authenticate\n";
                 }
+
+
             } else {
                 echo "Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode() . "\n";
             }

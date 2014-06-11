@@ -3,17 +3,20 @@
 namespace AutobahnPHP\Message;
 
 
-class HelloMessage extends Message {
+class HelloMessage extends Message
+{
     const MSG_CODE = Message::MSG_HELLO;
 
     private $realm;
     private $details;
     private $roles;
+    private $authMethods;
 
-    function __construct($realm, $details)
+    function __construct($realm, $details, $authMethods)
     {
         $this->setDetails($details);
         $this->realm = $realm;
+        $this->authMethods = $authMethods;
     }
 
     /**
@@ -28,7 +31,10 @@ class HelloMessage extends Message {
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_CODE;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -78,5 +84,12 @@ class HelloMessage extends Message {
         return $this->realm;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getAuthMethods()
+    {
+        return $this->authMethods;
+    }
 
 } 
