@@ -135,6 +135,10 @@ abstract class Message
                 return new GoodbyeMessage($json[1], $json[2]);
             case Message::MSG_AUTHENTICATE:
                 return new AuthenticateMessage($json[1]);
+            case Message::MSG_REGISTER:
+                return new RegisterMessage($json[1], $json[2], $json[3]);
+            case Message::MSG_UNREGISTER:
+                return new UnregisterMessage($json[1], $json[2]);
             default:
                 throw new MessageException("Unhandled message type: " . $json[0]);
         }
