@@ -2,7 +2,8 @@
 
 namespace AutobahnPHP\Message;
 
-class ErrorMessage  extends Message {
+class ErrorMessage extends Message
+{
     const MSG_CODE = Message::MSG_ERROR;
 
     private $errorMsgCode;
@@ -10,6 +11,12 @@ class ErrorMessage  extends Message {
     private $details;
     private $errorURI;
 
+    /**
+     * @param $errorMsgCode
+     * @param $errorRequestId
+     * @param $details
+     * @param $errorURI
+     */
     function __construct($errorMsgCode, $errorRequestId, $details, $errorURI)
     {
         $this->errorRequestId = $errorRequestId;
@@ -20,10 +27,13 @@ class ErrorMessage  extends Message {
 
     /**
      * @param mixed $errorURI
+     * @return $this
      */
     public function setErrorURI($errorURI)
     {
         $this->errorURI = $errorURI;
+
+        return $this;
     }
 
     /**
@@ -41,14 +51,18 @@ class ErrorMessage  extends Message {
      * @param Message $msg
      * @return ErrorMessage
      */
-    static public function createErrorMessageFromMessage(Message $msg) {
+    static public function createErrorMessageFromMessage(Message $msg)
+    {
         return new ErrorMessage($msg->getMsgCode(), $msg->getRequestId(), new \stdClass, "wamp.error.unknown");
     }
 
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_CODE;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -71,10 +85,13 @@ class ErrorMessage  extends Message {
 
     /**
      * @param mixed $details
+     * @return $this
      */
     public function setDetails($details)
     {
         $this->details = $details;
+
+        return $this;
     }
 
     /**
@@ -87,10 +104,13 @@ class ErrorMessage  extends Message {
 
     /**
      * @param mixed $errorMsgCode
+     * @return $this
      */
     public function setErrorMsgCode($errorMsgCode)
     {
         $this->errorMsgCode = $errorMsgCode;
+
+        return $this;
     }
 
     /**
@@ -103,10 +123,13 @@ class ErrorMessage  extends Message {
 
     /**
      * @param mixed $requestId
+     * @return $this|void
      */
     public function setRequestId($requestId)
     {
         $this->errorRequestId = $requestId;
+
+        return $this;
     }
 
     /**
@@ -123,6 +146,8 @@ class ErrorMessage  extends Message {
     public function setErrorRequestId($errorRequestId)
     {
         $this->errorRequestId = $errorRequestId;
+
+        return $this;
     }
 
     /**
