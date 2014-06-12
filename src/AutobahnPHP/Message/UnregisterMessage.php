@@ -9,13 +9,28 @@
 namespace AutobahnPHP\Message;
 
 
-class UnregisterMessage extends Message {
+use Voryx\Wamp2\Wamp2Connection;
+
+class UnregisterMessage extends Message
+{
+
+    private $requestId;
+
+    private $registrationId;
+
+    function __construct($requestId, $registrationId)
+    {
+        $this->registrationId = $registrationId;
+        $this->requestId = $requestId;
+    }
+
+
     /**
      * @return int
      */
     public function getMsgCode()
     {
-        // TODO: Implement getMsgCode() method.
+        return static::MSG_UNREGISTER;
     }
 
     /**
@@ -26,7 +41,7 @@ class UnregisterMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        // TODO: Implement getAdditionalMsgFields() method.
+        return array();
     }
 
     /**
@@ -34,7 +49,25 @@ class UnregisterMessage extends Message {
      */
     public function getValidConnectionStates()
     {
-        // TODO: Implement getValidConnectionStates() method.
+        return array(Wamp2Connection::STATE_ESTABLISHED);
     }
+
+    /**
+     * @return mixed
+     */
+    public function getRegistrationId()
+    {
+        return $this->registrationId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
+    }
+
+
 
 } 

@@ -15,6 +15,7 @@ use AutobahnPHP\Message\ErrorMessage;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\Message\RegisteredMessage;
 use AutobahnPHP\Message\RegisterMessage;
+use AutobahnPHP\Message\UnregisteredMessage;
 use AutobahnPHP\Message\UnregisterMessage;
 use AutobahnPHP\Message\YieldMessage;
 
@@ -91,6 +92,23 @@ class Dealer extends AbstractRole
 
     public function unregister(Session $session, UnregisterMessage $msg)
     {
+        //find the procedure by request id
+        $this->registrations->rewind();
+        while ($this->registrations->valid()) {
+            $registration = $this->registrations->current();
+            if ($registration->getId() == $msg->getRegistrationId()) {
+                $this->registrations->next();
+                echo 'Unegistered: ' . $registration->getProcedureName();
+                $this->registrations->detach($registration);
+
+                return new UnregisteredMessage($msg->getRequestId());
+            }
+        }
+
+        $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+        echo 'No registration: ' . $msg->getRegistrationId();
+
+        return $errorMsg->setErrorURI('wamp.error.no_such_registration');
 
     }
 
