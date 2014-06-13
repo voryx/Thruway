@@ -62,13 +62,23 @@ class Realm
                     $session->setRealm($this);
                     $session->setState(Session::STATE_UP);
 
-                    foreach ($msg->getAuthMethods() as $authMethod) {
-                        if ($session->getAuthenticationProvider()->supports($authMethod)) {
-                            $session->sendMessage(new ChallengeMessage($authMethod));
-                            break;
+                    if ($session->getAuthenticationProvider()) {
+                        foreach ($msg->getAuthMethods() as $authMethod) {
+                            if ($session->getAuthenticationProvider()->supports($authMethod)) {
+                                $session->sendMessage(new ChallengeMessage($authMethod));
+                                break;
+                            }
                         }
+                    } else {
+                        $session->setAuthenticated(true);
+                        // TODO: this will probably be pulled apart so that
+                        // applications can actually create their own roles
+                        // and attach them to realms - but for now...
+                        $roles = array("broker" => new \stdClass, "dealer" => new \stdClass);
+                        $session->sendMessage(
+                            new WelcomeMessage($session->getSessionId(), array("roles" => $roles))
+                        );
                     }
-
                 }
             } else {
                 if ($msg instanceof AuthenticateMessage) {
