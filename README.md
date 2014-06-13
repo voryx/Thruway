@@ -10,5 +10,38 @@ The project is brand new (as of June 12, 2014), so there is a lot of it that is 
 
 Please feel free to ask us what is going on or make suggests or fork it and make a pull request.
 
-We have not setup the project in packgist as of yet (we want it to be a little more stable).  If you are just
-wanting to play around with it, then feel free to clone and and run some of the examples (after running composer install).
+
+### Quick Start with Composer
+
+Create a directory for the test project
+
+    mkdir autobahnphp
+
+Switch to the new directory
+
+    cd autobahnphp
+
+Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloading-the-composer-executable)
+
+    curl -sS https://getcomposer.org/installer | php
+
+Download AutobahnPHP and dependencies
+
+    php composer.phar require "voryx/autobahnphp":"dev-master"
+
+Start the WAMP server
+
+    php vendor/voryx/autobahnphp/Examples/SimpleWsServer.php
+    
+AutobahnPHP is now running on 127.0.0.1 port 9000 
+
+### Client
+
+For the client, you can use [AutobahnJS](https://github.com/tavendo/AutobahnJS) or any other WAMPv2 compatible client.
+
+Here are some [examples] (https://github.com/tavendo/AutobahnJS#show-me-some-code)
+
+
+
+
+
