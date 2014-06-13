@@ -52,16 +52,9 @@ class RegisterMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-       return array($this->options);
+       return array($this->requestId, $this->getOptions(), $this->getProcedureName());
     }
 
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
-    }
 
     /**
      * @return mixed

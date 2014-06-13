@@ -27,7 +27,7 @@ class RegisteredMessage extends Message
      * @param $registrationId
      * @param $requestId
      */
-    function __construct($registrationId, $requestId)
+    function __construct($requestId, $registrationId)
     {
         $this->registrationId = $registrationId;
         $this->requestId = $requestId;

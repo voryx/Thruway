@@ -26,18 +26,13 @@ class Registration
      */
     private $procedureName;
 
-    /**
-     * Not sure if we really need to store this or not
-     * @var
-     */
-    private $requestId;
 
     /**
      * @param Session $session
      * @param $procedureName
      * @param $requestId
      */
-    function __construct(Session $session, $procedureName, $requestId)
+    function __construct(Session $session, $procedureName)
     {
         $this->id = Session::getUniqueId();
         $this->session = $session;
@@ -66,14 +61,6 @@ class Registration
     public function getSession()
     {
         return $this->session;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
 
