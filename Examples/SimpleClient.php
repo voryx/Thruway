@@ -2,16 +2,10 @@
 
 require '../vendor/autoload.php';
 
-$transport = new \AutobahnPHP\Transport\WebsocketClient('wss://some.example.com:8080');
+$loop = \React\EventLoop\Factory::create();
 
-$client = new \AutobahnPHP\Client($transport);
+$transport = new \AutobahnPHP\Transport\WebsocketClient('wss://some.example.com:8080', $loop);
 
-$publisher = new \AutobahnPHP\Publisher();
+$transport->startTransport();
 
-$client->addRole($publisher);
-
-$msg = new \AutobahnPHP\Message\PublishMessage(12345, new \stdClass(), 'bla.bla.bla');
-
-$publisher->publish($msg);
-
-$client->run();
+$loop->run();
