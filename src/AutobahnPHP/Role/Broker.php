@@ -81,14 +81,8 @@ class Broker extends AbstractRole
                     $session->sendMessage(
                         new PublishedMessage($topic->getTopicName(), $msg->getRequestId())
                     );
-                } else {
-                    $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
                 }
-
-            } else {
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
             }
-
         }
     }
 
