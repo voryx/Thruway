@@ -4,9 +4,9 @@ require '../vendor/autoload.php';
 
 $transport = new \AutobahnPHP\Transport\WebsocketClient('wss://some.example.com:8080');
 
-$client = new \AutobahnPHP\Client($transport);
+$client = new \AutobahnPHP\Peer\Client($transport);
 
-$publisher = new \AutobahnPHP\Publisher();
+$publisher = new \AutobahnPHP\Role\Publisher();
 
 $client->addRole($publisher);
 

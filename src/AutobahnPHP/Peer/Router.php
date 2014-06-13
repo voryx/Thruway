@@ -6,10 +6,12 @@
  * Time: 11:58 AM
  */
 
-namespace AutobahnPHP;
+namespace AutobahnPHP\Peer;
 
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
+use AutobahnPHP\RealmManager;
+use AutobahnPHP\Session;
 
 class Router extends AbstractPeer
 {

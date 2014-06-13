@@ -6,9 +6,10 @@
  * Time: 12:02 PM
  */
 
-namespace AutobahnPHP;
+namespace AutobahnPHP\Role;
 
 
+use AutobahnPHP\Call;
 use AutobahnPHP\Message\CallMessage;
 use AutobahnPHP\Message\CancelMessage;
 use AutobahnPHP\Message\ErrorMessage;
@@ -20,7 +21,13 @@ use AutobahnPHP\Message\ResultMessage;
 use AutobahnPHP\Message\UnregisteredMessage;
 use AutobahnPHP\Message\UnregisterMessage;
 use AutobahnPHP\Message\YieldMessage;
+use AutobahnPHP\Registration;
+use AutobahnPHP\Session;
 
+/**
+ * Class Dealer
+ * @package AutobahnPHP\Role
+ */
 class Dealer extends AbstractRole
 {
 
@@ -29,8 +36,14 @@ class Dealer extends AbstractRole
      */
     private $registrations;
 
+    /**
+     * @var \SplObjectStorage
+     */
     private $calls;
 
+    /**
+     *
+     */
     function __construct()
     {
         $this->registrations = new \SplObjectStorage();
@@ -40,6 +53,7 @@ class Dealer extends AbstractRole
     /**
      * @param Session $session
      * @param Message $msg
+     * @return mixed|void
      */
     public function onMessage(Session $session, Message $msg)
     {
@@ -67,7 +81,6 @@ class Dealer extends AbstractRole
 
         }
 
-
     }
 
     /**
@@ -79,7 +92,6 @@ class Dealer extends AbstractRole
     {
         //Check to see if the procedure is already registered
         /* @registration Registration */
-
         $registration = $this->getRegistrationByProcedureName($msg->getProcedureName());
 
         if ($registration) {
@@ -99,6 +111,11 @@ class Dealer extends AbstractRole
         return new RegisteredMessage($msg->getRequestId(), $registration->getId());
     }
 
+    /**
+     * @param Session $session
+     * @param UnregisterMessage $msg
+     * @return $this|UnregisteredMessage
+     */
     public function processUnregister(Session $session, UnregisterMessage $msg)
     {
         //find the procedure by request id
@@ -121,13 +138,17 @@ class Dealer extends AbstractRole
 
     }
 
+    /**
+     * @param Session $session
+     * @param CallMessage $msg
+     */
     public function processCall(Session $session, CallMessage $msg)
     {
 
         $registration = $this->getRegistrationByProcedureName($msg->getProcedureName());
         if (!$registration) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            echo 'No registration: ' . $msg->getRegistrationId();
+            echo 'No registration: ' . $msg->getProcedureName();
 
             $errorMsg->setErrorURI('wamp.error.no_such_registration');
             $session->sendMessage($errorMsg);
@@ -145,6 +166,10 @@ class Dealer extends AbstractRole
 
     }
 
+    /**
+     * @param Session $session
+     * @param YieldMessage $msg
+     */
     public function processYield(Session $session, YieldMessage $msg)
     {
         $call = $this->getCallByRequestId($msg->getRequestId());
@@ -173,11 +198,19 @@ class Dealer extends AbstractRole
         $call->getCallerSession()->sendMessage($resultMessage);
     }
 
+    /**
+     * @param Session $session
+     * @param ErrorMessage $msg
+     */
     public function processError(Session $session, ErrorMessage $msg)
     {
         //@todo
     }
 
+    /**
+     * @param $procedureName
+     * @return Registration|bool
+     */
     public function getRegistrationByProcedureName($procedureName)
     {
         /* @var $registration \AutobahnPHP\Registration */
@@ -190,6 +223,10 @@ class Dealer extends AbstractRole
         return false;
     }
 
+    /**
+     * @param $requestId
+     * @return Call|bool
+     */
     public function getCallByRequestId($requestId)
     {
         /* @var $call Call */
@@ -202,6 +239,10 @@ class Dealer extends AbstractRole
         return false;
     }
 
+    /**
+     * @param Message $msg
+     * @return bool
+     */
     public function handlesMessage(Message $msg)
     {
         $handledMessages = array(
@@ -215,6 +256,5 @@ class Dealer extends AbstractRole
 
         return in_array($msg->getMsgCode(), $handledMessages);
     }
-
 
 }

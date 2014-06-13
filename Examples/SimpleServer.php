@@ -2,7 +2,7 @@
 
 require '../vendor/autoload.php';
 
-$router = new \AutobahnPHP\Router();
+$router = new \AutobahnPHP\Peer\Router();
 //
 //$router->addRole(new Broker());
 

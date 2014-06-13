@@ -8,9 +8,7 @@
 
 namespace AutobahnPHP\Transport;
 
-
-use AutobahnPHP\AbstractPeer;
-use AutobahnPHP\Peer;
+use AutobahnPHP\Peer\AbstractPeer;
 use AutobahnPHP\Session;
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
@@ -28,7 +26,7 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
     }
 
     /**
-     * @var \AutobahnPHP\AbstractPeer
+     * @var AbstractPeer
      */
     private $peer;
 

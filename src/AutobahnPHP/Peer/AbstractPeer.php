@@ -1,8 +1,9 @@
 <?php
 
-namespace AutobahnPHP;
+namespace AutobahnPHP\Peer;
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
+use AutobahnPHP\Session;
 
 /**
  * Created by PhpStorm.

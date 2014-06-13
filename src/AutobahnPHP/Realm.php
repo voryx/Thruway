@@ -19,6 +19,9 @@ use AutobahnPHP\Message\SubscribedMessage;
 use AutobahnPHP\Message\SubscribeMessage;
 use AutobahnPHP\Message\UnsubscribeMessage;
 use AutobahnPHP\Message\WelcomeMessage;
+use AutobahnPHP\Role\AbstractRole;
+use AutobahnPHP\Role\Broker;
+use AutobahnPHP\Role\Dealer;
 
 class Realm
 {

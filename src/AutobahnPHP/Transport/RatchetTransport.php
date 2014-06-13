@@ -8,9 +8,7 @@
 
 namespace AutobahnPHP\Transport;
 
-
-use AutobahnPHP\AbstractPeer;
-use AutobahnPHP\Peer;
+use AutobahnPHP\Peer\AbstractPeer;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;

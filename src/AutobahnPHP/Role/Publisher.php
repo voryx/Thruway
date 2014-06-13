@@ -6,7 +6,7 @@
  * Time: 12:03 PM
  */
 
-namespace AutobahnPHP;
+namespace AutobahnPHP\Role;
 
 
 class Publisher extends AbstractRole {

@@ -1,6 +1,6 @@
 <?php
 
-namespace AutobahnPHP;
+namespace AutobahnPHP\Role;
 
 
 class Subscriber extends AbstractRole {
