@@ -1,6 +1,6 @@
 <?php
 
-require '../../../autoload.php';
+require __DIR__.'/../../../autoload.php';
 
 use AutobahnPHP\Transport\RatchetTransport;
 use AutobahnPHP\Peer\Router;
