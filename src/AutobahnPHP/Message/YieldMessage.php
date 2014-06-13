@@ -9,15 +9,56 @@
 namespace AutobahnPHP\Message;
 
 
+/**
+ * Class YieldMessage
+ * @package AutobahnPHP\Message
+ */
 class YieldMessage extends Message
 {
+
+    /**
+     * @var
+     */
+    private $requestId;
+
+    /**
+     * @var
+     */
+    private $options;
+
+    /**
+     * @var
+     */
+    private $arguments;
+
+    /**
+     * @var
+     */
+    private $argumentsKw;
+
+
+    /**
+     * @param $requestId
+     * @param $options
+     * @param $arguments
+     * @param $argumentsKw
+     */
+    function __construct($requestId, $options, $arguments, $argumentsKw)
+    {
+        $this->requestId = $requestId;
+        $this->options = $options;
+        $this->arguments = $arguments;
+        $this->argumentsKw = $argumentsKw;
+
+    }
+
 
     /**
      * @return int
      */
     public function getMsgCode()
     {
-        // TODO: Implement getMsgCode() method.
+        return static::MSG_YIELD;
     }
 
     /**
@@ -28,14 +69,73 @@ class YieldMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        // TODO: Implement getAdditionalMsgFields() method.
+        return array($this->getRequestId(), $this->getOptions(), $this->getArguments(), $this->getArgumentsKw());
     }
 
     /**
-     * @return array
+     * @return mixed
      */
-    public function getValidConnectionStates()
+    public function getArguments()
     {
-        // TODO: Implement getValidConnectionStates() method.
+        return $this->arguments;
     }
+
+    /**
+     * @param mixed $arguments
+     */
+    public function setArguments($arguments)
+    {
+        $this->arguments = $arguments;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getArgumentsKw()
+    {
+        return $this->argumentsKw;
+    }
+
+    /**
+     * @param mixed $argumentsKw
+     */
+    public function setArgumentsKw($argumentsKw)
+    {
+        $this->argumentsKw = $argumentsKw;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * @param mixed $options
+     */
+    public function setOptions($options)
+    {
+        $this->options = $options;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
+    }
+
+    /**
+     * @param mixed $requestId
+     */
+    public function setRequestId($requestId)
+    {
+        $this->requestId = $requestId;
+    }
+
+
+
 }

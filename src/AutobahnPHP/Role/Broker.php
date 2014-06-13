@@ -6,7 +6,7 @@
  * Time: 12:02 PM
  */
 
-namespace AutobahnPHP;
+namespace AutobahnPHP\Role;
 
 
 use AutobahnPHP\Message\ErrorMessage;
@@ -18,6 +18,8 @@ use AutobahnPHP\Message\SubscribedMessage;
 use AutobahnPHP\Message\SubscribeMessage;
 use AutobahnPHP\Message\UnsubscribedMessage;
 use AutobahnPHP\Message\UnsubscribeMessage;
+use AutobahnPHP\Session;
+use AutobahnPHP\TopicManager;
 
 class Broker extends AbstractRole
 {
@@ -79,14 +81,8 @@ class Broker extends AbstractRole
                     $session->sendMessage(
                         new PublishedMessage($topic->getTopicName(), $msg->getRequestId())
                     );
-                } else {
-                    $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
                 }
-
-            } else {
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
             }
-
         }
     }
 

@@ -6,7 +6,7 @@
  * Time: 12:02 PM
  */
 
-namespace AutobahnPHP;
+namespace AutobahnPHP\Role;
 
 
 class Caller extends AbstractRole {

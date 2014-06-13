@@ -6,7 +6,7 @@
  * Time: 12:19 AM
  */
 
-namespace AutobahnPHP;
+namespace AutobahnPHP\Authentication;
 
 
 interface AuthenticationProviderInterface

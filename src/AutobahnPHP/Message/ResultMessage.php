@@ -3,39 +3,53 @@
  * Created by PhpStorm.
  * User: daviddan
  * Date: 6/12/14
- * Time: 12:35 PM
+ * Time: 11:44 PM
  */
 
 namespace AutobahnPHP\Message;
 
 
-class CallMessage extends Message
+/**
+ * Class ResultMessage
+ * @package AutobahnPHP\Message
+ */
+class ResultMessage extends Message
 {
 
+    /**
+     * @var
+     */
     private $requestId;
 
-    private $options;
+    /**
+     * @var
+     */
+    private $details;
 
-    private $procedureName;
-
+    /**
+     * @var
+     */
     private $arguments;
 
+    /**
+     * @var
+     */
     private $argumentsKw;
+
 
     /**
      * @param $requestId
-     * @param $options
-     * @param $procedureName
+     * @param $details
      * @param $arguments
      * @param $argumentsKw
      */
-    function __construct($requestId, $options, $procedureName, $arguments, $argumentsKw)
+    function __construct($requestId, $details, $arguments, $argumentsKw)
     {
         $this->requestId = $requestId;
-        $this->options = $options;
-        $this->procedureName = $procedureName;
+        $this->details = $details;
         $this->arguments = $arguments;
         $this->argumentsKw = $argumentsKw;
+
     }
 
 
@@ -44,7 +58,7 @@ class CallMessage extends Message
      */
     public function getMsgCode()
     {
-        return static::MSG_CALL;
+        return static::MSG_RESULT;
     }
 
     /**
@@ -55,13 +69,7 @@ class CallMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array(
-            $this->requestId,
-            $this->options,
-            $this->procedureName,
-            $this->arguments,
-            $this->argumentsKw
-        );
+        return array($this->getRequestId(), $this->getDetails(), $this->getArguments(), $this->getArgumentsKw());
     }
 
     /**
@@ -99,33 +107,17 @@ class CallMessage extends Message
     /**
      * @return mixed
      */
-    public function getOptions()
+    public function getDetails()
     {
-        return $this->options;
+        return $this->details;
     }
 
     /**
-     * @param mixed $options
+     * @param mixed $details
      */
-    public function setOptions($options)
+    public function setDetails($details)
     {
-        $this->options = $options;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProcedureName()
-    {
-        return $this->procedureName;
-    }
-
-    /**
-     * @param mixed $procedureName
-     */
-    public function setProcedureName($procedureName)
-    {
-        $this->procedureName = $procedureName;
+        $this->details = $details;
     }
 
     /**
@@ -143,7 +135,6 @@ class CallMessage extends Message
     {
         $this->requestId = $requestId;
     }
-
 
 
 }

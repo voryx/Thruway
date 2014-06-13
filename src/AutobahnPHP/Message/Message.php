@@ -71,10 +71,6 @@ abstract class Message
      */
     abstract public function getAdditionalMsgFields();
 
-    /**
-     * @return array
-     */
-    abstract public function getValidConnectionStates();
 
     /**
      * @param Wamp2Connection $conn
@@ -139,6 +135,32 @@ abstract class Message
                 return new RegisterMessage($json[1], $json[2], $json[3]);
             case Message::MSG_UNREGISTER:
                 return new UnregisterMessage($json[1], $json[2]);
+            case Message::MSG_CALL:
+                $args = null;
+                if (count($json) >= 5) {
+                    $args = $json[4];
+                }
+
+                $argsKw = null;
+                if (count($json) >= 6) {
+                    $argsKw = $json[5];
+                }
+
+                return new CallMessage($json[1], $json[2], $json[3], $args, $argsKw);
+            case Message::MSG_YIELD:
+                $args = null;
+                if (count($json) >= 4) {
+                    $args = $json[3];
+                }
+
+                $argsKw = null;
+                if (count($json) >= 5) {
+                    $argsKw = $json[4];
+                }
+
+                return new YieldMessage($json[1], $json[2], $args, $argsKw);
+//            case Message::MSG_ERROR:
+//                return new ErrorMessage($json[1], $json[2]);
             default:
                 throw new MessageException("Unhandled message type: " . $json[0]);
         }
