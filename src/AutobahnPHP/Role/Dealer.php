@@ -257,4 +257,20 @@ class Dealer extends AbstractRole
         return in_array($msg->getMsgCode(), $handledMessages);
     }
 
+    public function leave(Session $session)
+    {
+        {
+            $this->registrations->rewind();
+            while ($this->registrations->valid()) {
+                /* @var $registration Registration */
+                $registration = $this->registrations->current();
+                if ($registration->getSession() == $session) {
+                    $this->registrations->next();
+                    echo 'Leaving and unegistering: ' . $registration->getProcedureName();
+                    $this->registrations->detach($registration);
+                }
+            }
+        }
+
+    }
 }

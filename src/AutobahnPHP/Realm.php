@@ -23,29 +23,42 @@ use AutobahnPHP\Role\AbstractRole;
 use AutobahnPHP\Role\Broker;
 use AutobahnPHP\Role\Dealer;
 
+/**
+ * Class Realm
+ * @package AutobahnPHP
+ */
 class Realm
 {
 
 
+    /**
+     * @var
+     */
     private $realmName;
+    /**
+     * @var \SplObjectStorage
+     */
     private $sessions;
-
+    /**
+     * @var array
+     */
     private $roles;
 
-    /**
-     * @var TopicManager
-     */
-    private $topicManager;
 
+    /**
+     * @param $realmName
+     */
     function __construct($realmName)
     {
         $this->realmName = $realmName;
         $this->sessions = new \SplObjectStorage();
-        $this->topicManager = new TopicManager();
-        $this->subscriptions = new \SplObjectStorage();
         $this->roles = array(new Broker(), new Dealer());
     }
 
+    /**
+     * @param Session $session
+     * @param Message $msg
+     */
     public function onMessage(Session $session, Message $msg)
     {
 
@@ -150,5 +163,15 @@ class Realm
     public function getRealmName()
     {
         return $this->realmName;
+    }
+
+    /**
+     * @param Session $session
+     */
+    public function leave(Session $session){
+
+        foreach ($this->roles as $role){
+            $role->leave($session);
+        }
     }
 }

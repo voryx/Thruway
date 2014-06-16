@@ -102,5 +102,8 @@ class Broker extends AbstractRole
 
     }
 
-
+    public function leave(Session $session)
+    {
+        //Todo: implement on close clean up
+    }
 } 

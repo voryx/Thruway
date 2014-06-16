@@ -66,9 +66,11 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
      */
     function onClose(ConnectionInterface $conn)
     {
+        /* @var $session Session */
         $session = $this->sessions[$conn];
 
         $this->sessions->detach($conn);
+        $session->onClose();
 
         echo "onClose...\n";
     }

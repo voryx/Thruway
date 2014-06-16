@@ -180,6 +180,10 @@ class Session {
     }
 
 
+    public function onClose()
+    {
+        $this->realm->leave($this);
+    }
 
 
 } 
