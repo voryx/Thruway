@@ -39,8 +39,6 @@ class Session {
 
     private $sessionId;
 
-    private $subscriptions;
-
     private $authenticationProvider;
 
     function __construct(ConnectionInterface $transport)
@@ -49,31 +47,6 @@ class Session {
         $this->state = static::STATE_PRE_HELLO;
         $this->sessionId = static::getUniqueId();
         $this->realm = null;
-
-        $this->subscriptions = new \SplObjectStorage();
-    }
-
-    function __destruct() {
-        // TODO get rid of subscriptions
-        // this part needs to get moved somewhere because it will not work like this
-        // topic will have a reference to session and will never get gc'd
-        // and I am not daring enough to delete the object explicitly
-        $this->subscriptions->rewind();
-        while ($this->subscriptions->valid()) {
-            /* @var $topic Topic */
-            $topic = $this->subscriptions->current();
-            $topic->unsubscribe($this);
-            $this->subscriptions->next();
-            $this->subscriptions->detach($topic);
-        }
-    }
-
-    public function addSubscription(Topic $topic) {
-        $this->subscriptions->attach($topic);
-    }
-
-    public function removeSubscription(Topic $topic) {
-        $this->subscriptions->detach($topic);
     }
 
     public function sendMessage(Message $msg) {

@@ -170,6 +170,7 @@ class Realm
      */
     public function leave(Session $session){
 
+        echo "Leaving realm {$session->getRealm()->getRealmName()}\n";
         foreach ($this->roles as $role){
             $role->leave($session);
         }

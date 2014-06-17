@@ -3,7 +3,8 @@
 namespace AutobahnPHP\Message;
 
 
-class EventMessage extends Message {
+class EventMessage extends Message
+{
     const MSG_CODE = Message::MSG_EVENT;
 
     private $subscriptionId;
@@ -27,7 +28,10 @@ class EventMessage extends Message {
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_CODE;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -37,7 +41,8 @@ class EventMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        $a = array($this->getSubscriptionId(),
+        $a = array(
+            $this->getSubscriptionId(),
             $this->getPublicationId(),
             $this->getDetails()
         );
@@ -50,6 +55,17 @@ class EventMessage extends Message {
         }
 
         return $a;
+    }
+
+    static public function createFromPublishMessage(PublishMessage $msg)
+    {
+        return new static(
+            $msg->getTopicName(),
+            $msg->getRequestId(),
+            new \stdClass,
+            $msg->getArguments(),
+            $msg->getArgumentsKw()
+        );
     }
 
     /**
