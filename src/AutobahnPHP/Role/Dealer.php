@@ -264,13 +264,12 @@ class Dealer extends AbstractRole
             while ($this->registrations->valid()) {
                 /* @var $registration Registration */
                 $registration = $this->registrations->current();
+                $this->registrations->next();
                 if ($registration->getSession() == $session) {
-                    $this->registrations->next();
-                    echo 'Leaving and unegistering: ' . $registration->getProcedureName();
+                    echo "Leaving and unegistering: {$registration->getProcedureName()}\n";
                     $this->registrations->detach($registration);
                 }
             }
         }
-
     }
 }
