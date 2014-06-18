@@ -24,7 +24,7 @@ $onClose = function ($msg) {
 
 $connection = new Connection(
     array(
-        "realm" => 'ff',
+        "realm" => 'realm1',
         "onClose" => $onClose,
 //        "onChallenge" => $onChallenge,
         "url" => 'ws://127.0.0.1:9090',
