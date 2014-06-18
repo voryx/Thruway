@@ -15,23 +15,23 @@ Please feel free to ask us what is going on or make suggests or fork it and make
 
 Create a directory for the test project
 
-   $ mkdir autobahnphp
+      $ mkdir autobahnphp
 
 Switch to the new directory
 
-   $ cd autobahnphp
+      $ cd autobahnphp
 
 Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloading-the-composer-executable)
 
-   $ curl -sS https://getcomposer.org/installer | php
+      $ curl -sS https://getcomposer.org/installer | php
 
 Download AutobahnPHP and dependencies
 
-   $ php composer.phar require "voryx/autobahnphp":"dev-master"
+      $ php composer.phar require "voryx/autobahnphp":"dev-master"
 
 Start the WAMP server
 
-   $ php vendor/voryx/autobahnphp/Examples/SimpleWsServer.php
+      $ php vendor/voryx/autobahnphp/Examples/SimpleWsServer.php
     
 AutobahnPHP is now running on 127.0.0.1 port 9000 
 
@@ -87,7 +87,7 @@ $connection->on('open', function (ClientSession $session) {
 $connection->open();
 ```
 
-### Java Script Client
+### Javascript Client
 
 For the client, you can use [AutobahnJS](https://github.com/tavendo/AutobahnJS) or any other WAMPv2 compatible client.
 
