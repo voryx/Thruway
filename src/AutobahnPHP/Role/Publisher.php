@@ -12,6 +12,7 @@ namespace AutobahnPHP\Role;
 use AutobahnPHP\AbstractSession;
 use AutobahnPHP\ClientSession;
 use AutobahnPHP\Message\Message;
+use AutobahnPHP\Message\PublishedMessage;
 use AutobahnPHP\Message\PublishMessage;
 use AutobahnPHP\Session;
 use React\Promise\Deferred;
@@ -28,11 +29,17 @@ class Publisher extends AbstractRole
     private $session;
 
     /**
+     * @var array
+     */
+    private $publishRequests;
+
+    /**
      * @param $session
      */
     function __construct($session)
     {
         $this->session = $session;
+        $this->publishRequests = array();
     }
 
     /**
@@ -43,6 +50,28 @@ class Publisher extends AbstractRole
     public function onMessage(AbstractSession $session, Message $msg)
     {
         // TODO: Implement onMessage() method.
+        switch ($msg) {
+            case ($msg instanceof PublishedMessage):
+                $this->processPublished($session, $msg);
+                break;
+            default:
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+        }
+    }
+
+    /**
+     * @param ClientSession $session
+     * @param PublishedMessage $msg
+     */
+    public function processPublished(ClientSession $session, PublishedMessage $msg)
+    {
+        if (isset($this->publishRequests[$msg->getRequestId()])) {
+            /* @var $futureResult Deferred */
+            $futureResult = $this->publishRequests[$msg->getRequestId()]["future_result"];
+            $futureResult->resolve($msg->getPublicationId());
+            unset($this->publishRequests[$msg->getRequestId()]);
+        }
+    }
     }
 
     /**
