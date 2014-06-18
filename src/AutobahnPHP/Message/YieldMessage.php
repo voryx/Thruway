@@ -13,6 +13,10 @@ namespace AutobahnPHP\Message;
  * Class YieldMessage
  * @package AutobahnPHP\Message
  */
+/**
+ * Class YieldMessage
+ * @package AutobahnPHP\Message
+ */
 class YieldMessage extends Message
 {
 
@@ -43,7 +47,7 @@ class YieldMessage extends Message
      * @param $arguments
      * @param $argumentsKw
      */
-    function __construct($requestId, $options, $arguments, $argumentsKw)
+    function __construct($requestId, $options, $arguments = null, $argumentsKw = null)
     {
         $this->requestId = $requestId;
         $this->options = $options;

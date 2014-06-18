@@ -3,16 +3,42 @@
 namespace AutobahnPHP\Message;
 
 
+/**
+ * Class EventMessage
+ * @package AutobahnPHP\Message
+ */
 class EventMessage extends Message
 {
-    const MSG_CODE = Message::MSG_EVENT;
 
+
+    /**
+     * @var
+     */
     private $subscriptionId;
+    /**
+     * @var
+     */
     private $publicationId;
+    /**
+     * @var
+     */
     private $details;
+    /**
+     * @var
+     */
     private $args;
+    /**
+     * @var
+     */
     private $argsKw;
 
+    /**
+     * @param $subscriptionId
+     * @param $publicationId
+     * @param $details
+     * @param $args
+     * @param $argsKw
+     */
     function __construct($subscriptionId, $publicationId, $details, $args, $argsKw)
     {
         parent::__construct();
@@ -30,7 +56,7 @@ class EventMessage extends Message
      */
     public function getMsgCode()
     {
-        return static::MSG_CODE;
+        return static::MSG_EVENT;
     }
 
     /**
@@ -57,6 +83,10 @@ class EventMessage extends Message
         return $a;
     }
 
+    /**
+     * @param PublishMessage $msg
+     * @return static
+     */
     static public function createFromPublishMessage(PublishMessage $msg)
     {
         return new static(
@@ -66,14 +96,6 @@ class EventMessage extends Message
             $msg->getArguments(),
             $msg->getArgumentsKw()
         );
-    }
-
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
     }
 
     /**

@@ -9,6 +9,7 @@
 namespace AutobahnPHP\Role;
 
 
+use AutobahnPHP\AbstractSession;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\Session;
 
@@ -19,11 +20,11 @@ use AutobahnPHP\Session;
 abstract class AbstractRole
 {
     /**
-     * @param Session $session
+     * @param AbstractSession $session
      * @param Message $msg
      * @return mixed
      */
-    abstract public function onMessage(Session $session, Message $msg);
+    abstract public function onMessage(AbstractSession $session, Message $msg);
 
     /**
      * @param Message $msg

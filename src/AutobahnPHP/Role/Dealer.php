@@ -9,6 +9,7 @@
 namespace AutobahnPHP\Role;
 
 
+use AutobahnPHP\AbstractSession;
 use AutobahnPHP\Call;
 use AutobahnPHP\Message\CallMessage;
 use AutobahnPHP\Message\CancelMessage;
@@ -55,7 +56,7 @@ class Dealer extends AbstractRole
      * @param Message $msg
      * @return mixed|void
      */
-    public function onMessage(Session $session, Message $msg)
+    public function onMessage(AbstractSession $session, Message $msg)
     {
         switch ($msg) {
             case ($msg instanceof RegisterMessage):
@@ -257,6 +258,9 @@ class Dealer extends AbstractRole
         return in_array($msg->getMsgCode(), $handledMessages);
     }
 
+    /**
+     * @param Session $session
+     */
     public function leave(Session $session)
     {
         {

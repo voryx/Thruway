@@ -71,31 +71,11 @@ abstract class Message
      */
     abstract public function getAdditionalMsgFields();
 
-
     /**
-     * @param Wamp2Connection $conn
-     * @return bool
-     * @throws \UnexpectedValueException
+     * @param $rawMsg
+     * @throws MessageException
+     * @return Message
      */
-    public function isValidForConnection(Wamp2Connection $conn)
-    {
-        if (!is_array($this->getValidConnectionStates())) {
-            throw new \UnexpectedValueException("getValidConnectionStates did not return an array");
-        }
-
-        foreach ($this->getValidConnectionStates() as $connState) {
-            if ($connState == Wamp2Connection::STATE_ALL) {
-                return true;
-            }
-            if ($conn->getConnectionState() == $connState) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
     static public function createMessageFromRaw($rawMsg)
     {
         if (null === ($json = @json_decode($rawMsg, true))) {
@@ -116,15 +96,8 @@ abstract class Message
             case Message::MSG_UNSUBSCRIBE:
                 return new UnsubscribeMessage($json[1], $json[2]);
             case Message::MSG_PUBLISH:
-                $args = null;
-                if (count($json) >= 5) {
-                    $args = $json[4];
-                }
-
-                $argsKw = null;
-                if (count($json) >= 6) {
-                    $argsKw = $json[5];
-                }
+                $args = isset($json[4]) ? $json[4] : null;
+                $argsKw = isset($json[5]) ? $json[5] : null;
 
                 return new PublishMessage($json[1], $json[2], $json[3], $args, $argsKw);
             case Message::MSG_GOODBYE:
@@ -136,31 +109,38 @@ abstract class Message
             case Message::MSG_UNREGISTER:
                 return new UnregisterMessage($json[1], $json[2]);
             case Message::MSG_CALL:
-                $args = null;
-                if (count($json) >= 5) {
-                    $args = $json[4];
-                }
-
-                $argsKw = null;
-                if (count($json) >= 6) {
-                    $argsKw = $json[5];
-                }
+                $args = isset($json[4]) ? $json[4] : null;
+                $argsKw = isset($json[5]) ? $json[5] : null;
 
                 return new CallMessage($json[1], $json[2], $json[3], $args, $argsKw);
             case Message::MSG_YIELD:
-                $args = null;
-                if (count($json) >= 4) {
-                    $args = $json[3];
-                }
-
-                $argsKw = null;
-                if (count($json) >= 5) {
-                    $argsKw = $json[4];
-                }
+                $args = isset($json[3]) ? $json[3] : null;
+                $argsKw = isset($json[4]) ? $json[4] : null;
 
                 return new YieldMessage($json[1], $json[2], $args, $argsKw);
 //            case Message::MSG_ERROR:
 //                return new ErrorMessage($json[1], $json[2]);
+            case Message::MSG_WELCOME:
+                return new WelcomeMessage($json[1], $json[2]);
+            case Message::MSG_SUBSCRIBED:
+                return new SubscribedMessage($json[1], $json[2]);
+            case Message::MSG_EVENT:
+                $args = isset($json[4]) ? $json[4] : null;
+                $argsKw = isset($json[5]) ? $json[5] : null;
+
+                return new EventMessage($json[1], $json[2], $json[3], $args, $argsKw);
+            case Message::MSG_REGISTERED:
+                return new RegisteredMessage($json[1], $json[2]);
+            case Message::MSG_INVOCATION:
+                $args = isset($json[4]) ? $json[4] : null;
+                $argsKw = isset($json[5]) ? $json[5] : null;
+
+                return new InvocationMessage($json[1], $json[2], $json[3], $args, $argsKw);
+            case Message::MSG_RESULT:
+                $args = isset($json[3]) ? $json[3] : null;
+                $argsKw = isset($json[4]) ? $json[4] : null;
+
+                return new ResultMessage($json[1], $json[2], $args, $argsKw);
             default:
                 throw new MessageException("Unhandled message type: " . $json[0]);
         }

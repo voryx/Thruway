@@ -3,12 +3,25 @@
 namespace AutobahnPHP\Message;
 
 
-class WelcomeMessage extends Message {
-    const MSG_CODE = Message::MSG_WELCOME;
-
+/**
+ * Class WelcomeMessage
+ * @package AutobahnPHP\Message
+ */
+class WelcomeMessage extends Message
+{
+    /**
+     * @var
+     */
     private $sessionId;
+    /**
+     * @var
+     */
     private $details;
 
+    /**
+     * @param $sessionId
+     * @param $details
+     */
     function __construct($sessionId, $details)
     {
         $this->details = $details;
@@ -19,7 +32,10 @@ class WelcomeMessage extends Message {
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_WELCOME;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -33,11 +49,20 @@ class WelcomeMessage extends Message {
     }
 
     /**
-     * @return array
+     * @return mixed
      */
-    public function getValidConnectionStates()
+    public function getDetails()
     {
-        return array(Wamp2Connection::STATE_NEW);
+        return $this->details;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getSessionId()
+    {
+        return $this->sessionId;
+    }
+
 
 } 

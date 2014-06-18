@@ -12,20 +12,46 @@ namespace AutobahnPHP\Message;
 use AutobahnPHP\Registration;
 use AutobahnPHP\Session;
 
+/**
+ * Class InvocationMessage
+ * @package AutobahnPHP\Message
+ */
 class InvocationMessage extends Message
 {
 
+    /**
+     * @var
+     */
     private $requestId;
 
+    /**
+     * @var
+     */
     private $registrationId;
 
+    /**
+     * @var
+     */
     private $details;
 
+    /**
+     * @var null
+     */
     private $arguments;
 
+    /**
+     * @var null
+     */
     private $argumentsKw;
 
-    function __construct($requestId, $registrationId, $details, $arguments, $argumentsKw)
+    /**
+     * @param $requestId
+     * @param $registrationId
+     * @param $details
+     * @param null $arguments
+     * @param null $argumentsKw
+     */
+    function __construct($requestId, $registrationId, $details, $arguments = null, $argumentsKw = null)
     {
         $this->requestId = $requestId;
         $this->registrationId = $registrationId;
@@ -68,6 +94,11 @@ class InvocationMessage extends Message
         return $a;
     }
 
+    /**
+     * @param CallMessage $msg
+     * @param Registration $registration
+     * @return static
+     */
     static function createMessageFrom(CallMessage $msg, Registration $registration)
     {
         $requestId = Session::getUniqueId();

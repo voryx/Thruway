@@ -12,6 +12,10 @@ namespace AutobahnPHP;
 use AutobahnPHP\Message\CallMessage;
 use AutobahnPHP\Message\InvocationMessage;
 
+/**
+ * Class Call
+ * @package AutobahnPHP
+ */
 class Call
 {
 
@@ -35,6 +39,12 @@ class Call
      */
     private $invocationMessage;
 
+    /**
+     * @param CallMessage $callMessage
+     * @param Session $callerSession
+     * @param InvocationMessage $invocationMessage
+     * @param Session $calleeSession
+     */
     function __construct(CallMessage $callMessage, Session $callerSession, InvocationMessage $invocationMessage, Session $calleeSession)
     {
         $this->callMessage = $callMessage;

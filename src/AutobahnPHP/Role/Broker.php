@@ -9,6 +9,7 @@
 namespace AutobahnPHP\Role;
 
 
+use AutobahnPHP\AbstractSession;
 use AutobahnPHP\Message\ErrorMessage;
 use AutobahnPHP\Message\EventMessage;
 use AutobahnPHP\Message\Message;
@@ -49,11 +50,11 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param Session $session
+     * @param AbstractSession $session
      * @param Message $msg
      * @return mixed|void
      */
-    public function onMessage(Session $session, Message $msg)
+    public function onMessage(AbstractSession $session, Message $msg)
     {
         switch ($msg) {
             case ($msg instanceof PublishMessage):

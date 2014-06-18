@@ -7,6 +7,6 @@ use AutobahnPHP\Peer\Router;
 
 $router = new Router();
 
-$transport = new RatchetTransport($router, "127.0.0.1", 9000);
+$transport = new RatchetTransport($router, "127.0.0.1", 9090);
 
 $transport->startTransport();

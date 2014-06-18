@@ -1,9 +1,10 @@
 <?php
 
 namespace AutobahnPHP\Peer;
+
+use AutobahnPHP\AbstractSession;
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
-use AutobahnPHP\Session;
 
 /**
  * Created by PhpStorm.
@@ -11,14 +12,15 @@ use AutobahnPHP\Session;
  * Date: 6/7/14
  * Time: 11:55 AM
  */
-
-abstract class AbstractPeer {
+abstract class AbstractPeer
+{
 
     /**
-     * @param Session $session
+     * @param AbstractSession $session
      * @param $msg
      */
-    public function onRawMessage(Session $session, $msg) {
+    public function onRawMessage(AbstractSession $session, $msg)
+    {
         echo "Raw message... (" . $msg . ")\n";
 
         $msgObj = Message::createMessageFromRaw($msg);
@@ -26,5 +28,10 @@ abstract class AbstractPeer {
         $this->onMessage($session, $msgObj);
     }
 
-    abstract public function onMessage(Session $session, Message $msg);
+    /**
+     * @param AbstractSession $session
+     * @param Message $msg
+     * @return mixed
+     */
+    abstract public function onMessage(AbstractSession $session, Message $msg);
 }

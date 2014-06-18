@@ -8,11 +8,16 @@
 
 namespace AutobahnPHP\Peer;
 
+use AutobahnPHP\AbstractSession;
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\RealmManager;
 use AutobahnPHP\Session;
 
+/**
+ * Class Router
+ * @package AutobahnPHP\Peer
+ */
 class Router extends AbstractPeer
 {
 
@@ -21,15 +26,26 @@ class Router extends AbstractPeer
      */
     private $realmManager;
 
+    /**
+     * @var
+     */
     private $authenticationProvider;
 
+    /**
+     *
+     */
     function __construct()
     {
         $this->realmManager = new RealmManager();
     }
 
 
-    public function onMessage(Session $session, Message $msg)
+    /**
+     * @param AbstractSession $session
+     * @param Message $msg
+     * @throws \Exception
+     */
+    public function onMessage(AbstractSession $session, Message $msg)
     {
         // see if the session is in a realm
         if ($session->getRealm() === null) {

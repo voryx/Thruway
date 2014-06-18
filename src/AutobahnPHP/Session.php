@@ -12,35 +12,21 @@ namespace AutobahnPHP;
 use AutobahnPHP\Message\Message;
 use Ratchet\ConnectionInterface;
 
-class Session {
-    const STATE_UNKNOWN = 0;
-    const STATE_PRE_HELLO = 1;
-    const STATE_CHALLENGE_SENT = 2;
-    const STATE_UP = 3;
-    const STATE_DOWN = 4;
-
-
-    /**
-     * @var Realm
-     */
-    private $realm;
+/**
+ * Class Session
+ * @package AutobahnPHP
+ */
+class Session extends AbstractSession
+{
 
     /**
-     * @var bool
+     * @var
      */
-    private $authenticated;
-
-    private $state;
-
-    /**
-     * @var \Ratchet\ConnectionInterface
-     */
-    private $transport;
-
-    private $sessionId;
-
     private $authenticationProvider;
 
+    /**
+     * @param ConnectionInterface $transport
+     */
     function __construct(ConnectionInterface $transport)
     {
         $this->transport = $transport;
@@ -49,91 +35,22 @@ class Session {
         $this->realm = null;
     }
 
-    public function sendMessage(Message $msg) {
+    /**
+     * @param Message $msg
+     */
+    public function sendMessage(Message $msg)
+    {
         $this->transport->send($msg->getSerializedMessage());
     }
 
 
-    public function shutdown() {
+    /**
+     *
+     */
+    public function shutdown()
+    {
 
         $this->transport->close();
-    }
-
-    /**
-     * @param mixed $state
-     */
-    public function setState($state)
-    {
-        $this->state = $state;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getState()
-    {
-        return $this->state;
-    }
-
-
-
-    /**
-     * @param boolean $authenticated
-     */
-    public function setAuthenticated($authenticated)
-    {
-        $this->authenticated = $authenticated;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function getAuthenticated()
-    {
-        return $this->authenticated;
-    }
-
-    public function isAuthenticated() {
-        return $this->getAuthenticated();
-    }
-
-    /**
-     * @param \AutobahnPHP\Realm $realm
-     */
-    public function setRealm($realm)
-    {
-        $this->realm = $realm;
-    }
-
-    /**
-     * @return \AutobahnPHP\Realm
-     */
-    public function getRealm()
-    {
-        return $this->realm;
-    }
-
-    static public function getUniqueId()
-    {
-        // TODO: make this better
-        $result = sscanf(uniqid(), "%x");
-        return $result[0];
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSessionId()
-    {
-        return $this->sessionId;
-    }
-
-    /**
-     * @return ConnectionInterface
-     */
-    public function getTransport()
-    {
-        return $this->transport;
     }
 
     /**
@@ -153,10 +70,24 @@ class Session {
     }
 
 
+    /**
+     *
+     */
     public function onClose()
     {
         $this->realm->leave($this);
     }
 
+    /**
+     * Generate a unique id for sessions and requests
+     * @return mixed
+     */
+    static public function getUniqueId()
+    {
+        // TODO: make this better
+        $result = sscanf(uniqid(), "%x");
+
+        return $result[0];
+    }
 
 } 

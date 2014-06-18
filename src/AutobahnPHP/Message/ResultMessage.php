@@ -13,6 +13,10 @@ namespace AutobahnPHP\Message;
  * Class ResultMessage
  * @package AutobahnPHP\Message
  */
+/**
+ * Class ResultMessage
+ * @package AutobahnPHP\Message
+ */
 class ResultMessage extends Message
 {
 
@@ -43,7 +47,7 @@ class ResultMessage extends Message
      * @param $arguments
      * @param $argumentsKw
      */
-    function __construct($requestId, $details, $arguments, $argumentsKw)
+    function __construct($requestId, $details, $arguments = null, $argumentsKw = null)
     {
         $this->requestId = $requestId;
         $this->details = $details;

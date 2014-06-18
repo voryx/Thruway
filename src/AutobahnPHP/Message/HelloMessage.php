@@ -3,15 +3,34 @@
 namespace AutobahnPHP\Message;
 
 
+/**
+ * Class HelloMessage
+ * @package AutobahnPHP\Message
+ */
 class HelloMessage extends Message
 {
-    const MSG_CODE = Message::MSG_HELLO;
-
+    /**
+     * @var
+     */
     private $realm;
+    /**
+     * @var
+     */
     private $details;
+    /**
+     * @var
+     */
     private $roles;
+    /**
+     * @var
+     */
     private $authMethods;
 
+    /**
+     * @param $realm
+     * @param $details
+     * @param $authMethods
+     */
     function __construct($realm, $details, $authMethods)
     {
         $this->setDetails($details);
@@ -33,7 +52,7 @@ class HelloMessage extends Message
      */
     public function getMsgCode()
     {
-        return static::MSG_CODE;
+        return static::MSG_HELLO;
     }
 
     /**
@@ -55,7 +74,7 @@ class HelloMessage extends Message
     {
         $this->details = $details;
 
-        if ($details['roles']) {
+        if (isset($details['roles'])) {
             $this->roles = $details['roles'];
         }
     }

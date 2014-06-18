@@ -9,17 +9,36 @@
 namespace AutobahnPHP\Message;
 
 
+/**
+ * Class CallMessage
+ * @package AutobahnPHP\Message
+ */
 class CallMessage extends Message
 {
 
+    /**
+     * @var
+     */
     private $requestId;
 
+    /**
+     * @var
+     */
     private $options;
 
+    /**
+     * @var
+     */
     private $procedureName;
 
+    /**
+     * @var null
+     */
     private $arguments;
 
+    /**
+     * @var null
+     */
     private $argumentsKw;
 
     /**
@@ -29,7 +48,7 @@ class CallMessage extends Message
      * @param $arguments
      * @param $argumentsKw
      */
-    function __construct($requestId, $options, $procedureName, $arguments, $argumentsKw)
+    function __construct($requestId, $options, $procedureName, $arguments = null, $argumentsKw = null)
     {
         $this->requestId = $requestId;
         $this->options = $options;
@@ -143,7 +162,5 @@ class CallMessage extends Message
     {
         $this->requestId = $requestId;
     }
-
-
 
 }
