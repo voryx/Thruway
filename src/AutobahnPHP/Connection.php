@@ -134,20 +134,17 @@ class Connection implements EventEmitterInterface
     /**
      *
      */
-    public function onClose()
-    {
-        //TODO: destroy it all!!
-
-    }
-
-    /**
-     *
-     */
     public function open()
     {
         $this->transport->startTransport();
     }
 
+    /**
+     *
+     */
+    public function close(){
+        $this->session->close();
+    }
 
     /**** Setters and Getters ****/
     /**

@@ -78,8 +78,9 @@ class ClientSession extends AbstractSession
      * @param $arguments
      * @return \React\Promise\Promise
      */
-    public function call($procedureName, $arguments){
-       return $this->peer->getCaller()->call($procedureName, $arguments);
+    public function call($procedureName, $arguments)
+    {
+        return $this->peer->getCaller()->call($procedureName, $arguments);
     }
 
     /**
@@ -97,6 +98,14 @@ class ClientSession extends AbstractSession
     public function setSessionId($sessionId)
     {
         $this->sessionId = $sessionId;
+    }
+
+    /**
+     * TODO: Need to send goodbye message
+     */
+    public function close()
+    {
+        $this->conn->close();
     }
 
 }
