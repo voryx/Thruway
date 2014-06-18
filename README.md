@@ -58,16 +58,24 @@ $connection = new Connection(
     )
 );
 
-$connection->on('open', function (ClientSession $session) {
+$connection->on('open',function (ClientSession $session) {
 
         // 1) subscribe to a topic
         $onevent = function ($args) {
-            echo "Event {$args[0]}";
+            echo "Event {$args[0]}\n";
         };
         $session->subscribe('com.myapp.hello', $onevent);
 
         // 2) publish an event
-        $session->publish('com.myapp.hello', array('Hello, world from PHP!!!'));
+        $session->publish('com.myapp.hello', array('Hello, world from PHP!!!'), [], ["acknowledge" => true])->then(
+            function () {
+                echo "Publish Acknowledged!\n";
+            },
+            function ($error) {
+                // publish failed
+                echo "Publish Error {$error}\n";
+            }
+        );
 
         // 3) register a procedure for remoting
         $add2 = function ($args) {
@@ -78,7 +86,10 @@ $connection->on('open', function (ClientSession $session) {
         // 4) call a remote procedure
         $session->call('com.myapp.add2', array(2, 3))->then(
             function ($res) {
-                echo "Result: {$res}";
+                echo "Result: {$res}\n";
+            },
+            function ($error) {
+                echo "Call Error: {$error}\n";
             }
         );
     }
