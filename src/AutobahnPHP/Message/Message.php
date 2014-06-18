@@ -118,8 +118,6 @@ abstract class Message
                 $argsKw = isset($json[4]) ? $json[4] : null;
 
                 return new YieldMessage($json[1], $json[2], $args, $argsKw);
-//            case Message::MSG_ERROR:
-//                return new ErrorMessage($json[1], $json[2]);
             case Message::MSG_WELCOME:
                 return new WelcomeMessage($json[1], $json[2]);
             case Message::MSG_SUBSCRIBED:
@@ -141,6 +139,10 @@ abstract class Message
                 $argsKw = isset($json[4]) ? $json[4] : null;
 
                 return new ResultMessage($json[1], $json[2], $args, $argsKw);
+            case Message::MSG_PUBLISHED:
+                return new PublishedMessage($json[1], $json[2]);
+            case Message::MSG_ERROR:
+                return new ErrorMessage($json[1], $json[2], $json[3], $json[4]);
             default:
                 throw new MessageException("Unhandled message type: " . $json[0]);
         }
