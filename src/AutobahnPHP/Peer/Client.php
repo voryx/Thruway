@@ -115,6 +115,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * @param \AutobahnPHP\AbstractSession $session
      * @param Message $msg
+     * @return mixed|void
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
@@ -127,9 +128,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
                 break;
             case ($msg instanceof AbortMessage):
                 $this->processAbort($session, $msg);
-                break;
-            case ($msg instanceof ErrorMessage):
-                $this->processError($session, $msg);
                 break;
             case ($msg instanceof GoodbyeMessage):
                 $this->processGoodbye($session, $msg);
@@ -173,15 +171,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
         // $this->emit('challenge', array($session, $msg->getAuthMethod(), array()));
 
 
-    }
-
-    /**
-     * @param ClientSession $session
-     * @param ErrorMessage $msg
-     */
-    public function processError(ClientSession $session, ErrorMessage $msg)
-    {
-        //TODO:  Implement this
     }
 
     /**
