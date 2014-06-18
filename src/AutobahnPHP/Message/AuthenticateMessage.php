@@ -30,14 +30,6 @@ class AuthenticateMessage extends Message {
     }
 
     /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        // TODO: Implement getValidConnectionStates() method.
-    }
-
-    /**
      * @return mixed
      */
     public function getSignature()

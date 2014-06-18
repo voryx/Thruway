@@ -76,14 +76,6 @@ class ErrorMessage extends Message
     }
 
     /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ALL);
-    }
-
-    /**
      * @param mixed $details
      * @return $this
      */

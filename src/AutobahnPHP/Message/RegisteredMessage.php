@@ -8,9 +8,6 @@
 
 namespace AutobahnPHP\Message;
 
-
-use Voryx\Wamp2\Wamp2Connection;
-
 class RegisteredMessage extends Message
 {
     /**
@@ -50,14 +47,6 @@ class RegisteredMessage extends Message
     public function getAdditionalMsgFields()
     {
         return array($this->getRequestId(), $this->getRegistrationId());
-    }
-
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
     }
 
     /**

@@ -50,14 +50,6 @@ class PublishMessage extends Message {
     }
 
     /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
-    }
-
-    /**
      * @param mixed $arguments
      */
     public function setArguments($arguments)

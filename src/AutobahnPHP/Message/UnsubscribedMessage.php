@@ -30,13 +30,4 @@ class UnsubscribedMessage extends Message {
         return array($this->getRequestId());
     }
 
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        // TODO: Implement getValidConnectionStates() method.
-    }
-
-
-} 
+}

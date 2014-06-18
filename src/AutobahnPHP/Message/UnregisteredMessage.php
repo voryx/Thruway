@@ -8,9 +8,6 @@
 
 namespace AutobahnPHP\Message;
 
-
-use Voryx\Wamp2\Wamp2Connection;
-
 class UnregisteredMessage extends Message
 {
 
@@ -41,11 +38,4 @@ class UnregisteredMessage extends Message
         return array($this->getRequestId());
     }
 
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
-    }
 }

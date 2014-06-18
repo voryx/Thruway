@@ -63,13 +63,4 @@ class GoodbyeMessage extends Message {
         return array($this->getDetails(), $this->getReason());
     }
 
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ALL);
-    }
-
-
 } 
