@@ -9,10 +9,10 @@
 namespace AutobahnPHP\Message;
 
 
-/**
- * Class YieldMessage
- * @package AutobahnPHP\Message
- */
+    /**
+     * Class YieldMessage
+     * @package AutobahnPHP\Message
+     */
 /**
  * Class YieldMessage
  * @package AutobahnPHP\Message
@@ -73,7 +73,16 @@ class YieldMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getRequestId(), $this->getOptions(), $this->getArguments(), $this->getArgumentsKw());
+        $a = array($this->getRequestId(), $this->getOptions());
+
+        if ($this->getArguments() != null) {
+            $a = array_merge($a, array($this->getArguments()));
+            if ($this->getArgumentsKw()) {
+                $a = array_merge($a, array($this->getArgumentsKw()));
+            }
+        }
+
+        return $a;
     }
 
     /**
@@ -139,7 +148,6 @@ class YieldMessage extends Message
     {
         $this->requestId = $requestId;
     }
-
 
 
 }

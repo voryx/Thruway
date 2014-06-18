@@ -1,4 +1,4 @@
-AutobahnPHP
+AutobahnPHP (suggest a new name for us)
 ===========
 
 AutobahnPHP is a Client and Server Library that aims to be compatible with the [Autobahn project](http://autobahn.ws/) 
@@ -36,6 +36,7 @@ Start the WAMP server
 AutobahnPHP is now running on 127.0.0.1 port 9000 
 
 ### PHP Client Example (alpha)
+If you want to run this php client against the autobahn.py server, take a look at this [PR](https://github.com/ratchetphp/Pawl/pull/5).
 
 ```php
 <?php

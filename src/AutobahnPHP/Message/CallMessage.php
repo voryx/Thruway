@@ -53,8 +53,8 @@ class CallMessage extends Message
         $this->requestId = $requestId;
         $this->options = $options;
         $this->procedureName = $procedureName;
-        $this->arguments = $arguments;
-        $this->argumentsKw = $argumentsKw;
+        $this->arguments = $arguments ? $arguments : new \stdClass();
+        $this->argumentsKw = $argumentsKw ? $argumentsKw : new \stdClass();
     }
 
 
@@ -74,13 +74,20 @@ class CallMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array(
-            $this->requestId,
-            $this->options,
-            $this->procedureName,
-            $this->arguments,
-            $this->argumentsKw
+        $a = array(
+            $this->getRequestId(),
+            $this->getOptions(),
+            $this->getProcedureName(),
         );
+
+        if ($this->getArguments() != null) {
+            $a = array_merge($a, array($this->getArguments()));
+            if ($this->getArgumentsKw()) {
+                $a = array_merge($a, array($this->getArgumentsKw()));
+            }
+        }
+
+        return $a;
     }
 
     /**

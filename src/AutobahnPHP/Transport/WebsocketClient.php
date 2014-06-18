@@ -75,7 +75,7 @@ class WebsocketClient extends AbstractTransport implements EventEmitterInterface
     {
         echo "Starting Transport\n";
 
-        $this->connector->__invoke($this->URL)->then(
+        $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
                 $this->session = new ClientSession($conn, $this->peer);
                 $this->emit('connect', array($this->session));
