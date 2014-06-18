@@ -1,4 +1,4 @@
-AutobahnPHP (suggest a new name for us)
+AutobahnPHP
 ===========
 
 AutobahnPHP is a Client and Server Library that aims to be compatible with the [Autobahn project](http://autobahn.ws/) 
@@ -93,4 +93,6 @@ $connection->open();
 For the client, you can use [AutobahnJS](https://github.com/tavendo/AutobahnJS) or any other WAMPv2 compatible client.
 
 Here are some [examples] (https://github.com/tavendo/AutobahnJS#show-me-some-code)
+
+Here's a [plunker](http://plnkr.co/edit/8vcBDUzIhp48JtuTGIaj?p=info) that will allow you to run some tests against a local server 
 
