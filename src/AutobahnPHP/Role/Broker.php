@@ -95,8 +95,9 @@ class Broker extends AbstractRole
         $options = $msg->getOptions();
         if (is_array($options)) {
             if (isset($options['acknowledge']) && $options['acknowledge'] == true) {
+                $publicationId = Session::getUniqueId();
                 $session->sendMessage(
-                    new PublishedMessage($msg->getTopicName(), $msg->getRequestId())
+                    new PublishedMessage($msg->getRequestId(), $publicationId)
                 );
             }
         }
