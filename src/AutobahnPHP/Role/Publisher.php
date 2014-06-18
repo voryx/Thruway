@@ -14,6 +14,7 @@ use AutobahnPHP\ClientSession;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\Message\PublishMessage;
 use AutobahnPHP\Session;
+use React\Promise\Deferred;
 
 /**
  * Class Publisher
@@ -60,15 +61,23 @@ class Publisher extends AbstractRole
     /**
      * @param $topicName
      * @param $arguments
+     * @return \React\Promise\Promise
      */
-    public function publish($topicName, $arguments)
+    public function publish($topicName, $arguments, $argumentsKw, $options)
     {
         $requestId = Session::getUniqueId();
-        $options = new \stdClass();
 
-        $publishMsg = new PublishMessage($requestId, $options, $topicName, $arguments);
+        if (isset($options['acknowledge']) && $options['acknowledge'] === true) {
+            $futureResult = new Deferred();
+            $this->publishRequests[$requestId] = ['future_result' => $futureResult];
+        }
+
+
+        $publishMsg = new PublishMessage($requestId, $options, $topicName, $arguments, $argumentsKw);
 
         $this->session->sendMessage($publishMsg);
+
+        return isset($futureResult) ? $futureResult->promise() : false;
     }
 
 } 
