@@ -6,14 +6,15 @@ namespace AutobahnPHP\Message;
 class PublishedMessage extends Message {
     const MSG_CODE = Message::MSG_PUBLISHED;
 
-    private $subscriptionId;
+    private $requestId;
 
     private $publicationId;
 
-    function __construct($subscriptionId, $publicationId)
+    function __construct($requestId, $publicationId)
     {
+        $this->requestId = $requestId;
         $this->publicationId = $publicationId;
-        $this->subscriptionId = $subscriptionId;
+
     }
 
 
@@ -39,20 +40,22 @@ class PublishedMessage extends Message {
     }
 
     /**
-     * @param mixed $subscriptionId
+     * @return mixed
      */
-    public function setSubscriptionId($subscriptionId)
+    public function getRequestId()
     {
-        $this->subscriptionId = $subscriptionId;
+        return $this->requestId;
     }
 
     /**
-     * @return mixed
+     * @param mixed $requestId
      */
-    public function getSubscriptionId()
+    public function setRequestId($requestId)
     {
-        return $this->subscriptionId;
+        $this->requestId = $requestId;
     }
+
+
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -62,7 +65,7 @@ class PublishedMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getSubscriptionId(), $this->getPublicationId());
+        return array($this->getRequestId(), $this->getPublicationId());
     }
 
 }
