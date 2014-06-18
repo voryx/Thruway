@@ -35,14 +35,6 @@ class SubscribeMessage extends Message {
     }
 
     /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
-    }
-
-    /**
      * @param mixed $options
      */
     public function setOptions($options)

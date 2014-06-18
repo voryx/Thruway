@@ -65,13 +65,4 @@ class AbortMessage extends Message {
         return array($this->getDetails(), $this->getResponseURI());
     }
 
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
-    }
-
-
-} 
+}

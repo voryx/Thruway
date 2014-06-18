@@ -39,15 +39,6 @@ class HelloMessage extends Message
     }
 
     /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_NEW);
-    }
-
-
-    /**
      * @return int
      */
     public function getMsgCode()

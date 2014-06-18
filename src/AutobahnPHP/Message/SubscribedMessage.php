@@ -51,12 +51,4 @@ class SubscribedMessage extends Message {
         return array($this->getRequestId(), $this->getSubscriptionId());
     }
 
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
-    }
-
-} 
+}

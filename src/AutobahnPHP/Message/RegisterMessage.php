@@ -2,9 +2,6 @@
 
 namespace AutobahnPHP\Message;
 
-
-use Voryx\Wamp2\Wamp2Connection;
-
 class RegisterMessage extends Message
 {
 

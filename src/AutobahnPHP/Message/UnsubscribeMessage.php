@@ -49,13 +49,4 @@ class UnsubscribeMessage extends Message {
     {
         // TODO: Implement getAdditionalMsgFields() method.
     }
-
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        // TODO: Implement getValidConnectionStates() method.
-    }
-
-} 
+}

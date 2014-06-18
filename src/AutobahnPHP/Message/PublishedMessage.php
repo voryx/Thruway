@@ -65,13 +65,4 @@ class PublishedMessage extends Message {
         return array($this->getSubscriptionId(), $this->getPublicationId());
     }
 
-    /**
-     * @return array
-     */
-    public function getValidConnectionStates()
-    {
-        return array(Wamp2Connection::STATE_ESTABLISHED);
-    }
-
-
-} 
+}
