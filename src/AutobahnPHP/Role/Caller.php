@@ -33,7 +33,7 @@ class Caller extends AbstractRole
     /**
      * @var array
      */
-    private $calls;
+    private $callRequests;
 
     /**
      * @param $session
@@ -41,7 +41,7 @@ class Caller extends AbstractRole
     function __construct($session)
     {
         $this->session = $session;
-        $this->calls = array();
+        $this->callRequests = array();
     }
 
     /**
@@ -67,13 +67,13 @@ class Caller extends AbstractRole
      */
     public function processResult(ClientSession $session, ResultMessage $msg)
     {
-        foreach ($this->calls as $call) {
-            if ($call['request_id'] == $msg->getRequestId()) {
-                /* @var $futureResult Deferred */
-                $futureResult = $call['future_result'];
-                $futureResult->resolve($msg->getArguments()[0]);
-            }
+        if (isset($this->callRequests[$msg->getRequestId()])) {
+            /* @var $futureResult Deferred */
+            $futureResult = $this->callRequests[$msg->getRequestId()]['future_result'];
+            $futureResult->resolve($msg->getArguments()[0]);
+            unset($this->callRequests[$msg->getRequestId()]);
         }
+    }
 
     }
 
@@ -100,9 +100,8 @@ class Caller extends AbstractRole
         $futureResult = new Deferred();
 
         $requestId = Session::getUniqueId();
-        $call = ["procedure_name" => $procedureName, "request_id" => $requestId, "future_result" => $futureResult];
 
-        array_push($this->calls, $call);
+        $this->callRequests[$requestId] = ["procedure_name" => $procedureName, "future_result" => $futureResult];
 
         $options = new \stdClass();
 
