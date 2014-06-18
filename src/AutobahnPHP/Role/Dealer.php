@@ -246,16 +246,21 @@ class Dealer extends AbstractRole
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMessages = array(
+        $handledMsgCodes = array(
             Message::MSG_CALL,
-            Message::MSG_ERROR,
             Message::MSG_CANCEL,
             Message::MSG_REGISTER,
             Message::MSG_UNREGISTER,
             Message::MSG_YIELD
         );
 
-        return in_array($msg->getMsgCode(), $handledMessages);
+        if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
+            return true;
+        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_INVOCATION) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

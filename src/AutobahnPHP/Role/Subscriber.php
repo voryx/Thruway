@@ -106,13 +106,19 @@ class Subscriber extends AbstractRole
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMessages = array(
+        $handledMsgCodes = array(
             Message::MSG_SUBSCRIBED,
             Message::MSG_UNSUBSCRIBED,
             Message::MSG_EVENT
         );
 
-        return in_array($msg->getMsgCode(), $handledMessages);
+        if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
+            return true;
+        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_SUBSCRIBE) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

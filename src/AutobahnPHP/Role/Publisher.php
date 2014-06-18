@@ -11,6 +11,7 @@ namespace AutobahnPHP\Role;
 
 use AutobahnPHP\AbstractSession;
 use AutobahnPHP\ClientSession;
+use AutobahnPHP\Message\ErrorMessage;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\Message\PublishedMessage;
 use AutobahnPHP\Message\PublishMessage;
@@ -49,10 +50,12 @@ class Publisher extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        // TODO: Implement onMessage() method.
         switch ($msg) {
             case ($msg instanceof PublishedMessage):
                 $this->processPublished($session, $msg);
+                break;
+            case ($msg instanceof ErrorMessage):
+                $this->processError($session, $msg);
                 break;
             default:
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
@@ -72,6 +75,20 @@ class Publisher extends AbstractRole
             unset($this->publishRequests[$msg->getRequestId()]);
         }
     }
+
+
+    /**
+     * @param ClientSession $session
+     * @param ErrorMessage $msg
+     */
+    public function processError(ClientSession $session, ErrorMessage $msg)
+    {
+        if (isset($this->publishRequests[$msg->getRequestId()])) {
+            /* @var $futureResult Deferred */
+            $futureResult = $this->publishRequests[$msg->getRequestId()]["future_result"];
+            $futureResult->reject($msg->getErrorMsgCode());
+            unset($this->publishRequests[$msg->getRequestId()]);
+        }
     }
 
     /**
@@ -80,11 +97,18 @@ class Publisher extends AbstractRole
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMessages = array(
+        $handledMsgCodes = array(
             Message::MSG_PUBLISHED,
         );
 
-        return in_array($msg->getMsgCode(), $handledMessages);
+        if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
+            return true;
+        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_PUBLISH) {
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
     /**

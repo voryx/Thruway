@@ -63,6 +63,9 @@ class Callee extends AbstractRole
             case ($msg instanceof InvocationMessage):
                 $this->processInvocation($session, $msg);
                 break;
+            case ($msg instanceof ErrorMessage):
+                $this->processError($session, $msg);
+                break;
             default:
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
         }
@@ -111,18 +114,41 @@ class Callee extends AbstractRole
     }
 
     /**
+     * @param ClientSession $session
+     * @param ErrorMessage $msg
+     */
+    public function processError(ClientSession $session, ErrorMessage $msg){
+        foreach ($this->registrations as $key => $registration) {
+            if ($registration["request_id"] === $msg->getRequestId()) {
+
+                //TODO: actually do something with this error
+
+                unset($this->registrations[$key]);
+                break;
+            }
+        }
+    }
+
+    /**
      * @param Message $msg
      * @return mixed
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMessages = array(
+
+        $handledMsgCodes = array(
             Message::MSG_REGISTERED,
             Message::MSG_UNREGISTERED,
             Message::MSG_INVOCATION,
         );
 
-        return in_array($msg->getMsgCode(), $handledMessages);
+        if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
+            return true;
+        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_REGISTER) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

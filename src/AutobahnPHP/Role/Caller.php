@@ -55,7 +55,9 @@ class Caller extends AbstractRole
             case ($msg instanceof ResultMessage):
                 $this->processResult($session, $msg);
                 break;
-
+            case ($msg instanceof ErrorMessage):
+                $this->processError($session, $msg);
+                break;
             default:
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
         }
@@ -75,6 +77,18 @@ class Caller extends AbstractRole
         }
     }
 
+    /**
+     * @param ClientSession $session
+     * @param ErrorMessage $msg
+     */
+    public function processError(ClientSession $session, ErrorMessage $msg)
+    {
+        if (isset($this->callRequests[$msg->getRequestId()])) {
+            /* @var $futureResult Deferred */
+            $futureResult = $this->callRequests[$msg->getRequestId()]['future_result'];
+            $futureResult->reject($msg->getErrorURI());
+            unset($this->callRequests[$msg->getRequestId()]);
+        }
     }
 
     /**
@@ -83,11 +97,18 @@ class Caller extends AbstractRole
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMessages = array(
+
+        $handledMsgCodes = array(
             Message::MSG_RESULT,
         );
 
-        return in_array($msg->getMsgCode(), $handledMessages);
+        if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
+            return true;
+        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_CALL) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
