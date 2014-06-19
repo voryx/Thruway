@@ -15,13 +15,13 @@ use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\Factory;
-use React\Socket\ConnectionInterface;
+use React\EventLoop\LoopInterface;
 
 /**
  * Class WebsocketClient
  * @package AutobahnPHP\Transport
  */
-class WebsocketClient extends AbstractTransport implements EventEmitterInterface
+class PawlTransportProvider extends AbstractTransportProvider implements EventEmitterInterface
 {
     use EventEmitterTrait;
 
@@ -50,20 +50,12 @@ class WebsocketClient extends AbstractTransport implements EventEmitterInterface
      */
     private $session;
 
-    /**
-     * @param string $URL
-     * @param AbstractPeer $peer
-     */
-    function __construct($URL = "ws://127.0.0.1:9090/", AbstractPeer $peer)
+    function __construct($URL = "ws://127.0.0.1:9090/")
     {
 
-        $this->peer = $peer;
+        $this->peer = null;
 
         $this->URL = $URL;
-
-        $this->loop = Factory::create();
-        $this->connector = new \Ratchet\Client\Factory($this->loop);
-
         $this->session = null;
 
     }
@@ -71,27 +63,37 @@ class WebsocketClient extends AbstractTransport implements EventEmitterInterface
     /**
      *
      */
-    function startTransport()
+    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
         echo "Starting Transport\n";
 
+        $this->peer = $peer;
+
+        $this->loop = $loop;
+
+        $this->connector = new \Ratchet\Client\Factory($this->loop);
+
+
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
-                $this->session = new ClientSession($conn, $this->peer);
-                $this->emit('connect', array($this->session));
+                //$this->session = new ClientSession($conn, $this->peer);
+
+                $transport = new PawlTransport($conn);
+
+                $this->peer->onOpen($transport);
 
                 $conn->on(
                     'message',
-                    function ($msg) {
+                    function ($msg) use ($transport) {
                         echo "Received: {$msg}\n";
-                        $this->peer->onRawMessage($this->session, $msg);
+                        $this->peer->onRawMessage($transport, $msg);
                     }
                 );
 
                 $conn->on(
                     'close',
-                    function ($conn) {
-                        $this->emit('close', array("closed"));
+                    function ($conn) use ($transport) {
+                        $this->peer->onClose($transport);
                     }
                 );
             },
@@ -101,8 +103,6 @@ class WebsocketClient extends AbstractTransport implements EventEmitterInterface
                 $this->loop->stop();
             }
         );
-
-        $this->loop->run();
     }
 
 
@@ -122,4 +122,5 @@ class WebsocketClient extends AbstractTransport implements EventEmitterInterface
     {
         $this->peer = $peer;
     }
+
 }

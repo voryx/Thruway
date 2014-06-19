@@ -24,8 +24,12 @@ use AutobahnPHP\Role\Caller;
 use AutobahnPHP\Role\Publisher;
 use AutobahnPHP\Role\Subscriber;
 use AutobahnPHP\Session;
+use AutobahnPHP\Transport\AbstractTransportProvider;
+use AutobahnPHP\Transport\TransportInterface;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
+use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
 
 /**
  * Class Client
@@ -60,13 +64,35 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $subscriber;
 
-    /**
-     * @param null $onChallenge
-     */
-    function __construct($onChallenge = null)
-    {
 
+    /**
+     * @var AbstractTransportProvider
+     */
+    private $transportProvider;
+
+    /**
+     * @var ClientSession
+     */
+    private $session;
+
+    /**
+     * @var \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|\React\EventLoop\LoopInterface|\React\EventLoop\StreamSelectLoop
+     */
+    private $loop;
+
+    private $realm;
+
+    function __construct($realm, LoopInterface $loop = null)
+    {
+        $this->transportProvider = null;
         $this->roles = array();
+        $this->realm = $realm;
+
+        if ($loop === null) {
+            $loop = Factory::create();
+        }
+
+        $this->loop = $loop;
     }
 
     /**
@@ -109,20 +135,34 @@ class Client extends AbstractPeer implements EventEmitterInterface
             ]
         ];
 
+        $this->addRole(new Callee($session))
+            ->addRole(new Caller($session))
+            ->addRole(new Publisher($session))
+            ->addRole(new Subscriber($session));
+
+        $session->setRealm($this->realm);
+
         $session->sendMessage(new HelloMessage($session->getRealm(), $details, array()));
     }
 
-    /**
-     * @param \AutobahnPHP\AbstractSession $session
-     * @param Message $msg
-     * @return mixed|void
-     */
-    public function onMessage(AbstractSession $session, Message $msg)
+    public function onOpen(TransportInterface $transport)
+    {
+        if ($this->session !== null) {
+            throw new \Exception("There is already an attached session?");
+        }
+        $session = new ClientSession($transport, $this);
+        $this->session = $session;
+        $this->startSession($session);
+    }
+
+    public function onMessage(TransportInterface $transport, Message $msg)
     {
 
         echo "Client onMessage!\n";
 
-        switch ($msg) {
+        $session = $this->session;
+
+        switch (true) {
             case ($msg instanceof WelcomeMessage):
                 $this->processWelcome($session, $msg);
                 break;
@@ -241,6 +281,29 @@ class Client extends AbstractPeer implements EventEmitterInterface
         return $this->roles;
     }
 
+    public function addTransportProvider(AbstractTransportProvider $transportProvider)
+    {
+        if ($this->transportProvider !== null) {
+            throw new \Exception("You can only have one transport provider for a client");
+        }
+        $this->transportProvider = $transportProvider;
+    }
 
+    public function start()
+    {
+        $this->transportProvider->startTransportProvider($this, $this->loop);
 
-} 
+        $this->loop->run();
+    }
+
+    public function onClose(TransportInterface $transport) {
+
+        $this->session->onClose();
+
+//        $loop = $this->loop;
+//
+//        $this->loop->addTimer(60, function () use ($loop) {
+//                // add another time on fail
+//            } );
+    }
+}

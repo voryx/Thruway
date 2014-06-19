@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: matt
  * Date: 6/9/14
- * Time: 3:47 PM
+ * Time: 5:18 PM
  */
 
 namespace AutobahnPHP\Transport;
@@ -11,10 +11,57 @@ namespace AutobahnPHP\Transport;
 use AutobahnPHP\Peer\AbstractPeer;
 use AutobahnPHP\Session;
 use Ratchet\ConnectionInterface;
+use Ratchet\Http\HttpServer;
 use Ratchet\MessageComponentInterface;
+use Ratchet\Server\IoServer;
+use Ratchet\WebSocket\WsServer;
 use Ratchet\WebSocket\WsServerInterface;
+use React\EventLoop\LoopInterface;
+use React\Socket\Server as Reactor;
 
-class RatchetServer implements MessageComponentInterface, WsServerInterface {
+class RatchetTransportProvider extends AbstractTransportProvider implements MessageComponentInterface, WsServerInterface {
+
+    /**
+     * @var AbstractPeer
+     */
+    private $peer;
+    private $address;
+    private $port;
+    private $loop;
+    private $server;
+
+    /**
+     * @var \SplObjectStorage
+     */
+    private $transports;
+
+
+    function __construct($address = "127.0.0.1", $port = 8080) {
+        $this->peer = null;
+        $this->port = $port;
+        $this->address = $address;
+        $this->transports = new \SplObjectStorage();
+
+    }
+
+    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop) {
+        $this->peer = $peer;
+        $this->loop = $loop;
+
+        $ws = new WsServer($this);
+        $ws->disableVersion(0);
+
+        $socket = new Reactor($this->loop);
+        $socket->listen($this->port, $this->address);
+
+        $this->server = new IoServer(new HttpServer($ws), $socket, $this->loop);
+    }
+
+
+    /*
+    Interface stuff
+    */
+
     /**
      * If any component in a stack supports a WebSocket sub-protocol return each supported in an array
      * @return array
@@ -23,23 +70,6 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
     function getSubProtocols()
     {
         return array('wamp.2.json');
-    }
-
-    /**
-     * @var AbstractPeer
-     */
-    private $peer;
-
-    /**
-     * @var \SplObjectStorage
-     */
-    private $sessions;
-
-
-    function __construct(AbstractPeer $peer)
-    {
-        $this->peer = $peer;
-        $this->sessions = new \SplObjectStorage();
     }
 
 
@@ -52,11 +82,15 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
     {
         echo "onOpen...\n";
 
-        $session = new Session($conn);
+        $transport = new RatchetTransport($conn);
 
-        // TODO: add transport auth stuff to the session
+        $this->transports->attach($conn, $transport);
 
-        $this->sessions->attach($conn, $session);
+        $this->peer->onOpen($transport);
+
+//        $session = new Session($conn);
+//
+//        $this->sessions->attach($conn, $session);
     }
 
     /**
@@ -66,11 +100,12 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
      */
     function onClose(ConnectionInterface $conn)
     {
-        /* @var $session Session */
-        $session = $this->sessions[$conn];
+        /* @var $transport RatchetTransport */
+        $transport = $this->transports[$conn];
 
-        $this->sessions->detach($conn);
-        $session->onClose();
+        $this->transports->detach($conn);
+
+        $this->peer->onClose($transport);
 
         echo "onClose...\n";
     }
@@ -97,9 +132,10 @@ class RatchetServer implements MessageComponentInterface, WsServerInterface {
     function onMessage(ConnectionInterface $from, $msg)
     {
         echo "onMessage...(" . $msg . "\n";
-        $session = $this->sessions[$from];
+        $transport = $this->transports[$from];
 
-        $this->peer->onRawMessage($session, $msg);
+        // TODO: Should deserialize in here
+        $this->peer->onRawMessage($transport, $msg);
     }
 
 } 

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daviddan
- * Date: 6/12/14
- * Time: 12:36 PM
- */
 
 namespace AutobahnPHP\Message;
 

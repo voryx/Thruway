@@ -6,11 +6,13 @@ if (file_exists(__DIR__.'/../../../autoload.php')) {
     require __DIR__.'/../vendor/autoload.php';
 }
 
-use AutobahnPHP\Transport\RatchetTransport;
 use AutobahnPHP\Peer\Router;
+use AutobahnPHP\Transport\RatchetTransportProvider;
 
 $router = new Router();
 
-$transport = new RatchetTransport($router, "127.0.0.1", 9090);
+$transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
 
-$transport->startTransport();
+$router->addTransportProvider($transportProvider);
+
+$router->start();

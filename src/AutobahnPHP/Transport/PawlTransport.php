@@ -2,19 +2,21 @@
 /**
  * Created by PhpStorm.
  * User: matt
- * Date: 6/18/14
- * Time: 10:36 PM
+ * Date: 6/19/14
+ * Time: 12:03 AM
  */
 
 namespace AutobahnPHP\Transport;
 
 
 use AutobahnPHP\Message\Message;
+use Ratchet\Client\WebSocket;
 use Ratchet\ConnectionInterface;
 
-class RatchetTransport implements TransportInterface {
+class PawlTransport implements TransportInterface {
+
     /**
-     * @var ConnectionInterface
+     * @var WebSocket
      */
     private $conn;
 
@@ -22,6 +24,7 @@ class RatchetTransport implements TransportInterface {
     {
         $this->conn = $conn;
     }
+
 
     public function sendMessage(Message $msg)
     {

@@ -10,6 +10,7 @@ namespace AutobahnPHP;
 
 
 use AutobahnPHP\Message\Message;
+use AutobahnPHP\Transport\TransportInterface;
 use Ratchet\ConnectionInterface;
 
 /**
@@ -24,10 +25,9 @@ class Session extends AbstractSession
      */
     private $authenticationProvider;
 
-    /**
-     * @param ConnectionInterface $transport
-     */
-    function __construct(ConnectionInterface $transport)
+
+
+    function __construct(TransportInterface $transport)
     {
         $this->transport = $transport;
         $this->state = static::STATE_PRE_HELLO;
@@ -35,18 +35,11 @@ class Session extends AbstractSession
         $this->realm = null;
     }
 
-    /**
-     * @param Message $msg
-     */
     public function sendMessage(Message $msg)
     {
-        $this->transport->send($msg->getSerializedMessage());
+        $this->transport->sendMessage($msg);
     }
 
-
-    /**
-     *
-     */
     public function shutdown()
     {
 
@@ -75,7 +68,9 @@ class Session extends AbstractSession
      */
     public function onClose()
     {
-        $this->realm->leave($this);
+        if ($this->realm !== null) {
+            $this->realm->leave($this);
+        }
     }
 
     /**

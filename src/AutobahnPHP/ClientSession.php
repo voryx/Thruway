@@ -13,6 +13,7 @@ use AutobahnPHP\Message\AbortMessage;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\Peer\AbstractPeer;
 use AutobahnPHP\Peer\Client;
+use AutobahnPHP\Transport\TransportInterface;
 use Ratchet\Client\WebSocket;
 
 /**
@@ -23,25 +24,15 @@ class ClientSession extends AbstractSession
 {
 
 
-    /**
-     * @var \Ratchet\Client\WebSocket
-     */
-    private $conn;
 
     /**
      * @var Client
      */
     private $peer;
 
-    /**
-     * @param WebSocket $conn
-     * @param Peer\AbstractPeer $peer
-     * @internal param null $onChallenge callback
-     */
-
-    function __construct(WebSocket $conn, AbstractPeer $peer)
+    function __construct(TransportInterface $transport, AbstractPeer $peer)
     {
-        $this->conn = $conn;
+        $this->transport = $transport;
         $this->peer = $peer;
     }
 
@@ -54,11 +45,6 @@ class ClientSession extends AbstractSession
         $this->peer->getSubscriber()->subscribe($topicName, $callback);
     }
 
-    /**
-     * @param $topicName
-     * @param $arguments
-     * @return \React\Promise\Promise
-     */
     public function publish($topicName, $arguments, $argumentsKw = null, $options = null)
     {
         return $this->peer->getPublisher()->publish($topicName, $arguments, $argumentsKw, $options);
@@ -89,7 +75,7 @@ class ClientSession extends AbstractSession
      */
     public function sendMessage(Message $msg)
     {
-        $this->conn->send($msg->getSerializedMessage());
+        $this->transport->sendMessage($msg);
     }
 
     /**
@@ -105,7 +91,11 @@ class ClientSession extends AbstractSession
      */
     public function close()
     {
-        $this->conn->close();
+        $this->transport->close();
+    }
+
+    public function onClose() {
+
     }
 
 }
