@@ -33,10 +33,9 @@ Start the WAMP server
 
       $ php vendor/voryx/autobahnphp/Examples/SimpleWsServer.php
     
-AutobahnPHP is now running on 127.0.0.1 port 9000 
+AutobahnPHP is now running on 127.0.0.1 port 9090 
 
 ### PHP Client Example (alpha)
-If you want to run this php client against the autobahn.py server, take a look at this [PR](https://github.com/ratchetphp/Pawl/pull/5).
 
 ```php
 <?php
