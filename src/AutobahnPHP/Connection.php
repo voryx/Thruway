@@ -10,14 +10,11 @@ namespace AutobahnPHP;
 
 
 use AutobahnPHP\Peer\Client;
-use AutobahnPHP\Role\Callee;
-use AutobahnPHP\Role\Caller;
-use AutobahnPHP\Role\Publisher;
-use AutobahnPHP\Role\Subscriber;
-use AutobahnPHP\Transport\WebsocketClient;
+use AutobahnPHP\Transport\PawlTransportProvider;
+use AutobahnPHP\Transport\TransportInterface;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
-use React\Socket\ConnectionInterface;
+
 
 /**
  * Class Connection
@@ -28,10 +25,6 @@ class Connection implements EventEmitterInterface
 {
     use EventEmitterTrait;
 
-    /**
-     * @var Transport\WebsocketClient
-     */
-    private $transport;
 
     /**
      * @var Client
@@ -39,193 +32,83 @@ class Connection implements EventEmitterInterface
     private $client;
 
     /**
-     * @var Caller
+     * @var TransportInterface
      */
-    private $caller;
-    /**
-     * @var Callee
-     */
-    private $callee;
-    /**
-     * @var Subscriber
-     */
-    private $subscriber;
-    /**
-     * @var Publisher
-     */
-    private $publisher;
+    private $transport;
 
     /**
-     * @var Array
+     * @var array
      */
     private $options;
-
-    /**
-     * @var ClientSession
-     */
-    private $session;
 
     /**
      * @param array $options
      */
     function __construct(Array $options)
     {
-
         $this->options = $options;
 
+        $this->client = new Client($options['realm']);
+
+        /*
+         * Add the transport provider
+         * TODO: Allow for multiple transport providers
+         */
         $url = isset($options['url']) ? $options['url'] : null;
+        $this->client->addTransportProvider(new PawlTransportProvider($url));
 
-        $challenge = isset($this->options['onChallenge']) ? $this->options['onChallenge'] : null;
-
-        //Peer
-        $this->client = new Client($challenge);
-
-//        if (isset($this->options['onChallenge'])) {
-//            $this->client->on('challenge', $this->options['onChallenge']);
-//        }
-
-
-        $this->transport = new WebsocketClient($url, $this->client);
-
-        if (isset($options['onClose'])) {
-            $this->transport->on('close', $options['onClose']);
+        /*
+         * Authentication
+         */
+        if (isset($options['onChallenge']) && is_callable($options['onChallenge'])
+            && isset($options['authmethods'])
+            && is_array($options['authmethods'])
+        ) {
+            foreach ($options['authmethods'] as $authmethod) {
+                $this->client->addAuthMethod([$authmethod => ["callback" => $options['onChallenge']]]);
+            }
         }
 
-        $this->transport->on('connect', array($this, 'onConnect'));
-
-//        $this->transport->startTransport();
-    }
-
-
-    /**
-     * @param ClientSession $session
-     */
-    public function onConnect(ClientSession $session)
-    {
-
-        echo "Connected";
-
+        /*
+         * Handle On Open event
+         *
+         */
         $this->client->on(
             'open',
-            function ($session) {
+            function (ClientSession $session, TransportInterface $transport) {
+                $this->transport = $transport;
                 $this->emit('open', [$session]);
             }
         );
 
-        //Roles
-        $this->callee = new Callee($session);
-        $this->caller = new Caller($session);
-        $this->subscriber = new Subscriber($session);
-        $this->publisher = new Publisher($session);
-
-        $this->client
-            ->addRole($this->callee)
-            ->addRole($this->caller)
-            ->addRole($this->subscriber)
-            ->addRole($this->publisher);
-
-        $this->transport->setPeer($this->client);
-
-        $session->setRealm($this->getOptions()['realm']);
-        $this->client->startSession($session);
-
+        /*
+         * Handle On Close event
+         */
+        $this->client->on(
+            'close',
+            function ($msg) {
+                if (is_callable($this->options['onClose'])) {
+                    $this->options['onClose']($msg);
+                }
+            }
+        );
     }
 
+
     /**
-     *
+     *  Starts the open sequence
      */
     public function open()
     {
-        $this->transport->startTransport();
+        $this->client->start();
     }
 
     /**
-     *
+     * Starts the close sequence
      */
-    public function close(){
-        $this->session->close();
-    }
-
-    /**** Setters and Getters ****/
-    /**
-     * @return mixed
-     */
-    public function getCallee()
+    public function close()
     {
-        return $this->callee;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCaller()
-    {
-        return $this->caller;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getClient()
-    {
-        return $this->client;
-    }
-
-    /**
-     * @return array
-     */
-    public function getListeners()
-    {
-        return $this->listeners;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPublisher()
-    {
-        return $this->publisher;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-
-    /**
-     * @return mixed
-     */
-    public function getSubscriber()
-    {
-        return $this->subscriber;
-    }
-
-    /**
-     * @return WebsocketClient
-     */
-    public function getTransport()
-    {
-        return $this->transport;
-    }
-
-    /**
-     * @return ClientSession
-     */
-    public function getSession()
-    {
-        return $this->session;
-    }
-
-    /**
-     * @param ClientSession $session
-     */
-    public function setSession($session)
-    {
-        $this->session = $session;
+        $this->transport->close();
     }
 
 }
