@@ -153,6 +153,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $session = new ClientSession($transport, $this);
         $this->session = $session;
         $this->startSession($session);
+        $this->emit('open', [$session, $transport]);
+
     }
 
     public function onMessage(TransportInterface $transport, Message $msg)
@@ -186,8 +188,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
     {
         //TODO: I'm sure that there are some other things that we need to do here
         $session->setSessionId($msg->getSessionId());
-
-        $this->emit('open', [$session]);
     }
 
     /**
