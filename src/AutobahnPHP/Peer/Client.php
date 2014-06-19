@@ -12,12 +12,14 @@ namespace AutobahnPHP\Peer;
 use AutobahnPHP\AbstractSession;
 use AutobahnPHP\ClientSession;
 use AutobahnPHP\Message\AbortMessage;
+use AutobahnPHP\Message\AuthenticateMessage;
 use AutobahnPHP\Message\ChallengeMessage;
 use AutobahnPHP\Message\ErrorMessage;
 use AutobahnPHP\Message\GoodbyeMessage;
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\Message\WelcomeMessage;
+use AutobahnPHP\Realm;
 use AutobahnPHP\Role\AbstractRole;
 use AutobahnPHP\Role\Callee;
 use AutobahnPHP\Role\Caller;
@@ -80,13 +82,22 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $loop;
 
+    /**
+     * @var string
+     */
     private $realm;
+
+    /**
+     * @var Array
+     */
+    private $authMethods;
 
     function __construct($realm, LoopInterface $loop = null)
     {
         $this->transportProvider = null;
         $this->roles = array();
         $this->realm = $realm;
+        $this->authMethods = array();
 
         if ($loop === null) {
             $loop = Factory::create();
@@ -121,6 +132,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
         return $this;
     }
 
+    public function addAuthMethod(Array $authMethod)
+    {
+        $this->authMethods = $this->authMethods + $authMethod;
+    }
+
     /**
      * @param ClientSession $session
      */
@@ -134,6 +150,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
                 "callee" => new \stdClass(),
             ]
         ];
+
+        $details["authmethods"] = array_keys($this->authMethods);
 
         $this->addRole(new Callee($session))
             ->addRole(new Caller($session))
@@ -205,9 +223,13 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function processChallenge(ClientSession $session, ChallengeMessage $msg)
     {
-        // $this->emit('challenge', array($session, $msg->getAuthMethod(), array()));
 
+        $authmethod = $msg->getAuthMethod();
+        $signature = $this->authMethods[$authmethod]['callback']($session, $authmethod, $msg->getExtra());
 
+        $authenticateMsg = new AuthenticateMessage($signature);
+
+        $session->sendMessage($authenticateMsg, $msg->getExtra());
     }
 
     /**
@@ -293,7 +315,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->loop->run();
     }
 
-    public function onClose(TransportInterface $transport) {
+    public function onClose(TransportInterface $transport)
+    {
 
         $this->session->onClose();
 

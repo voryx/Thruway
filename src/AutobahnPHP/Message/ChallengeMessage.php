@@ -3,20 +3,40 @@
 namespace AutobahnPHP\Message;
 
 
-class ChallengeMessage extends Message {
-    const MSG_CODE = Message::MSG_CHALLENGE;
+/**
+ * Class ChallengeMessage
+ * @package AutobahnPHP\Message
+ */
+class ChallengeMessage extends Message
+{
 
+    /**
+     * @var
+     */
     private $authMethod;
 
-    public function __construct($authMethod)
+    /**
+     * @var null
+     */
+    private $extra;
+
+    /**
+     * @param $authMethod
+     * @param array $extra
+     */
+    public function __construct($authMethod, $extra = [])
     {
         $this->authMethod = $authMethod;
+        $this->extra = $extra;
     }
 
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_CHALLENGE;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -26,7 +46,7 @@ class ChallengeMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getAuthMethod());
+        return array($this->getAuthMethod(), $this->getExtra());
     }
 
     /**
@@ -36,6 +56,16 @@ class ChallengeMessage extends Message {
     {
         return $this->authMethod;
     }
+
+    /**
+     * @return null
+     */
+    public function getExtra()
+    {
+        return $this->extra;
+    }
+
+
 
 
 } 

@@ -141,6 +141,9 @@ abstract class Message
                 return new ResultMessage($json[1], $json[2], $args, $argsKw);
             case Message::MSG_PUBLISHED:
                 return new PublishedMessage($json[1], $json[2]);
+            case Message::MSG_CHALLENGE:
+                $extra = $args = isset($json[3]) ? $json[3] : [];
+                return new ChallengeMessage($json[1], $json[2], $extra);
             case Message::MSG_ERROR:
                 return new ErrorMessage($json[1], $json[2], $json[3], $json[4]);
             default:
