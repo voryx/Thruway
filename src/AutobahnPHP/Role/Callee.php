@@ -53,22 +53,18 @@ class Callee extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        switch ($msg) {
-            case ($msg instanceof RegisteredMessage):
-                $this->processRegistered($session, $msg);
-                break;
-            case ($msg instanceof UnregisteredMessage):
-                $this->processUnregistered($session, $msg);
-                break;
-            case ($msg instanceof InvocationMessage):
-                $this->processInvocation($session, $msg);
-                break;
-            case ($msg instanceof ErrorMessage):
-                $this->processError($session, $msg);
-                break;
-            default:
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-        }
+
+        if ($msg instanceof RegisteredMessage):
+            $this->processRegistered($session, $msg);
+        elseif ($msg instanceof UnregisteredMessage):
+            $this->processUnregistered($session, $msg);
+        elseif ($msg instanceof InvocationMessage):
+            $this->processInvocation($session, $msg);
+        elseif ($msg instanceof ErrorMessage):
+            $this->processError($session, $msg);
+        else:
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+        endif;
     }
 
     /**
@@ -117,7 +113,8 @@ class Callee extends AbstractRole
      * @param ClientSession $session
      * @param ErrorMessage $msg
      */
-    public function processError(ClientSession $session, ErrorMessage $msg){
+    public function processError(ClientSession $session, ErrorMessage $msg)
+    {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
 

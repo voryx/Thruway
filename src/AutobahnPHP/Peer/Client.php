@@ -162,23 +162,20 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
         $session = $this->session;
 
-        switch (true) {
-            case ($msg instanceof WelcomeMessage):
-                $this->processWelcome($session, $msg);
-                break;
-            case ($msg instanceof AbortMessage):
-                $this->processAbort($session, $msg);
-                break;
-            case ($msg instanceof GoodbyeMessage):
-                $this->processGoodbye($session, $msg);
-                break;
-            //advanced
-            case ($msg instanceof ChallengeMessage):
-                $this->processChallenge($session, $msg);
-                break;
-            default:
-                $this->processOther($session, $msg);
-        }
+        if ($msg instanceof WelcomeMessage):
+            $this->processWelcome($session, $msg);
+        elseif ($msg instanceof AbortMessage):
+            $this->processAbort($session, $msg);
+        elseif ($msg instanceof GoodbyeMessage):
+            $this->processGoodbye($session, $msg);
+        //advanced
+        elseif ($msg instanceof ChallengeMessage):
+            $this->processChallenge($session, $msg);
+        else:
+            $this->processOther($session, $msg);
+        endif;
+
+
     }
 
     /**

@@ -58,29 +58,24 @@ class Dealer extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        switch ($msg) {
-            case ($msg instanceof RegisterMessage):
-                $replyMsg = $this->processRegister($session, $msg);
-                $session->sendMessage($replyMsg);
-                break;
-            case ($msg instanceof UnregisterMessage):
-                $replyMsg = $this->processUnregister($session, $msg);
-                $session->sendMessage($replyMsg);
-                break;
-            case ($msg instanceof YieldMessage):
-                $this->processYield($session, $msg);
-                break;
-            case ($msg instanceof CallMessage):
-                $this->processCall($session, $msg);
-                break;
-            case ($msg instanceof ErrorMessage):
-                break;
-            case ($msg instanceof CancelMessage): //Advanced
-                break;
-            default:
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
 
-        }
+        if ($msg instanceof RegisterMessage):
+            $replyMsg = $this->processRegister($session, $msg);
+            $session->sendMessage($replyMsg);
+        elseif ($msg instanceof UnregisterMessage):
+            $replyMsg = $this->processUnregister($session, $msg);
+            $session->sendMessage($replyMsg);
+        elseif ($msg instanceof YieldMessage):
+            $this->processYield($session, $msg);
+        elseif ($msg instanceof CallMessage):
+            $this->processCall($session, $msg);
+        elseif ($msg instanceof ErrorMessage):
+
+        elseif ($msg instanceof CancelMessage): //Advanced
+
+        else:
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+        endif;
 
     }
 

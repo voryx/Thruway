@@ -47,19 +47,15 @@ class Subscriber extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        switch ($msg) {
-            case ($msg instanceof SubscribedMessage):
-                $this->processSubscribed($session, $msg);
-                break;
-            case ($msg instanceof UnsubscribedMessage):
-                $this->processUnsubscribed($session, $msg);
-                break;
-            case ($msg instanceof EventMessage):
-                $this->processEvent($session, $msg);
-                break;
-            default:
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-        }
+        if ($msg instanceof SubscribedMessage):
+            $this->processSubscribed($session, $msg);
+        elseif ($msg instanceof UnsubscribedMessage):
+            $this->processUnsubscribed($session, $msg);
+        elseif ($msg instanceof EventMessage):
+            $this->processEvent($session, $msg);
+        else:
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+        endif;
     }
 
     /**

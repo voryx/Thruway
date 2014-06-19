@@ -56,19 +56,16 @@ class Broker extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        switch ($msg) {
-            case ($msg instanceof PublishMessage):
-                $this->processPublish($session, $msg);
-                break;
-            case ($msg instanceof SubscribeMessage):
-                $this->processSubscribe($session, $msg);
-                break;
-            case ($msg instanceof UnsubscribedMessage):
-                $this->processUnsubscribe($session, $msg);
-                break;
-            default:
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-        }
+
+        if ($msg instanceof PublishMessage):
+            $this->processPublish($session, $msg);
+        elseif ($msg instanceof SubscribeMessage):
+            $this->processSubscribe($session, $msg);
+        elseif ($msg instanceof UnsubscribedMessage):
+            $this->processUnsubscribe($session, $msg);
+        else:
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+        endif;
     }
 
     /**

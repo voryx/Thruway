@@ -51,16 +51,14 @@ class Caller extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        switch ($msg) {
-            case ($msg instanceof ResultMessage):
-                $this->processResult($session, $msg);
-                break;
-            case ($msg instanceof ErrorMessage):
-                $this->processError($session, $msg);
-                break;
-            default:
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-        }
+
+        if ($msg instanceof ResultMessage):
+            $this->processResult($session, $msg);
+        elseif ($msg instanceof ErrorMessage):
+            $this->processError($session, $msg);
+        else:
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+        endif;
     }
 
     /**
