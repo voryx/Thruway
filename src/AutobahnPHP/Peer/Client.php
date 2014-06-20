@@ -9,12 +9,10 @@
 namespace AutobahnPHP\Peer;
 
 
-use AutobahnPHP\AbstractSession;
 use AutobahnPHP\ClientSession;
 use AutobahnPHP\Message\AbortMessage;
 use AutobahnPHP\Message\AuthenticateMessage;
 use AutobahnPHP\Message\ChallengeMessage;
-use AutobahnPHP\Message\ErrorMessage;
 use AutobahnPHP\Message\GoodbyeMessage;
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
@@ -25,7 +23,6 @@ use AutobahnPHP\Role\Callee;
 use AutobahnPHP\Role\Caller;
 use AutobahnPHP\Role\Publisher;
 use AutobahnPHP\Role\Subscriber;
-use AutobahnPHP\Session;
 use AutobahnPHP\Transport\AbstractTransportProvider;
 use AutobahnPHP\Transport\TransportInterface;
 use Evenement\EventEmitterInterface;
