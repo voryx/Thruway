@@ -8,13 +8,10 @@
 
 namespace AutobahnPHP\Transport;
 
-
-use AutobahnPHP\ClientSession;
 use AutobahnPHP\Peer\AbstractPeer;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
 use Ratchet\Client\WebSocket;
-use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 
 /**
@@ -45,10 +42,6 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
      */
     private $connector;
 
-    /**
-     * @var null
-     */
-    private $session;
 
     function __construct($URL = "ws://127.0.0.1:9090/")
     {
@@ -56,7 +49,6 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
         $this->peer = null;
 
         $this->URL = $URL;
-        $this->session = null;
 
     }
 
@@ -76,8 +68,6 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
 
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
-                //$this->session = new ClientSession($conn, $this->peer);
-
                 $transport = new PawlTransport($conn);
 
                 $this->peer->onOpen($transport);

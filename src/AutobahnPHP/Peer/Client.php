@@ -92,6 +92,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $authMethods;
 
+    /**
+     * @var TransportInterface
+     */
+    private $transport;
+
     function __construct($realm, LoopInterface $loop = null)
     {
         $this->transportProvider = null;
@@ -112,20 +117,16 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function addRole(AbstractRole $role)
     {
-        switch ($role) {
-            case ($role instanceof Publisher):
-                $this->publisher = $role;
-                break;
-            case ($role instanceof Subscriber):
-                $this->subscriber = $role;
-                break;
-            case ($role instanceof Callee):
-                $this->callee = $role;
-                break;
-            case ($role instanceof Caller):
-                $this->caller = $role;
-                break;
-        }
+
+        if ($role instanceof Publisher):
+            $this->publisher = $role;
+        elseif ($role instanceof Subscriber):
+            $this->subscriber = $role;
+        elseif ($role instanceof Callee):
+            $this->callee = $role;
+        elseif ($role instanceof Caller):
+            $this->caller = $role;
+        endif;
 
         array_push($this->roles, $role);
 
@@ -168,10 +169,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
         if ($this->session !== null) {
             throw new \Exception("There is already an attached session?");
         }
+
+        $this->transport = $transport;
         $session = new ClientSession($transport, $this);
         $this->session = $session;
         $this->startSession($session);
-        $this->emit('open', [$session, $transport]);
 
     }
 
@@ -206,6 +208,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     {
         //TODO: I'm sure that there are some other things that we need to do here
         $session->setSessionId($msg->getSessionId());
+        $this->emit('open', [$session, $this->transport]);
     }
 
     /**
