@@ -24,10 +24,6 @@ use React\Promise\Deferred;
  */
 class Publisher extends AbstractRole
 {
-    /**
-     * @var ClientSession
-     */
-    private $session;
 
     /**
      * @var array
@@ -37,9 +33,8 @@ class Publisher extends AbstractRole
     /**
      * @param $session
      */
-    function __construct($session)
+    function __construct()
     {
-        $this->session = $session;
         $this->publishRequests = array();
     }
 
@@ -113,7 +108,7 @@ class Publisher extends AbstractRole
      * @param $arguments
      * @return \React\Promise\Promise
      */
-    public function publish($topicName, $arguments, $argumentsKw, $options)
+    public function publish(ClientSession $session, $topicName, $arguments, $argumentsKw, $options)
     {
         $requestId = Session::getUniqueId();
 
@@ -125,7 +120,7 @@ class Publisher extends AbstractRole
 
         $publishMsg = new PublishMessage($requestId, $options, $topicName, $arguments, $argumentsKw);
 
-        $this->session->sendMessage($publishMsg);
+        $session->sendMessage($publishMsg);
 
         return isset($futureResult) ? $futureResult->promise() : false;
     }

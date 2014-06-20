@@ -46,6 +46,7 @@ class Connection implements EventEmitterInterface
      */
     function __construct(Array $options)
     {
+
         $this->options = $options;
 
         $this->client = new Client($options['realm']);
@@ -56,6 +57,8 @@ class Connection implements EventEmitterInterface
          */
         $url = isset($options['url']) ? $options['url'] : null;
         $this->client->addTransportProvider(new PawlTransportProvider($url));
+
+        $this->client->setReconnectOptions($options);
 
         /*
          * Authentication
@@ -86,9 +89,9 @@ class Connection implements EventEmitterInterface
          */
         $this->client->on(
             'close',
-            function ($msg) {
-                if (is_callable($this->options['onClose'])) {
-                    $this->options['onClose']($msg);
+            function ($reason) {
+                if (isset($this->options['onClose']) && is_callable($this->options['onClose'])) {
+                    $this->options['onClose']($reason);
                 }
             }
         );

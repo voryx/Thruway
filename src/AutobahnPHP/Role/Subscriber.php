@@ -20,22 +20,15 @@ use AutobahnPHP\Session;
 class Subscriber extends AbstractRole
 {
 
-    /**
-     * @var \AutobahnPHP\ClientSession
-     */
-    private $session;
 
     /**
      * @var array
      */
     private $subscriptions;
 
-    /**
-     * @param ClientSession $session
-     */
-    function __construct(ClientSession $session)
+
+    function __construct()
     {
-        $this->session = $session;
 
         $this->subscriptions = array();
     }
@@ -121,19 +114,20 @@ class Subscriber extends AbstractRole
      * @param $topicName
      * @param $callback
      */
-    public function subscribe($topicName, $callback)
+    public function subscribe(ClientSession $session, $topicName, $callback)
     {
         $requestId = Session::getUniqueId();
-
-        $subscription = ["topic_name" => $topicName, "callback" => $callback, "request_id" => $requestId];
+        $options = new \stdClass();
+        $subscription = [
+            "topic_name" => $topicName,
+            "callback" => $callback,
+            "request_id" => $requestId,
+            "options" => $options
+        ];
 
         array_push($this->subscriptions, $subscription);
 
-
-        $options = new \stdClass();
         $subscribeMsg = new SubscribeMessage($requestId, $options, $topicName);
-        $this->session->sendMessage($subscribeMsg);
+        $session->sendMessage($subscribeMsg);
     }
-
-
 } 

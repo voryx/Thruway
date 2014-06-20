@@ -94,6 +94,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $transport;
 
+
+    private $retryTimer = 0;
+
+    private $reconnectOptions;
+
     function __construct($realm, LoopInterface $loop = null)
     {
         $this->transportProvider = null;
@@ -106,6 +111,14 @@ class Client extends AbstractPeer implements EventEmitterInterface
         }
 
         $this->loop = $loop;
+
+        $this->reconnectOptions = [
+            "max_retries" => 15, //not implemented
+            "initial_retry_delay" => 1.5,
+            "max_retry_delay" => 300,
+            "retry_delay_growth" => 1.5,
+            "retry_delay_jitter" => 0.1 //not implemented
+        ];
     }
 
     /**
@@ -151,10 +164,10 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
         $details["authmethods"] = array_keys($this->authMethods);
 
-        $this->addRole(new Callee($session))
-            ->addRole(new Caller($session))
-            ->addRole(new Publisher($session))
-            ->addRole(new Subscriber($session));
+        $this->addRole(new Callee())
+            ->addRole(new Caller())
+            ->addRole(new Publisher())
+            ->addRole(new Subscriber());
 
         $session->setRealm($this->realm);
 
@@ -164,13 +177,34 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function onOpen(TransportInterface $transport)
     {
         if ($this->session !== null) {
-            throw new \Exception("There is already an attached session?");
+           // throw new \Exception("There is already an attached session?");
         }
 
+        $this->retryTimer = 0;
         $this->transport = $transport;
         $session = new ClientSession($transport, $this);
         $this->session = $session;
         $this->startSession($session);
+
+    }
+
+    public function onClose($reason)
+    {
+
+        if (isset($this->session)) {
+            $this->session->onClose();
+            $this->session = null;
+        }
+
+        $this->roles = array();
+        $this->callee = null;
+        $this->caller = null;
+        $this->subscriber = null;
+        $this->publisher = null;
+
+        $this->emit('close', [$reason]);
+
+        $this->retryConnection();
 
     }
 
@@ -315,15 +349,35 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->loop->run();
     }
 
-    public function onClose(TransportInterface $transport)
+    public function retryConnection()
     {
 
-        $this->session->onClose();
+        $options = $this->reconnectOptions;
 
-//        $loop = $this->loop;
-//
-//        $this->loop->addTimer(60, function () use ($loop) {
-//                // add another time on fail
-//            } );
+        if ($this->retryTimer >= $options['max_retry_delay']) {
+            $this->retryTimer = $options['max_retry_delay'];
+        } else {
+            $this->retryTimer = $this->retryTimer + $options['retry_delay_growth'];
+        }
+
+
+        $this->loop->addTimer(
+            $this->retryTimer,
+            function () {
+                echo "{$this->retryTimer}\n";
+                 $this->transportProvider->startTransportProvider($this, $this->loop);
+            }
+        );
+
     }
+
+    /**
+     * @param array $reconnectOptions
+     */
+    public function setReconnectOptions($reconnectOptions)
+    {
+        $this->reconnectOptions = array_merge($this->reconnectOptions, $reconnectOptions);
+    }
+
+
 }

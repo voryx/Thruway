@@ -25,10 +25,6 @@ use React\Promise\Deferred;
  */
 class Caller extends AbstractRole
 {
-    /**
-     * @var ClientSession
-     */
-    private $session;
 
     /**
      * @var array
@@ -38,9 +34,8 @@ class Caller extends AbstractRole
     /**
      * @param $session
      */
-    function __construct($session)
+    function __construct()
     {
-        $this->session = $session;
         $this->callRequests = array();
     }
 
@@ -114,7 +109,7 @@ class Caller extends AbstractRole
      * @param $arguments
      * @return \React\Promise\Promise
      */
-    public function call($procedureName, $arguments)
+    public function call(ClientSession $session, $procedureName, $arguments)
     {
         $futureResult = new Deferred();
 
@@ -126,8 +121,10 @@ class Caller extends AbstractRole
 
         $callMsg = new CallMessage($requestId, $options, $procedureName, $arguments);
 
-        $this->session->sendMessage($callMsg);
+        $session->sendMessage($callMsg);
 
         return $futureResult->promise();
     }
+
+
 } 

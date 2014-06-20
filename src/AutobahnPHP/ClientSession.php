@@ -42,12 +42,12 @@ class ClientSession extends AbstractSession
      */
     public function subscribe($topicName, $callback)
     {
-        $this->peer->getSubscriber()->subscribe($topicName, $callback);
+        $this->peer->getSubscriber()->subscribe($this, $topicName, $callback);
     }
 
     public function publish($topicName, $arguments, $argumentsKw = null, $options = null)
     {
-        return $this->peer->getPublisher()->publish($topicName, $arguments, $argumentsKw, $options);
+        return $this->peer->getPublisher()->publish($this, $topicName, $arguments, $argumentsKw, $options);
     }
 
     /**
@@ -56,7 +56,7 @@ class ClientSession extends AbstractSession
      */
     public function register($procedureName, $callback)
     {
-        $this->peer->getCallee()->register($procedureName, $callback);
+        $this->peer->getCallee()->register($this, $procedureName, $callback);
     }
 
     /**
@@ -66,7 +66,7 @@ class ClientSession extends AbstractSession
      */
     public function call($procedureName, $arguments)
     {
-        return $this->peer->getCaller()->call($procedureName, $arguments);
+        return $this->peer->getCaller()->call($this, $procedureName, $arguments);
     }
 
     /**

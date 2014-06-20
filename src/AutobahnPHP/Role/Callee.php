@@ -26,10 +26,6 @@ use AutobahnPHP\Session;
  */
 class Callee extends AbstractRole
 {
-    /**
-     * @var ClientSession
-     */
-    private $session;
 
     /**
      * @var array
@@ -39,9 +35,8 @@ class Callee extends AbstractRole
     /**
      * @param $session
      */
-    function __construct($session)
+    function __construct()
     {
-        $this->session = $session;
         $this->registrations = array();
     }
 
@@ -101,7 +96,7 @@ class Callee extends AbstractRole
                 $options = new \stdClass();
                 $yieldMsg = new YieldMessage($msg->getRequestId(), $options, [$arguments]);
 
-                $this->session->sendMessage($yieldMsg);
+                $session->sendMessage($yieldMsg);
 
                 break;
             }
@@ -153,19 +148,23 @@ class Callee extends AbstractRole
      * @param $procedureName
      * @param $callback
      */
-    public function register($procedureName, $callback)
+    public function register(ClientSession $session, $procedureName, $callback)
     {
-
         $requestId = Session::getUniqueId();
-        $registration = ["procedure_name" => $procedureName, "callback" => $callback, "request_id" => $requestId];
-        array_push($this->registrations, $registration);
-
         $options = new \stdClass();
+        $registration = [
+            "procedure_name" => $procedureName,
+            "callback" => $callback,
+            "request_id" => $requestId,
+            'options' => $options
+        ];
+
+        array_push($this->registrations, $registration);
 
         $registerMsg = new RegisterMessage($requestId, $options, $procedureName);
 
-        $this->session->sendMessage($registerMsg);
-
+        $session->sendMessage($registerMsg);
 
     }
+
 } 

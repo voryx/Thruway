@@ -65,9 +65,11 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
 
         $this->connector = new \Ratchet\Client\Factory($this->loop);
 
-
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
+
+                echo "Pawl has connected";
+
                 $transport = new PawlTransport($conn);
 
                 $this->peer->onOpen($transport);
@@ -82,17 +84,21 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
 
                 $conn->on(
                     'close',
-                    function ($conn) use ($transport) {
-                        $this->peer->onClose($transport);
+                    function ($conn) {
+
+                        echo "Pawl has closed";
+                        $this->peer->onClose('close');
+                        unset($conn);
                     }
                 );
             },
             function ($e) {
-                $this->emit('close', array("unreachable"));
+                $this->peer->onClose('unreachable');
                 echo "Could not connect: {$e->getMessage()}\n";
-                $this->loop->stop();
+                // $this->loop->stop();
             }
         );
+
     }
 
 
