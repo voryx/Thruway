@@ -6,10 +6,10 @@ if (file_exists(__DIR__.'/../../../autoload.php')) {
     require __DIR__.'/../vendor/autoload.php';
 }
 
-use AutobahnPHP\Peer\Router;
-use AutobahnPHP\Transport\RatchetTransportProvider;
+use Thruway\Peer\Router;
+use Thruway\Transport\RatchetTransportProvider;
 
-$manager = new \AutobahnPHP\ManagerClient();
+$manager = new \Thruway\ManagerClient();
 
 $loop = \React\EventLoop\Factory::create();
 
@@ -19,7 +19,7 @@ $router = new Router($loop);
 
 $transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
 
-$internalClientTransportProvider = new \AutobahnPHP\Transport\InternalClientTransportProvider($manager);
+$internalClientTransportProvider = new \Thruway\Transport\InternalClientTransportProvider($manager);
 
 $router->addTransportProvider($transportProvider);
 $router->addTransportProvider($internalClientTransportProvider);

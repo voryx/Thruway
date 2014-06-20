@@ -1,7 +1,7 @@
-AutobahnPHP
+Thruway
 ===========
 
-AutobahnPHP is a Client and Server Library that aims to be compatible with the [Autobahn project](http://autobahn.ws/) 
+Thruway is a Client and Server Library that aims to be compatible with the [Autobahn project](http://autobahn.ws/) 
 and [WAMP2](http://wamp.ws/).
 
 Basically, we like the WAMP idea, but we wanted to be able to work with it in PHP.
@@ -15,33 +15,33 @@ Please feel free to ask us what is going on or make suggests or fork it and make
 
 Create a directory for the test project
 
-      $ mkdir autobahnphp
+      $ mkdir thruway
 
 Switch to the new directory
 
-      $ cd autobahnphp
+      $ cd thruway
 
 Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloading-the-composer-executable)
 
       $ curl -sS https://getcomposer.org/installer | php
 
-Download AutobahnPHP and dependencies
+Download Thruway and dependencies
 
-      $ php composer.phar require "voryx/autobahnphp":"dev-master"
+      $ php composer.phar require "voryx/thruway":"dev-master"
 
 Start the WAMP server
 
-      $ php vendor/voryx/autobahnphp/Examples/SimpleWsServer.php
+      $ php vendor/voryx/thruway/Examples/SimpleWsServer.php
     
-AutobahnPHP is now running on 127.0.0.1 port 9090 
+Thruway is now running on 127.0.0.1 port 9090 
 
 ### PHP Client Example (alpha)
 
 ```php
 <?php
 
-use AutobahnPHP\ClientSession;
-use AutobahnPHP\Connection;
+use Thruway\ClientSession;
+use Thruway\Connection;
 
 require __DIR__ . '/vendor/autoload.php';
 

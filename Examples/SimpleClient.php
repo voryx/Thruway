@@ -1,7 +1,7 @@
 <?php
 
-use AutobahnPHP\ClientSession;
-use AutobahnPHP\Connection;
+use Thruway\ClientSession;
+use Thruway\Connection;
 
 if (file_exists(__DIR__ . '/../../../autoload.php')) {
     require __DIR__ . '/../../../autoload.php';

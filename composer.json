@@ -1,5 +1,5 @@
 {
-    "name": "voryx/autobahnphp"
+    "name": "voryx/thruway"
   , "type": "library"
   , "description": "PHP WAMP2 library"
   , "keywords": ["WebSockets", "Server", "Client", "WAMP", "WAMP2", "Autobahn", "Sockets"]
@@ -19,7 +19,7 @@
     ]
   , "autoload": {
         "psr-0": {
-            "AutobahnPHP": "src"
+            "Thruway": "src"
         }
     }
   , "require": {

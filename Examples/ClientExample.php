@@ -1,5 +1,5 @@
 <?php
-use AutobahnPHP\ClientSession;
+use Thruway\ClientSession;
 
 if (file_exists(__DIR__ . '/../../../autoload.php')) {
     require __DIR__ . '/../../../autoload.php';
@@ -7,7 +7,7 @@ if (file_exists(__DIR__ . '/../../../autoload.php')) {
     require __DIR__ . '/../vendor/autoload.php';
 }
 
-$client = new \AutobahnPHP\Peer\Client("realm1");
+$client = new \Thruway\Peer\Client("realm1");
 
 $client->on(
     'open',
@@ -22,6 +22,6 @@ $client->on(
 );
 
 
-$client->addTransportProvider(new \AutobahnPHP\Transport\PawlTransportProvider());
+$client->addTransportProvider(new \Thruway\Transport\PawlTransportProvider());
 
 $client->start();
