@@ -8,7 +8,8 @@
 
 namespace AutobahnPHP\Peer;
 
-use AutobahnPHP\AbstractSession;
+use AutobahnPHP\ManagerDummy;
+use AutobahnPHP\ManagerInterface;
 use AutobahnPHP\Message\HelloMessage;
 use AutobahnPHP\Message\Message;
 use AutobahnPHP\RealmManager;
@@ -43,6 +44,11 @@ class Router extends AbstractPeer
     private $sessions;
 
     /**
+     * @var ManagerInterface
+     */
+    private $manager;
+
+    /**
      *
      */
     function __construct(LoopInterface $loop = null)
@@ -56,6 +62,9 @@ class Router extends AbstractPeer
         }
 
         $this->loop = $loop;
+
+        // initially we are just going to start with a dummy manager
+        $this->manager = new ManagerDummy();
     }
 
     public function onOpen(TransportInterface $transport) {
@@ -127,6 +136,8 @@ class Router extends AbstractPeer
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
+        $this->setupManager();
+
         $this->loop->run();
     }
 
@@ -137,5 +148,32 @@ class Router extends AbstractPeer
         $session->onClose();
 
         $this->sessions->detach($transport);
+    }
+
+    /**
+     * @param \AutobahnPHP\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+
+    }
+
+    public function setupManager() {
+        // setup the config for the manager
+        $this->manager->addCallable("sessions.count", array($this, "managerGetSessionCount"));
+
+    }
+
+    /**
+     * @return \AutobahnPHP\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+    public function managerGetSessionCount() {
+        return array(count($this->sessions));
     }
 }

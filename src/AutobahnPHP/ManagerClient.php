@@ -4,11 +4,13 @@ namespace AutobahnPHP;
 
 use AutobahnPHP\Peer\Client;
 
-class ManagerClient extends Client {
+class ManagerClient extends Client implements ManagerInterface {
 
     function __construct()
     {
         parent::__construct("realm1");
+
+        $this->callables = array();
     }
 
     /**
@@ -20,6 +22,20 @@ class ManagerClient extends Client {
     function start() {
 
     }
+
+    //-------------------------------------------
+    /**
+     * @var array
+     */
+    private $callables;
+
+    public function addCallable($name, $callback)
+    {
+        $this->callables[] = array($name, $callback);
+
+        $this->getCallee()->register("manager.call." . $name, $callback);
+    }
+
 
     function testSubscribe() {
         $this->getSubscriber()->subscribe("com.myapp.hello", array($this, "onSomethingElse"));

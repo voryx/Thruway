@@ -24,4 +24,6 @@ $internalClientTransportProvider = new \AutobahnPHP\Transport\InternalClientTran
 $router->addTransportProvider($transportProvider);
 $router->addTransportProvider($internalClientTransportProvider);
 
+$router->setManager($manager);
+
 $router->start();
