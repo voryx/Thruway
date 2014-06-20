@@ -80,12 +80,7 @@ class Broker extends AbstractRole
 
         //If the topic doesn't have any subscribers
         if (empty($receivers)) {
-            echo "Invalid topic: {$msg->getTopicName()}";
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $session->sendMessage(
-            //not sure if this is the right error or if we need to send anything back here
-                $errorMsg->setErrorURI('wamp.error.invalid_topic')
-            );
+            $receivers = array();
         }
 
         // see if they wanted confirmation
