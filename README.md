@@ -24,6 +24,10 @@ Switch to the new directory
 Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloading-the-composer-executable)
 
       $ curl -sS https://getcomposer.org/installer | php
+      
+Download Pawl
+
+      $ php composer.phar require "ratchet/pawl":"dev-master"
 
 Download Thruway and dependencies
 
