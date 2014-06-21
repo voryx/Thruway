@@ -28,4 +28,6 @@
         "cboden/ratchet": "0.3.*",
         "ratchet/pawl": "dev-master"
     }
+  ,"minimum-stability":"dev"
+    
 }
