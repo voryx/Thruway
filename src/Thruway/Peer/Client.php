@@ -63,7 +63,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $subscriber;
 
-
     /**
      * @var AbstractTransportProvider
      */
@@ -141,25 +140,23 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param AbstractRole $role
-     * @return $this
+     * @param AbstractTransportProvider $transportProvider
+     * @throws \Exception
      */
-    public function addRole(AbstractRole $role)
+    public function addTransportProvider(AbstractTransportProvider $transportProvider)
     {
+        if ($this->transportProvider !== null) {
+            throw new \Exception("You can only have one transport provider for a client");
+        }
+        $this->transportProvider = $transportProvider;
+    }
 
-        if ($role instanceof Publisher):
-            $this->publisher = $role;
-        elseif ($role instanceof Subscriber):
-            $this->subscriber = $role;
-        elseif ($role instanceof Callee):
-            $this->callee = $role;
-        elseif ($role instanceof Caller):
-            $this->caller = $role;
-        endif;
-
-        array_push($this->roles, $role);
-
-        return $this;
+    /**
+     * @param array $reconnectOptions
+     */
+    public function setReconnectOptions($reconnectOptions)
+    {
+        $this->reconnectOptions = array_merge($this->reconnectOptions, $reconnectOptions);
     }
 
     /**
@@ -168,6 +165,29 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function addAuthMethod(Array $authMethod)
     {
         $this->authMethods = $this->authMethods + $authMethod;
+    }
+
+    /**
+     * Start the transport
+     */
+    public function start()
+    {
+        $this->transportProvider->startTransportProvider($this, $this->loop);
+
+        $this->loop->run();
+    }
+
+    /**
+     * @param TransportInterface $transport
+     */
+    public function onOpen(TransportInterface $transport)
+    {
+        $this->retryTimer = 0;
+        $this->retryAttempts = 0;
+        $this->transport = $transport;
+        $session = new ClientSession($transport, $this);
+        $this->session = $session;
+        $this->startSession($session);
     }
 
     /**
@@ -197,39 +217,25 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param TransportInterface $transport
+     * @param AbstractRole $role
+     * @return $this
      */
-    public function onOpen(TransportInterface $transport)
-    {
-        $this->retryTimer = 0;
-        $this->retryAttempts = 0;
-        $this->transport = $transport;
-        $session = new ClientSession($transport, $this);
-        $this->session = $session;
-        $this->startSession($session);
-    }
-
-    /**
-     * @param $reason
-     */
-    public function onClose($reason)
+    public function addRole(AbstractRole $role)
     {
 
-        if (isset($this->session)) {
-            $this->session->onClose();
-            $this->session = null;
-        }
+        if ($role instanceof Publisher):
+            $this->publisher = $role;
+        elseif ($role instanceof Subscriber):
+            $this->subscriber = $role;
+        elseif ($role instanceof Callee):
+            $this->callee = $role;
+        elseif ($role instanceof Caller):
+            $this->caller = $role;
+        endif;
 
-        $this->roles = array();
-        $this->callee = null;
-        $this->caller = null;
-        $this->subscriber = null;
-        $this->publisher = null;
+        array_push($this->roles, $role);
 
-        $this->emit('close', [$reason]);
-
-        $this->retryConnection();
-
+        return $this;
     }
 
     /**
@@ -318,70 +324,28 @@ class Client extends AbstractPeer implements EventEmitterInterface
         }
     }
 
-    /**
-     * @return Callee
-     */
-    public function getCallee()
-    {
-        return $this->callee;
-    }
-
 
     /**
-     * @return Caller
+     * @param $reason
      */
-    public function getCaller()
+    public function onClose($reason)
     {
-        return $this->caller;
-    }
 
-
-    /**
-     * @return Publisher
-     */
-    public function getPublisher()
-    {
-        return $this->publisher;
-    }
-
-
-    /**
-     * @return Subscriber
-     */
-    public function getSubscriber()
-    {
-        return $this->subscriber;
-    }
-
-
-    /**
-     * @return array
-     */
-    public function getRoles()
-    {
-        return $this->roles;
-    }
-
-    /**
-     * @param AbstractTransportProvider $transportProvider
-     * @throws \Exception
-     */
-    public function addTransportProvider(AbstractTransportProvider $transportProvider)
-    {
-        if ($this->transportProvider !== null) {
-            throw new \Exception("You can only have one transport provider for a client");
+        if (isset($this->session)) {
+            $this->session->onClose();
+            $this->session = null;
         }
-        $this->transportProvider = $transportProvider;
-    }
 
-    /**
-     * Start the transport
-     */
-    public function start()
-    {
-        $this->transportProvider->startTransportProvider($this, $this->loop);
+        $this->roles = array();
+        $this->callee = null;
+        $this->caller = null;
+        $this->subscriber = null;
+        $this->publisher = null;
 
-        $this->loop->run();
+        $this->emit('close', [$reason]);
+
+        $this->retryConnection();
+
     }
 
     /**
@@ -417,13 +381,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
         );
     }
 
-    /**
-     * @param array $reconnectOptions
-     */
-    public function setReconnectOptions($reconnectOptions)
-    {
-        $this->reconnectOptions = array_merge($this->reconnectOptions, $reconnectOptions);
-    }
 
     /**
      * @param boolean $attemptRetry
@@ -433,5 +390,47 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->attemptRetry = $attemptRetry;
     }
 
+
+    /**
+     * @return Callee
+     */
+    public function getCallee()
+    {
+        return $this->callee;
+    }
+
+
+    /**
+     * @return Caller
+     */
+    public function getCaller()
+    {
+        return $this->caller;
+    }
+
+
+    /**
+     * @return Publisher
+     */
+    public function getPublisher()
+    {
+        return $this->publisher;
+    }
+
+    /**
+     * @return Subscriber
+     */
+    public function getSubscriber()
+    {
+        return $this->subscriber;
+    }
+
+    /**
+     * @return array
+     */
+    public function getRoles()
+    {
+        return $this->roles;
+    }
 
 }
