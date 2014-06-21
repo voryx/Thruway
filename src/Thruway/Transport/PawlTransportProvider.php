@@ -85,10 +85,8 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                 $conn->on(
                     'close',
                     function ($conn) {
-
                         echo "Pawl has closed";
                         $this->peer->onClose('close');
-                        unset($conn);
                     }
                 );
             },

@@ -111,6 +111,7 @@ class Connection implements EventEmitterInterface
      */
     public function close()
     {
+        $this->client->setAttemptRetry(false);
         $this->transport->close();
     }
 
