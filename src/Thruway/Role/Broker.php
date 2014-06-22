@@ -10,6 +10,8 @@ namespace Thruway\Role;
 
 
 use Thruway\AbstractSession;
+use Thruway\ManagerDummy;
+use Thruway\ManagerInterface;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\EventMessage;
 use Thruway\Message\Message;
@@ -41,12 +43,19 @@ class Broker extends AbstractRole
     private $topics;
 
     /**
+     * @var ManagerInterface
+     */
+    private $manager;
+
+    /**
      *
      */
     function __construct()
     {
         $this->subscriptions = new \SplObjectStorage();
         $this->topics = array();
+
+        $this->manager = new ManagerDummy();
     }
 
     /**
@@ -74,7 +83,7 @@ class Broker extends AbstractRole
      */
     public function processPublish(Session $session, PublishMessage $msg)
     {
-        echo "got publish\n";
+        $this->manager->logDebug("processing publish message");
 
         $receivers = isset($this->topics[$msg->getTopicName()]) ? $this->topics[$msg->getTopicName()] : null;
 
@@ -224,7 +233,7 @@ class Broker extends AbstractRole
             $subscription = $this->subscriptions->current();
             $this->subscriptions->next();
             if ($subscription->getSession() == $session) {
-                echo "Leaving and unsubscribing: {$subscription->getTopic()}\n";
+                $this->manager->logDebug("Leaving and unsubscribing: {$subscription->getTopic()}");
                 $this->subscriptions->detach($subscription);
             }
         }
@@ -233,10 +242,28 @@ class Broker extends AbstractRole
             foreach ($subscribers as $key => $subscriber) {
                 if ($session == $subscriber) {
                     unset($subscribers[$key]);
-                    echo "Removing session from topic list: {$topicName}\n";
+                    $this->manager->logDebug("Removing session from topic list: {$topicName}");
 
                 }
             }
         }
     }
+
+    /**
+     * @param \Thruway\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+    }
+
+    /**
+     * @return \Thruway\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+
 } 

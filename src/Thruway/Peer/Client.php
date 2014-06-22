@@ -10,6 +10,8 @@ namespace Thruway\Peer;
 
 
 use Thruway\ClientSession;
+use Thruway\ManagerDummy;
+use Thruway\ManagerInterface;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
@@ -71,7 +73,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * @var ClientSession
      */
-    private $session;
+    protected  $session;
 
     /**
      * @var \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|\React\EventLoop\LoopInterface|\React\EventLoop\StreamSelectLoop
@@ -137,6 +139,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
             "retry_delay_growth" => 1.5,
             "retry_delay_jitter" => 0.1 //not implemented
         ];
+
+        $this->manager = new ManagerDummy();
     }
 
     /**
@@ -245,7 +249,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function onMessage(TransportInterface $transport, Message $msg)
     {
 
-        echo "Client onMessage!\n";
+        $this->manager->logDebug("Client onMessage!");
 
         $session = $this->session;
 
@@ -432,5 +436,22 @@ class Client extends AbstractPeer implements EventEmitterInterface
     {
         return $this->roles;
     }
+
+    /**
+     * @param \Thruway\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+    }
+
+    /**
+     * @return \Thruway\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
 
 }

@@ -3,8 +3,11 @@
 namespace Thruway;
 
 use Thruway\Peer\Client;
+use Thruway\Role\Publisher;
 
 class ManagerClient extends Client implements ManagerInterface {
+
+
 
     function __construct()
     {
@@ -33,17 +36,43 @@ class ManagerClient extends Client implements ManagerInterface {
     {
         $this->callables[] = array($name, $callback);
 
-        $this->getCallee()->register("manager.call." . $name, $callback);
+        $this->getCallee()->register($this->session, "manager.call." . $name, $callback);
     }
 
 
     function testSubscribe() {
-        $this->getSubscriber()->subscribe("com.myapp.hello", array($this, "onSomethingElse"));
+        $this->getSubscriber()->subscribe($this->session, "com.myapp.hello", array($this, "onSomethingElse"));
     }
 
     function onSomethingElse($msg) {
         echo "\n\n\n---------------------------------\n";
         var_dump($msg);
         echo "---------------------------------\n";
+    }
+
+    function logIt($logLevel, $msg) {
+        echo $logLevel . ": " . $msg . "\n";
+
+        if ($this->getPublisher() instanceof Publisher) {
+            $this->getPublisher()->publish($this->session, "manager.log." . strtolower($logLevel), array($msg), array(), array());
+        }
+
+
+    }
+
+    function logInfo($msg) {
+        $this->logIt("INFO", $msg);
+    }
+
+    function logError($msg) {
+        $this->logIt("ERROR", $msg);
+    }
+
+    function logWarning($msg) {
+        $this->logIt("WARNING", $msg);
+    }
+
+    function logDebug($msg) {
+        $this->logIt("DEBUG", $msg);
     }
 }

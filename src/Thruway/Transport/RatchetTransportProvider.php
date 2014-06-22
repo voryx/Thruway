@@ -8,6 +8,8 @@
 
 namespace Thruway\Transport;
 
+use Thruway\ManagerDummy;
+use Thruway\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Session;
 use Ratchet\ConnectionInterface;
@@ -35,6 +37,11 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     private $transports;
 
+    /**
+     * @var ManagerInterface
+     */
+    private $manager;
+
 
     function __construct($address = "127.0.0.1", $port = 8080) {
         $this->peer = null;
@@ -42,6 +49,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
         $this->address = $address;
         $this->transports = new \SplObjectStorage();
 
+        $this->manager = new ManagerDummy();
     }
 
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop) {
@@ -80,7 +88,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function onOpen(ConnectionInterface $conn)
     {
-        echo "onOpen...\n";
+        $this->manager->logDebug("onOpen...");
 
         $transport = new RatchetTransport($conn);
 
@@ -107,7 +115,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
         $this->peer->onClose($transport);
 
-        echo "onClose...\n";
+        $this->manager->logDebug("onClose...");
     }
 
     /**
@@ -119,7 +127,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function onError(ConnectionInterface $conn, \Exception $e)
     {
-        echo "onError...\n";
+        $this->manager->logError("onError...");
         // TODO: Implement onError() method.
     }
 
@@ -131,11 +139,30 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function onMessage(ConnectionInterface $from, $msg)
     {
-        echo "onMessage...(" . $msg . "\n";
+        $this->manager->logDebug("onMessage...(" . $msg . ")");
         $transport = $this->transports[$from];
 
         // TODO: Should deserialize in here
         $this->peer->onRawMessage($transport, $msg);
     }
+
+    /**
+     * @param \Thruway\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+
+        $this->manager->logInfo("Manager attached to RatchetTransportProvider");
+    }
+
+    /**
+     * @return \Thruway\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
 
 } 

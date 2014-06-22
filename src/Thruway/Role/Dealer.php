@@ -11,6 +11,8 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\Call;
+use Thruway\ManagerDummy;
+use Thruway\ManagerInterface;
 use Thruway\Message\CallMessage;
 use Thruway\Message\CancelMessage;
 use Thruway\Message\ErrorMessage;
@@ -43,12 +45,18 @@ class Dealer extends AbstractRole
     private $calls;
 
     /**
+     * @var ManagerInterface
+     */
+    private $manager;
+
+    /**
      *
      */
     function __construct()
     {
         $this->registrations = new \SplObjectStorage();
         $this->calls = new \SplObjectStorage();
+        $this->manager = new ManagerDummy();
     }
 
     /**
@@ -102,7 +110,7 @@ class Dealer extends AbstractRole
         $registration = new Registration($session, $msg->getProcedureName());
         $this->registrations->attach($registration);
 
-        echo 'Registered: ' . $registration->getProcedureName();
+        $this->manager->logDebug('Registered: ' . $registration->getProcedureName());
 
         return new RegisteredMessage($msg->getRequestId(), $registration->getId());
     }
@@ -128,7 +136,7 @@ class Dealer extends AbstractRole
         }
 
         $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-        echo 'No registration: ' . $msg->getRegistrationId();
+        $this->manager->logError('No registration: ' . $msg->getRegistrationId());
 
         return $errorMsg->setErrorURI('wamp.error.no_such_registration');
 
@@ -144,7 +152,7 @@ class Dealer extends AbstractRole
         $registration = $this->getRegistrationByProcedureName($msg->getProcedureName());
         if (!$registration) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            echo 'No registration: ' . $msg->getProcedureName();
+            $this->manager->logError('No registration for call message: ' . $msg->getProcedureName());
 
             $errorMsg->setErrorURI('wamp.error.no_such_registration');
             $session->sendMessage($errorMsg);
@@ -172,7 +180,7 @@ class Dealer extends AbstractRole
 
         if (!$call) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            echo 'No call for request: ' . $msg->getRequestId();
+            $this->manager->logError('No call for yield message: ' . $msg->getRequestId());
 
             $errorMsg->setErrorURI('wamp.error.no_such_procedure');
             $session->sendMessage($errorMsg);
@@ -270,10 +278,28 @@ class Dealer extends AbstractRole
                 $registration = $this->registrations->current();
                 $this->registrations->next();
                 if ($registration->getSession() == $session) {
-                    echo "Leaving and unegistering: {$registration->getProcedureName()}\n";
+                    $this->manager->logDebug("Leaving and unegistering: {$registration->getProcedureName()}");
                     $this->registrations->detach($registration);
                 }
             }
         }
     }
+
+    /**
+     * @param \Thruway\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+    }
+
+    /**
+     * @return \Thruway\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+
 }

@@ -11,4 +11,9 @@ namespace Thruway;
 
 interface ManagerInterface {
     public function addCallable($name, $callback);
+    function logIt($logLevel, $msg);
+    function logInfo($msg);
+    function logError($msg);
+    function logWarning($msg);
+    function logDebug($msg);
 } 

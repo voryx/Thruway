@@ -36,4 +36,12 @@ class PawlTransport implements TransportInterface {
         $this->conn->close();
     }
 
+    public function getTransportDetails()
+    {
+        return array(
+            "type" => "pawl"
+        );
+    }
+
+
 } 

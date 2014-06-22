@@ -33,4 +33,13 @@ class RatchetTransport implements TransportInterface {
         $this->conn->close();
     }
 
+    public function getTransportDetails()
+    {
+        return array(
+            "type" => "ratchet",
+            "request" => $this->conn->webSocket->request
+        );
+    }
+
+
 } 

@@ -15,4 +15,29 @@ class ManagerDummy implements ManagerInterface {
         // TODO: Implement addCallable() method.
     }
 
+    function logIt($logLevel, $msg)
+    {
+        // TODO: Implement logIt() method.
+    }
+
+    function logInfo($msg)
+    {
+        // TODO: Implement logInfo() method.
+    }
+
+    function logError($msg)
+    {
+        // TODO: Implement logError() method.
+    }
+
+    function logWarning($msg)
+    {
+        // TODO: Implement logWarning() method.
+    }
+
+    function logDebug($msg)
+    {
+        // TODO: Implement logDebug() method.
+    }
+
 } 

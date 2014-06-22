@@ -26,6 +26,16 @@ class Session extends AbstractSession
     private $authenticationProvider;
 
 
+    /**
+     * @var int
+     */
+    private $messagesSent;
+
+    /**
+     * @var \DateTime
+     */
+    private $sessionStart;
+
 
     function __construct(TransportInterface $transport)
     {
@@ -33,10 +43,14 @@ class Session extends AbstractSession
         $this->state = static::STATE_PRE_HELLO;
         $this->sessionId = static::getUniqueId();
         $this->realm = null;
+
+        $this->messagesSent = 0;
+        $this->sessionStart = new \DateTime();
     }
 
     public function sendMessage(Message $msg)
     {
+        $this->messagesSent++;
         $this->transport->sendMessage($msg);
     }
 

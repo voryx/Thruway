@@ -58,4 +58,12 @@ class InternalClientTransport implements TransportInterface {
         // TODO: Implement close() method.
     }
 
+    public function getTransportDetails()
+    {
+        return array(
+            "type" => "internalClient"
+        );
+    }
+
+
 } 

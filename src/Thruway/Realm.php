@@ -44,6 +44,20 @@ class Realm
      */
     private $roles;
 
+    /**
+     * @var ManagerInterface
+     */
+    private $manager;
+
+    /**
+     * @var Broker
+     */
+    private $broker;
+
+    /**
+     * @var Dealer
+     */
+    private $dealer;
 
     /**
      * @param $realmName
@@ -52,7 +66,16 @@ class Realm
     {
         $this->realmName = $realmName;
         $this->sessions = new \SplObjectStorage();
-        $this->roles = array(new Broker(), new Dealer());
+
+        $this->manager = new ManagerDummy();
+
+        $this->broker = new Broker();
+        $this->broker->setManager($this->manager);
+
+        $this->dealer = new Dealer();
+        $this->dealer->setManager($this->manager);
+
+        $this->roles = array($this->broker, $this->dealer);
     }
 
     /**
@@ -64,10 +87,10 @@ class Realm
 
         if (!$session->isAuthenticated()) {
             if ($msg instanceof HelloMessage) {
-                echo "got hello";
+                $this->manager->logDebug("got hello");
                 // send welcome message
                 if ($this->sessions->contains($session)) {
-                    echo "Connection tried to rejoin realm when it is already joined to the realm.";
+                    $this->manager->logError("Connection tried to rejoin realm when it is already joined to the realm.");
                     $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
                     // TODO should shut down session here
                 } else {
@@ -120,12 +143,12 @@ class Realm
                         );
                     } else {
                         //Send some message that says they were unable to authenticate
-                        echo "Unhandled message sent to authenticate\n";
+                        $this->manager->logError("Unhandled message sent to authenticate");
                     }
 
 
                 } else {
-                    echo "Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode() . "\n";
+                    $this->manager->logError("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
                 }
             }
         } else {
@@ -170,9 +193,30 @@ class Realm
      */
     public function leave(Session $session){
 
-        echo "Leaving realm {$session->getRealm()->getRealmName()}\n";
+        $this->manager->logDebug("Leaving realm {$session->getRealm()->getRealmName()}");
         foreach ($this->roles as $role){
             $role->leave($session);
         }
     }
+
+    /**
+     * @param \Thruway\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+
+        $this->broker->setManager($manager);
+        $this->dealer->setManager($manager);
+    }
+
+    /**
+     * @return \Thruway\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+
 }

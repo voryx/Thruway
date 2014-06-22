@@ -9,6 +9,8 @@
 namespace Thruway\Transport;
 
 
+use Thruway\ManagerDummy;
+use Thruway\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
 
@@ -24,9 +26,16 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
      */
     private $internalClient;
 
+    /**
+     * @var ManagerInterface
+     */
+    private $manager;
+
     function __construct(AbstractPeer $internalClient)
     {
         $this->internalClient = $internalClient;
+
+        $this->manager = new ManagerDummy();
     }
 
 
@@ -59,5 +68,24 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
         // tell the internal client to start up
         $this->internalClient->start();
     }
+
+    /**
+     * @param \Thruway\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+
+        $this->manager->logInfo("Manager attached to InternalClientTransportProvider");
+    }
+
+    /**
+     * @return \Thruway\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
 
 } 

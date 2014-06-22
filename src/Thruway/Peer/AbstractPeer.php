@@ -2,15 +2,23 @@
 
 namespace Thruway\Peer;
 
+use Thruway\ManagerInterface;
 use Thruway\Message\Message;
 use Thruway\Transport\AbstractTransportProvider;
 use Thruway\Transport\TransportInterface;
 
 abstract class AbstractPeer
 {
+    /**
+     * @var ManagerInterface
+     */
+    protected $manager;
+
     public function onRawMessage(TransportInterface $transport, $msg)
     {
-        echo "Raw message... (" . $msg . ")\n";
+        if ($this->manager instanceof ManagerInterface) {
+            $this->manager->logDebug("Raw message... (" . $msg . ")");
+        }
 
         $msgObj = Message::createMessageFromRaw($msg);
 
@@ -22,6 +30,8 @@ abstract class AbstractPeer
     abstract public function onOpen(TransportInterface $transport);
 
     abstract public function addTransportProvider(AbstractTransportProvider $transportProvider);
+
+    abstract public function setManager($manager);
 
     abstract public function start();
 

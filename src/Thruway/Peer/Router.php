@@ -44,11 +44,6 @@ class Router extends AbstractPeer
     private $sessions;
 
     /**
-     * @var ManagerInterface
-     */
-    private $manager;
-
-    /**
      *
      */
     function __construct(LoopInterface $loop = null)
@@ -69,6 +64,9 @@ class Router extends AbstractPeer
 
     public function onOpen(TransportInterface $transport) {
         $session = new Session($transport);
+
+        // TODO: add a little more detail to this (what kind and address maybe?)
+        $this->manager->logInfo("New Session started " . json_encode($transport->getTransportDetails()) . "" );
 
         $this->sessions->attach($transport, $session);
     }
@@ -162,7 +160,7 @@ class Router extends AbstractPeer
     public function setupManager() {
         // setup the config for the manager
         $this->manager->addCallable("sessions.count", array($this, "managerGetSessionCount"));
-
+        $this->manager->addCallable("sessions.list", array($this, "managerGetSessionList"));
     }
 
     /**

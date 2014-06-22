@@ -8,6 +8,8 @@
 
 namespace Thruway\Transport;
 
+use Thruway\ManagerDummy;
+use Thruway\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
@@ -42,6 +44,11 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
      */
     private $connector;
 
+    /**
+     * @var ManagerInterface
+     */
+    private $manager;
+
 
     function __construct($URL = "ws://127.0.0.1:9090/")
     {
@@ -49,6 +56,8 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
         $this->peer = null;
 
         $this->URL = $URL;
+
+        $this->manager = new ManagerDummy();
 
     }
 
@@ -116,5 +125,25 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     {
         $this->peer = $peer;
     }
+
+    /**
+     * @param \Thruway\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+
+        $this->manager->logInfo("Manager attached to PawlTransportProvider");
+    }
+
+    /**
+     * @return \Thruway\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+
 
 }
