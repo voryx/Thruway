@@ -10,6 +10,7 @@ namespace Thruway;
 
 
 use Thruway\Message\Message;
+use Thruway\Transport\InternalClientTransport;
 use Thruway\Transport\TransportInterface;
 use Ratchet\ConnectionInterface;
 
@@ -36,8 +37,12 @@ class Session extends AbstractSession
      */
     private $sessionStart;
 
+    /**
+     * @var ManagerInterface
+     */
+    private $manager;
 
-    function __construct(TransportInterface $transport)
+    function __construct(TransportInterface $transport, ManagerInterface $manager = null)
     {
         $this->transport = $transport;
         $this->state = static::STATE_PRE_HELLO;
@@ -46,6 +51,10 @@ class Session extends AbstractSession
 
         $this->messagesSent = 0;
         $this->sessionStart = new \DateTime();
+
+        if ($manager === null) $manager = new ManagerDummy();
+
+        $this->manager = $manager;
     }
 
     public function sendMessage(Message $msg)
@@ -98,5 +107,35 @@ class Session extends AbstractSession
 
         return $result[0];
     }
+
+    /**
+     * @param \Thruway\ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+    }
+
+    /**
+     * @return \Thruway\ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+    public function getMessagesSent() {
+        return $this->messagesSent;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getSessionStart()
+    {
+        return $this->sessionStart;
+    }
+
+
 
 } 

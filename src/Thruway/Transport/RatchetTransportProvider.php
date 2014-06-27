@@ -88,7 +88,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function onOpen(ConnectionInterface $conn)
     {
-        $this->manager->logDebug("onOpen...");
+        $this->manager->logDebug("RatchetTransportProvider::onOpen");
 
         $transport = new RatchetTransport($conn);
 

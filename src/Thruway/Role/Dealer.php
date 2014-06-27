@@ -52,11 +52,15 @@ class Dealer extends AbstractRole
     /**
      *
      */
-    function __construct()
+    function __construct(ManagerInterface $manager = null)
     {
         $this->registrations = new \SplObjectStorage();
         $this->calls = new \SplObjectStorage();
-        $this->manager = new ManagerDummy();
+
+        if ($manager === null) $manager = new ManagerDummy();
+        $this->setManager($manager);
+
+
     }
 
     /**
@@ -291,7 +295,13 @@ class Dealer extends AbstractRole
     public function setManager($manager)
     {
         $this->manager = $manager;
+
+
     }
+
+//    public function startManager() {
+//        $this->manager->addCallable("dealer.get_registrations", array($this, "managerGetRegistrations"));
+//    }
 
     /**
      * @return \Thruway\ManagerInterface
@@ -301,5 +311,19 @@ class Dealer extends AbstractRole
         return $this->manager;
     }
 
+    public function managerGetRegistrations() {
+        $theRegistrations = [];
 
+        echo "Hey";
+        /** @var $registration Registration */
+        foreach ($this->registrations as $registration) {
+            $theRegistrations[] = [
+                "id" => $registration->getId(),
+                "name" => $registration->getProcedureName(),
+                "session" => $registration->getSession()->getSessionId()
+            ];
+        }
+
+        return $theRegistrations;
+    }
 }

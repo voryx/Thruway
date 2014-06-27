@@ -61,7 +61,8 @@ class InternalClientTransport implements TransportInterface {
     public function getTransportDetails()
     {
         return array(
-            "type" => "internalClient"
+            "type" => "internalClient",
+            "transportAddress" => "internal"
         );
     }
 

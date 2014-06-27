@@ -12,6 +12,7 @@ use Thruway\ManagerDummy;
 use Thruway\ManagerInterface;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
+use Thruway\Realm;
 use Thruway\RealmManager;
 use Thruway\Session;
 use Thruway\Transport\AbstractTransportProvider;
@@ -46,24 +47,30 @@ class Router extends AbstractPeer
     /**
      *
      */
-    function __construct(LoopInterface $loop = null)
+    function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
     {
+        // initially we are just going to start with a dummy manager
+        if ($manager === null) $manager = new ManagerDummy();
+        $this->manager = $manager;
+
+        $manager->logDebug("New router created");
+
         $this->realmManager = new RealmManager();
         $this->transportProviders = array();
         $this->sessions = new \SplObjectStorage();
 
         if ($loop === null) {
+            $manager->logDebug("No loop given, creating our own instance");
             $loop = Factory::create();
         }
 
         $this->loop = $loop;
 
-        // initially we are just going to start with a dummy manager
-        $this->manager = new ManagerDummy();
+
     }
 
     public function onOpen(TransportInterface $transport) {
-        $session = new Session($transport);
+        $session = new Session($transport, $this->manager);
 
         // TODO: add a little more detail to this (what kind and address maybe?)
         $this->manager->logInfo("New Session started " . json_encode($transport->getTransportDetails()) . "" );
@@ -121,6 +128,7 @@ class Router extends AbstractPeer
 
     public function start()
     {
+        $this->manager->logDebug("Starting router");
         if ($this->loop === null) {
             throw new \Exception("Loop is null");
         }
@@ -131,15 +139,19 @@ class Router extends AbstractPeer
 
         /** @var $transportProvider AbstractTransportProvider */
         foreach ($this->transportProviders as $transportProvider) {
+            $this->manager->logDebug("Starting transport provider " . get_class($transportProvider));
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
         $this->setupManager();
 
+        $this->manager->logDebug("Starting loop");
         $this->loop->run();
     }
 
     public function onClose(TransportInterface $transport) {
+        $this->manager->logDebug("onClose from " . json_encode($transport->getTransportDetails()));
+
         /** @var  $session Session */
         $session = $this->sessions[$transport];
 
@@ -160,7 +172,9 @@ class Router extends AbstractPeer
     public function setupManager() {
         // setup the config for the manager
         $this->manager->addCallable("sessions.count", array($this, "managerGetSessionCount"));
-        $this->manager->addCallable("sessions.list", array($this, "managerGetSessionList"));
+        //$this->manager->addCallable("sessions.list", array($this, "managerGetSessionList"));
+        $this->manager->addCallable("sessions.get", array($this, "managerGetSessions"));
+        $this->manager->addCallable("realms.get", array($this, "managerGetRealms"));
     }
 
     /**
@@ -173,5 +187,41 @@ class Router extends AbstractPeer
 
     public function managerGetSessionCount() {
         return array(count($this->sessions));
+    }
+
+    public function managerGetSessions() {
+        $theSessions = array();
+
+        /** @var $session Session */
+        /** @var $transport TransportInterface */
+        foreach($this->sessions as $key) {
+            $session = $this->sessions[$key];
+            $theSessions[] = [
+                "id" => $session->getSessionId(),
+                "transport" => $session->getTransport()->getTransportDetails(),
+                "messagesSent" => $session->getMessagesSent(),
+                "sessionStart" => $session->getSessionStart(),
+                "realm" => $session->getRealm()->getRealmName()
+            ];
+        }
+
+        return $theSessions;
+    }
+
+    public function managerGetRealms() {
+        $theRealms = [];
+
+        /** @var $realm Realm */
+        foreach($this->realmManager->getRealms() as $realm) {
+            $theRealms[] = [
+                "name" => $realm->getRealmName()
+            ];
+        }
+
+        return $theRealms;
+    }
+
+    public function managerGetTransports() {
+
     }
 }

@@ -10,6 +10,7 @@ namespace Thruway;
 
 
 use Thruway\Message\Message;
+use Thruway\Transport\TransportInterface;
 
 /**
  * Class AbstractSession
@@ -122,7 +123,7 @@ abstract class AbstractSession
     }
 
     /**
-     * @return mixed
+     * @return TransportInterface
      */
     public function getTransport()
     {

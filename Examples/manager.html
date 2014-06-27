@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html ng-app="myApp">
+<head>
+    <title>Thruway Management</title>
+</head>
+<body data-ng-controller="myController">
+
+<input ng-model="something"/>
+<button ng-click="getSessions()">Button</button>
+<div id="sessionList">
+    <h3>Sessions:</h3>
+    <ul>
+        <li ng-repeat="session in managerSessions">
+            {{ session.transport.type }}({{ session.transport.transportAddress }}): {{ session.sessionStart }} {{ session.realm }}
+        </li>
+    </ul>
+</div>
+
+<div id="registrationList">
+    <h3>Registrations:</h3>
+    <ul>
+        <li ng-repeat="registration in managerRegistrations">
+            {{ registration.id }}: {{ registration.name }} -> session {{ registration.session }}
+        </li>
+    </ul>
+</div>
+
+<div id="realmList">
+    <h3>Realms:</h3>
+    <ul>
+        <li ng-repeat="realm in managerRealms">
+            {{ realm.name }}
+        </li>
+    </ul>
+</div>
+
+
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.18/angular.min.js"></script>
+<script src="https://autobahn.s3.amazonaws.com/autobahnjs/latest/autobahn.min.jgz"></script>
+<script>
+    var app = angular.module("myApp", []);
+
+    var theScope;
+
+    app.controller("myController", function ($scope) {
+        theScope = $scope;
+        $scope.managerSessions = [];
+        $scope.managerRealms = [];
+
+        $scope.getSessions = function () {
+
+            session.call('manager.sessions.get', []).then(
+                    function (res) {
+                        $scope.managerSessions = res;
+                        $scope.$digest();
+                        //console.log("Result:", res);
+                    }
+            );
+
+//            session.call('manager.dealer.get_registrations', []).then(
+//                    function (res) {
+//                        $scope.managerRegistrations = res;
+//                        $scope.$digest();
+//                        //console.log("Result:", res);
+//                    }
+//            );
+
+            session.call('manager.realms.get', []).then(
+                    function (res) {
+                        $scope.managerRealms = res;
+                        $scope.$digest();
+                        console.log("Result:", res);
+                    }
+            );
+        }
+    });
+
+    var connection = new autobahn.Connection({
+        url: 'ws://127.0.0.1:9090/',
+        realm: 'manager'
+    });
+
+    var session = null;
+
+
+    connection.onopen = function (theSession) {
+        session = theSession;
+        // 1) subscribe to a topic
+//        function onevent(args) {
+//            console.log("Event:", args[0]);
+//        }
+//        session.subscribe('com.myapp.hello', onevent);
+
+        // 2) publish an event
+//        session.publish('com.myapp.hello', ['Hello, world!']);
+
+        // 3) register a procedure for remoting
+//        function add2(args) {
+//            return args[0] + args[1];
+//        }
+//        session.register('com.myapp.add2', add2);
+
+        // 4) call a remote procedure
+        session.call('manager.sessions.get', []).then(
+                function (res) {
+                    console.log("Result:", res);
+                }
+        );
+    };
+
+    connection.open();
+</script>
+
+</html>

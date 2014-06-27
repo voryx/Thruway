@@ -42,4 +42,14 @@ class RealmManager {
 
         return true;
     }
+
+    /**
+     * @return array
+     */
+    public function getRealms()
+    {
+        return $this->realms;
+    }
+
+
 } 

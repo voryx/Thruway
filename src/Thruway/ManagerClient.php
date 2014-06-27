@@ -11,7 +11,7 @@ class ManagerClient extends Client implements ManagerInterface {
 
     function __construct()
     {
-        parent::__construct("realm1");
+        parent::__construct("manager");
 
         $this->callables = array();
     }
@@ -36,19 +36,19 @@ class ManagerClient extends Client implements ManagerInterface {
     {
         $this->callables[] = array($name, $callback);
 
-        $this->getCallee()->register($this->session, "manager.call." . $name, $callback);
+        $this->getCallee()->register($this->session, "manager." . $name, $callback);
     }
 
 
-    function testSubscribe() {
-        $this->getSubscriber()->subscribe($this->session, "com.myapp.hello", array($this, "onSomethingElse"));
-    }
-
-    function onSomethingElse($msg) {
-        echo "\n\n\n---------------------------------\n";
-        var_dump($msg);
-        echo "---------------------------------\n";
-    }
+//    function testSubscribe() {
+//        $this->getSubscriber()->subscribe($this->session, "com.myapp.hello", array($this, "onSomethingElse"));
+//    }
+//
+//    function onSomethingElse($msg) {
+//        echo "\n\n\n---------------------------------\n";
+//        var_dump($msg);
+//        echo "---------------------------------\n";
+//    }
 
     function logIt($logLevel, $msg) {
         echo $logLevel . ": " . $msg . "\n";

@@ -50,12 +50,17 @@ class Broker extends AbstractRole
     /**
      *
      */
-    function __construct()
+    function __construct(ManagerInterface $manager = null)
     {
+        if ($manager === null) $manager = new ManagerDummy();
+        $this->manager = $manager;
+
+        $this->manager->logDebug("Broker constructor");
+
         $this->subscriptions = new \SplObjectStorage();
         $this->topics = array();
 
-        $this->manager = new ManagerDummy();
+
     }
 
     /**
@@ -65,6 +70,7 @@ class Broker extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
+        $this->manager->logDebug("Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . $msg->getSerializedMessage());
 
         if ($msg instanceof PublishMessage):
             $this->processPublish($session, $msg);

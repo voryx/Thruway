@@ -13,9 +13,9 @@ $manager = new \Thruway\ManagerClient();
 
 $loop = \React\EventLoop\Factory::create();
 
-$loop->addTimer(2, array($manager, "testSubscribe"));
+//$loop->addTimer(2, array($manager, "testSubscribe"));
 
-$router = new Router($loop);
+$router = new Router($loop, $manager);
 
 $transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
 
@@ -23,7 +23,5 @@ $internalClientTransportProvider = new \Thruway\Transport\InternalClientTranspor
 
 $router->addTransportProvider($transportProvider);
 $router->addTransportProvider($internalClientTransportProvider);
-
-$router->setManager($manager);
 
 $router->start();
