@@ -77,7 +77,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
 
-                echo "Pawl has connected";
+                echo "Pawl has connected\n";
 
                 $transport = new PawlTransport($conn);
 
@@ -94,7 +94,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                 $conn->on(
                     'close',
                     function ($conn) {
-                        echo "Pawl has closed";
+                        echo "Pawl has closed\n";
                         $this->peer->onClose('close');
                     }
                 );
