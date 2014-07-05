@@ -1,9 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 5:06 PM
+ * User: Rottenwood, based on matt
+ * Date: 05-07-2014
  */
 
 namespace Thruway\Transport;
@@ -66,7 +64,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
      */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
-        echo "Starting Transport\n";
+        echo "Запуск транспортного процесса\n";
 
         $this->peer = $peer;
 
@@ -77,7 +75,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
 
-                echo "Pawl has connected\n";
+                echo "Соединение с сервером установлено\n";
 
                 $transport = new PawlTransport($conn);
 
@@ -86,7 +84,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                 $conn->on(
                     'message',
                     function ($msg) use ($transport) {
-                        echo "Received: {$msg}\n";
+                        echo "Получено: {$msg}\n";
                         $this->peer->onRawMessage($transport, $msg);
                     }
                 );
@@ -94,14 +92,14 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                 $conn->on(
                     'close',
                     function ($conn) {
-                        echo "Pawl has closed\n";
+                        echo "Соединение с сервером закрыто\n";
                         $this->peer->onClose('close');
                     }
                 );
             },
             function ($e) {
                 $this->peer->onClose('unreachable');
-                echo "Could not connect: {$e->getMessage()}\n";
+                echo "Не могу установить соединение: {$e->getMessage()}\n";
                 // $this->loop->stop();
             }
         );
