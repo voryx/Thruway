@@ -3,7 +3,8 @@
 namespace Thruway\Message;
 
 
-class PublishMessage extends Message {
+class PublishMessage extends Message
+{
     const MSG_CODE = Message::MSG_PUBLISH;
 
     private $options;
@@ -27,7 +28,10 @@ class PublishMessage extends Message {
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_CODE;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -37,6 +41,10 @@ class PublishMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
+        if ($this->getOptions() === null) {
+            $this->setOptions(new \stdClass());
+        }
+
         $a = array($this->getRequestId(), $this->getOptions(), $this->getTopicName());
 
         if ($this->getArguments() != null) {
