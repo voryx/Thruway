@@ -100,6 +100,28 @@ class Connection implements EventEmitterInterface
         );
     }
 
+    /**
+     *  Process events at a set interval
+     *
+     * @param int $timer
+     */
+    public function doEvents($timer = 1)
+    {
+        $loop = $this->getClient()->getLoop();
+
+        $looping = true;
+        $loop->addTimer(
+            $timer,
+            function () use (&$looping) {
+                $looping = false;
+            }
+        );
+
+        while ($looping) {
+            usleep(1000);
+            $loop->tick();
+        }
+    }
 
     /**
      *  Starts the open sequence
@@ -117,5 +139,14 @@ class Connection implements EventEmitterInterface
         $this->client->setAttemptRetry(false);
         $this->transport->close();
     }
+
+    /**
+     * @return Client
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
 
 }

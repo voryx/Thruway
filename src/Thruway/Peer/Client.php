@@ -457,5 +457,14 @@ class Client extends AbstractPeer implements EventEmitterInterface
         return $this->manager;
     }
 
+    /**
+     * @return \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|LoopInterface|\React\EventLoop\StreamSelectLoop
+     */
+    public function getLoop()
+    {
+        return $this->loop;
+    }
+
+
 
 }
