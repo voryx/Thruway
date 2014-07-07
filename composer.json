@@ -1,5 +1,5 @@
 {
-    "name": "voryx/thruway"
+    "name": "rottenwood/thruwayrus"
   , "type": "library"
   , "description": "PHP WAMP2 library"
   , "keywords": ["WebSockets", "Server", "Client", "WAMP", "WAMP2", "Autobahn", "Sockets"]
