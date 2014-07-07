@@ -50,6 +50,11 @@ abstract class AbstractSession
     protected $sessionId;
 
     /**
+     * @var bool
+     */
+    private $goodbyeSent = false;
+
+    /**
      * @param Message $msg
      * @return mixed
      */
@@ -127,5 +132,21 @@ abstract class AbstractSession
     public function getTransport()
     {
         return $this->transport;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isGoodbyeSent()
+    {
+        return $this->goodbyeSent;
+    }
+
+    /**
+     * @param boolean $goodbyeSent
+     */
+    public function setGoodbyeSent($goodbyeSent)
+    {
+        $this->goodbyeSent = $goodbyeSent;
     }
 } 

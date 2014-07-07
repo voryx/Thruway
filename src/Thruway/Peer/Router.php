@@ -10,6 +10,7 @@ namespace Thruway\Peer;
 
 use Thruway\ManagerDummy;
 use Thruway\ManagerInterface;
+use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\RealmManager;

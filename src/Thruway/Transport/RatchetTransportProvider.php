@@ -139,7 +139,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function onMessage(ConnectionInterface $from, $msg)
     {
-        $this->manager->logDebug("onMessage...(" . $msg . ")");
+        $this->manager->logDebug("onMessage...({$msg})");
         $transport = $this->transports[$from];
 
         // TODO: Should deserialize in here

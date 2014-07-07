@@ -3,12 +3,26 @@
 namespace Thruway\Message;
 
 
-class GoodbyeMessage extends Message {
-    const MSG_CODE = Message::MSG_GOODBYE;
+/**
+ * Class GoodbyeMessage
+ * @package Thruway\Message
+ */
+class GoodbyeMessage extends Message
+{
 
+    /**
+     * @var
+     */
     private $details;
+    /**
+     * @var
+     */
     private $reason;
 
+    /**
+     * @param $details
+     * @param $reason
+     */
     function __construct($details, $reason)
     {
         $this->details = $details;
@@ -50,7 +64,10 @@ class GoodbyeMessage extends Message {
     /**
      * @return int
      */
-    public function getMsgCode() { echo "\n" . static::MSG_CODE . "\n"; return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_GOODBYE;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
