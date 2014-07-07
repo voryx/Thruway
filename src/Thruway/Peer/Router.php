@@ -50,12 +50,14 @@ class Router extends AbstractPeer
     function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
     {
         // initially we are just going to start with a dummy manager
-        if ($manager === null) $manager = new ManagerDummy();
+        if ($manager === null) {
+            $manager = new ManagerDummy();
+        }
         $this->manager = $manager;
 
         $manager->logDebug("New router created");
 
-        $this->realmManager = new RealmManager();
+        $this->realmManager = new RealmManager($manager);
         $this->transportProviders = array();
         $this->sessions = new \SplObjectStorage();
 
@@ -69,11 +71,12 @@ class Router extends AbstractPeer
 
     }
 
-    public function onOpen(TransportInterface $transport) {
+    public function onOpen(TransportInterface $transport)
+    {
         $session = new Session($transport, $this->manager);
 
         // TODO: add a little more detail to this (what kind and address maybe?)
-        $this->manager->logInfo("New Session started " . json_encode($transport->getTransportDetails()) . "" );
+        $this->manager->logInfo("New Session started " . json_encode($transport->getTransportDetails()) . "");
 
         $this->sessions->attach($transport, $session);
     }
@@ -149,7 +152,8 @@ class Router extends AbstractPeer
         $this->loop->run();
     }
 
-    public function onClose(TransportInterface $transport) {
+    public function onClose(TransportInterface $transport)
+    {
         $this->manager->logDebug("onClose from " . json_encode($transport->getTransportDetails()));
 
         /** @var  $session Session */
@@ -165,11 +169,12 @@ class Router extends AbstractPeer
      */
     public function setManager($manager)
     {
-        $this->manager = $manager;
-
+//        $this->manager = $manager;
+        throw new \Exception('Manager needs to be set in the constructor');
     }
 
-    public function setupManager() {
+    public function setupManager()
+    {
         // setup the config for the manager
         $this->manager->addCallable("sessions.count", array($this, "managerGetSessionCount"));
         //$this->manager->addCallable("sessions.list", array($this, "managerGetSessionList"));
@@ -185,16 +190,18 @@ class Router extends AbstractPeer
         return $this->manager;
     }
 
-    public function managerGetSessionCount() {
+    public function managerGetSessionCount()
+    {
         return array(count($this->sessions));
     }
 
-    public function managerGetSessions() {
+    public function managerGetSessions()
+    {
         $theSessions = array();
 
         /** @var $session Session */
         /** @var $transport TransportInterface */
-        foreach($this->sessions as $key) {
+        foreach ($this->sessions as $key) {
             $session = $this->sessions[$key];
             $theSessions[] = [
                 "id" => $session->getSessionId(),
@@ -208,11 +215,12 @@ class Router extends AbstractPeer
         return $theSessions;
     }
 
-    public function managerGetRealms() {
+    public function managerGetRealms()
+    {
         $theRealms = [];
 
         /** @var $realm Realm */
-        foreach($this->realmManager->getRealms() as $realm) {
+        foreach ($this->realmManager->getRealms() as $realm) {
             $theRealms[] = [
                 "name" => $realm->getRealmName()
             ];
@@ -221,7 +229,8 @@ class Router extends AbstractPeer
         return $theRealms;
     }
 
-    public function managerGetTransports() {
+    public function managerGetTransports()
+    {
 
     }
 }

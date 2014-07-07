@@ -67,13 +67,11 @@ class Realm
         $this->realmName = $realmName;
         $this->sessions = new \SplObjectStorage();
 
-        $this->manager = new ManagerDummy();
-
         $this->broker = new Broker();
-        $this->broker->setManager($this->manager);
 
         $this->dealer = new Dealer();
-        $this->dealer->setManager($this->manager);
+
+        $this->setManager(new ManagerDummy());
 
         $this->roles = array($this->broker, $this->dealer);
     }
@@ -90,7 +88,9 @@ class Realm
                 $this->manager->logDebug("got hello");
                 // send welcome message
                 if ($this->sessions->contains($session)) {
-                    $this->manager->logError("Connection tried to rejoin realm when it is already joined to the realm.");
+                    $this->manager->logError(
+                        "Connection tried to rejoin realm when it is already joined to the realm."
+                    );
                     $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
                     // TODO should shut down session here
                 } else {
@@ -191,10 +191,11 @@ class Realm
     /**
      * @param Session $session
      */
-    public function leave(Session $session){
+    public function leave(Session $session)
+    {
 
         $this->manager->logDebug("Leaving realm {$session->getRealm()->getRealmName()}");
-        foreach ($this->roles as $role){
+        foreach ($this->roles as $role) {
             $role->leave($session);
         }
     }
@@ -208,6 +209,13 @@ class Realm
 
         $this->broker->setManager($manager);
         $this->dealer->setManager($manager);
+
+        $manager->addCallable(
+            "realm.{$this->getRealmName()}.registrations",
+            function () {
+                return $this->dealer->managerGetRegistrations();
+            }
+        );
     }
 
     /**

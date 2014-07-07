@@ -71,9 +71,10 @@ class Callee extends AbstractRole
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
                 $this->registrations[$key]['registration_id'] = $msg->getRegistrationId();
-                break;
+                return;
             }
         }
+        echo "Got a Registered Message, but the request ids don't match\n";
     }
 
     /**

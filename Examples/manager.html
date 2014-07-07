@@ -7,11 +7,13 @@
 
 <input ng-model="something"/>
 <button ng-click="getSessions()">Button</button>
+<button ng-click="getRegistrations()">Registrations</button>
 <div id="sessionList">
     <h3>Sessions:</h3>
     <ul>
         <li ng-repeat="session in managerSessions">
-            {{ session.transport.type }}({{ session.transport.transportAddress }}): {{ session.sessionStart }} {{ session.realm }}
+            {{ session.transport.type }}({{ session.transport.transportAddress }}): {{ session.sessionStart }} {{
+            session.realm }}
         </li>
     </ul>
 </div>
@@ -73,6 +75,23 @@
                         console.log("Result:", res);
                     }
             );
+        }
+
+        $scope.getRegistrations = function () {
+            //managerRegistrations
+
+            angular.forEach($scope.managerRealms, function (realm) {
+
+                session.call('manager.realm.' + realm.name + '.registrations', []).then(
+                        function (res) {
+                            $scope.managerRegistrations[realm.name] = res;
+                            $scope.$digest();
+                        }
+                );
+
+            });
+
+
         }
     });
 

@@ -5,9 +5,13 @@ namespace Thruway;
 use Thruway\Peer\Client;
 use Thruway\Role\Publisher;
 
-class ManagerClient extends Client implements ManagerInterface {
+class ManagerClient extends Client implements ManagerInterface
+{
 
-
+    /**
+     * @var
+     */
+    private $loggingPublish = true;
 
     function __construct()
     {
@@ -22,7 +26,8 @@ class ManagerClient extends Client implements ManagerInterface {
      * (although we may want a loop later on if we want to setup
      * outgoing connections or timers or something)
      */
-    function start() {
+    function start()
+    {
 
     }
 
@@ -50,29 +55,43 @@ class ManagerClient extends Client implements ManagerInterface {
 //        echo "---------------------------------\n";
 //    }
 
-    function logIt($logLevel, $msg) {
+    function logIt($logLevel, $msg)
+    {
         echo $logLevel . ": " . $msg . "\n";
 
-        if ($this->getPublisher() instanceof Publisher) {
-            $this->getPublisher()->publish($this->session, "manager.log." . strtolower($logLevel), array($msg), array(), array());
+
+        if ($this->getPublisher() instanceof Publisher && $this->loggingPublish) {
+            $this->loggingPublish = false;
+            $this->getPublisher()->publish(
+                $this->session,
+                "manager.log." . strtolower($logLevel),
+                array($msg),
+                array(),
+                array()
+            );
+            $this->loggingPublish = true;
         }
 
 
     }
 
-    function logInfo($msg) {
+    function logInfo($msg)
+    {
         $this->logIt("INFO", $msg);
     }
 
-    function logError($msg) {
+    function logError($msg)
+    {
         $this->logIt("ERROR", $msg);
     }
 
-    function logWarning($msg) {
+    function logWarning($msg)
+    {
         $this->logIt("WARNING", $msg);
     }
 
-    function logDebug($msg) {
+    function logDebug($msg)
+    {
         $this->logIt("DEBUG", $msg);
     }
 }
