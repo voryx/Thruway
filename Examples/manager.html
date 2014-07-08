@@ -6,8 +6,7 @@
 <body data-ng-controller="myController">
 
 <input ng-model="something"/>
-<button ng-click="getSessions()">Button</button>
-<button ng-click="getRegistrations()">Registrations</button>
+<button ng-click="getSessions()">Get stuff</button>
 <div id="sessionList">
     <h3>Sessions:</h3>
     <ul>
@@ -20,11 +19,15 @@
 
 <div id="registrationList">
     <h3>Registrations:</h3>
-    <ul>
-        <li ng-repeat="registration in managerRegistrations">
-            {{ registration.id }}: {{ registration.name }} -> session {{ registration.session }}
-        </li>
-    </ul>
+
+    <div ng-repeat="(realm, registrations) in managerRegistrations">
+        <ul>
+
+            <li ng-repeat="registration in registrations">
+                {{ registration.id }}: {{ registration.name }} -> session {{ registration.session }} {{ realm }}
+            </li>
+        </ul>
+    </div>
 </div>
 
 <div id="realmList">
@@ -49,7 +52,7 @@
         theScope = $scope;
         $scope.managerSessions = [];
         $scope.managerRealms = [];
-        $scope.managerRegistrations = [];
+        $scope.managerRegistrations = {};
 
         $scope.getSessions = function () {
 
@@ -74,30 +77,25 @@
                         $scope.managerRealms = res;
                         $scope.$digest();
                         console.log("Result:", res);
+
+                        angular.forEach($scope.managerRealms, function (realm) {
+
+                            session.call('manager.realm.' + realm.name + '.registrations', []).then(
+                                    function (res) {
+                                        $scope.managerRegistrations[realm.name] = res;
+                                        $scope.$digest();
+                                    }
+                            );
+
+                        });
+
                     }
             );
-        }
-
-        $scope.getRegistrations = function () {
-            //managerRegistrations
-
-            angular.forEach($scope.managerRealms, function (realm) {
-
-                session.call('manager.realm.' + realm.name + '.registrations', []).then(
-                        function (res) {
-                            $scope.managerRegistrations[realm.name] = res;
-                            $scope.$digest();
-                        }
-                );
-
-            });
-
-
         }
     });
 
     var connection = new autobahn.Connection({
-        url: 'ws://127.0.0.1:9090/',
+        url: 'ws://192.168.1.10:9090/',
         realm: 'manager'
     });
 
