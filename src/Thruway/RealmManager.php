@@ -35,6 +35,7 @@ class RealmManager
         }
 
         if (!array_key_exists($realmName, $this->realms)) {
+            $this->manager->logDebug("Creating new realm \"" . $realmName . "\"");
             $this->realms[$realmName] = new Realm($realmName);
             $this->realms[$realmName]->setManager($this->manager);
 

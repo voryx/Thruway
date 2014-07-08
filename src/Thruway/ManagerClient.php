@@ -18,6 +18,8 @@ class ManagerClient extends Client implements ManagerInterface
         parent::__construct("manager");
 
         $this->callables = array();
+
+        $this->on('open', array($this, 'onSessionStart'));
     }
 
     /**
@@ -41,7 +43,15 @@ class ManagerClient extends Client implements ManagerInterface
     {
         $this->callables[] = array($name, $callback);
 
-        $this->getCallee()->register($this->session, "manager." . $name, $callback);
+        if ($this->sessionIsUp()) {
+            $this->getCallee()->register($this->session, "manager." . $name, $callback);
+        }
+    }
+
+    public function onSessionStart($session, $transport) {
+        foreach ($this->callables as $callable) {
+            $this->getCallee()->register($this->session, "manager." . $callable[0], $callable[1]);
+        }
     }
 
 
@@ -55,12 +65,27 @@ class ManagerClient extends Client implements ManagerInterface
 //        echo "---------------------------------\n";
 //    }
 
+    function sessionIsUp() {
+        $sessionIsUp = false;
+        if ($this->session !== null) {
+            if ($this->session->getState() == Session::STATE_UP) {
+                $sessionIsUp = true;
+            }
+        }
+
+        return $sessionIsUp;
+    }
+
     function logIt($logLevel, $msg)
     {
         echo $logLevel . ": " . $msg . "\n";
 
 
-        if ($this->getPublisher() instanceof Publisher && $this->loggingPublish) {
+
+        if ($this->getPublisher() instanceof Publisher
+            && $this->loggingPublish
+            && $this->sessionIsUp()
+        ) {
             $this->loggingPublish = false;
             $this->getPublisher()->publish(
                 $this->session,

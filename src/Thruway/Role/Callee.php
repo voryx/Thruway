@@ -18,6 +18,7 @@ use Thruway\Message\RegisteredMessage;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\UnregisteredMessage;
 use Thruway\Message\YieldMessage;
+use Thruway\Registration;
 use Thruway\Session;
 
 /**
@@ -70,11 +71,12 @@ class Callee extends AbstractRole
     {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
+                echo "---Setting registration_id for " . $registration['procedure_name'] . " (" . $key . ")\n";
                 $this->registrations[$key]['registration_id'] = $msg->getRegistrationId();
                 return;
             }
         }
-        echo "Got a Registered Message, but the request ids don't match\n";
+        echo "---Got a Registered Message, but the request ids don't match\n";
     }
 
     /**
@@ -92,14 +94,18 @@ class Callee extends AbstractRole
     public function processInvocation(ClientSession $session, InvocationMessage $msg)
     {
         foreach ($this->registrations as $key => $registration) {
-            if ($registration["registration_id"] === $msg->getRegistrationId()) {
-                $arguments = $registration["callback"]($msg->getArguments());
-                $options = new \stdClass();
-                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, [$arguments]);
+            if ( ! isset($registration["registration_id"])) {
+                echo "Registration_id not set for " . $registration['procedure_name'] . "\n";
+            } else {
+                if ($registration["registration_id"] === $msg->getRegistrationId()) {
+                    $arguments = $registration["callback"]($msg->getArguments());
+                    $options = new \stdClass();
+                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options, [$arguments]);
 
-                $session->sendMessage($yieldMsg);
+                    $session->sendMessage($yieldMsg);
 
-                break;
+                    break;
+                }
             }
         }
 

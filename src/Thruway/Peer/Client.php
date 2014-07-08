@@ -25,6 +25,7 @@ use Thruway\Role\Callee;
 use Thruway\Role\Caller;
 use Thruway\Role\Publisher;
 use Thruway\Role\Subscriber;
+use Thruway\Session;
 use Thruway\Transport\AbstractTransportProvider;
 use Thruway\Transport\TransportInterface;
 use Evenement\EventEmitterInterface;
@@ -141,6 +142,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
         ];
 
         $this->manager = new ManagerDummy();
+
+        $this->session = null;
     }
 
     /**
@@ -191,6 +194,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->transport = $transport;
         $session = new ClientSession($transport, $this);
         $this->session = $session;
+
+        $session->setState(Session::STATE_DOWN);
+
         $this->startSession($session);
     }
 
@@ -278,6 +284,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
         //TODO: I'm sure that there are some other things that we need to do here
         $session->setSessionId($msg->getSessionId());
         $this->emit('open', [$session, $this->transport]);
+
+        $session->setState(Session::STATE_UP);
     }
 
     /**
