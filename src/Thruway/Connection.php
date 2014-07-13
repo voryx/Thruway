@@ -9,6 +9,7 @@
 namespace Thruway;
 
 
+use React\EventLoop\LoopInterface;
 use Thruway\Peer\Client;
 use Thruway\Transport\PawlTransportProvider;
 use Thruway\Transport\TransportInterface;
@@ -43,13 +44,15 @@ class Connection implements EventEmitterInterface
 
     /**
      * @param array $options
+     * @param LoopInterface $loop
+     * @throws \Exception
      */
-    function __construct(Array $options)
+    function __construct(Array $options, LoopInterface $loop = null)
     {
 
         $this->options = $options;
 
-        $this->client = new Client($options['realm']);
+        $this->client = new Client($options['realm'], $loop);
 
         /*
          * Add the transport provider
@@ -97,6 +100,28 @@ class Connection implements EventEmitterInterface
         );
     }
 
+    /**
+     *  Process events at a set interval
+     *
+     * @param int $timer
+     */
+    public function doEvents($timer = 1)
+    {
+        $loop = $this->getClient()->getLoop();
+
+        $looping = true;
+        $loop->addTimer(
+            $timer,
+            function () use (&$looping) {
+                $looping = false;
+            }
+        );
+
+        while ($looping) {
+            usleep(1000);
+            $loop->tick();
+        }
+    }
 
     /**
      *  Starts the open sequence
@@ -114,5 +139,14 @@ class Connection implements EventEmitterInterface
         $this->client->setAttemptRetry(false);
         $this->transport->close();
     }
+
+    /**
+     * @return Client
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
 
 }

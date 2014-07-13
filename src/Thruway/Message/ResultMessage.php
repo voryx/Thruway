@@ -67,7 +67,14 @@ class ResultMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getRequestId(), $this->getDetails(), $this->getArguments(), $this->getArgumentsKw());
+        $a = array(
+            $this->getRequestId(), $this->getDetails(), $this->getArguments());
+
+        if ($this->getArgumentsKw() != null) {
+            $a = array_merge($a, array($this->getArgumentsKw()));
+        }
+
+        return $a;
     }
 
     /**

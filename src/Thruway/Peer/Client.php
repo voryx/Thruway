@@ -74,7 +74,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * @var ClientSession
      */
-    protected  $session;
+    protected $session;
 
     /**
      * @var \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|\React\EventLoop\LoopInterface|\React\EventLoop\StreamSelectLoop
@@ -265,8 +265,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
             $this->processAbort($session, $msg);
         elseif ($msg instanceof GoodbyeMessage):
             $this->processGoodbye($session, $msg);
-        //advanced
         elseif ($msg instanceof ChallengeMessage):
+            //advanced
             $this->processChallenge($session, $msg);
         else:
             $this->processOther($session, $msg);
@@ -318,7 +318,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function processGoodbye(ClientSession $session, GoodbyeMessage $msg)
     {
-        //TODO:  Implement this
+        if (!$session->isGoodbyeSent()) {
+            $goodbyeMsg = new GoodbyeMessage([], "wamp.error.goodbye_and_out");
+            $session->sendMessage($goodbyeMsg);
+            $session->setGoodbyeSent(true);
+        }
     }
 
     /**
@@ -460,6 +464,15 @@ class Client extends AbstractPeer implements EventEmitterInterface
     {
         return $this->manager;
     }
+
+    /**
+     * @return \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|LoopInterface|\React\EventLoop\StreamSelectLoop
+     */
+    public function getLoop()
+    {
+        return $this->loop;
+    }
+
 
 
 }
