@@ -10,34 +10,36 @@ namespace Thruway;
 
 
 class ManagerDummy implements ManagerInterface {
+    /**
+     * This intentionally does nothing
+     *
+     * @param $name
+     * @param $callback
+     */
     public function addCallable($name, $callback)
     {
-        // TODO: Implement addCallable() method.
+
     }
 
     function logIt($logLevel, $msg)
     {
-        // TODO: Implement logIt() method.
+        echo $logLevel . ": " . $msg . "\n";
     }
 
-    function logInfo($msg)
-    {
-        // TODO: Implement logInfo() method.
+    function logInfo($msg) {
+        $this->logIt("INFO", $msg);
     }
 
-    function logError($msg)
-    {
-        // TODO: Implement logError() method.
+    function logError($msg) {
+        $this->logIt("ERROR", $msg);
     }
 
-    function logWarning($msg)
-    {
-        // TODO: Implement logWarning() method.
+    function logWarning($msg) {
+        $this->logIt("WARNING", $msg);
     }
 
-    function logDebug($msg)
-    {
-        // TODO: Implement logDebug() method.
+    function logDebug($msg) {
+        $this->logIt("DEBUG", $msg);
     }
 
 } 
