@@ -1,4 +1,12 @@
 <?php
+/**
+ * This is an example of how to use the InternalClientTransportProvider
+ *
+ * For more information go to:
+ * http://voryx.net/creating-internal-client-thruway/
+ */
+
+
 require __DIR__ . '/../../vendor/autoload.php';
 
 class InternalClient extends Thruway\Peer\Client {
