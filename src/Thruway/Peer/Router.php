@@ -204,12 +204,19 @@ class Router extends AbstractPeer
         /** @var $transport TransportInterface */
         foreach ($this->sessions as $key) {
             $session = $this->sessions[$key];
+
+            $sessionRealm = null;
+            // just in case the session is not in a realm yet
+            if ($session->getRealm() !== null) {
+                $sessionRealm = $session->getRealm()->getRealmName();
+            }
+
             $theSessions[] = [
                 "id" => $session->getSessionId(),
                 "transport" => $session->getTransport()->getTransportDetails(),
                 "messagesSent" => $session->getMessagesSent(),
                 "sessionStart" => $session->getSessionStart(),
-                "realm" => $session->getRealm()->getRealmName()
+                "realm" => $sessionRealm
             ];
         }
 
