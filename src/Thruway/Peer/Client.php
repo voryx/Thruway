@@ -354,6 +354,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
         }
     }
 
+    public function onSessionEnd($session) {
+
+    }
 
     /**
      * @param $reason
@@ -362,6 +365,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     {
 
         if (isset($this->session)) {
+            $this->onSessionEnd($this->session);
             $this->session->onClose();
             $this->session = null;
         }
