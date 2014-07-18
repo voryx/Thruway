@@ -14,7 +14,7 @@ class InternalClient extends Thruway\Peer\Client {
     {
         parent::__construct("realm1");
 
-        $this->on('open', array($this, 'onSessionStart'));
+
     }
 
     public function onSessionStart($session, $transport) {

@@ -19,7 +19,6 @@ class ManagerClient extends Client implements ManagerInterface
 
         $this->callables = array();
 
-        $this->on('open', array($this, 'onSessionStart'));
     }
 
     /**

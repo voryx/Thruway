@@ -144,6 +144,20 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->manager = new ManagerDummy();
 
         $this->session = null;
+
+        $this->on('open', array($this, 'onSessionStart'));
+    }
+
+
+    /**
+     * This is meant to be overridden so that the client can do its
+     * thing
+     *
+     * @param $session
+     * @param $transport
+     */
+    public function onSessionStart($session, $transport) {
+
     }
 
     /**
