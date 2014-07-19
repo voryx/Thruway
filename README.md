@@ -2,7 +2,7 @@ Thruway
 ===========
 
 Thruway is a Client and Server Library that aims to be compatible with the [Autobahn project](http://autobahn.ws/) 
-and [WAMP2](http://wamp.ws/).
+and [WAMP v2](http://wamp.ws/)  (Web Application Messaging Protocol).
 
 Basically, we like the WAMP idea, but we wanted to be able to work with it in PHP.
 
