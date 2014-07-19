@@ -36,19 +36,11 @@ class RatchetTransport implements TransportInterface {
     public function getTransportDetails()
     {
         $transportAddress = null;
-        if (property_exists($this->conn, 'remoteAddress')) {
-            $transportAddress = $this->conn->remoteAddress;
-        }
 
-        $request = null;
-        if (property_exists($this->conn, 'webSocket')) {
-            if (property_exists($this->conn->webSocket, 'request')) {
-                $request = $this->conn->webSocket->request;
-            }
-        }
+        $transportAddress = $this->conn->remoteAddress;
+
         return array(
             "type" => "ratchet",
-            "request" => $request,
             "transportAddress" => $transportAddress
         );
 
