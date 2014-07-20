@@ -9,6 +9,8 @@
 namespace Thruway\Role;
 
 
+use React\Promise\Deferred;
+use React\Promise\Promise;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
 use Thruway\Message\ErrorMessage;
@@ -73,6 +75,12 @@ class Callee extends AbstractRole
             if ($registration["request_id"] === $msg->getRequestId()) {
                 echo "---Setting registration_id for " . $registration['procedure_name'] . " (" . $key . ")\n";
                 $this->registrations[$key]['registration_id'] = $msg->getRegistrationId();
+
+                if ($this->registrations[$key]['futureResult'] instanceof Deferred) {
+                    /** @var Deferred $futureResult */
+                    $futureResult = $this->registrations[$key]['futureResult'];
+                    $futureResult->resolve();
+                }
                 return;
             }
         }
@@ -152,18 +160,23 @@ class Callee extends AbstractRole
 
 
     /**
+     * @param \Thruway\ClientSession $session
      * @param $procedureName
      * @param $callback
+     * @return \React\Promise\Promise
      */
     public function register(ClientSession $session, $procedureName, $callback)
     {
+        $futureResult = new Deferred();
+
         $requestId = Session::getUniqueId();
         $options = new \stdClass();
         $registration = [
             "procedure_name" => $procedureName,
             "callback" => $callback,
             "request_id" => $requestId,
-            'options' => $options
+            'options' => $options,
+            'futureResult' => $futureResult
         ];
 
         array_push($this->registrations, $registration);
@@ -172,6 +185,7 @@ class Callee extends AbstractRole
 
         $session->sendMessage($registerMsg);
 
+        return $futureResult->promise();
     }
 
 } 
