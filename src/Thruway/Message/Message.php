@@ -89,6 +89,8 @@ abstract class Message
         $authMethods = isset($json[2]['authmethods']) ? $json[2]['authmethods'] : array();
 
         switch ($json[0]) {
+            case Message::MSG_ABORT:
+                return new AbortMessage($json[1], $json[2]);
             case Message::MSG_HELLO:
                 return new HelloMessage($json[1], $json[2], $authMethods);
             case Message::MSG_SUBSCRIBE:

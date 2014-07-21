@@ -8,6 +8,7 @@
 
 namespace Thruway\Peer;
 
+use Thruway\AuthenticationManagerInterface;
 use Thruway\ManagerDummy;
 use Thruway\ManagerInterface;
 use Thruway\Message\GoodbyeMessage;
@@ -36,14 +37,14 @@ class Router extends AbstractPeer
     private $realmManager;
 
     /**
-     * @var
-     */
-    private $authenticationProvider;
-
-    /**
      * @var \SplObjectStorage
      */
     private $sessions;
+
+    /**
+     * @var AuthenticationManagerInterface
+     */
+    private $authenticationManager;
 
     /**
      *
@@ -69,7 +70,7 @@ class Router extends AbstractPeer
 
         $this->loop = $loop;
 
-
+        $authenticationManager = null;
     }
 
     public function onOpen(TransportInterface $transport)
@@ -92,8 +93,8 @@ class Router extends AbstractPeer
             // hopefully this is a HelloMessage or we have no place for this message to go
             if ($msg instanceof HelloMessage) {
                 if (RealmManager::validRealmName($msg->getRealm())) {
-                    $session->setAuthenticationProvider($this->authenticationProvider);
                     $realm = $this->realmManager->getRealm($msg->getRealm());
+
                     $realm->onMessage($session, $msg);
                 } else {
                     // TODO send bad realm error back and shutdown
@@ -107,22 +108,6 @@ class Router extends AbstractPeer
 
             $realm->onMessage($session, $msg);
         }
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAuthenticationProvider()
-    {
-        return $this->authenticationProvider;
-    }
-
-    /**
-     * @param mixed $authenticationProvider
-     */
-    public function setAuthenticationProvider($authenticationProvider)
-    {
-        $this->authenticationProvider = $authenticationProvider;
     }
 
     public function addTransportProvider(AbstractTransportProvider $transportProvider)
@@ -164,6 +149,25 @@ class Router extends AbstractPeer
 
         $this->sessions->detach($transport);
     }
+
+    /**
+     * @param \Thruway\AuthenticationManagerInterface $authenticationManager
+     */
+    public function setAuthenticationManager($authenticationManager)
+    {
+        $this->authenticationManager = $authenticationManager;
+        $this->realmManager->setDefaultAuthenticationManager($this->authenticationManager);
+    }
+
+    /**
+     * @return \Thruway\AuthenticationManagerInterface
+     */
+    public function getAuthenticationManager()
+    {
+        return $this->authenticationManager;
+    }
+
+
 
     /**
      * @param \Thruway\ManagerInterface $manager

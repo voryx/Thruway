@@ -9,6 +9,7 @@
 namespace Thruway\Peer;
 
 
+use Thruway\ClientAuthenticationInterface;
 use Thruway\ClientSession;
 use Thruway\ManagerDummy;
 use Thruway\ManagerInterface;
@@ -45,6 +46,16 @@ class Client extends AbstractPeer implements EventEmitterInterface
      * @var
      */
     private $roles;
+
+    /**
+     * @var array
+     */
+    private $clientAuthenticators;
+
+    /**
+     * @var string
+     */
+    private $authId;
 
     /**
      * @var Callee
@@ -87,7 +98,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     private $realm;
 
     /**
-     * @var Array
+     * @var array
      */
     private $authMethods;
 
@@ -146,6 +157,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->session = null;
 
         $this->on('open', array($this, 'onSessionStart'));
+
+        $this->clientAuthenticators = array();
+        $this->authId = "anonymous";
     }
 
 
@@ -180,12 +194,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->reconnectOptions = array_merge($this->reconnectOptions, $reconnectOptions);
     }
 
-    /**
-     * @param array $authMethod
-     */
-    public function addAuthMethod(Array $authMethod)
-    {
-        $this->authMethods = $this->authMethods + $authMethod;
+    public function addClientAuthenticator(ClientAuthenticationInterface $ca) {
+        array_push($this->clientAuthenticators, $ca);
     }
 
     /**
@@ -228,7 +238,14 @@ class Client extends AbstractPeer implements EventEmitterInterface
             ]
         ];
 
-        $details["authmethods"] = array_keys($this->authMethods);
+        $authMethods = array();
+        /** @var ClientAuthenticationInterface $ca */
+        foreach ($this->clientAuthenticators as $ca) {
+            $authMethods = array_merge($authMethods, $ca->getAuthMethods());
+        }
+
+        $details["authmethods"] = $authMethods;
+        $details["authid"] = $this->authId;
 
         $this->addRole(new Callee())
             ->addRole(new Caller())
@@ -295,6 +312,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function processWelcome(ClientSession $session, WelcomeMessage $msg)
     {
+        echo "We have been welcomed...\n";
         //TODO: I'm sure that there are some other things that we need to do here
         $session->setSessionId($msg->getSessionId());
         $this->emit('open', [$session, $this->transport]);
@@ -318,12 +336,21 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function processChallenge(ClientSession $session, ChallengeMessage $msg)
     {
 
-        $authmethod = $msg->getAuthMethod();
-        $signature = $this->authMethods[$authmethod]['callback']($session, $authmethod, $msg->getExtra());
+        $authMethod = $msg->getAuthMethod();
 
-        $authenticateMsg = new AuthenticateMessage($signature);
+        // look for authenticator
+        /** @var ClientAuthenticationInterface $ca */
+        foreach($this->clientAuthenticators as $ca) {
+            if (in_array($authMethod, $ca->getAuthMethods())) {
+                $authenticateMsg = $ca->getAuthenticateFromChallenge($msg);
+                $session->sendMessage($authenticateMsg);
+                return;
+            }
+        }
 
-        $session->sendMessage($authenticateMsg, $msg->getExtra());
+        // we have no good response down here
+        // TODO: do what you do when you have nothing good to say
+        echo "We have no response to the challenge given.";
     }
 
     /**

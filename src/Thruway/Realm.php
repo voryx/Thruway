@@ -10,14 +10,9 @@ namespace Thruway;
 
 
 use Thruway\Message\AuthenticateMessage;
-use Thruway\Message\ChallengeMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
-use Thruway\Message\PublishMessage;
-use Thruway\Message\SubscribedMessage;
-use Thruway\Message\SubscribeMessage;
-use Thruway\Message\UnsubscribeMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Role\AbstractRole;
 use Thruway\Role\Broker;
@@ -60,6 +55,16 @@ class Realm
     private $dealer;
 
     /**
+     * @var AuthenticationManagerInterface
+     */
+    private $authenticationManager;
+
+    /**
+     * @var array
+     */
+    private $authMethods;
+
+    /**
      * @param $realmName
      */
     function __construct($realmName)
@@ -74,6 +79,10 @@ class Realm
         $this->setManager(new ManagerDummy());
 
         $this->roles = array($this->broker, $this->dealer);
+
+        $this->authenticationManager = null;
+
+        $this->authMethods = array();
     }
 
     /**
@@ -82,7 +91,6 @@ class Realm
      */
     public function onMessage(Session $session, Message $msg)
     {
-
         if (!$session->isAuthenticated()) {
             if ($msg instanceof HelloMessage) {
                 $this->manager->logDebug("got hello");
@@ -96,15 +104,10 @@ class Realm
                 } else {
                     $this->sessions->attach($session);
                     $session->setRealm($this);
-                    $session->setState(Session::STATE_UP);
+                    $session->setState(Session::STATE_UP); // this should probably be after authentication
 
-                    if ($session->getAuthenticationProvider()) {
-                        foreach ($msg->getAuthMethods() as $authMethod) {
-                            if ($session->getAuthenticationProvider()->supports($authMethod)) {
-                                $session->sendMessage(new ChallengeMessage($authMethod));
-                                break;
-                            }
-                        }
+                    if ($this->getAuthenticationManager() !== null) {
+                        $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
                     } else {
                         $session->setAuthenticated(true);
                         // TODO: this will probably be pulled apart so that
@@ -116,45 +119,17 @@ class Realm
                         );
                     }
                 }
-            } else {
-                if ($msg instanceof AuthenticateMessage) {
-
-                    // @todo really check to see if the user is authenticated
-                    $authenticationProvider = $session->getAuthenticationProvider();
-                    if ($authenticationProvider && $authenticationProvider->authenticate($msg->getSignature())) {
-
-                        $session->setAuthenticated(true);
-
-                        // TODO: this will probably be pulled apart so that
-                        // applications can actually create their own roles
-                        // and attach them to realms - but for now...
-                        $roles = array("broker" => new \stdClass, "dealer" => new \stdClass);
-
-                        $session->sendMessage(
-                            new WelcomeMessage(
-                                $session->getSessionId(),
-                                array(
-                                    "authid" => $authenticationProvider->getAuthenticationId(),
-                                    "authmethod" => $authenticationProvider->getAuthenticationMethod(),
-                                    "authrole" => $authenticationProvider->getAuthenticationRole(),
-                                    "roles" => $roles,
-                                )
-                            )
-                        );
-                    } else {
-                        //Send some message that says they were unable to authenticate
-                        $this->manager->logError("Unhandled message sent to authenticate");
-                    }
-
-
+            } else if ($msg instanceof AuthenticateMessage) {
+                if ($this->getAuthenticationManager() !== null) {
+                    $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
                 } else {
-                    $this->manager->logError("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
+                    // TODO: should shut down here probably
+                    $this->manager->logError("Authenticate sent to realm without auth manager.");
                 }
+            } else {
+                $this->manager->logError("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
             }
         } else {
-            // this is actually the job of the broker - should be broken out
-            // if (brokerMessage thing) $broker->handleIt();
-
             /* @var $role AbstractRole */
             foreach ($this->roles as $role) {
                 if ($role->handlesMessage($msg)) {
@@ -162,13 +137,6 @@ class Realm
                     break;
                 }
             }
-
-
-//             elseif ($msg instanceof GoodbyeMessage) {
-//                // clean up
-//                // unsubscribe everything
-//                $conn->unsubscribeAll();
-//                // leave it up to the Wamp2Server to send the goodbye and shutdown the transport
         }
     }
 
@@ -225,6 +193,43 @@ class Realm
     {
         return $this->manager;
     }
+
+    /**
+     * @param \Thruway\AuthenticationManagerInterface $authenticationManager
+     */
+    public function setAuthenticationManager($authenticationManager)
+    {
+        $this->authenticationManager = $authenticationManager;
+    }
+
+    /**
+     * @return \Thruway\AuthenticationManagerInterface
+     */
+    public function getAuthenticationManager()
+    {
+        return $this->authenticationManager;
+    }
+
+    public function addAuthMethod($method) {
+        array_push($this->authMethods, $method);
+    }
+
+    /**
+     * @param array $authMethods
+     */
+    public function setAuthMethods($authMethods)
+    {
+        $this->authMethods = $authMethods;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAuthMethods()
+    {
+        return $this->authMethods;
+    }
+
 
 
 }

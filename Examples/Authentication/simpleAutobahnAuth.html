@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="https://autobahn.s3.amazonaws.com/autobahnjs/latest/autobahn.min.jgz"></script>
+</head>
+<body>
+
+</body>
+
+<script>
+function onchallenge (session, method, extra) {
+    if (method === "mozilla-persona") {
+        return autobahn.auth_persona(session, currentUser);
+    } else if (method == 'simplysimple') {
+        return "letMeIn";
+    } else {
+        console.log("don't know how to authentication using " + method);
+    }
+}
+
+var connection = new autobahn.Connection({
+    url: 'ws://localhost:8080/ws',
+    realm: 'realm1',
+    onchallenge: onchallenge
+});
+
+
+</script>
+
+</html>

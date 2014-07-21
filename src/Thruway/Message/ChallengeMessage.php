@@ -3,6 +3,7 @@
 namespace Thruway\Message;
 
 
+
 /**
  * Class ChallengeMessage
  * @package Thruway\Message
@@ -16,18 +17,18 @@ class ChallengeMessage extends Message
     private $authMethod;
 
     /**
-     * @var null
+     * @var mixed
      */
-    private $extra;
+    private $details;
 
     /**
      * @param $authMethod
-     * @param array $extra
+     * @param $details
      */
-    public function __construct($authMethod, $extra = [])
+    public function __construct($authMethod, $details = null)
     {
         $this->authMethod = $authMethod;
-        $this->extra = $extra;
+        $this->details = $details;
     }
 
     /**
@@ -46,7 +47,7 @@ class ChallengeMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getAuthMethod(), $this->getExtra());
+        return array($this->getAuthMethod(), $this->getDetails());
     }
 
     /**
@@ -60,9 +61,9 @@ class ChallengeMessage extends Message
     /**
      * @return null
      */
-    public function getExtra()
+    public function getDetails()
     {
-        return $this->extra;
+        return $this->details;
     }
 
 

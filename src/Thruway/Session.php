@@ -10,9 +10,7 @@ namespace Thruway;
 
 
 use Thruway\Message\Message;
-use Thruway\Transport\InternalClientTransport;
 use Thruway\Transport\TransportInterface;
-use Ratchet\ConnectionInterface;
 
 /**
  * Class Session
@@ -22,9 +20,9 @@ class Session extends AbstractSession
 {
 
     /**
-     * @var
+     * @var AuthenticationDetails
      */
-    private $authenticationProvider;
+    private $authenticationDetails;
 
 
     /**
@@ -55,6 +53,8 @@ class Session extends AbstractSession
         if ($manager === null) $manager = new ManagerDummy();
 
         $this->manager = $manager;
+
+        $this->authenticationDetails = null;
     }
 
     public function sendMessage(Message $msg)
@@ -68,23 +68,6 @@ class Session extends AbstractSession
 
         $this->transport->close();
     }
-
-    /**
-     * @return mixed
-     */
-    public function getAuthenticationProvider()
-    {
-        return $this->authenticationProvider;
-    }
-
-    /**
-     * @param mixed $authenticationProvider
-     */
-    public function setAuthenticationProvider($authenticationProvider)
-    {
-        $this->authenticationProvider = $authenticationProvider;
-    }
-
 
     /**
      *
@@ -134,6 +117,22 @@ class Session extends AbstractSession
     public function getSessionStart()
     {
         return $this->sessionStart;
+    }
+
+    /**
+     * @param \Thruway\AuthenticationDetails $authenticationDetails
+     */
+    public function setAuthenticationDetails($authenticationDetails)
+    {
+        $this->authenticationDetails = $authenticationDetails;
+    }
+
+    /**
+     * @return \Thruway\AuthenticationDetails
+     */
+    public function getAuthenticationDetails()
+    {
+        return $this->authenticationDetails;
     }
 
 
