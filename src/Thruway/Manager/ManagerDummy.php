@@ -6,8 +6,7 @@
  * Time: 5:07 PM
  */
 
-namespace Thruway;
-
+namespace Thruway\Manager;
 
 class ManagerDummy implements ManagerInterface {
     /**

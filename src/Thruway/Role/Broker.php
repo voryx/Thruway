@@ -10,8 +10,8 @@ namespace Thruway\Role;
 
 
 use Thruway\AbstractSession;
-use Thruway\ManagerDummy;
-use Thruway\ManagerInterface;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\EventMessage;
 use Thruway\Message\Message;

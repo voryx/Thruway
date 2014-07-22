@@ -11,8 +11,8 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\Call;
-use Thruway\ManagerDummy;
-use Thruway\ManagerInterface;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Message\CallMessage;
 use Thruway\Message\CancelMessage;
 use Thruway\Message\ErrorMessage;
@@ -290,7 +290,7 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param \Thruway\ManagerInterface $manager
+     * @param ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -304,7 +304,7 @@ class Dealer extends AbstractRole
 //    }
 
     /**
-     * @return \Thruway\ManagerInterface
+     * @return ManagerInterface
      */
     public function getManager()
     {

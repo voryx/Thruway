@@ -9,7 +9,7 @@ if (file_exists(__DIR__.'/../../../../autoload.php')) {
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
 
-$manager = new \Thruway\ManagerClient();
+$manager = new \Thruway\Manager\ManagerClient();
 
 $loop = \React\EventLoop\Factory::create();
 

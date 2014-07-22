@@ -8,8 +8,8 @@
 
 namespace Thruway\Transport;
 
-use Thruway\ManagerDummy;
-use Thruway\ManagerInterface;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Session;
 use Ratchet\ConnectionInterface;
@@ -147,7 +147,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     }
 
     /**
-     * @param \Thruway\ManagerInterface $manager
+     * @param ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -157,7 +157,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     }
 
     /**
-     * @return \Thruway\ManagerInterface
+     * @return ManagerInterface
      */
     public function getManager()
     {

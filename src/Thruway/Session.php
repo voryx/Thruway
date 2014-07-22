@@ -9,6 +9,9 @@
 namespace Thruway;
 
 
+use Thruway\Authentication\AuthenticationDetails;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Message\Message;
 use Thruway\Transport\TransportInterface;
 
@@ -16,125 +19,115 @@ use Thruway\Transport\TransportInterface;
  * Class Session
  * @package Thruway
  */
-class Session extends AbstractSession
-{
+class Session extends AbstractSession {
 
-    /**
-     * @var AuthenticationDetails
-     */
-    private $authenticationDetails;
+  /**
+   * @var AuthenticationDetails
+   */
+  private $authenticationDetails;
 
 
-    /**
-     * @var int
-     */
-    private $messagesSent;
+  /**
+   * @var int
+   */
+  private $messagesSent;
 
-    /**
-     * @var \DateTime
-     */
-    private $sessionStart;
+  /**
+   * @var \DateTime
+   */
+  private $sessionStart;
 
-    /**
-     * @var ManagerInterface
-     */
-    private $manager;
+  /**
+   * @var ManagerInterface
+   */
+  private $manager;
 
-    function __construct(TransportInterface $transport, ManagerInterface $manager = null)
-    {
-        $this->transport = $transport;
-        $this->state = static::STATE_PRE_HELLO;
-        $this->sessionId = static::getUniqueId();
-        $this->realm = null;
+  function __construct(TransportInterface $transport, ManagerInterface $manager = NULL) {
+    $this->transport = $transport;
+    $this->state = static::STATE_PRE_HELLO;
+    $this->sessionId = static::getUniqueId();
+    $this->realm = NULL;
 
-        $this->messagesSent = 0;
-        $this->sessionStart = new \DateTime();
+    $this->messagesSent = 0;
+    $this->sessionStart = new \DateTime();
 
-        if ($manager === null) $manager = new ManagerDummy();
-
-        $this->manager = $manager;
-
-        $this->authenticationDetails = null;
+    if ($manager === NULL) {
+      $manager = new ManagerDummy();
     }
 
-    public function sendMessage(Message $msg)
-    {
-        $this->messagesSent++;
-        $this->transport->sendMessage($msg);
+    $this->manager = $manager;
+
+    $this->authenticationDetails = NULL;
+  }
+
+  public function sendMessage(Message $msg) {
+    $this->messagesSent++;
+    $this->transport->sendMessage($msg);
+  }
+
+  public function shutdown() {
+
+    $this->transport->close();
+  }
+
+  /**
+   *
+   */
+  public function onClose() {
+    if ($this->realm !== NULL) {
+      $this->realm->leave($this);
     }
+  }
 
-    public function shutdown()
-    {
+  /**
+   * Generate a unique id for sessions and requests
+   * @return mixed
+   */
+  static public function getUniqueId() {
+    // TODO: make this better
+    $result = sscanf(uniqid(), "%x");
 
-        $this->transport->close();
-    }
+    return $result[0];
+  }
 
-    /**
-     *
-     */
-    public function onClose()
-    {
-        if ($this->realm !== null) {
-            $this->realm->leave($this);
-        }
-    }
+  /**
+   * @param ManagerInterface $manager
+   */
+  public function setManager($manager) {
+    $this->manager = $manager;
+  }
 
-    /**
-     * Generate a unique id for sessions and requests
-     * @return mixed
-     */
-    static public function getUniqueId()
-    {
-        // TODO: make this better
-        $result = sscanf(uniqid(), "%x");
+  /**
+   * @return ManagerInterface
+   */
+  public function getManager() {
+    return $this->manager;
+  }
 
-        return $result[0];
-    }
+  public function getMessagesSent() {
+    return $this->messagesSent;
+  }
 
-    /**
-     * @param \Thruway\ManagerInterface $manager
-     */
-    public function setManager($manager)
-    {
-        $this->manager = $manager;
-    }
+  /**
+   * @return \DateTime
+   */
+  public function getSessionStart() {
+    return $this->sessionStart;
+  }
 
-    /**
-     * @return \Thruway\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
+  /**
+   * @param AuthenticationDetails $authenticationDetails
+   */
+  public function setAuthenticationDetails($authenticationDetails) {
+    $this->authenticationDetails = $authenticationDetails;
+  }
 
-    public function getMessagesSent() {
-        return $this->messagesSent;
-    }
-
-    /**
-     * @return \DateTime
-     */
-    public function getSessionStart()
-    {
-        return $this->sessionStart;
-    }
-
-    /**
-     * @param \Thruway\AuthenticationDetails $authenticationDetails
-     */
-    public function setAuthenticationDetails($authenticationDetails)
-    {
-        $this->authenticationDetails = $authenticationDetails;
-    }
-
-    /**
-     * @return \Thruway\AuthenticationDetails
-     */
-    public function getAuthenticationDetails()
-    {
-        return $this->authenticationDetails;
-    }
+  /**
+   * @return AuthenticationDetails
+   */
+  public function getAuthenticationDetails() {
+    return $this->authenticationDetails;
+  }
 
 
-
-} 
+}

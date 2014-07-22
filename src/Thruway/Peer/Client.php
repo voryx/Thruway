@@ -11,8 +11,8 @@ namespace Thruway\Peer;
 
 use Thruway\ClientAuthenticationInterface;
 use Thruway\ClientSession;
-use Thruway\ManagerDummy;
-use Thruway\ManagerInterface;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
@@ -495,7 +495,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param \Thruway\ManagerInterface $manager
+     * @param ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -503,7 +503,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @return \Thruway\ManagerInterface
+     * @return ManagerInterface
      */
     public function getManager()
     {

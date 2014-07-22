@@ -6,7 +6,7 @@
  * Time: 4:59 PM
  */
 
-namespace Thruway;
+namespace Thruway\Manager;
 
 
 interface ManagerInterface {

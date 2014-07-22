@@ -2,7 +2,7 @@
 
 namespace Thruway\Peer;
 
-use Thruway\ManagerInterface;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Message\Message;
 use Thruway\Transport\AbstractTransportProvider;
 use Thruway\Transport\TransportInterface;

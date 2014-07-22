@@ -8,8 +8,8 @@
 
 namespace Thruway\Transport;
 
-use Thruway\ManagerDummy;
-use Thruway\ManagerInterface;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
@@ -127,7 +127,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     }
 
     /**
-     * @param \Thruway\ManagerInterface $manager
+     * @param ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -137,7 +137,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     }
 
     /**
-     * @return \Thruway\ManagerInterface
+     * @return ManagerInterface
      */
     public function getManager()
     {

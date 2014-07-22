@@ -1,5 +1,5 @@
 <?php
-namespace Thruway;
+namespace Thruway\Authentication;
 
 use Thruway\Message\AbortMessage;
 use Thruway\Message\AuthenticateMessage;
@@ -9,6 +9,8 @@ use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Peer\Client;
+use Thruway\Realm;
+use Thruway\Session;
 use Thruway\Transport\InternalClientTransport;
 
 class AuthenticationManager extends Client implements AuthenticationManagerInterface {

@@ -8,9 +8,9 @@
 
 namespace Thruway\Peer;
 
-use Thruway\AuthenticationManagerInterface;
-use Thruway\ManagerDummy;
-use Thruway\ManagerInterface;
+use Thruway\Authentication\AuthenticationManagerInterface;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
@@ -151,7 +151,7 @@ class Router extends AbstractPeer
     }
 
     /**
-     * @param \Thruway\AuthenticationManagerInterface $authenticationManager
+     * @param AuthenticationManagerInterface $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager)
     {
@@ -160,7 +160,7 @@ class Router extends AbstractPeer
     }
 
     /**
-     * @return \Thruway\AuthenticationManagerInterface
+     * @return AuthenticationManagerInterface
      */
     public function getAuthenticationManager()
     {
@@ -168,10 +168,10 @@ class Router extends AbstractPeer
     }
 
 
-
-    /**
-     * @param \Thruway\ManagerInterface $manager
-     */
+  /**
+   * @param ManagerInterface $manager
+   * @throws \Exception
+   */
     public function setManager($manager)
     {
 //        $this->manager = $manager;
@@ -188,7 +188,7 @@ class Router extends AbstractPeer
     }
 
     /**
-     * @return \Thruway\ManagerInterface
+     * @return ManagerInterface
      */
     public function getManager()
     {

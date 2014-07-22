@@ -1,9 +1,10 @@
 <?php
 
-namespace Thruway;
+namespace Thruway\Manager;
 
 use Thruway\Peer\Client;
 use Thruway\Role\Publisher;
+use Thruway\Session;
 
 class ManagerClient extends Client implements ManagerInterface
 {

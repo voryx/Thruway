@@ -3,8 +3,11 @@
 namespace Thruway;
 
 
+use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 
 class RealmManager
 {
@@ -127,7 +130,7 @@ class RealmManager
     }
 
     /**
-     * @param \Thruway\AuthenticationManagerInterface $defaultAuthenticationManager
+     * @param AuthenticationManagerInterface $defaultAuthenticationManager
      */
     public function setDefaultAuthenticationManager($defaultAuthenticationManager)
     {
@@ -135,7 +138,7 @@ class RealmManager
     }
 
     /**
-     * @return \Thruway\AuthenticationManagerInterface
+     * @return AuthenticationManagerInterface
      */
     public function getDefaultAuthenticationManager()
     {

@@ -6,7 +6,7 @@
  * Time: 8:49 PM
  */
 
-namespace Thruway;
+namespace Thruway\Authentication;
 
 
 class AuthenticationDetails {

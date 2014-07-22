@@ -9,6 +9,9 @@
 namespace Thruway;
 
 
+use Thruway\Authentication\AuthenticationManagerInterface;
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\HelloMessage;
@@ -169,7 +172,7 @@ class Realm
     }
 
     /**
-     * @param \Thruway\ManagerInterface $manager
+     * @param ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -187,7 +190,7 @@ class Realm
     }
 
     /**
-     * @return \Thruway\ManagerInterface
+     * @return ManagerInterface
      */
     public function getManager()
     {
@@ -195,7 +198,7 @@ class Realm
     }
 
     /**
-     * @param \Thruway\AuthenticationManagerInterface $authenticationManager
+     * @param AuthenticationManagerInterface $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager)
     {
@@ -203,7 +206,7 @@ class Realm
     }
 
     /**
-     * @return \Thruway\AuthenticationManagerInterface
+     * @return AuthenticationManagerInterface
      */
     public function getAuthenticationManager()
     {
