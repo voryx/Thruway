@@ -193,7 +193,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                             if ($res[0] == "SUCCESS") {
                                 $session->setAuthenticated(true);
                                 $session->sendMessage(new WelcomeMessage($session->getSessionId(),
-                                        new \stdClass()
+                                        array("roles" => array()/* autobahn.js expects roles, even though it's not called for in the spec*/)
                                     ));
                             } else {
                                 $session->sendMessage(new AbortMessage(new \stdClass(), "bad.login"));
