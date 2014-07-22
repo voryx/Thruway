@@ -7,7 +7,7 @@ else {
   require __DIR__ . '/../../vendor/autoload.php';
 }
 
-class SimpleAuthProviderClient extends \Thruway\Peer\Client {
+class SimpleAuthProviderClient extends \Thruway\Authentication\AbstractAuthProviderClient {
 
   /**
    * @return string
