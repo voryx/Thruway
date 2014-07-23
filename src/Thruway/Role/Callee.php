@@ -107,11 +107,23 @@ class Callee extends AbstractRole
             } else {
                 if ($registration["registration_id"] === $msg->getRegistrationId()) {
                     $arguments = $registration["callback"]($msg->getArguments());
-                    $options = new \stdClass();
-                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options, [$arguments]);
 
-                    $session->sendMessage($yieldMsg);
+                    if ($arguments instanceof Promise) {
+                        // the result is a promise - hook up stuff as a callback
+                        $arguments->then(function ($args) use ($msg, $session) {
+                                // TODO: check to make sure $args is an array
+                                $options = new \stdClass();
+                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, [$args]);
 
+                                $session->sendMessage($yieldMsg);
+                            });
+                    } else if (is_array($arguments)) {
+
+                        $options = new \stdClass();
+                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, [$arguments]);
+
+                        $session->sendMessage($yieldMsg);
+                    }
                     break;
                 }
             }
