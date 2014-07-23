@@ -201,11 +201,13 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * Start the transport
      */
-    public function start()
+    public function start($startLoop = true)
     {
         $this->transportProvider->startTransportProvider($this, $this->loop);
 
-        $this->loop->run();
+        if ($startLoop) {
+            $this->loop->run();
+        }
     }
 
     /**
