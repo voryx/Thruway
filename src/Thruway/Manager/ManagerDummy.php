@@ -9,6 +9,12 @@
 namespace Thruway\Manager;
 
 class ManagerDummy implements ManagerInterface {
+
+    /**
+     * @var bool
+     */
+    private $quiet;
+
     /**
      * This intentionally does nothing
      *
@@ -22,7 +28,9 @@ class ManagerDummy implements ManagerInterface {
 
     function logIt($logLevel, $msg)
     {
-        echo $logLevel . ": " . $msg . "\n";
+        if ( ! $this->getQuiet()) {
+            echo $logLevel . ": " . $msg . "\n";
+        }
     }
 
     function logInfo($msg) {
@@ -39,6 +47,23 @@ class ManagerDummy implements ManagerInterface {
 
     function logDebug($msg) {
         $this->logIt("DEBUG", $msg);
+    }
+
+
+    /**
+     * @param boolean $quiet
+     */
+    public function setQuiet($quiet)
+    {
+        $this->quiet = $quiet;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getQuiet()
+    {
+        return $this->quiet;
     }
 
 } 
