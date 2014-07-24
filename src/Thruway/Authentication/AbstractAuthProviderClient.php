@@ -2,6 +2,7 @@
 
 namespace Thruway\Authentication;
 
+use React\Promise\Promise;
 use Thruway\Peer\Client;
 
 
@@ -71,11 +72,12 @@ class AbstractAuthProviderClient extends Client {
   }
 
   public function preProcessAuthenticate(array $args) {
+
     $signature = isset($args['signature']) ? $args['signature'] : NULL;
     $extra = isset($args['extra']) ? $args['extra'] : NULL;
 
     if (!$signature) {
-      return "ERROR";
+      return array("ERROR");
     }
 
     return $this->processAuthenticate($signature, $extra);

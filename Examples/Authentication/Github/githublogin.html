@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Github Login JavaScript Example</title>
+    <meta charset="UTF-8">
+    <script src="https://autobahn.s3.amazonaws.com/autobahnjs/latest/autobahn.min.jgz"></script>
+</head>
+<body>
+
+<button id="github-login">Sign in with Github</button>
+
+<div id="status">
+</div>
+
+<div id="wamp-status">
+</div>
+
+<script>
+
+    (function () {
+        var state = Math.random().toString(36);
+        var clientId = "[YOUR-CLIENT-ID]";
+
+        var el = document.getElementById("github-login");
+        el.addEventListener("click", function () {
+            console.log('login clicked');
+            window.open("https://github.com/login/oauth/authorize?scope=user:email&client_id=" + clientId + "&state=" + state, "_self");
+        }, false);
+
+
+        //Get the "code" query param
+        var regex = new RegExp("[\\?&]code=([^&#]*)");
+        var code = regex.exec(location.search);
+
+        if (code && code.length > 1) {
+
+            console.log("Congrats!  You got the code from Github! ", code[1]);
+            document.getElementById('status').innerHTML =
+                    "You got the code from Github!";
+
+            function onchallenge(session, method, extra) {
+                if (method === "github") {
+                    return code[1];
+                }
+                else {
+                    console.log("Can't authentication using " + method);
+                }
+            }
+
+            var connection = new autobahn.Connection({
+                url: 'ws://localhost:9090',
+                realm: 'realm1',
+                onchallenge: onchallenge,
+                authmethods: [
+                    "github"
+                ]
+            });
+
+            connection.onopen = function (session) {
+                console.log("Congrats!  You're connected to the WAMP server!");
+                document.getElementById('wamp-status').innerHTML =
+                        "Congrats!  You're authenticated with the WAMP server!";
+
+            };
+
+            connection.open();
+        }
+    }());
+
+
+</script>
+</body>
+</html>
