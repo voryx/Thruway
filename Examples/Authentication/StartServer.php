@@ -12,7 +12,7 @@ use Thruway\Transport\RatchetTransportProvider;
 
 $router = new Router();
 
-$authMgr = new \Thruway\AuthenticationManager();
+$authMgr = new \Thruway\Authentication\AuthenticationManager();
 
 $router->setAuthenticationManager($authMgr);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
