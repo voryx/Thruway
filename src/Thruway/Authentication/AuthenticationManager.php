@@ -53,7 +53,15 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 //            )
 
 
-
+    /**
+     * Handles all messages for authentication (Hello and Authenticate)
+     * This is called by the Realm to handle authentication
+     *
+     * @param Realm $realm
+     * @param Session $session
+     * @param Message $msg
+     * @throws \Exception
+     */
     public function onAuthenticationMessage(Realm $realm, Session $session, Message $msg)
     {
         if ($session->isAuthenticated()) throw new \Exception("Message sent to authentication manager for already authenticated session.");
@@ -123,8 +131,13 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
                 $session->setAuthenticationDetails($authDetails);
 
+                $sessionInfo = array(
+                    "sessionId" => $session->getSessionId(),
+                    "realm" => $realm->getRealmName()
+                );
+
                 $this->session->call($authMethodInfo['handlers']['onhello'], array(
-                        $msg
+                        $msg, $sessionInfo
                     ))->then(function ($res) use ($session, $msg) {
                             // this is handling the return of the onhello RPC call
                             if (! is_array($res) ) {
