@@ -149,7 +149,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     /**
      * @param ManagerInterface $manager
      */
-    public function setManager($manager)
+    public function setManager(ManagerInterface $manager)
     {
         $this->manager = $manager;
 

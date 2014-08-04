@@ -129,7 +129,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     /**
      * @param ManagerInterface $manager
      */
-    public function setManager($manager)
+    public function setManager(ManagerInterface $manager)
     {
         $this->manager = $manager;
 

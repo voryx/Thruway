@@ -72,7 +72,7 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
     /**
      * @param ManagerInterface $manager
      */
-    public function setManager($manager)
+    public function setManager(ManagerInterface $manager)
     {
         $this->manager = $manager;
 
