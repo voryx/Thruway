@@ -20,6 +20,7 @@
     (function () {
         var state = Math.random().toString(36);
         var clientId = "[YOUR-CLIENT-ID]";
+        var deferredCode = autobahn.when.defer();
 
         var el = document.getElementById("github-login");
         el.addEventListener("click", function () {
@@ -33,38 +34,42 @@
         var code = regex.exec(location.search);
 
         if (code && code.length > 1) {
-
+            deferredCode.resolve(code[1])
             console.log("Congrats!  You got the code from Github! ", code[1]);
-            document.getElementById('status').innerHTML =
-                    "You got the code from Github!";
-
-            function onchallenge(session, method, extra) {
-                if (method === "github") {
-                    return code[1];
-                }
-                else {
-                    console.log("Can't authentication using " + method);
-                }
-            }
-
-            var connection = new autobahn.Connection({
-                url: 'ws://localhost:9090',
-                realm: 'realm1',
-                onchallenge: onchallenge,
-                authmethods: [
-                    "github"
-                ]
-            });
-
-            connection.onopen = function (session) {
-                console.log("Congrats!  You're connected to the WAMP server!");
-                document.getElementById('wamp-status').innerHTML =
-                        "Congrats!  You're authenticated with the WAMP server!";
-
-            };
-
-            connection.open();
         }
+
+
+        document.getElementById('status').innerHTML =
+                "You got the code from Github!";
+
+        function onchallenge(session, method, extra) {
+            if (method === "github") {
+
+                return deferredCode.promise;
+            }
+            else {
+                console.log("Can't authentication using " + method);
+            }
+        }
+
+        var connection = new autobahn.Connection({
+            url: 'ws://localhost:9090',
+            realm: 'realm1',
+            onchallenge: onchallenge,
+            authmethods: [
+                "github"
+            ]
+        });
+
+        connection.onopen = function (session) {
+            console.log("Congrats!  You're connected to the WAMP server!");
+            document.getElementById('wamp-status').innerHTML =
+                    "Congrats!  You're authenticated with the WAMP server!";
+
+        };
+
+        connection.open();
+
     }());
 
 
