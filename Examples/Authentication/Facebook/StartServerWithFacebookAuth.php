@@ -1,18 +1,18 @@
 <?php
-if (file_exists(__DIR__.'/../../../../autoload.php')) {
-    require __DIR__ . '/../../../../autoload.php';
+if (file_exists(__DIR__.'/../../../../../autoload.php')) {
+    require __DIR__ . '/../../../../../autoload.php';
 } else {
     require __DIR__ . '/../../vendor/autoload.php';
 }
 
-require 'SimpleAuthProviderClient.php';
+require 'FacebookAuthProvider.php';
 
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
 
 $router = new Router();
 
-$authMgr = new \Thruway\AuthenticationManager();
+$authMgr = new \Thruway\Authentication\AuthenticationManager();
 
 $router->setAuthenticationManager($authMgr);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));

@@ -8,6 +8,9 @@
 <body>
 <script>
 
+    //Create a deferred token that will get sent to the WAMP router
+    var deferredToken = autobahn.when.defer();
+
     // This is called with the results from from FB.getLoginStatus().
     function statusChangeCallback(response) {
         console.log('statusChangeCallback');
@@ -18,6 +21,10 @@
         // for FB.getLoginStatus().
         if (response.status === 'connected') {
             // Logged into your app and Facebook.
+
+            //Resolve the promise with the accessToken
+            deferredToken.resolve(response.authResponse.accessToken);
+
             testAPI();
         } else if (response.status === 'not_authorized') {
             // The person is logged into Facebook, but not your app.
@@ -30,35 +37,6 @@
             'into Facebook.';
         }
 
-        function onchallenge(session, method, extra) {
-            if (method === "facebook" && response.status === 'connected') {
-
-                return response.authResponse.accessToken;
-            }
-
-            else {
-                console.log("Can't authentication using " + method);
-            }
-        }
-
-        var connection = new autobahn.Connection({
-            url: 'ws://localhost:9090',
-            realm: 'realm1',
-            onchallenge: onchallenge,
-            authmethods: [
-                "facebook"
-            ]
-
-        });
-
-        connection.onopen = function (session) {
-            console.log("Congrats!  You're connected to the WAMP server!");
-            document.getElementById('wamp-status').innerHTML =
-                    "Congrats!  You're authenticated with the WAMP server!";
-
-        };
-
-        connection.open();
     }
 
     // This function is called when someone finishes with the Login
@@ -118,6 +96,37 @@
                     'Thanks for logging in, ' + response.name + '!';
         });
     }
+
+
+    //This is where the Autobahn (WAMP) Stuff starts
+    function onchallenge(session, method, extra) {
+        if (method === "facebook") {
+
+            return deferredToken.promise;
+        }
+        else {
+            console.log("Can't authentication using " + method);
+        }
+    }
+
+    var connection = new autobahn.Connection({
+        url: 'ws://localhost:9090',
+        realm: 'realm1',
+        onchallenge: onchallenge,
+        authmethods: [
+            "facebook"
+        ]
+
+    });
+
+    connection.onopen = function (session) {
+        console.log("Congrats!  You're connected to the WAMP server!");
+        document.getElementById('wamp-status').innerHTML =
+                "Congrats!  You're authenticated with the WAMP server!";
+
+    };
+
+    connection.open();
 
 </script>
 
