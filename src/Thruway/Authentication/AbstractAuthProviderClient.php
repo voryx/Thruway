@@ -8,8 +8,11 @@ use Thruway\Peer\Client;
 
 class AbstractAuthProviderClient extends Client {
 
-  function __construct() {
+  protected $authRealms;
 
+  function __construct(Array $authRealms) {
+
+    $this->authRealms = $authRealms;
 
     /*
      * Set authorization the realm. Defaults to "thruway.auth"
@@ -52,8 +55,10 @@ class AbstractAuthProviderClient extends Client {
                 $this->getMethodName(),
                 array(
                   "onhello" => "thruway.auth.{$this->getMethodName()}.onhello",
-                  "onauthenticate" => "thruway.auth.{$this->getMethodName()}.onauthenticate"
-                )
+                  "onauthenticate" => "thruway.auth.{$this->getMethodName()}.onauthenticate",
+                ),
+                $this->getAuthRealms()
+
               )
             )->then(
               function ($args) {
@@ -89,4 +94,20 @@ class AbstractAuthProviderClient extends Client {
     return array("SUCCESS");
 
   }
+
+  /**
+   * @return array
+   */
+  public function getAuthRealms() {
+    return $this->authRealms;
+  }
+
+  /**
+   * @param array $authRealms
+   */
+  public function setAuthRealms($authRealms) {
+    $this->authRealms = $authRealms;
+  }
+
+
 } 

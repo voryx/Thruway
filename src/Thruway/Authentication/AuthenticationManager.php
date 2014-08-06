@@ -119,7 +119,10 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
         // go through our authMethods and see which one matches first
         foreach($this->authMethods as $authMethod => $authMethodInfo) {
-            if (in_array($authMethod, $requestedMethods)) {
+            if (in_array($authMethod, $requestedMethods)
+                && (in_array($realm->getRealmName(), $authMethodInfo['auth_realms'])
+                    || in_array("*", $authMethodInfo['auth_realms']))) {
+
                 // we can agree on something
                 $authDetails = new AuthenticationDetails();
 
@@ -238,6 +241,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
         $methodInfo = $args[1];
 
+        $authRealms = $args[2];
+
         // TODO: validate this stuff
         if (isset($this->authMethods[$authMethod])) {
             // error - there is alreay a registered authMethod of this name
@@ -252,9 +257,11 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             return array("ERROR", "Authentication provider must provide \"onauthenticate\" handler");
         }
 
+
         $this->authMethods[$authMethod] = array(
             'authMethod' => $authMethod,
-            'handlers' => $methodInfo
+            'handlers' => $methodInfo,
+            'auth_realms' => $authRealms,
         );
 
         return array("SUCCESS");
