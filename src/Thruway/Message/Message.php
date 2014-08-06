@@ -86,13 +86,12 @@ abstract class Message
             throw new MessageException("Invalid WAMP message format");
         }
 
-        $authMethods = isset($json[2]['authmethods']) ? $json[2]['authmethods'] : array();
 
         switch ($json[0]) {
             case Message::MSG_ABORT:
                 return new AbortMessage($json[1], $json[2]);
             case Message::MSG_HELLO:
-                return new HelloMessage($json[1], $json[2], $authMethods);
+                return new HelloMessage($json[1], $json[2]);
             case Message::MSG_SUBSCRIBE:
                 return new SubscribeMessage($json[1], $json[2], $json[3]);
             case Message::MSG_UNSUBSCRIBE:

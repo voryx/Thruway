@@ -31,11 +31,12 @@ class HelloMessage extends Message
      * @param $details
      * @param $authMethods
      */
-    function __construct($realm, $details, $authMethods)
+    function __construct($realm, $details)
     {
         $this->setDetails($details);
         $this->realm = $realm;
-        $this->authMethods = $authMethods;
+        $this->authMethods = isset($details['authmethods']) ? $details['authmethods'] : array();
+
     }
 
     /**
