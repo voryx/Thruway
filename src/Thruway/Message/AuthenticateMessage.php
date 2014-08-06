@@ -23,11 +23,14 @@ class AuthenticateMessage extends Message
 
     /**
      * @param $signature
-     * @param array $extra
+     * @param $extra
      */
-    public function __construct($signature, $extra = [])
+    public function __construct($signature, $extra = null)
     {
         $this->signature = $signature;
+
+        if ($extra === null) $extra = new \stdClass();
+
         $this->extra = $extra;
     }
 

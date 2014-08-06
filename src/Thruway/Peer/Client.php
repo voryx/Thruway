@@ -520,6 +520,22 @@ class Client extends AbstractPeer implements EventEmitterInterface
         return $this->loop;
     }
 
+    /**
+     * @param string $authId
+     */
+    public function setAuthId($authId)
+    {
+        $this->authId = $authId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAuthId()
+    {
+        return $this->authId;
+    }
+
 
 
 }
