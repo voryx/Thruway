@@ -5,27 +5,43 @@
     <script src="https://autobahn.s3.amazonaws.com/autobahnjs/latest/autobahn.min.jgz"></script>
 </head>
 <body>
-
+<div id="wamp-status"></div>
+<div id="wamp-close"></div>
 </body>
 
 <script>
-function onchallenge (session, method, extra) {
-    if (method === "mozilla-persona") {
-        return autobahn.auth_persona(session, currentUser);
-    } else if (method == 'simplysimple') {
-        return "letMeIn";
-    } else {
-        console.log("don't know how to authentication using " + method);
+    function onchallenge(session, method, extra) {
+        if (method == 'simplysimple') {
+            return "letMeIn";
+        } else {
+            console.log("don't know how to authentication using " + method);
+        }
     }
-}
 
-var connection = new autobahn.Connection({
-    url: 'ws://localhost:8080/ws',
-    realm: 'realm1',
-    onchallenge: onchallenge
-});
+    var connection = new autobahn.Connection({
+        url: 'ws://127.0.0.1:9090',
+        realm: 'realm1',
+        onchallenge: onchallenge,
+        authmethods: ['simplysimple']
+    });
 
 
+    connection.onopen = function (session) {
+        console.log("Congrats!  You're connected to the WAMP server!");
+        document.getElementById('wamp-status').innerHTML =
+                "Congrats!  You're connected to the WAMP server!";
+        document.getElementById('wamp-close').innerHTML = null;
+
+    };
+
+    connection.onclose = function (reason, details) {
+        console.log("Connection Closed: ", reason, details);
+        document.getElementById('wamp-close').innerHTML =
+                "Connection Closed: " + reason + ' ' + details.reason;
+    };
+
+
+    connection.open();
 </script>
 
 </html>

@@ -11,11 +11,11 @@ class GithubAuthProvider extends \Thruway\Authentication\AbstractAuthProviderCli
   private $promises = array();
 
 
-  function __construct($http, $clientId, $clientSecret) {
+  function __construct($authRealms, $http, $clientId, $clientSecret) {
 
     $this->clientId = $clientId;
     $this->clientSecret = $clientSecret;
-    parent::__construct();
+    parent::__construct($authRealms);
 
     //Register Http request event
     $http->on('request', array($this, "onHttpRequest"));

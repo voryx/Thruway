@@ -8,10 +8,10 @@ class GithubAuthProvider extends \Thruway\Authentication\AbstractAuthProviderCli
   private $clientId;
   private $clientSecret;
 
-  function __construct($clientId, $clientSecret) {
+  function __construct(Array $authRealms, $clientId, $clientSecret) {
     $this->clientId = $clientId;
     $this->clientSecret = $clientSecret;
-    parent::__construct();
+    parent::__construct($authRealms);
   }
 
 

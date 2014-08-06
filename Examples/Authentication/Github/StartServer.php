@@ -17,7 +17,7 @@ $authMgr = new \Thruway\Authentication\AuthenticationManager();
 $router->setAuthenticationManager($authMgr);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
 
-$authProvClient = new GithubAuthProvider("[YOUR-CLIENT_ID]", "[YOUR-CLIENT-SECRET]");
+$authProvClient = new GithubAuthProvider(["*"],"[YOUR-CLIENT_ID]", "[YOUR-CLIENT-SECRET]");
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
 
 

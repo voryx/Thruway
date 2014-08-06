@@ -17,7 +17,7 @@ $authMgr = new \Thruway\Authentication\AuthenticationManager();
 $router->setAuthenticationManager($authMgr);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
 
-$authProvClient = new SimpleAuthProviderClient();
+$authProvClient = new SimpleAuthProviderClient(["asdfsf","realm1","asdfs"]);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
 
 

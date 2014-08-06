@@ -1,5 +1,5 @@
 <?php
-if (file_exists(__DIR__.'/../../../../../autoload.php')) {
+if (file_exists(__DIR__ . '/../../../../../autoload.php')) {
     require __DIR__ . '/../../../../../autoload.php';
 } else {
     require __DIR__ . '/../../vendor/autoload.php';
@@ -17,7 +17,7 @@ $authMgr = new \Thruway\Authentication\AuthenticationManager();
 $router->setAuthenticationManager($authMgr);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
 
-$authProvClient = new FacebookAuthProvider('YOUR_APP_ID', 'YOUR_APP_SECRET');
+$authProvClient = new FacebookAuthProvider(['*'], 'YOUR_APP_ID', 'YOUR_APP_SECRET');
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
 
 

@@ -13,11 +13,11 @@ class FacebookAuthProvider extends \Thruway\Authentication\AbstractAuthProviderC
 
   private $appSecret;
 
-  public function __construct($appId, $appSecret) {
+  public function __construct(Array $authRealms, $appId, $appSecret) {
     $this->appId = $appId;
     $this->appSecret = $appSecret;
 
-    parent::__construct();
+    parent::__construct($authRealms);
 
   }
 
