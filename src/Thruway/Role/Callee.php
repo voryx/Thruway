@@ -102,25 +102,28 @@ class Callee extends AbstractRole
     public function processInvocation(ClientSession $session, InvocationMessage $msg)
     {
         foreach ($this->registrations as $key => $registration) {
-            if ( ! isset($registration["registration_id"])) {
+            if (!isset($registration["registration_id"])) {
                 echo "Registration_id not set for " . $registration['procedure_name'] . "\n";
             } else {
                 if ($registration["registration_id"] === $msg->getRegistrationId()) {
-                    $arguments = $registration["callback"]($msg->getArguments());
+                    $results = $registration["callback"]($msg->getArguments(), $msg->getDetails());
 
-                    if ($arguments instanceof Promise) {
+                    if ($results instanceof Promise) {
                         // the result is a promise - hook up stuff as a callback
-                        $arguments->then(function ($args) use ($msg, $session) {
-                                // TODO: check to make sure $args is an array
+                        $results->then(
+                            function ($promiseResults) use ($msg, $session) {
+                                $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
+                                $promiseResults = $this::is_non_assoc($promiseResults) ? [$promiseResults]: $promiseResults;
                                 $options = new \stdClass();
-                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, [$args]);
+                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
 
                                 $session->sendMessage($yieldMsg);
-                            });
-                    } else if (is_array($arguments)) {
-
+                            }
+                        );
+                    } else {
+                        $results = $this::is_non_assoc($results) ? [$results]: $results;
                         $options = new \stdClass();
-                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, [$arguments]);
+                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
 
                         $session->sendMessage($yieldMsg);
                     }
@@ -175,14 +178,15 @@ class Callee extends AbstractRole
      * @param \Thruway\ClientSession $session
      * @param $procedureName
      * @param $callback
+     * @param null $options
      * @return \React\Promise\Promise
      */
-    public function register(ClientSession $session, $procedureName, $callback)
+    public function register(ClientSession $session, $procedureName, $callback, $options = null)
     {
         $futureResult = new Deferred();
 
         $requestId = Session::getUniqueId();
-        $options = new \stdClass();
+        $options = isset($options) ? $options : new \stdClass();
         $registration = [
             "procedure_name" => $procedureName,
             "callback" => $callback,
@@ -200,4 +204,17 @@ class Callee extends AbstractRole
         return $futureResult->promise();
     }
 
+    public static function is_non_assoc($array)
+    {
+        if (!is_array($array)){
+            return true;
+        }
+
+        // Keys of the array
+        $keys = array_keys($array);
+
+        // If the array keys of the keys match the keys, then the array must
+        // not be associative (e.g. the keys array looked like {0:0, 1:1...}).
+        return array_keys($keys) === $keys;
+    }
 } 
