@@ -65,7 +65,7 @@ class Caller extends AbstractRole
         if (isset($this->callRequests[$msg->getRequestId()])) {
             /* @var $futureResult Deferred */
             $futureResult = $this->callRequests[$msg->getRequestId()]['future_result'];
-            $futureResult->resolve($msg->getArguments()[0]);
+            $futureResult->resolve($msg->getArguments());
             unset($this->callRequests[$msg->getRequestId()]);
         }
     }

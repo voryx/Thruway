@@ -113,7 +113,7 @@ class Callee extends AbstractRole
                         $results->then(
                             function ($promiseResults) use ($msg, $session) {
                                 $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
-                                $promiseResults = $this::is_non_assoc($promiseResults) ? [$promiseResults]: $promiseResults;
+                                $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults]: $promiseResults;
                                 $options = new \stdClass();
                                 $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
 
@@ -121,7 +121,7 @@ class Callee extends AbstractRole
                             }
                         );
                     } else {
-                        $results = $this::is_non_assoc($results) ? [$results]: $results;
+                        $results = !$this::is_list($results) ? [$results]: $results;
                         $options = new \stdClass();
                         $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
 
@@ -204,10 +204,10 @@ class Callee extends AbstractRole
         return $futureResult->promise();
     }
 
-    public static function is_non_assoc($array)
+    public static function is_list($array)
     {
         if (!is_array($array)){
-            return true;
+            return false;
         }
 
         // Keys of the array
