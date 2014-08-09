@@ -13,6 +13,23 @@ class AuthenticationDetails {
     private $authId;
     private $authMethod;
     private $challenge;
+    private $challengeDetails;
+
+    /**
+     * @param mixed $challengeDetails
+     */
+    public function setChallengeDetails($challengeDetails)
+    {
+        $this->challengeDetails = $challengeDetails;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getChallengeDetails()
+    {
+        return $this->challengeDetails;
+    }
 
     /**
      * @param mixed $challenge
