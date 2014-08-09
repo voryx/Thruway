@@ -64,14 +64,6 @@
                     }
             );
 
-//            session.call('manager.dealer.get_registrations', []).then(
-//                    function (res) {
-//                        $scope.managerRegistrations = res;
-//                        $scope.$digest();
-//                        //console.log("Result:", res);
-//                    }
-//            );
-
             session.call('manager.realms.get', []).then(
                     function (res) {
                         $scope.managerRealms = res;
@@ -82,6 +74,8 @@
 
                             session.call('manager.realm.' + realm.name + '.registrations', []).then(
                                     function (res) {
+                                        console.log(realm.name + ": ");
+                                        console.log(res);
                                         $scope.managerRegistrations[realm.name] = res;
                                         $scope.$digest();
                                     }
@@ -104,22 +98,7 @@
 
     connection.onopen = function (theSession) {
         session = theSession;
-        // 1) subscribe to a topic
-//        function onevent(args) {
-//            console.log("Event:", args[0]);
-//        }
-//        session.subscribe('com.myapp.hello', onevent);
 
-        // 2) publish an event
-//        session.publish('com.myapp.hello', ['Hello, world!']);
-
-        // 3) register a procedure for remoting
-//        function add2(args) {
-//            return args[0] + args[1];
-//        }
-//        session.register('com.myapp.add2', add2);
-
-        // 4) call a remote procedure
         session.call('manager.sessions.get', []).then(
                 function (res) {
                     console.log("Result:", res);

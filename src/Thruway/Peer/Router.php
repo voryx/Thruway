@@ -195,6 +195,16 @@ class Router extends AbstractPeer
         return $this->manager;
     }
 
+    public function getSessionBySessionId($sessionId) {
+        /** @var Session $session */
+        foreach($this->sessions as $session ) {
+            if ($session->getSessionId() == $sessionId) {
+                return $session;
+            }
+        }
+        return false;
+    }
+
     public function managerGetSessionCount()
     {
         return array(count($this->sessions));
@@ -224,7 +234,7 @@ class Router extends AbstractPeer
             ];
         }
 
-        return $theSessions;
+        return array($theSessions);
     }
 
     public function managerGetRealms()
@@ -238,11 +248,15 @@ class Router extends AbstractPeer
             ];
         }
 
-        return $theRealms;
+        return array($theRealms);
     }
 
     public function managerGetTransports()
     {
+
+    }
+
+    public function managerPruneSession($args) {
 
     }
 }

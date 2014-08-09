@@ -324,6 +324,6 @@ class Dealer extends AbstractRole
             ];
         }
 
-        return $theRegistrations;
+        return array($theRegistrations);
     }
 }
