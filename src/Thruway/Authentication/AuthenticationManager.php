@@ -239,6 +239,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 $session->sendMessage(
                     new WelcomeMessage($session->getSessionId(), array("roles" => $roles))
                 );
+                $session->setAuthenticated(true);
             }
         }
     }
