@@ -10,6 +10,9 @@ namespace Thruway;
 
 
 use React\EventLoop\LoopInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Thruway\Message\AuthenticateMessage;
+use Thruway\Message\ChallengeMessage;
 use Thruway\Peer\Client;
 use Thruway\Transport\PawlTransportProvider;
 use Thruway\Transport\TransportInterface;
@@ -64,15 +67,20 @@ class Connection implements EventEmitterInterface
         $this->client->setReconnectOptions($options);
 
         /*
-         * Authentication
+         * Authentication on challenge callback
          */
         if (isset($options['onChallenge']) && is_callable($options['onChallenge'])
             && isset($options['authmethods'])
             && is_array($options['authmethods'])
         ) {
-            foreach ($options['authmethods'] as $authmethod) {
-                $this->client->addAuthMethod([$authmethod => ["callback" => $options['onChallenge']]]);
-            }
+            $this->client->setAuthMethods($options['authmethods']);
+            $this->client->on(
+                'challenge',
+                function (ClientSession $session, ChallengeMessage $msg) use ($options) {
+                    $token = $options['onChallenge']($session, $msg->getAuthMethod());
+                    $session->sendMessage(new AuthenticateMessage($token));
+                }
+            );
         }
 
         /*

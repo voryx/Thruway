@@ -9,6 +9,10 @@
 namespace Thruway;
 
 
+/**
+ * Class Registration
+ * @package Thruway
+ */
 class Registration
 {
     /**
@@ -25,6 +29,11 @@ class Registration
      * @var
      */
     private $procedureName;
+
+    /**
+     * @var
+     */
+    private $discloseCaller;
 
 
     /**
@@ -63,5 +72,19 @@ class Registration
         return $this->session;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getDiscloseCaller()
+    {
+        return $this->discloseCaller;
+    }
 
+    /**
+     * @param mixed $discloseCaller
+     */
+    public function setDiscloseCaller($discloseCaller)
+    {
+        $this->discloseCaller = $discloseCaller;
+    }
 }

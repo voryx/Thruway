@@ -53,10 +53,12 @@ class ClientSession extends AbstractSession
     /**
      * @param $procedureName
      * @param $callback
+     * @param null $options
+     * @return \React\Promise\Promise
      */
-    public function register($procedureName, $callback)
+    public function register($procedureName, $callback, $options = null)
     {
-        $this->peer->getCallee()->register($this, $procedureName, $callback);
+        return $this->peer->getCallee()->register($this, $procedureName, $callback, $options);
     }
 
     /**

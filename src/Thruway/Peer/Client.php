@@ -100,7 +100,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * @var array
      */
-    private $authMethods;
+    private $authMethods = array();
 
     /**
      * @var TransportInterface
@@ -170,7 +170,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
      * @param $session
      * @param $transport
      */
-    public function onSessionStart($session, $transport) {
+    public function onSessionStart($session, $transport)
+    {
 
     }
 
@@ -194,7 +195,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->reconnectOptions = array_merge($this->reconnectOptions, $reconnectOptions);
     }
 
-    public function addClientAuthenticator(ClientAuthenticationInterface $ca) {
+    public function addClientAuthenticator(ClientAuthenticationInterface $ca)
+    {
         array_push($this->clientAuthenticators, $ca);
     }
 
@@ -240,13 +242,12 @@ class Client extends AbstractPeer implements EventEmitterInterface
             ]
         ];
 
-        $authMethods = array();
         /** @var ClientAuthenticationInterface $ca */
         foreach ($this->clientAuthenticators as $ca) {
-            $authMethods = array_merge($authMethods, $ca->getAuthMethods());
+            $this->authMethods = array_merge($this->authMethods, $ca->getAuthMethods());
         }
 
-        $details["authmethods"] = $authMethods;
+        $details["authmethods"] = $this->authMethods;
         $details["authid"] = $this->authId;
 
         $this->addRole(new Callee())
@@ -298,10 +299,10 @@ class Client extends AbstractPeer implements EventEmitterInterface
             $this->processAbort($session, $msg);
         elseif ($msg instanceof GoodbyeMessage):
             $this->processGoodbye($session, $msg);
-        elseif ($msg instanceof ChallengeMessage):
-            //advanced
+        elseif ($msg instanceof ChallengeMessage): //advanced
+        {
             $this->processChallenge($session, $msg);
-        else:
+        } else:
             $this->processOther($session, $msg);
         endif;
 
@@ -342,7 +343,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
         // look for authenticator
         /** @var ClientAuthenticationInterface $ca */
-        foreach($this->clientAuthenticators as $ca) {
+        foreach ($this->clientAuthenticators as $ca) {
             if (in_array($authMethod, $ca->getAuthMethods())) {
                 $authenticateMsg = $ca->getAuthenticateFromChallenge($msg);
                 $session->sendMessage($authenticateMsg);
@@ -350,9 +351,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
             }
         }
 
-        // we have no good response down here
-        // TODO: do what you do when you have nothing good to say
-        echo "We have no response to the challenge given.";
+        $this->emit('challenge', [$session, $msg]);
     }
 
     /**
@@ -383,7 +382,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
         }
     }
 
-    public function onSessionEnd($session) {
+    public function onSessionEnd($session)
+    {
 
     }
 
@@ -536,6 +536,19 @@ class Client extends AbstractPeer implements EventEmitterInterface
         return $this->authId;
     }
 
+    /**
+     * @return array
+     */
+    public function getAuthMethods()
+    {
+        return $this->authMethods;
+    }
 
-
+    /**
+     * @param array $authMethods
+     */
+    public function setAuthMethods($authMethods)
+    {
+        $this->authMethods = $authMethods;
+    }
 }
