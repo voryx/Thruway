@@ -192,11 +192,12 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                             $challenge = $res[1]['challenge'];
 
                             $session->getAuthenticationDetails()->setChallenge($challenge);
+                            $session->getAuthenticationDetails()->setChallengeDetails($res[1]);
 
                             $session->sendMessage(
                                 new ChallengeMessage(
                                     $authMethod,
-                                    array('challenge' => $challenge)
+                                    $session->getAuthenticationDetails()->getChallengeDetails()
                                 )
                             );
                         } else {
@@ -261,6 +262,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                     array(
                         'authmethod' => $authMethod,
                         'challenge' => $session->getAuthenticationDetails()->getChallenge(),
+                        'extra' => array('challenge_details' => $session->getAuthenticationDetails()->getChallengeDetails()),
                         'signature' => $msg->getSignature()
                     )
                 )->then(
@@ -272,15 +274,23 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                             return;
                         }
 
+                        // we should figure out a way to have the router send the welcome
+                        // message so that the roles and extras that go along with it can be
+                        // filled in
                         if ($res[0] == "SUCCESS") {
+                            $welcomeDetails = array("roles" => array());
+
+                            if (isset($res[1])) {
+                                if (is_array($res[1])) {
+                                    $welcomeDetails = array_merge($welcomeDetails, $res[1]);
+                                }
+                            }
+
                             $session->setAuthenticated(true);
                             $session->sendMessage(
                                 new WelcomeMessage(
                                     $session->getSessionId(),
-                                    array(
-                                        "roles" => array()
-                                        /* autobahn.js expects roles, even though it's not called for in the spec*/
-                                    )
+                                    $welcomeDetails
                                 )
                             );
                         } else {
