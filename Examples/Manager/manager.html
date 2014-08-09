@@ -2,6 +2,11 @@
 <html ng-app="myApp">
 <head>
     <title>Thruway Management</title>
+    <style>
+        .highlight {
+            background-color: lightgreen;
+        }
+    </style>
 </head>
 <body data-ng-controller="myController">
 
@@ -10,7 +15,9 @@
 <div id="sessionList">
     <h3>Sessions:</h3>
     <ul>
-        <li ng-repeat="session in managerSessions">
+        <li ng-repeat="session in managerSessions" ng-class="{ highlight: session.highlight }"
+            ng-mouseover="sessionMouseOver(session, true)"
+            ng-mouseout="sessionMouseOver(session, false)">
             {{ session.transport.type }}({{ session.transport.transportAddress }}): {{ session.sessionStart }} {{
             session.realm }}
         </li>
@@ -23,7 +30,11 @@
     <div ng-repeat="(realm, registrations) in managerRegistrations">
         <ul>
 
-            <li ng-repeat="registration in registrations">
+            <li ng-repeat="registration in registrations"
+                ng-class="{ highlight: registration.highlight }"
+                ng-mouseover="regMouseOver(registration)"
+                ng-mouseout="regMouseOut(registration)">
+
                 {{ registration.id }}: {{ registration.name }} -> session {{ registration.session }} {{ realm }}
             </li>
         </ul>
@@ -48,11 +59,45 @@
 
     var theScope;
 
-    app.controller("myController", function ($scope) {
+    app.controller("myController", function ($scope, $filter) {
         theScope = $scope;
         $scope.managerSessions = [];
         $scope.managerRealms = [];
         $scope.managerRegistrations = {};
+
+        $scope.getSessionById = function (sessionId) {
+            res = $filter('filter')($scope.managerSessions, {id: sessionId});
+
+            if (angular.isArray(res)) {
+                return res.pop();
+            } else {
+                return null;
+            }
+        };
+
+        $scope.regMouseOver = function (registration) {
+            // highlight the session
+            session = $scope.getSessionById(registration.session);
+
+            console.log(session);
+
+            session.highlight = true;
+        };
+
+        $scope.regMouseOut = function (registration) {
+            // unhighlight the session
+            session = $scope.getSessionById(registration.session);
+
+            session.highlight = false;
+        };
+
+        $scope.sessionMouseOver = function (session, highlight) {
+            registrations = $scope.managerRegistrations[session.realm];
+
+            registrations.forEach(function (reg) {
+                if (reg.session == session.id) { reg.highlight = highlight; }
+            });
+        };
 
         $scope.getSessions = function () {
 
@@ -60,7 +105,6 @@
                     function (res) {
                         $scope.managerSessions = res;
                         $scope.$digest();
-                        //console.log("Result:", res);
                     }
             );
 
@@ -68,14 +112,11 @@
                     function (res) {
                         $scope.managerRealms = res;
                         $scope.$digest();
-                        console.log("Result:", res);
 
                         angular.forEach($scope.managerRealms, function (realm) {
 
                             session.call('manager.realm.' + realm.name + '.registrations', []).then(
                                     function (res) {
-                                        console.log(realm.name + ": ");
-                                        console.log(res);
                                         $scope.managerRegistrations[realm.name] = res;
                                         $scope.$digest();
                                     }
