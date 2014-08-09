@@ -112,6 +112,12 @@ class Dealer extends AbstractRole
 
 
         $registration = new Registration($session, $msg->getProcedureName());
+
+        $options = (array)$msg->getOptions();
+        if (isset($options['discloseCaller']) && $options['discloseCaller'] === true) {
+            $registration->setDiscloseCaller(true);
+        }
+
         $this->registrations->attach($registration);
 
         $this->manager->logDebug('Registered: ' . $registration->getProcedureName());
