@@ -106,7 +106,7 @@ class Callee extends AbstractRole
                 echo "Registration_id not set for " . $registration['procedure_name'] . "\n";
             } else {
                 if ($registration["registration_id"] === $msg->getRegistrationId()) {
-                    $results = $registration["callback"]($msg->getArguments(), $msg->getDetails());
+                    $results = $registration["callback"]($msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails());
 
                     if ($results instanceof Promise) {
                         // the result is a promise - hook up stuff as a callback

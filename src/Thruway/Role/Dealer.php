@@ -57,7 +57,9 @@ class Dealer extends AbstractRole
         $this->registrations = new \SplObjectStorage();
         $this->calls = new \SplObjectStorage();
 
-        if ($manager === null) $manager = new ManagerDummy();
+        if ($manager === null) {
+            $manager = new ManagerDummy();
+        }
         $this->setManager($manager);
 
 
@@ -171,6 +173,17 @@ class Dealer extends AbstractRole
         }
 
         $invocationMessage = InvocationMessage::createMessageFrom($msg, $registration);
+
+        if ($registration->getDiscloseCaller() === true && $session->getAuthenticationDetails()) {
+            $details = [
+                "caller" => $session->getSessionId(),
+                "authid" => $session->getAuthenticationDetails()->getAuthId(),
+                //"authrole" => $session->getAuthenticationDetails()->getAuthRole(),
+                "authmethod" => $session->getAuthenticationDetails()->getAuthMethod(),
+            ];
+
+            $invocationMessage->setDetails($details);
+        }
 
         $call = new Call($msg, $session, $invocationMessage, $registration->getSession());
 
@@ -317,7 +330,8 @@ class Dealer extends AbstractRole
         return $this->manager;
     }
 
-    public function managerGetRegistrations() {
+    public function managerGetRegistrations()
+    {
         $theRegistrations = [];
 
         echo "Hey";

@@ -111,6 +111,7 @@ class Caller extends AbstractRole
      */
     public function call(ClientSession $session, $procedureName, $arguments)
     {
+        //This promise gets resolved in Caller::processResult
         $futureResult = new Deferred();
 
         $requestId = Session::getUniqueId();
