@@ -21,9 +21,9 @@ class InternalClient extends Thruway\Peer\Client
     {
     }
 
-    function callPing($args)
+    function callPing($res)
     {
-        return array($args[0]);
+        return array($res[0]);
     }
 
     function callPublish($args)

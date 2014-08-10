@@ -5,9 +5,15 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
     protected $_conn;
     protected $_error;
+    protected $_testArgs;
+    protected $_testResult;
 
     public function setUp()
     {
+        $this->testArgs = null;
+        $this->_testResult = null;
+        $this->_error = null;
+
         $this->_conn = new \Thruway\Connection(
             array(
                 "realm" => 'testRealm',
@@ -20,14 +26,13 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
     public function testCall()
     {
-        $this->_error = null;
         $this->_conn->on(
             'open',
             function (\Thruway\ClientSession $session) {
                 $session->call('com.example.ping', ['testing123'])->then(
                     function ($res) {
                         $this->_conn->close();
-                        $this->assertEquals('testing123', $res[0]);
+                        $this->_testResult = $res;
                     },
                     function ($error) {
                         $this->_conn->close();
@@ -40,6 +45,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->_conn->open();
 
         $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
+        $this->assertEquals('testing123', $this->_testResult[0]);
     }
 
     /**
@@ -47,7 +53,6 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
      */
     public function testSubscribe()
     {
-        $this->_error = null;
         $this->_conn->on(
             'open',
             function (\Thruway\ClientSession $session) {
@@ -59,7 +64,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                     'com.example.publish',
                     function ($args) {
                         $this->_conn->close();
-                        $this->assertEquals('test publish', $args[0]);
+                        $this->_testArgs = $args;
                     }
                 );
 
@@ -68,8 +73,8 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                  */
                 $session->call('com.example.publish', ['test publish'])->then(
                     function ($res) {
+                        $this->_testResult = $res;
 
-                        $this->assertEquals('ok', $res[0]);
                     },
                     function ($error) {
                         $this->_conn->close();
@@ -82,5 +87,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->_conn->open();
 
         $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
+        $this->assertEquals('test publish', $this->_testArgs[0]);
+        $this->assertEquals('ok', $this->_testResult[0]);
     }
 }
