@@ -8,6 +8,7 @@
 
 namespace Thruway\Peer;
 
+use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
@@ -225,12 +226,24 @@ class Router extends AbstractPeer
                 $sessionRealm = $session->getRealm()->getRealmName();
             }
 
+            if ($session->getAuthenticationDetails() !== null) {
+                /** @var AuthenticationDetails $authDetails */
+                $authDetails = $session->getAuthenticationDetails();
+                $auth = array(
+                    "authid" => $authDetails->getAuthId(),
+                    "authmethod" => $authDetails->getAuthMethod()
+                );
+            } else {
+                $auth = new \stdClass();
+            }
+
             $theSessions[] = [
                 "id" => $session->getSessionId(),
                 "transport" => $session->getTransport()->getTransportDetails(),
                 "messagesSent" => $session->getMessagesSent(),
                 "sessionStart" => $session->getSessionStart(),
-                "realm" => $sessionRealm
+                "realm" => $sessionRealm,
+                "auth" => $auth
             ];
         }
 
