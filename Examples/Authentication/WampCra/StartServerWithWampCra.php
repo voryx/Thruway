@@ -6,9 +6,9 @@ else {
     require __DIR__ . '/../../../vendor/autoload.php';
 }
 
-require 'WampCraAuthProvider.php';
 require 'UserDb.php';
 
+use Thruway\Authentication\WampCraAuthProvider;
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
 
@@ -36,7 +36,7 @@ $router->setAuthenticationManager($authMgr);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
 
 
-$authProvClient = new \WampCra\WampCraAuthProvider(array("realm1"));
+$authProvClient = new WampCraAuthProvider(array("realm1"));
 $authProvClient->setUserDb($userDb);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
 

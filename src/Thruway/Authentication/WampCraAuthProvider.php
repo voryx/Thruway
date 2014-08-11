@@ -1,14 +1,14 @@
 <?php
 
 
-namespace WampCra;
+namespace Thruway\Authentication;
 
 
-use Thruway\Authentication\AbstractAuthProviderClient;
 use Thruway\Message\HelloMessage;
 
 class WampCraAuthProvider extends AbstractAuthProviderClient {
 
+    /** @var  WampCraUserDbInterface */
     private $userDb;
 
     /**
@@ -129,8 +129,6 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
 
                         $token = base64_encode(hash_hmac('sha256', $challenge, $keyToUse, true));
 
-                        echo "Sig should be: " . $token . "\n";
-
                         if ($token == $signature) {
                             return array("SUCCESS",array(
                                 "authmethod" => "wampcra",
@@ -148,7 +146,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
     }
 
     /**
-     * @param mixed $userDb
+     * @param WampCraUserDbInterface $userDb
      */
     public function setUserDb($userDb)
     {
@@ -156,13 +154,15 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
     }
 
     /**
-     * @return mixed
+     * @return WampCraUserDbInterface
      */
     public function getUserDb()
     {
         return $this->userDb;
     }
 
-
+    public static function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32) {
+        return base64_encode(hash_pbkdf2('sha256', $key, $salt, $iterations, $keyLen, true));;
+    }
 
 } 

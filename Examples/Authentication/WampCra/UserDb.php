@@ -6,7 +6,7 @@
  * Time: 11:35 PM
  */
 
-class UserDb {
+class UserDb implements \Thruway\Authentication\WampCraUserDbInterface {
     private $users;
 
     function __construct()
@@ -16,7 +16,7 @@ class UserDb {
 
     function add($userName, $password, $salt = null) {
         if ($salt !== null) {
-            $key = static::getDerivedKey($password, $salt);
+            $key = \Thruway\Authentication\WampCraAuthProvider::getDerivedKey($password, $salt);
         } else {
             $key = $password;
         }
@@ -32,7 +32,5 @@ class UserDb {
         }
     }
 
-    public static function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32) {
-        return base64_encode(hash_pbkdf2('sha256', $key, $salt, $iterations, $keyLen, true));;
-    }
+
 } 
