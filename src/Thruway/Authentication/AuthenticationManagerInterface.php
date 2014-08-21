@@ -14,4 +14,5 @@ use Thruway\Session;
 
 interface AuthenticationManagerInterface {
     public function onAuthenticationMessage(Realm $realm, Session $session, Message $msg);
+    public function onSessionClose(Session $session);
 } 
