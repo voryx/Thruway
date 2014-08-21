@@ -30,7 +30,7 @@ class InternalClient extends Thruway\Peer\Client
     {
         $deferred = new \React\Promise\Deferred();
 
-        $this->getPublisher()->publish($this->session, "com.example.publish", [$args[0]], [], ["acknowledge" => true])
+        $this->getPublisher()->publish($this->session, "com.example.publish", [$args[0]], ["key1" => "test1", "key2" => "test2"], ["acknowledge" => true])
             ->then(
                 function () use ($deferred) {
                     $deferred->resolve('ok');

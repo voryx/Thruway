@@ -6,6 +6,9 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
     protected $_conn;
     protected $_error;
     protected $_testArgs;
+    protected $_testKWArgs;
+    protected $_publicationId;
+    protected $_details;
     protected $_testResult;
 
     public function setUp()
@@ -62,9 +65,12 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                  */
                 $session->subscribe(
                     'com.example.publish',
-                    function ($args) {
+                    function ($args, $kwargs = null, $details = null, $publicationId = null) {
                         $this->_conn->close();
                         $this->_testArgs = $args;
+                        $this->_testKWArgs = $kwargs;
+                        $this->_publicationId = $publicationId;
+
                     }
                 );
 
@@ -88,6 +94,8 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
         $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
         $this->assertEquals('test publish', $this->_testArgs[0]);
+        $this->assertEquals('test1', $this->_testKWArgs['key1']);
+        $this->assertNotNull($this->_publicationId);
         $this->assertEquals('ok', $this->_testResult[0]);
     }
 }
