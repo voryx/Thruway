@@ -3,7 +3,7 @@
 
 //https://developer.github.com/v3/oauth/
 
-class GithubAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient {
+class GithubCallbackAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient {
 
 
   private $clientId;

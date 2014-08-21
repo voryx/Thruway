@@ -5,11 +5,7 @@
  */
 
 
-if (file_exists(__DIR__.'/../../../../autoload.php')) {
-    require __DIR__.'/../../../../autoload.php';
-} else {
-    require __DIR__ . '/../../vendor/autoload.php';
-}
+require "../bootstrap.php";
 require 'MyClient.php';
 
 $client = new MyClient('realm1');

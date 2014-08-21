@@ -1,10 +1,9 @@
 <?php
-if (file_exists(__DIR__ . '/../../../../../autoload.php')) {
-    require __DIR__ . '/../../../../../autoload.php';
-} else {
-    require __DIR__ . '/../../vendor/autoload.php';
-}
+/**
+ * This requires "facebook/php-sdk-v4" : "4.0.*"
+ */
 
+require '../../bootstrap.php';
 require 'FacebookAuthProvider.php';
 
 use Thruway\Peer\Router;

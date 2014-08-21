@@ -1,11 +1,6 @@
 <?php
 
-if (file_exists(__DIR__.'/../../../../autoload.php')) {
-    require __DIR__.'/../../../../autoload.php';
-} else {
-    require __DIR__ . '/../../vendor/autoload.php';
-}
-
+require "../bootstrap.php";
 require 'SimpleClientAuth.php';
 
 $client = new \Thruway\Peer\Client('somerealm');
