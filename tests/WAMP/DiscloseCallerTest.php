@@ -76,7 +76,7 @@ class DiscloseCallerTest extends PHPUnit_Framework_TestCase
         $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
         $this->assertEquals(3, $this->_testResult[0]);
         $this->assertNotEmpty($this->_testCallerId);
-        $this->assertEquals("anonymous", $this->_testAuthId);
+        $this->assertEquals("me@example.com", $this->_testAuthId);
         $this->assertEquals("simplysimple", $this->_testAuthMethod);
     }
 } 

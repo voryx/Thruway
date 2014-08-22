@@ -263,7 +263,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                     array(
                         'authmethod' => $authMethod,
                         'challenge' => $session->getAuthenticationDetails()->getChallenge(),
-                        'extra' => array('challenge_details' => $session->getAuthenticationDetails()->getChallengeDetails()),
+                        'extra' => array(
+                            'challenge_details' => $session->getAuthenticationDetails()->getChallengeDetails()
+                        ),
                         'signature' => $msg->getSignature()
                     )
                 )->then(
@@ -285,6 +287,10 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                                 if (is_array($res[1])) {
                                     $welcomeDetails = array_merge($welcomeDetails, $res[1]);
                                 }
+                            }
+
+                            if (isset($res[1]) && isset($res[1]['authid'])) {
+                                $session->getAuthenticationDetails()->setAuthId($res[1]['authid']);
                             }
 
                             $session->setAuthenticated(true);
