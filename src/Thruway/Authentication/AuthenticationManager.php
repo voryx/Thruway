@@ -33,7 +33,12 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     public function onSessionStart($session, $transport)
     {
-        $this->getCallee()->register($session, 'thruway.auth.registermethod', array($this, 'registerAuthMethod'))
+        $this->getCallee()->register(
+            $session,
+            'thruway.auth.registermethod',
+            array($this, 'registerAuthMethod'),
+            ['discloseCaller' => true]
+        )
             ->then(
                 function () {
                     $this->setReady(true);
@@ -90,6 +95,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                     }
                 }
             }
+
+            $session->setAuthenticationDetails($authDetails);
 
             $session->setAuthenticated(true);
 
@@ -235,6 +242,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 $session->sendMessage(new AbortMessage(new \stdClass(), "realm_authorization_failure"));
             } else {
                 //Logged in as anonymous
+
+                $session->setAuthenticationDetails(AuthenticationDetails::createAnonymous());
+
                 $roles = array("broker" => new \stdClass, "dealer" => new \stdClass);
                 $session->sendMessage(
                     new WelcomeMessage($session->getSessionId(), array("roles" => $roles))
@@ -315,10 +325,14 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      *
      *
      * @param array $args
+     * @param array $kwargs
+     * @param array $details
      * @return array
      */
-    public function registerAuthMethod(array $args)
+    public function registerAuthMethod(array $args, $kwargs, $details)
     {
+        $details = (array)$details;
+
         // TODO: should return different error
         if (!is_array($args)) {
             return array("Received non-array arguments in registerAuthMethod");
@@ -350,11 +364,16 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             return array("ERROR", "Authentication provider must provide \"onauthenticate\" handler");
         }
 
+        if ( ! isset($details['caller'])) {
+            return array("ERROR", "Invocation must provide \"caller\" detail on registration");
+        }
+
 
         $this->authMethods[$authMethod] = array(
             'authMethod' => $authMethod,
             'handlers' => $methodInfo,
             'auth_realms' => $authRealms,
+            'session_id' => $details['caller']
         );
 
         return array("SUCCESS");
@@ -392,19 +411,39 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      */
     private function realmHasAuthProvider($realmName)
     {
-        $return = false;
-
         foreach ($this->authMethods as $authMethod) {
             foreach ($authMethod['auth_realms'] as $authRealm) {
                 if ($authRealm === "*" || $authRealm === $realmName) {
-                    $return = true;
                     echo "Tried to access realm: {$realmName}, but it expects an authmethod from the client\n";
-                    break;
+                    return true;
                 }
             }
         }
 
-        return $return;
+        return false;
     }
+
+    /**
+     * This allows the AuthenticationManager to clean out auth methods that were registered by
+     * sessions that are dieing. Otherwise the method could be hijacked by another client in the
+     * thruway.auth realm.
+     *
+     * @param Session $session
+     */
+    public function onSessionClose(Session $session)
+    {
+        if ($session->getRealm()->getRealmName() == "thruway.auth") {
+            // session is closing in the auth domain
+            // check and see if there are any registrations that came from this session
+            $sessionId = $session->getSessionId();
+
+            foreach ($this->authMethods as $methodName => $method) {
+                if ($method['caller'] == $sessionId) {
+                    unset($this->authMethods[$methodName]);
+                }
+            }
+        }
+    }
+
 
 }

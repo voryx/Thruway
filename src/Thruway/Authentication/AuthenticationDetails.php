@@ -78,4 +78,12 @@ class AuthenticationDetails {
     {
         return $this->authMethod;
     }
+
+    static public function createAnonymous() {
+        $authDetails = new AuthenticationDetails();
+        $authDetails->setAuthId("anonymous");
+        $authDetails->setAuthMethod("anonymous");
+
+        return $authDetails;
+    }
 }

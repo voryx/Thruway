@@ -1,13 +1,9 @@
 <?php
 
+require 'bootstrap.php';
+
 use Thruway\ClientSession;
 use Thruway\Connection;
-
-if (file_exists(__DIR__ . '/../../../autoload.php')) {
-    require __DIR__ . '/../../../autoload.php';
-} else {
-    require __DIR__ . '/../vendor/autoload.php';
-}
 
 $onClose = function ($msg) {
     echo $msg;

@@ -9,6 +9,7 @@
 namespace Thruway;
 
 
+use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
@@ -113,6 +114,9 @@ class Realm
                         $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
                     } else {
                         $session->setAuthenticated(true);
+
+                        $session->setAuthenticationDetails(AuthenticationDetails::createAnonymous());
+
                         // TODO: this will probably be pulled apart so that
                         // applications can actually create their own roles
                         // and attach them to realms - but for now...
