@@ -2,6 +2,7 @@
 
 namespace Thruway\Authentication;
 
+use React\EventLoop\LoopInterface;
 use React\Promise\Promise;
 use Thruway\Peer\Client;
 
@@ -10,7 +11,7 @@ class AbstractAuthProviderClient extends Client {
 
   protected $authRealms;
 
-  function __construct(Array $authRealms) {
+  function __construct(Array $authRealms, LoopInterface $loop = null) {
 
     $this->authRealms = $authRealms;
 
@@ -20,7 +21,7 @@ class AbstractAuthProviderClient extends Client {
      * This realm is only used between the Authentication Provider Client and the Authentication Manager Client on the server.
      *
      */
-    parent::__construct('thruway.auth');
+    parent::__construct('thruway.auth', $loop);
 
   }
 
@@ -69,10 +70,6 @@ class AbstractAuthProviderClient extends Client {
         );
       }
     );
-
-  }
-
-  public function start() {
 
   }
 

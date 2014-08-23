@@ -33,6 +33,6 @@ abstract class AbstractPeer
 
     abstract public function setManager($manager);
 
-    abstract public function start();
+    abstract public function start($startEventLoop = true);
 
 }

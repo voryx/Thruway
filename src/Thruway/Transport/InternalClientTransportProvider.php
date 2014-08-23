@@ -35,6 +35,8 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
     {
         $this->internalClient = $internalClient;
 
+        $this->internalClient->addTransportProvider(new DummyTransportProvider());
+
         $this->manager = new ManagerDummy();
     }
 
