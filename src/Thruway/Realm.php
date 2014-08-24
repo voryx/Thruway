@@ -99,10 +99,10 @@ class Realm
     {
         if (!$session->isAuthenticated()) {
             if ($msg instanceof HelloMessage) {
-                $this->manager->logDebug("got hello");
+                $this->manager->debug("got hello");
                 // send welcome message
                 if ($this->sessions->contains($session)) {
-                    $this->manager->logError(
+                    $this->manager->error(
                         "Connection tried to rejoin realm when it is already joined to the realm."
                     );
                     $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
@@ -133,10 +133,10 @@ class Realm
                     $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
                 } else {
                     // TODO: should shut down here probably
-                    $this->manager->logError("Authenticate sent to realm without auth manager.");
+                    $this->manager->error("Authenticate sent to realm without auth manager.");
                 }
             } else {
-                $this->manager->logError("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
+                $this->manager->error("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
             }
         } else {
             if ($msg instanceof PingMessage) {
@@ -177,7 +177,7 @@ class Realm
     public function leave(Session $session)
     {
 
-        $this->manager->logDebug("Leaving realm {$session->getRealm()->getRealmName()}");
+        $this->manager->debug("Leaving realm {$session->getRealm()->getRealmName()}");
         foreach ($this->roles as $role) {
             $role->leave($session);
         }

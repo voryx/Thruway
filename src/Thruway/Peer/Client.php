@@ -296,7 +296,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function onMessage(TransportInterface $transport, Message $msg)
     {
 
-        $this->manager->logDebug("Client onMessage!");
+        $this->manager->debug("Client onMessage!");
 
         $session = $this->session;
 

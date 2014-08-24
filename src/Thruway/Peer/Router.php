@@ -58,14 +58,14 @@ class Router extends AbstractPeer
         }
         $this->manager = $manager;
 
-        $manager->logDebug("New router created");
+        $manager->debug("New router created");
 
         $this->realmManager = new RealmManager($manager);
         $this->transportProviders = array();
         $this->sessions = new \SplObjectStorage();
 
         if ($loop === null) {
-            $manager->logDebug("No loop given, creating our own instance");
+            $manager->debug("No loop given, creating our own instance");
             $loop = Factory::create();
         }
 
@@ -82,7 +82,7 @@ class Router extends AbstractPeer
         $session->setLoop($this->getLoop());
 
         // TODO: add a little more detail to this (what kind and address maybe?)
-        $this->manager->logInfo("New Session started " . json_encode($transport->getTransportDetails()) . "");
+        $this->manager->info("New Session started " . json_encode($transport->getTransportDetails()) . "");
 
         $this->sessions->attach($transport, $session);
 
@@ -123,7 +123,7 @@ class Router extends AbstractPeer
 
     public function start()
     {
-        $this->manager->logDebug("Starting router");
+        $this->manager->debug("Starting router");
         if ($this->loop === null) {
             throw new \Exception("Loop is null");
         }
@@ -134,19 +134,19 @@ class Router extends AbstractPeer
 
         /** @var $transportProvider AbstractTransportProvider */
         foreach ($this->transportProviders as $transportProvider) {
-            $this->manager->logDebug("Starting transport provider " . get_class($transportProvider));
+            $this->manager->debug("Starting transport provider " . get_class($transportProvider));
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
         $this->setupManager();
 
-        $this->manager->logDebug("Starting loop");
+        $this->manager->debug("Starting loop");
         $this->loop->run();
     }
 
     public function onClose(TransportInterface $transport)
     {
-        $this->manager->logDebug("onClose from " . json_encode($transport->getTransportDetails()));
+        $this->manager->debug("onClose from " . json_encode($transport->getTransportDetails()));
 
         /** @var  $session Session */
         $session = $this->sessions[$transport];

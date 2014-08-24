@@ -8,12 +8,24 @@
 
 namespace Thruway\Manager;
 
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerTrait;
+use Psr\Log\NullLogger;
+
+
 class ManagerDummy implements ManagerInterface {
+    use LoggerAwareTrait;
+    use LoggerTrait;
 
     /**
      * @var bool
      */
     private $quiet;
+    
+    public function __construct()
+    {
+        $this->setLogger(new NullLogger);
+    }
 
     /**
      * This intentionally does nothing
@@ -26,29 +38,12 @@ class ManagerDummy implements ManagerInterface {
 
     }
 
-    function logIt($logLevel, $msg)
+    public function log($level, $message, array $context = array())
     {
         if ( ! $this->getQuiet()) {
-            echo $logLevel . ": " . $msg . "\n";
+            $this->logger->log($level, $message, $context);
         }
     }
-
-    function logInfo($msg) {
-        $this->logIt("INFO", $msg);
-    }
-
-    function logError($msg) {
-        $this->logIt("ERROR", $msg);
-    }
-
-    function logWarning($msg) {
-        $this->logIt("WARNING", $msg);
-    }
-
-    function logDebug($msg) {
-        $this->logIt("DEBUG", $msg);
-    }
-
 
     /**
      * @param boolean $quiet

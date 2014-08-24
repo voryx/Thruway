@@ -55,7 +55,7 @@ class RealmManager
 
         if (!array_key_exists($realmName, $this->realms)) {
             if ($this->allowRealmAutocreate) {
-                $this->manager->logDebug("Creating new realm \"" . $realmName . "\"");
+                $this->manager->debug("Creating new realm \"" . $realmName . "\"");
                 $this->realms[$realmName] = new Realm($realmName);
                 $this->realms[$realmName]->setAuthenticationManager($this->getDefaultAuthenticationManager());
                 $this->realms[$realmName]->setManager($this->manager);
@@ -78,12 +78,12 @@ class RealmManager
             throw new \Exception("There is already a realm \"" . $realm->getRealmName() . "\"");
         }
 
-        $this->manager->logDebug("Adding realm \"" . $realmName . "\"");
+        $this->manager->debug("Adding realm \"" . $realmName . "\"");
 
         if ($realm->getManager() instanceof ManagerDummy) {
             /** remind people that we don't setup the manager for them if they
              * are creating their own realms */
-            $this->manager->logWarning("Realm \"" . $realmName . "\" is using ManagerDummy");
+            $this->manager->warning("Realm \"" . $realmName . "\" is using ManagerDummy");
         }
 
         $this->realms[$realm->getRealmName()] = $realm;

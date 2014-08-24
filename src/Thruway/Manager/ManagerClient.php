@@ -5,9 +5,15 @@ namespace Thruway\Manager;
 use Thruway\Peer\Client;
 use Thruway\Role\Publisher;
 use Thruway\Session;
+use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerTrait;
+use Psr\Log\NullLogger;
 
 class ManagerClient extends Client implements ManagerInterface
 {
+    use LoggerAwareTrait;
+    use LoggerTrait;
+
 
     /**
      * @var
@@ -19,7 +25,7 @@ class ManagerClient extends Client implements ManagerInterface
         parent::__construct("manager");
 
         $this->callables = array();
-
+        $this->setLogger(new NullLogger);
     }
 
     /**
@@ -76,47 +82,7 @@ class ManagerClient extends Client implements ManagerInterface
         return $sessionIsUp;
     }
 
-    function logIt($logLevel, $msg)
-    {
-        echo $logLevel . ": " . $msg . "\n";
-
-
-
-        if ($this->getPublisher() instanceof Publisher
-            && $this->loggingPublish
-            && $this->sessionIsUp()
-        ) {
-            $this->loggingPublish = false;
-            $this->getPublisher()->publish(
-                $this->session,
-                "manager.log." . strtolower($logLevel),
-                array($msg),
-                array(),
-                array()
-            );
-            $this->loggingPublish = true;
-        }
-
-
-    }
-
-    function logInfo($msg)
-    {
-        $this->logIt("INFO", $msg);
-    }
-
-    function logError($msg)
-    {
-        $this->logIt("ERROR", $msg);
-    }
-
-    function logWarning($msg)
-    {
-        $this->logIt("WARNING", $msg);
-    }
-
-    function logDebug($msg)
-    {
-        $this->logIt("DEBUG", $msg);
+    public function log($level, $message, array $context = array()) {
+        $this->logger->log($level, $message, $context);
     }
 }

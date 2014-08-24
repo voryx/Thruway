@@ -26,7 +26,8 @@
         "php": ">=5.4"
       , "react/socket": "0.4.*",
         "cboden/ratchet": "0.3.*",
-        "ratchet/pawl": "dev-master"
+        "ratchet/pawl": "dev-master",
+        "psr/log": "~1"
     }
     
 }

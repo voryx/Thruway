@@ -8,12 +8,9 @@
 
 namespace Thruway\Manager;
 
+use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareInterface;
 
-interface ManagerInterface {
+interface ManagerInterface extends LoggerInterface {
     public function addCallable($name, $callback);
-    function logIt($logLevel, $msg);
-    function logInfo($msg);
-    function logError($msg);
-    function logWarning($msg);
-    function logDebug($msg);
 } 

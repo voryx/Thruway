@@ -122,7 +122,7 @@ class Dealer extends AbstractRole
 
         $this->registrations->attach($registration);
 
-        $this->manager->logDebug('Registered: ' . $registration->getProcedureName());
+        $this->manager->debug('Registered: ' . $registration->getProcedureName());
 
         return new RegisteredMessage($msg->getRequestId(), $registration->getId());
     }
@@ -148,7 +148,7 @@ class Dealer extends AbstractRole
         }
 
         $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-        $this->manager->logError('No registration: ' . $msg->getRegistrationId());
+        $this->manager->error('No registration: ' . $msg->getRegistrationId());
 
         return $errorMsg->setErrorURI('wamp.error.no_such_registration');
 
@@ -164,7 +164,7 @@ class Dealer extends AbstractRole
         $registration = $this->getRegistrationByProcedureName($msg->getProcedureName());
         if (!$registration) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $this->manager->logError('No registration for call message: ' . $msg->getProcedureName());
+            $this->manager->error('No registration for call message: ' . $msg->getProcedureName());
 
             $errorMsg->setErrorURI('wamp.error.no_such_registration');
             $session->sendMessage($errorMsg);
@@ -203,7 +203,7 @@ class Dealer extends AbstractRole
 
         if (!$call) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $this->manager->logError('No call for yield message: ' . $msg->getRequestId());
+            $this->manager->error('No call for yield message: ' . $msg->getRequestId());
 
             $errorMsg->setErrorURI('wamp.error.no_such_procedure');
             $session->sendMessage($errorMsg);
@@ -301,7 +301,7 @@ class Dealer extends AbstractRole
                 $registration = $this->registrations->current();
                 $this->registrations->next();
                 if ($registration->getSession() == $session) {
-                    $this->manager->logDebug("Leaving and unegistering: {$registration->getProcedureName()}");
+                    $this->manager->debug("Leaving and unegistering: {$registration->getProcedureName()}");
                     $this->registrations->detach($registration);
                 }
             }

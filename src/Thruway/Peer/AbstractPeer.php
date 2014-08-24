@@ -17,7 +17,7 @@ abstract class AbstractPeer
     public function onRawMessage(TransportInterface $transport, $msg)
     {
         if ($this->manager instanceof ManagerInterface) {
-            $this->manager->logDebug("Raw message: (" . $msg . ")");
+            $this->manager->debug("Raw message: (" . $msg . ")");
         }
 
         $msgObj = Message::createMessageFromRaw($msg);

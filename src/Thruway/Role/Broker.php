@@ -55,7 +55,7 @@ class Broker extends AbstractRole
         if ($manager === null) $manager = new ManagerDummy();
         $this->manager = $manager;
 
-        $this->manager->logDebug("Broker constructor");
+        $this->manager->debug("Broker constructor");
 
         $this->subscriptions = new \SplObjectStorage();
         $this->topics = array();
@@ -70,7 +70,7 @@ class Broker extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        $this->manager->logDebug("Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . $msg->getSerializedMessage());
+        $this->manager->debug("Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . $msg->getSerializedMessage());
 
         if ($msg instanceof PublishMessage):
             $this->processPublish($session, $msg);
@@ -89,7 +89,7 @@ class Broker extends AbstractRole
      */
     public function processPublish(Session $session, PublishMessage $msg)
     {
-        $this->manager->logDebug("processing publish message");
+        $this->manager->debug("processing publish message");
 
         $receivers = isset($this->topics[$msg->getTopicName()]) ? $this->topics[$msg->getTopicName()] : null;
 
@@ -239,7 +239,7 @@ class Broker extends AbstractRole
             $subscription = $this->subscriptions->current();
             $this->subscriptions->next();
             if ($subscription->getSession() == $session) {
-                $this->manager->logDebug("Leaving and unsubscribing: {$subscription->getTopic()}");
+                $this->manager->debug("Leaving and unsubscribing: {$subscription->getTopic()}");
                 $this->subscriptions->detach($subscription);
             }
         }
@@ -248,7 +248,7 @@ class Broker extends AbstractRole
             foreach ($subscribers as $key => $subscriber) {
                 if ($session == $subscriber) {
                     unset($subscribers[$key]);
-                    $this->manager->logDebug("Removing session from topic list: {$topicName}");
+                    $this->manager->debug("Removing session from topic list: {$topicName}");
 
                 }
             }

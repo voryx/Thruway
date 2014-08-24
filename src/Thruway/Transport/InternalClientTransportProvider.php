@@ -78,7 +78,7 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
     {
         $this->manager = $manager;
 
-        $this->manager->logInfo("Manager attached to InternalClientTransportProvider");
+        $this->manager->info("Manager attached to InternalClientTransportProvider");
     }
 
     /**

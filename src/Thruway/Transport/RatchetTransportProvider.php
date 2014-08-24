@@ -88,7 +88,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function onOpen(ConnectionInterface $conn)
     {
-        $this->manager->logDebug("RatchetTransportProvider::onOpen");
+        $this->manager->debug("RatchetTransportProvider::onOpen");
 
         $transport = new RatchetTransport($conn);
 
@@ -115,7 +115,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
         $this->peer->onClose($transport);
 
-        $this->manager->logDebug("onClose...");
+        $this->manager->debug("onClose...");
     }
 
     /**
@@ -127,7 +127,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function onError(ConnectionInterface $conn, \Exception $e)
     {
-        $this->manager->logError("onError...");
+        $this->manager->error("onError...");
         // TODO: Implement onError() method.
     }
 
@@ -139,7 +139,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function onMessage(ConnectionInterface $from, $msg)
     {
-        $this->manager->logDebug("onMessage...({$msg})");
+        $this->manager->debug("onMessage...({$msg})");
         $transport = $this->transports[$from];
 
         // TODO: Should deserialize in here
@@ -153,7 +153,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     {
         $this->manager = $manager;
 
-        $this->manager->logInfo("Manager attached to RatchetTransportProvider");
+        $this->manager->info("Manager attached to RatchetTransportProvider");
     }
 
     /**
