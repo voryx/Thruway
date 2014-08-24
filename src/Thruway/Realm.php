@@ -17,6 +17,8 @@ use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
+use Thruway\Message\PingMessage;
+use Thruway\Message\PongMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Role\AbstractRole;
 use Thruway\Role\Broker;
@@ -137,11 +139,17 @@ class Realm
                 $this->manager->logError("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
             }
         } else {
-            /* @var $role AbstractRole */
-            foreach ($this->roles as $role) {
-                if ($role->handlesMessage($msg)) {
-                    $role->onMessage($session, $msg);
-                    break;
+            if ($msg instanceof PingMessage) {
+                $session->sendMessage($msg->getPong());
+            } elseif ($msg instanceof PongMessage) {
+                $session->processPong($msg);
+            } else {
+                /* @var $role AbstractRole */
+                foreach ($this->roles as $role) {
+                    if ($role->handlesMessage($msg)) {
+                        $role->onMessage($session, $msg);
+                        break;
+                    }
                 }
             }
         }

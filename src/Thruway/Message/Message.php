@@ -2,7 +2,7 @@
 
 namespace Thruway\Message;
 
-abstract class Message
+abstract class Message implements \JsonSerializable
 {
 
     const MSG_UNKNOWN = 0;
@@ -31,6 +31,10 @@ abstract class Message
     const MSG_INVOCATION = 68;
     const MSG_INTERRUPT = 69; // advanced
     const MSG_YIELD = 70;
+
+    // thruway specific messages
+    const MSG_PING = 260;
+    const MSG_PONG = 261;
 
     /**
      * @var int
@@ -147,6 +151,19 @@ abstract class Message
                 return new ChallengeMessage($json[1], $json[2], $extra);
             case Message::MSG_ERROR:
                 return new ErrorMessage($json[1], $json[2], $json[3], $json[4]);
+
+            case Message::MSG_PING:
+                $options = isset($json[2]) ? $json[2] : null;
+                $echo = isset($json[3]) ? $json[3] : null;
+                $discard = isset($json[4]) ? $json[4] : null;
+
+                return new PingMessage($json[1], $options, $echo, $discard);
+            case Message::MSG_PONG:
+                $details = isset($json[2]) ? $json[2] : null;
+                $echo = isset($json[3]) ? $json[3] : null;
+
+                return new PongMessage($json[1], $details, $echo);
+
             default:
                 throw new MessageException("Unhandled message type: " . $json[0]);
         }
@@ -165,6 +182,18 @@ abstract class Message
     public function getSerializedMessage()
     {
         return json_encode($this->getMessageParts());
+    }
+
+    /**
+     * (PHP 5 &gt;= 5.4.0)<br/>
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     */
+    public function jsonSerialize()
+    {
+        return $this->getMessageParts();
     }
 
 

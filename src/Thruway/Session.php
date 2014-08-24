@@ -55,7 +55,7 @@ class Session extends AbstractSession {
       $manager = new ManagerDummy();
     }
 
-    $this->manager = $manager;
+    $this->setManager($this->manager);
 
     $this->authenticationDetails = NULL;
   }
@@ -90,11 +90,20 @@ class Session extends AbstractSession {
     return $result[0];
   }
 
-  /**
-   * @param ManagerInterface $manager
-   */
+    /**
+     * @param ManagerInterface $manager
+     * @throws \InvalidArgumentException
+     */
   public function setManager($manager) {
-    $this->manager = $manager;
+      $this->manager = $manager;
+
+      if ($manager instanceof ManagerInterface) {
+
+      } else {
+          if ($manager !== null) {
+              throw new \InvalidArgumentException("Manager must implement ManagerInterface");
+          }
+      }
   }
 
   /**

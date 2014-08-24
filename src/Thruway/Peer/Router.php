@@ -78,10 +78,15 @@ class Router extends AbstractPeer
     {
         $session = new Session($transport, $this->manager);
 
+        // give the session the loop, just in case it wants to set a timer or something
+        $session->setLoop($this->getLoop());
+
         // TODO: add a little more detail to this (what kind and address maybe?)
         $this->manager->logInfo("New Session started " . json_encode($transport->getTransportDetails()) . "");
 
         $this->sessions->attach($transport, $session);
+
+
     }
 
     public function onMessage(TransportInterface $transport, Message $msg)
@@ -193,6 +198,16 @@ class Router extends AbstractPeer
     }
 
     /**
+     * @return \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|\React\EventLoop\LoopInterface|\React\EventLoop\StreamSelectLoop
+     */
+    public function getLoop()
+    {
+        return $this->loop;
+    }
+
+
+
+    /**
      * @return ManagerInterface
      */
     public function getManager()
@@ -202,10 +217,13 @@ class Router extends AbstractPeer
 
     public function getSessionBySessionId($sessionId) {
         /** @var Session $session */
-        foreach($this->sessions as $session ) {
+        $this->sessions->rewind();
+        while ($this->sessions->valid()) {
+            $session = $this->sessions->getInfo();
             if ($session->getSessionId() == $sessionId) {
                 return $session;
             }
+            $this->sessions->next();
         }
         return false;
     }

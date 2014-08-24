@@ -8,25 +8,36 @@
  */
 class InternalClient extends Thruway\Peer\Client
 {
+    /**
+     * @var \Thruway\Peer\Router
+     */
+    private $router;
 
     public function onSessionStart($session, $transport)
     {
-        $this->getCallee()->register($this->session, 'com.example.ping', array($this, 'callPing'));
+        $this->getCallee()->register($this->session, 'com.example.testcall', array($this, 'callTheTestCall'));
 
         $this->getCallee()->register($this->session, 'com.example.publish', array($this, 'callPublish'));
 
+        $this->getCallee()->register(
+            $this->session,
+            'com.example.ping',
+            array($this, 'callPing'),
+            ['discloseCaller' => true]
+        );
+
     }
 
-    function start()
+    public function start()
     {
     }
 
-    function callPing($res)
+    public function callTheTestCall($res)
     {
         return array($res[0]);
     }
 
-    function callPublish($args)
+    public function callPublish($args)
     {
         $deferred = new \React\Promise\Deferred();
 
@@ -42,6 +53,36 @@ class InternalClient extends Thruway\Peer\Client
 
         return $deferred->promise();
     }
+
+    public function callPing($args, $kwArgs, $details) {
+        if ($this->router === null) throw new \Exception("Router must be set before calling ping.");
+
+        if (isset($details['caller'])) {
+            $sessionIdToPing = $details['caller'];
+
+            $theSession = $this->getRouter()->getSessionBySessionId($sessionIdToPing);
+            return $theSession->ping(10);
+        }
+
+        return array("no good");
+    }
+
+    /**
+     * @param \Thruway\Peer\Router $router
+     */
+    public function setRouter($router)
+    {
+        $this->router = $router;
+    }
+
+    /**
+     * @return \Thruway\Peer\Router
+     */
+    public function getRouter()
+    {
+        return $this->router;
+    }
+
 
 
 }

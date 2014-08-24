@@ -9,6 +9,8 @@
 namespace Thruway\Peer;
 
 
+use React\Promise\Deferred;
+use React\Promise\Promise;
 use Thruway\ClientAuthenticationInterface;
 use Thruway\ClientSession;
 use Thruway\Manager\ManagerDummy;
@@ -19,6 +21,8 @@ use Thruway\Message\ChallengeMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
+use Thruway\Message\PingMessage;
+use Thruway\Message\PongMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Realm;
 use Thruway\Role\AbstractRole;
@@ -221,6 +225,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->retryAttempts = 0;
         $this->transport = $transport;
         $session = new ClientSession($transport, $this);
+
+        $session->setLoop($this->getLoop());
+
         $this->session = $session;
 
         $session->setState(Session::STATE_DOWN);
@@ -299,6 +306,10 @@ class Client extends AbstractPeer implements EventEmitterInterface
             $this->processAbort($session, $msg);
         elseif ($msg instanceof GoodbyeMessage):
             $this->processGoodbye($session, $msg);
+        elseif ($msg instanceof PingMessage):
+            $this->processPing($session, $msg);
+        elseif ($msg instanceof PongMessage):
+            $session->processPong($msg);
         elseif ($msg instanceof ChallengeMessage): //advanced
         {
             $this->processChallenge($session, $msg);
@@ -365,6 +376,14 @@ class Client extends AbstractPeer implements EventEmitterInterface
             $session->sendMessage($goodbyeMsg);
             $session->setGoodbyeSent(true);
         }
+    }
+
+    /**
+     * @param ClientSession $session
+     * @param PingMessage $msg
+     */
+    public function processPing(ClientSession $session, PingMessage $msg) {
+        $session->sendMessage($msg->getPong());
     }
 
     /**

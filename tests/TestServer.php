@@ -23,8 +23,10 @@ $transportProvider = new RatchetTransportProvider("127.0.0.1", 8080);
 
 $router->addTransportProvider($transportProvider);
 
+$theInternalClient = new InternalClient('testRealm');
+$theInternalClient->setRouter($router);
 
-$internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider(new InternalClient('testRealm'));
+$internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider($theInternalClient);
 $router->addTransportProvider($internalTransportProvider);
 
 $router->start();
