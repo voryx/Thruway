@@ -7,6 +7,7 @@ class SubscribedMessage extends Message {
     const MSG_CODE = Message::MSG_SUBSCRIBED;
 
     private $subscriptionId;
+    private $requestId;
 
     function __construct($requestId, $subscriptionId)
     {
@@ -50,5 +51,23 @@ class SubscribedMessage extends Message {
     {
         return array($this->getRequestId(), $this->getSubscriptionId());
     }
+
+    /**
+     * @param mixed $requestId
+     */
+    public function setRequestId($requestId)
+    {
+        $this->requestId = $requestId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
+    }
+
+
 
 }

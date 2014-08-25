@@ -32,4 +32,22 @@ class UnregisteredMessage extends Message
         return array($this->getRequestId());
     }
 
+    /**
+     * @param mixed $requestId
+     */
+    public function setRequestId($requestId)
+    {
+        $this->requestId = $requestId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
+    }
+
+    
+
 }

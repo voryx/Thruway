@@ -11,6 +11,7 @@ class PublishMessage extends Message
     private $topicName;
     private $arguments;
     private $argumentsKw;
+    private $requestId;
 
     function __construct($requestId, $options, $topicName, $arguments = null, $argumentsKw = null)
     {
@@ -120,6 +121,23 @@ class PublishMessage extends Message
     {
         return $this->topicName;
     }
+
+    /**
+     * @param mixed $requestId
+     */
+    public function setRequestId($requestId)
+    {
+        $this->requestId = $requestId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
+    }
+
 
 
 } 

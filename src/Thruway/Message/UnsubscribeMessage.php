@@ -6,6 +6,7 @@ namespace Thruway\Message;
 class UnsubscribeMessage extends Message {
     const MSG_CODE = Message::MSG_UNSUBSCRIBE;
 
+    private $requestId;
     private $subscriptionId;
 
     function __construct($requestId, $subscriptionId)
@@ -49,4 +50,22 @@ class UnsubscribeMessage extends Message {
     {
         // TODO: Implement getAdditionalMsgFields() method.
     }
+
+    /**
+     * @param mixed $requestId
+     */
+    public function setRequestId($requestId)
+    {
+        $this->requestId = $requestId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
+    }
+
+
 }

@@ -36,30 +36,8 @@ abstract class Message implements \JsonSerializable
     const MSG_PING = 260;
     const MSG_PONG = 261;
 
-    /**
-     * @var int
-     */
-    private $requestId;
-
     function __construct()
     {
-        $this->requestId = static::MSG_UNKNOWN;
-    }
-
-    /**
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
     /**

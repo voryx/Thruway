@@ -8,6 +8,7 @@ class SubscribeMessage extends Message {
 
     private $options;
     private $topicName;
+    private $requestId;
 
     function __construct($requestId, $options, $topicName)
     {
@@ -64,6 +65,22 @@ class SubscribeMessage extends Message {
     public function getTopicName()
     {
         return $this->topicName;
+    }
+
+    /**
+     * @param int $requestId
+     */
+    public function setRequestId($requestId)
+    {
+        $this->requestId = $requestId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
     }
 
 
