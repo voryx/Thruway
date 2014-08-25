@@ -66,8 +66,6 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                         $this->_conn->close();
                         $this->_testResult = $res;
                         $this->_echoResult = $res->getEcho();
-
-                        var_dump($res);
                     },
                     function ($error) {
                         $this->_conn->close();
@@ -96,7 +94,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                 $session->call('com.example.ping', [])->then(
                     function ($res) {
                         $this->_conn->close();
-                        $this->_testResult = $res;
+                        $this->_testResult = \Thruway\Message\Message::createMessageFromRaw(json_encode($res[0]));
                     },
                     function ($error) {
                         $this->_conn->close();
@@ -108,11 +106,9 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
         $this->_conn->open();
 
-        var_dump($this->_testResult);
-
-//        $this->assertNull($this->_error, "Got this error when pinging: {$this->_error}");
-//        $this->assertEquals($this->_echoResult[0], "echo content", "Ping echoed correctly");
-//        $this->assertTrue($this->_testResult instanceof \Thruway\Message\PongMessage);
+        $this->assertNull($this->_error, "Got this error when pinging: {$this->_error}");
+        $this->assertTrue($this->_testResult instanceof \Thruway\Message\PongMessage);
+        $this->assertEquals("echo content", $this->_testResult->getEcho()[0], "Ping echoed correctly");
     }
 
     /**
@@ -162,4 +158,52 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->assertNotNull($this->_publicationId);
         $this->assertEquals('ok', $this->_testResult[0]);
     }
+
+
+    /**
+     * @depends testCall
+     */
+    public function testUnregister()
+    {
+        $this->_error = null;
+
+        $this->_conn->on(
+            'open',
+            function (\Thruway\ClientSession $session) {
+
+                $callback = function () {
+                    return "Hello";
+                };
+
+                $session->register('com.example.somethingToUnregister', $callback)
+                    ->then(function () use ($session) {
+                            $session->unregister('com.example.somethingToUnregister')
+                                ->then(function () {
+                                        $this->_conn->close();
+                                        $this->_testResult = "unregistered";
+                                    },
+                                    function () {
+                                        $this->_conn->close();
+                                        $this->_error = "Error during unregistration";
+                                    }
+                                );
+
+                        },
+                        function () {
+                            $this->_conn->close();
+                            $this->_error = "Couldn't even register the call";
+                        }
+                    );
+
+                // TODO: test unregistering again
+                // TODO: test unregistering a different session's registration
+            }
+        );
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
+        $this->assertEquals('unregistered', $this->_testResult);
+    }
+
 }

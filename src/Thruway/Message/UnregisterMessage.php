@@ -32,7 +32,7 @@ class UnregisterMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array();
+        return array($this->getRequestId(), $this->getRegistrationId());
     }
 
     /**

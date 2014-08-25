@@ -61,7 +61,7 @@ class InternalClient extends Thruway\Peer\Client
             $sessionIdToPing = $details['caller'];
 
             $theSession = $this->getRouter()->getSessionBySessionId($sessionIdToPing);
-            return $theSession->ping(10);
+            return $theSession->ping(10, new \stdClass(), ["echo content"]);
         }
 
         return array("no good");

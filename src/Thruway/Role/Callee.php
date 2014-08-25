@@ -19,8 +19,8 @@ use Thruway\Message\Message;
 use Thruway\Message\RegisteredMessage;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\UnregisteredMessage;
+use Thruway\Message\UnregisterMessage;
 use Thruway\Message\YieldMessage;
-use Thruway\Registration;
 use Thruway\Session;
 
 /**
@@ -35,9 +35,6 @@ class Callee extends AbstractRole
      */
     private $registrations;
 
-    /**
-     * @param $session
-     */
     function __construct()
     {
         $this->registrations = array();
@@ -93,6 +90,19 @@ class Callee extends AbstractRole
      */
     public function processUnregistered(ClientSession $session, UnregisteredMessage $msg)
     {
+        foreach ($this->registrations as $key => $registration) {
+            if (isset($registration['unregister_request_id'])) {
+                if ($registration["unregister_request_id"] == $msg->getRequestId()) {
+                    /** @var Deferred $deferred */
+                    $deferred = $registration['unregister_deferred'];
+                    $deferred->resolve();
+
+                    unset($this->registrations[$key]);
+                    return;
+                }
+            }
+        }
+        echo "---Got an Unregistered Message, but couldn't find corresponding request.\n";
     }
 
     /**
@@ -106,6 +116,16 @@ class Callee extends AbstractRole
                 echo "Registration_id not set for " . $registration['procedure_name'] . "\n";
             } else {
                 if ($registration["registration_id"] === $msg->getRegistrationId()) {
+
+                    if ($registration['callback'] === null) {
+                        // this is where calls end up if the client has called unregister but
+                        // have not yet received confirmation from the router about the
+                        // unregistration
+                        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg,"thruway.error.unregistering"));
+
+                        return;
+                    }
+
                     $results = $registration["callback"]($msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails());
 
                     if ($results instanceof Promise) {
@@ -140,18 +160,49 @@ class Callee extends AbstractRole
      */
     public function processError(ClientSession $session, ErrorMessage $msg)
     {
+        if ($msg->getErrorMsgCode() == Message::MSG_REGISTER) {
+            $this->handleErrorRegister($session, $msg);
+        } elseif ($msg->getErrorMsgCode() == Message::MSG_UNREGISTER) {
+            $this->handleErrorUnregister($session, $msg);
+        } else {
+            echo "Unhandled error message: " . $msg->getSerializedMessage() . "\n";
+        }
+
+    }
+
+    public function handleErrorRegister(ClientSession $session, ErrorMessage $msg) {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
-
-                //TODO: actually do something with this error
-
+                /** @var Deferred $deferred */
+                $deferred = $registration['futureResult'];
+                $deferred->reject($msg);
                 unset($this->registrations[$key]);
                 break;
             }
         }
     }
 
+    public function handleErrorUnregister(ClientSession $session, ErrorMessage $msg) {
+        foreach ($this->registrations as $key => $registration) {
+            if (isset($registration['unregister_request_id'])) {
+                if ($registration["unregister_request_id"] === $msg->getRequestId()) {
+                    /** @var Deferred $deferred */
+                    $deferred = $registration['unregister_deferred'];
+                    $deferred->reject($msg);
+
+                    // I guess we get rid of the registration now?
+                    unset($this->registrations[$key]);
+                    break;
+                }
+            }
+        }
+    }
+
     /**
+     * Returns true if this role handles this message.
+     * Error messages are checked according to the
+     * message the error corresponds to.
+     *
      * @param Message $msg
      * @return mixed
      */
@@ -164,9 +215,11 @@ class Callee extends AbstractRole
             Message::MSG_INVOCATION,
         );
 
-        if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
-            return true;
-        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_REGISTER) {
+        $codeToCheck = $msg->getMsgCode();
+
+        if ($codeToCheck instanceof ErrorMessage) $codeToCheck = $msg->getErrorMsgCode();
+
+        if (in_array($codeToCheck, $handledMsgCodes)) {
             return true;
         } else {
             return false;
@@ -204,6 +257,68 @@ class Callee extends AbstractRole
         return $futureResult->promise();
     }
 
+    /**
+     * @param \Thruway\ClientSession $session
+     * @param $Uri
+     * @throws \Exception
+     * @return \React\Promise\Promise
+     */
+    public function unregister(ClientSession $session, $Uri)
+    {
+        // TODO: maybe add an option to wait for pending calls to finish
+
+        $registration = null;
+
+        foreach($this->registrations as $k => $r) {
+            if (isset($r['procedure_name'])) {
+                if ($r['procedure_name'] == $Uri) {
+                    $registration = &$this->registrations[$k];
+                    break;
+                }
+            }
+        }
+
+        if ($registration === null) {
+            throw new \Exception("registration not found");
+        }
+
+        // we remove the callback from the client here
+        // because we don't want the client to respond to any more calls
+        $registration['callback'] = null;
+
+        $futureResult = new Deferred();
+
+        if (!isset($registration["registration_id"])) {
+            // this would happen if the registration was never acknowledged by the router
+            // we should remove the registration and resolve any pending deferreds
+
+            echo "Registration ID is not set while attempting to unregister " . $Uri . "\n";
+
+            // reject the pending registration
+            $registration['futureResult']->reject();
+
+            // TODO: need to figure out what to do in this off chance
+            // We should still probably return a promise here that just rejects
+            // there is an issue with the pending registration too that
+            // the router may have a "REGISTERED" in transit and may still think that is
+            // good to go - so maybe still send the unregister?
+        }
+
+        $requestId = Session::getUniqueId();
+
+        // save the request id so we can find this in the registration
+        // list to call the deferred and remove it from the list
+        $registration['unregister_request_id'] = $requestId;
+        $registration['unregister_deferred'] = $futureResult;
+
+        $unregisterMsg = new UnregisterMessage($requestId, $registration['registration_id']);
+
+        $session->sendMessage($unregisterMsg);
+
+        return $futureResult->promise();
+    }
+
+    // This belongs somewhere else I am thinking
     public static function is_list($array)
     {
         if (!is_array($array)){

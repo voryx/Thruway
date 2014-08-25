@@ -91,6 +91,8 @@ abstract class Message implements \JsonSerializable
                 return new RegisterMessage($json[1], $json[2], $json[3]);
             case Message::MSG_UNREGISTER:
                 return new UnregisterMessage($json[1], $json[2]);
+            case Message::MSG_UNREGISTERED:
+                return new UnregisteredMessage($json[1]);
             case Message::MSG_CALL:
                 $args = isset($json[4]) ? $json[4] : null;
                 $argsKw = isset($json[5]) ? $json[5] : null;

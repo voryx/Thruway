@@ -63,6 +63,15 @@ class ClientSession extends AbstractSession
 
     /**
      * @param $procedureName
+     * @return \React\Promise\Promise
+     */
+    public function unregister($procedureName)
+    {
+        return $this->peer->getCallee()->unregister($this, $procedureName);
+    }
+
+    /**
+     * @param $procedureName
      * @param $arguments
      * @return \React\Promise\Promise
      */

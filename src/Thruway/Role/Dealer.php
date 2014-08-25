@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 12:02 PM
- */
 
 namespace Thruway\Role;
 
@@ -130,20 +124,30 @@ class Dealer extends AbstractRole
     /**
      * @param Session $session
      * @param UnregisterMessage $msg
-     * @return $this|UnregisteredMessage
+     * @throws \Exception
+     * @return Message
      */
     public function processUnregister(Session $session, UnregisterMessage $msg)
     {
-        //find the procedure by request id
+        //find the procedure by registration id
         $this->registrations->rewind();
         while ($this->registrations->valid()) {
             $registration = $this->registrations->current();
             if ($registration->getId() == $msg->getRegistrationId()) {
                 $this->registrations->next();
-                echo 'Unegistered: ' . $registration->getProcedureName();
+
+
+                // make sure the session is the correct session
+                if ($registration->getSession() !== $session) {
+                    throw new \Exception("Tried to unregister a procedure that belongs to a different session.");
+                }
+
+                $this->manager->debug('Unegistered: ' . $registration->getProcedureName());
                 $this->registrations->detach($registration);
 
                 return new UnregisteredMessage($msg->getRequestId());
+            } else {
+                $this->registrations->next();
             }
         }
 
@@ -157,6 +161,7 @@ class Dealer extends AbstractRole
     /**
      * @param Session $session
      * @param CallMessage $msg
+     * @return bool
      */
     public function processCall(Session $session, CallMessage $msg)
     {
@@ -196,6 +201,7 @@ class Dealer extends AbstractRole
     /**
      * @param Session $session
      * @param YieldMessage $msg
+     * @return bool
      */
     public function processYield(Session $session, YieldMessage $msg)
     {
