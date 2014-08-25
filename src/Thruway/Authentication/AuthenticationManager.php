@@ -432,13 +432,13 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      */
     public function onSessionClose(Session $session)
     {
-        if ($session->getRealm()->getRealmName() == "thruway.auth") {
+        if ($session->getRealm() && $session->getRealm()->getRealmName() == "thruway.auth") {
             // session is closing in the auth domain
             // check and see if there are any registrations that came from this session
             $sessionId = $session->getSessionId();
 
             foreach ($this->authMethods as $methodName => $method) {
-                if ($method['caller'] == $sessionId) {
+                if (isset($method['session_id']) && $method['session_id'] == $sessionId) {
                     unset($this->authMethods[$methodName]);
                 }
             }
