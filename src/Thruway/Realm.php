@@ -66,11 +66,6 @@ class Realm
     private $authenticationManager;
 
     /**
-     * @var array
-     */
-    private $authMethods;
-
-    /**
      * @param $realmName
      */
     function __construct($realmName)
@@ -87,8 +82,6 @@ class Realm
         $this->roles = array($this->broker, $this->dealer);
 
         $this->authenticationManager = null;
-
-        $this->authMethods = array();
     }
 
     /**
@@ -224,27 +217,4 @@ class Realm
     {
         return $this->authenticationManager;
     }
-
-    public function addAuthMethod($method) {
-        array_push($this->authMethods, $method);
-    }
-
-    /**
-     * @param array $authMethods
-     */
-    public function setAuthMethods($authMethods)
-    {
-        $this->authMethods = $authMethods;
-    }
-
-    /**
-     * @return array
-     */
-    public function getAuthMethods()
-    {
-        return $this->authMethods;
-    }
-
-
-
 }
