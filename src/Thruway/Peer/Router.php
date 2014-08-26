@@ -228,6 +228,24 @@ class Router extends AbstractPeer
         return false;
     }
 
+    /**
+     * @param \Thruway\RealmManager $realmManager
+     */
+    public function setRealmManager($realmManager)
+    {
+        $this->realmManager = $realmManager;
+    }
+
+    /**
+     * @return \Thruway\RealmManager
+     */
+    public function getRealmManager()
+    {
+        return $this->realmManager;
+    }
+
+
+
     public function managerGetSessionCount()
     {
         return array(count($this->sessions));
