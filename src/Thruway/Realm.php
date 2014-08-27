@@ -13,6 +13,7 @@ use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
+use Thruway\Message\AbortMessage;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\HelloMessage;
@@ -112,9 +113,7 @@ class Realm
 
                         $session->setAuthenticationDetails(AuthenticationDetails::createAnonymous());
 
-                        // TODO: this will probably be pulled apart so that
-                        // applications can actually create their own roles
-                        // and attach them to realms - but for now...
+                        // the broker and dealer should give us this information
                         $roles = array("broker" => new \stdClass, "dealer" => new \stdClass);
                         $session->sendMessage(
                             new WelcomeMessage($session->getSessionId(), array("roles" => $roles))
@@ -130,6 +129,8 @@ class Realm
                 }
             } else {
                 $this->manager->error("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
+                $session->sendMessage(new AbortMessage(new \stdClass(), "wamp.error.not_authorized"));
+                $session->shutdown();
             }
         } else {
             if ($msg instanceof PingMessage) {
@@ -137,12 +138,18 @@ class Realm
             } elseif ($msg instanceof PongMessage) {
                 $session->processPong($msg);
             } else {
+                $handled = false;
                 /* @var $role AbstractRole */
                 foreach ($this->roles as $role) {
                     if ($role->handlesMessage($msg)) {
                         $role->onMessage($session, $msg);
+                        $handled = true;
                         break;
                     }
+                }
+
+                if (!$handled) {
+                    $this->manager->warning("Unhandled message sent to \"{$this->getRealmName()}\": {$msg->getSerializedMessage()}");
                 }
             }
         }
