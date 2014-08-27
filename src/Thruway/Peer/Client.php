@@ -340,7 +340,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function processAbort(ClientSession $session, AbortMessage $msg)
     {
-        //TODO:  Implement this
+        $this->emit('error', [$msg->getResponseURI()]);
     }
 
     /**
@@ -416,6 +416,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
             $this->onSessionEnd($this->session);
             $this->session->onClose();
             $this->session = null;
+            $this->emit('close', [$reason]);
         }
 
         $this->roles = array();
@@ -423,8 +424,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->caller = null;
         $this->subscriber = null;
         $this->publisher = null;
-
-        $this->emit('close', [$reason]);
 
         $this->retryConnection();
 

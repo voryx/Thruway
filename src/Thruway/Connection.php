@@ -83,6 +83,10 @@ class Connection implements EventEmitterInterface
             );
         }
 
+        if (isset($this->options['onClose']) && is_callable($this->options['onClose'])) {
+            $this->on('close', $this->options['onClose']);
+        }
+
         /*
          * Handle On Open event
          *
@@ -101,11 +105,14 @@ class Connection implements EventEmitterInterface
         $this->client->on(
             'close',
             function ($reason) {
-                if (isset($this->options['onClose']) && is_callable($this->options['onClose'])) {
-                    $this->options['onClose']($reason);
-                }
+                $this->emit('close', [$reason]);
             }
         );
+
+        $this->client->on('error', function ($reason) {
+                $this->emit('error', [$reason]);
+
+            });
     }
 
     /**
