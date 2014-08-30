@@ -10,13 +10,17 @@ This a Symfony Bundle for [Thruway](https://github.com/voryx/Thruway), which is 
 
 Download the Thruway Bundle
 
+      $ php composer.phar require "ratchet/pawl":"dev-master"
+      $ php composer.phar require "voryx/thruway":"dev-master"
       $ php composer.phar require "voryx/thruway-bundle":"dev-master"
+      
 
 Update AppKernel.php
 
 ```php
 $bundles = array(
     // ...
+    new JMS\SerializerBundle\JMSSerializerBundle(),
     new Voryx\ThruwayBundle\VoryxThruwayBundle(),
     // ...
 );
@@ -30,7 +34,7 @@ voryx_thruway:
     enable_manager: false
     php_path: '/usr/local/bin/php'
     resources:
-      - "Acme\Bundle\Controller\DefaultController"
+      - "Acme\\DemoBundle\\Controller\\DemoController"
 ```
 
 You can also tag services with `thruway.resource` and any annotation will get picked up
@@ -47,6 +51,9 @@ You can also tag services with `thruway.resource` and any annotation will get pi
 
 
 ```php
+
+    use Voryx\ThruwayBundle\Annotation\RPC;
+    
     /**
      *
      * @RPC("com.example.add")
@@ -59,6 +66,9 @@ You can also tag services with `thruway.resource` and any annotation will get pi
 ```
 
 ```php
+	
+     use Voryx\ThruwayBundle\Annotation\Subscribe;
+
     /**
      *
      * @Subscribe("com.example.subscribe")
@@ -73,9 +83,12 @@ You can also tag services with `thruway.resource` and any annotation will get pi
 It uses JMS Serializer, so it can serialize and deserialize Entities
 
 ```php
+    
+    use Voryx\ThruwayBundle\Annotation\RPC;
+
     /**
      *
-     * @RPC("com.example.updaterpc")
+     * @RPC("com.example.addrpc", serializerEnableMaxDepthChecks=true)
      *
      */
     public function addAction(Post $post)
