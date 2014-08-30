@@ -32,6 +32,7 @@ $bundles = array(
 voryx_thruway:
     realm: 'myrealm1'
     enable_manager: false
+    enable_logging: true
     php_path: '/usr/local/bin/php'
     resources:
       - "Acme\\DemoBundle\\Controller\\DemoController"

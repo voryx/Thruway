@@ -36,6 +36,7 @@ class Configuration implements ConfigurationInterface
             ->booleanNode('local_server')->defaultTrue()->end()
             ->booleanNode('enable_manager')->defaultFalse()->end()
             ->booleanNode('enable_web_push')->defaultFalse()->end()
+            ->booleanNode('enable_logging')->defaultFalse()->end()
             ->end();
 
         return $treeBuilder;

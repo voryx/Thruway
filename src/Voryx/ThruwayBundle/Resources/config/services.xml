@@ -9,6 +9,7 @@
         <parameter key="voryx_thruway.connection.class">Voryx\ThruwayBundle\Connection</parameter>
         <parameter key="voryx_thruway.client.class">Thruway\Peer\Client</parameter>
         <parameter key="voryx_thruway.web.push.client.class">Voryx\ThruwayBundle\Client\WebPushClient</parameter>
+        <parameter key="voryx_thruway.manager.dummy.client.class">Thruway\Manager\ManagerDummy</parameter>
         <parameter key="voryx_thruway.manager.client.class">Thruway\Manager\ManagerClient</parameter>
         <parameter key="voryx.thruway.loop.factory.class">React\EventLoop\Factory</parameter>
         <parameter key="voryx.thruway.loop.class">React\EventLoop\Timer\TimerInterface\LoopInterface</parameter>
@@ -36,7 +37,7 @@
         </service>
 
         <service id="voryx.thruway.manager.client"
-                 class="%voryx_thruway.manager.client.class%">
+                 class="%voryx_thruway.manager.dummy.client.class%">
         </service>
 
         <service id="voryx.thruway.web.push.client"
@@ -62,6 +63,7 @@
         <service id="voryx.thruway.server"
                  class="%voryx.thruway.router.class%">
             <argument type="service" id="voryx.thruway.loop"/>
+            <argument type="service" id="voryx.thruway.manager.client"/>
             <call method="addTransportProvider">
                 <argument type="service" id="voryx.thruway.ratchet.transport"/>
             </call>
