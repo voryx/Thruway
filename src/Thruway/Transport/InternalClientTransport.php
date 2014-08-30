@@ -9,6 +9,7 @@
 namespace Thruway\Transport;
 
 
+use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
 
@@ -66,5 +67,7 @@ class InternalClientTransport implements TransportInterface {
         );
     }
 
-
+    public function ping() {
+        throw new PingNotSupportedException;
+    }
 } 

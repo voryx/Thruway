@@ -9,6 +9,7 @@
 namespace Thruway\Transport;
 
 
+use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Ratchet\ConnectionInterface;
 
@@ -46,5 +47,8 @@ class RatchetTransport implements TransportInterface {
 
     }
 
+    public function ping() {
+        throw new PingNotSupportedException;
+    }
 
 } 

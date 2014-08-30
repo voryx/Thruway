@@ -9,6 +9,7 @@
 namespace Thruway\Transport;
 
 
+use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Ratchet\Client\WebSocket;
 use Ratchet\ConnectionInterface;
@@ -43,5 +44,8 @@ class PawlTransport implements TransportInterface {
         );
     }
 
+    public function ping() {
+        throw new PingNotSupportedException;
+    }
 
 } 

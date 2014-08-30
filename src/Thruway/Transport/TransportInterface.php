@@ -15,4 +15,5 @@ interface TransportInterface {
     public function getTransportDetails();
     public function sendMessage(Message $msg);
     public function close();
+    public function ping();
 } 
