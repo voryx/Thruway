@@ -40,8 +40,8 @@ voryx_thruway:
 You can also tag services with `thruway.resource` and any annotation will get picked up
 
 ```xml
-<service id="some.service" class="Acme\Bundle\SomeService"
-    tag name="thruway.resource"/>
+<service id="some.service" class="Acme\Bundle\SomeService">
+    <tag name="thruway.resource"/>
 </service>
 
 ```
