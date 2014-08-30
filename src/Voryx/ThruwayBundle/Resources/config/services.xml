@@ -1,0 +1,91 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="voryx_thruway.resource.mapper.class">Voryx\ThruwayBundle\ResourceMapper</parameter>
+        <parameter key="voryx_thruway.connection.class">Voryx\ThruwayBundle\Connection</parameter>
+        <parameter key="voryx_thruway.client.class">Thruway\Peer\Client</parameter>
+        <parameter key="voryx_thruway.web.push.client.class">Voryx\ThruwayBundle\Client\WebPushClient</parameter>
+        <parameter key="voryx_thruway.manager.client.class">Thruway\Manager\ManagerClient</parameter>
+        <parameter key="voryx.thruway.loop.factory.class">React\EventLoop\Factory</parameter>
+        <parameter key="voryx.thruway.loop.class">React\EventLoop\Timer\TimerInterface\LoopInterface</parameter>
+        <parameter key="voryx.thruway.router.class">Thruway\Peer\Router</parameter>
+        <parameter key="voryx.thruway.ratchet.transport.class">Thruway\Transport\RatchetTransportProvider</parameter>
+        <parameter key="voryx.thruway.internal.transport.class">Thruway\Transport\InternalClientTransportProvider</parameter>
+    </parameters>
+
+    <services>
+
+        <service id="voryx.thruway.loop"
+                 class="%voryx.thruway.loop.class%"
+                 factory-class="%voryx.thruway.loop.factory.class%"
+                 factory-method="create"/>
+
+        <service id="voryx.thruway.ratchet.transport"
+                 class="%voryx.thruway.ratchet.transport.class%">
+            <argument type="expression">parameter('voryx_thruway')['server']</argument>
+            <argument type="expression">parameter('voryx_thruway')['port']</argument>
+        </service>
+
+        <service id="voryx.thruway.client"
+                 class="%voryx_thruway.client.class%">
+            <argument type="expression">parameter('voryx_thruway')['realm']</argument>
+        </service>
+
+        <service id="voryx.thruway.manager.client"
+                 class="%voryx_thruway.manager.client.class%">
+        </service>
+
+        <service id="voryx.thruway.web.push.client"
+                 class="%voryx_thruway.web.push.client.class%">
+            <argument type="expression">parameter('voryx_thruway')['realm']</argument>
+        </service>
+
+        <service id="voryx.thruway.internal.transport"
+                 class="%voryx.thruway.internal.transport.class%">
+            <argument type="service" id="voryx.thruway.client"/>
+        </service>
+
+        <service id="voryx.thruway.internal.manager"
+                 class="%voryx.thruway.internal.transport.class%">
+            <argument type="service" id="voryx.thruway.manager.client"/>
+        </service>
+
+        <service id="voryx.thruway.internal.web.push"
+                 class="%voryx.thruway.internal.transport.class%">
+            <argument type="service" id="voryx.thruway.web.push.client"/>
+        </service>
+
+        <service id="voryx.thruway.server"
+                 class="%voryx.thruway.router.class%">
+            <argument type="service" id="voryx.thruway.loop"/>
+            <call method="addTransportProvider">
+                <argument type="service" id="voryx.thruway.ratchet.transport"/>
+            </call>
+            <call method="addTransportProvider">
+                <argument type="service" id="voryx.thruway.internal.transport"/>
+            </call>
+        </service>
+
+
+        <service id="voryx.thruway.resource.mapper"
+                 class="%voryx_thruway.resource.mapper.class%">
+            <argument type="service" id="annotation_reader"/>
+        </service>
+
+
+        <service id="voryx.thruway.connection"
+                 class="%voryx_thruway.connection.class%">
+            <argument type="service" id="service_container"/>
+            <argument type="service" id="serializer"/>
+            <call method="setClient">
+                <argument type="service" id="voryx.thruway.client"/>
+            </call>
+        </service>
+
+    </services>
+
+</container>

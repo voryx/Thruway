@@ -1,0 +1,34 @@
+{
+    "name": "voryx/thruway-bundle",
+    "type": "symfony-bundle",
+    "description": "WAMP2 integration for Symfony2",
+    "keywords": [
+        "WebSockets",
+        "WAMP",
+        "WAMP2",
+        "Autobahn",
+        "Sockets",
+        "Symfony"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "David Dan", "email": "davidwdan@gmail.com", "role": "Developer"
+        },
+        {
+            "name": "Matt Bonneau", "email": "matt@bonneau.net", "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "Voryx\\ThruwayBundle": "src"
+        }
+    },
+    "require": {
+        "php": ">=5.4",
+        "ratchet/pawl": "dev-master",
+        "voryx/thruway": "dev-master",
+        "jms/serializer-bundle": "0.13.0"
+    }
+
+}
