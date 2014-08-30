@@ -29,13 +29,26 @@ $bundles = array(
 ### Configuration
 
 ```yml
+#app/config/config.yml
+
 voryx_thruway:
     realm: 'myrealm1'
     enable_manager: false
     enable_logging: true
     php_path: '/usr/local/bin/php'
+    authentication: 'in_memory'
     resources:
       - "Acme\\DemoBundle\\Controller\\DemoController"
+```
+If you enable ```authentication: 'in_memory'```, you'll need to add a ```thruway``` to the security firewall.
+
+```yml
+#app/config/security.yml
+
+security: 
+   firewalls:
+        thruway:
+            security: false	     
 ```
 
 You can also tag services with `thruway.resource` and any annotation will get picked up

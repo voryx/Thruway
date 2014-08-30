@@ -11,6 +11,8 @@ namespace Voryx\ThruwayBundle;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Thruway\ClientSession;
 use Thruway\Peer\Client;
 use Thruway\Transport\TransportInterface;
@@ -93,7 +95,11 @@ class Connection
     {
         $this->session->register(
             $mapping->getAnnotation()->getName(),
-            function ($args) use ($mapping) {
+            function ($args, $kwargs, $details) use ($mapping) {
+
+                //@todo match up $kwargs to the method arguments
+
+                $this->authenticateAuthId($details["authid"]);
 
                 $object = $this->container->get($mapping->getServiceId());
 
@@ -121,7 +127,8 @@ class Connection
 
                 return json_decode($this->serializer->serialize($data, "json", $context));
 
-            }
+            },
+            ['discloseCaller' => true]
         );
     }
 
@@ -178,6 +185,11 @@ class Connection
     private function deserialize($args, MappingInterface $mapping)
     {
         try {
+            $args = (array)$args;
+            if (empty($args)) {
+                return [];
+            }
+
             $deserializedArgs = [];
             if (!is_array($args)) {
                 $args = [$args];
@@ -226,19 +238,18 @@ class Connection
         return false;
     }
 
+    private function authenticateAuthId($authid)
+    {
+        if ($authid !== "anonymous") {
+            $user = $this->container->get('in_memory_user_provider')->loadUserByUsername($authid);
+            $this->authenticateUser($user);
+        }
+    }
 
-    /**
-     * //@todo get rid of fos_user dependency
-     *
-     * @param $userName
-     */
-    protected
-    function authenticateUser(
-        $userName
-    ) {
-        $userManager = $this->container->get('fos_user.user_manager');
-        $user = $userManager->findUserByUsername($userName);
-        $providerKey = $this->container->getParameter('fos_user.firewall_name');
+    private function authenticateUser(UserInterface $user)
+    {
+
+        $providerKey = 'thruway';
         $token = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
         $this->container->get('security.context')->setToken($token);
     }

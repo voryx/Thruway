@@ -101,5 +101,18 @@ class VoryxThruwayExtension extends Extension
                 ->addMethodCall('setLogger', [new Reference('logger')]);
         }
 
+        if (isset($config['authentication']) && $config['authentication'] == "in_memory") {
+
+            //Inject the authentication manager into the router
+            $container
+                ->getDefinition('voryx.thruway.server')
+                ->addMethodCall('setAuthenticationManager', [new Reference('voryx.thruway.authentication.manager')])
+                ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.auth.manager.transport.provider')])
+                ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.wamp.cra.auth.transport.provider')]);
+
+            $container->addAliases(["in_memory_user_provider" => "security.user.provider.concrete.in_memory"]);
+
+        }
+
     }
 }

@@ -16,6 +16,9 @@
         <parameter key="voryx.thruway.router.class">Thruway\Peer\Router</parameter>
         <parameter key="voryx.thruway.ratchet.transport.class">Thruway\Transport\RatchetTransportProvider</parameter>
         <parameter key="voryx.thruway.internal.transport.class">Thruway\Transport\InternalClientTransportProvider</parameter>
+        <parameter key="voryx.thruway.user.db.class">Voryx\ThruwayBundle\Authentication\UserDB</parameter>
+        <parameter key="voryx.thruway.auth.manager.class">Thruway\Authentication\AuthenticationManager</parameter>
+        <parameter key="voryx.thruway.wamp.cra.class">Thruway\Authentication\WampCraAuthProvider</parameter>
     </parameters>
 
     <services>
@@ -86,6 +89,36 @@
             <call method="setClient">
                 <argument type="service" id="voryx.thruway.client"/>
             </call>
+        </service>
+
+
+        <!--Authentication-->
+        <service id="voryx.thruway.authentication.manager"
+                 class="%voryx.thruway.auth.manager.class%">
+            <argument type="service" id="voryx.thruway.client"/>
+        </service>
+
+        <service id="voryx.thruway.auth.manager.transport.provider"
+                 class="%voryx.thruway.internal.transport.class%">
+            <argument type="service" id="voryx.thruway.authentication.manager"/>
+        </service>
+
+        <service id="voryx.thruway.user.db"
+                 class="%voryx.thruway.user.db.class%">
+            <argument type="service" id="service_container"/>
+        </service>
+
+        <service id="voryx.thruway.wamp.cra.auth.client"
+                 class="%voryx.thruway.wamp.cra.class%">
+            <argument type="expression">[parameter('voryx_thruway')['realm']]</argument>
+            <call method="setUserDb">
+                <argument type="service" id="voryx.thruway.user.db"/>
+            </call>
+        </service>
+
+        <service id="voryx.thruway.wamp.cra.auth.transport.provider"
+                 class="%voryx.thruway.internal.transport.class%">
+            <argument type="service" id="voryx.thruway.wamp.cra.auth.client"/>
         </service>
 
     </services>
