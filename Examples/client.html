@@ -48,6 +48,20 @@
         console.log("authenticated with authid '" + details.authid + "' and authrole '" + details.authrole + "'");
 
         session.call('com.example.add', [3, 5]).then(
+        //subscribe to a topic
+        function onevent(args) {
+            console.log('Subscribe message:', args);
+        }
+
+        session.subscribe('com.myapp.helloPubSub', onevent).then(
+                function (subscription) {
+                    console.log("subscription", subscription);
+                },
+                function (error) {
+                    console.log("subscription error:", error);
+                }
+        );
+
                 function (res) {
                     console.log("Call 'com.example.add' result:", res);
                 },
@@ -55,11 +69,13 @@
                     console.log("Call Error:", error.error);
                 }
         );
+
+
     };
 
     connection.onclose = function () {
         console.log("disconnected", arguments);
-    }
+    };
 
     connection.open();
 

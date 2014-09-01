@@ -8,7 +8,7 @@ This a Symfony Bundle for [Thruway](https://github.com/voryx/Thruway), which is 
 ### Quick Start with Composer
 
 
-Download the Thruway Bundle
+Download the Thruway Bundle (and dependancies)
 
       $ php composer.phar require "ratchet/pawl":"dev-master"
       $ php composer.phar require "voryx/thruway":"dev-master"
@@ -61,11 +61,12 @@ You can also tag services with `thruway.resource` and any annotation will get pi
 ```
 
 
-### Usage
+## Usage
 
+
+#### Register RPC
 
 ```php
-
     use Voryx\ThruwayBundle\Annotation\RPC;
     
     /**
@@ -79,8 +80,23 @@ You can also tag services with `thruway.resource` and any annotation will get pi
     }
 ```
 
+#### Call RPC
+
 ```php
-	
+    public function call($value)
+    {
+        $client = $this->container->get('thruway.client');
+        $client->call("com.myapp.add", [2, 3])->then(
+            function ($res) {
+                echo $res[0];
+            }
+        );
+    }
+```
+
+#### Subscribe	
+
+```php	
      use Voryx\ThruwayBundle\Annotation\Subscribe;
 
     /**
@@ -91,6 +107,17 @@ You can also tag services with `thruway.resource` and any annotation will get pi
     public function subscribe($value)
     {
         echo $value;
+    }
+```
+
+
+#### Publish
+
+```php
+    public function publish($value)
+    {
+        $client = $this->container->get('thruway.client');
+        $client->publish("com.myapp.helloPubSub", [$value]);
     }
 ```
 
@@ -117,6 +144,7 @@ Start up the the WAMP server
 
     $ php app/console thruway:client:start
 
+By default, the server starts on http://127.0.0.1:8080
 
 ### Javascript Client
 
