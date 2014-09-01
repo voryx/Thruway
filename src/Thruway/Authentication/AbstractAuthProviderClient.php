@@ -63,7 +63,7 @@ class AbstractAuthProviderClient extends Client {
               )
             )->then(
               function ($args) {
-                print_r($args);
+                  $this->manager->info(print_r($args, true));
               }
             );
           }

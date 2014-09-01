@@ -61,4 +61,10 @@ class ManagerDummy implements ManagerInterface {
         return $this->quiet;
     }
 
+    /**
+     * @return \Psr\Log\LoggerInterface|NullLogger
+     */
+    public function getLogger(){
+        return $this->logger;
+    }
 } 

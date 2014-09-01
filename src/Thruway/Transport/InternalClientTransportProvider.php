@@ -13,6 +13,7 @@ use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
+use Thruway\Peer\Client;
 
 class InternalClientTransportProvider extends AbstractTransportProvider {
 
@@ -38,6 +39,11 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
         $this->internalClient->addTransportProvider(new DummyTransportProvider());
 
         $this->manager = new ManagerDummy();
+
+        if ($this->internalClient instanceof Client){
+           $this->internalClient->setLogger($this->getManager()->getLogger());
+        }
+
     }
 
 

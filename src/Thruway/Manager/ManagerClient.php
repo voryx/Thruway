@@ -85,4 +85,11 @@ class ManagerClient extends Client implements ManagerInterface
     public function log($level, $message, array $context = array()) {
         $this->logger->log($level, $message, $context);
     }
+
+    /**
+     * @return \Psr\Log\LoggerInterface|NullLogger
+     */
+    public function getLogger(){
+        return $this->logger;
+    }
 }

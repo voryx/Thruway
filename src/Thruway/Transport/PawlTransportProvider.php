@@ -66,7 +66,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
      */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
-        echo "Starting Transport\n";
+        $this->manager->info("Starting Transport\n");
 
         $this->peer = $peer;
 
@@ -77,7 +77,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
 
-                echo "Pawl has connected\n";
+                $this->manager->info("Pawl has connected\n");
 
                 $transport = new PawlTransport($conn);
 
@@ -86,7 +86,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                 $conn->on(
                     'message',
                     function ($msg) use ($transport) {
-                        echo "Received: {$msg}\n";
+                        $this->manager->info("Received: {$msg}\n");
                         $this->peer->onRawMessage($transport, $msg);
                     }
                 );
@@ -94,14 +94,14 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                 $conn->on(
                     'close',
                     function ($conn) {
-                        echo "Pawl has closed\n";
+                        $this->manager->info("Pawl has closed\n");
                         $this->peer->onClose('close');
                     }
                 );
             },
             function ($e) {
                 $this->peer->onClose('unreachable');
-                echo "Could not connect: {$e->getMessage()}\n";
+                $this->manager->info("Could not connect: {$e->getMessage()}\n");
                 // $this->loop->stop();
             }
         );

@@ -101,7 +101,7 @@ class Dealer extends AbstractRole
         if ($registration) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
 
-            echo 'Already Registered: ' . $registration->getProcedureName();
+            $this->manager->error('Already Registered: ' . $registration->getProcedureName());
 
             return $errorMsg->setErrorURI('wamp.error.procedure_already_exists');
         }
@@ -340,7 +340,6 @@ class Dealer extends AbstractRole
     {
         $theRegistrations = [];
 
-        echo "Hey";
         /** @var $registration Registration */
         foreach ($this->registrations as $registration) {
             $theRegistrations[] = [

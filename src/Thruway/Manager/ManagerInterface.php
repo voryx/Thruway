@@ -13,4 +13,6 @@ use Psr\Log\LoggerAwareInterface;
 
 interface ManagerInterface extends LoggerInterface {
     public function addCallable($name, $callback);
+
+    public function getLogger();
 } 

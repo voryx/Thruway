@@ -9,6 +9,7 @@
 namespace Thruway\Role;
 
 
+use Psr\Log\NullLogger;
 use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\AbstractSession;
@@ -35,8 +36,19 @@ class Callee extends AbstractRole
      */
     private $registrations;
 
-    function __construct()
+    /**
+     * @var NullLogger
+     */
+    private $logger;
+
+    function __construct($logger = null)
     {
+        if (!$logger){
+            $this->logger = new NullLogger();
+        } else {
+            $this->logger = $logger;
+        }
+
         $this->registrations = array();
     }
 
@@ -70,7 +82,7 @@ class Callee extends AbstractRole
     {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
-                echo "---Setting registration_id for " . $registration['procedure_name'] . " (" . $key . ")\n";
+                $this->logger->info("---Setting registration_id for " . $registration['procedure_name'] . " (" . $key . ")\n");
                 $this->registrations[$key]['registration_id'] = $msg->getRegistrationId();
 
                 if ($this->registrations[$key]['futureResult'] instanceof Deferred) {
@@ -81,7 +93,7 @@ class Callee extends AbstractRole
                 return;
             }
         }
-        echo "---Got a Registered Message, but the request ids don't match\n";
+        $this->logger->error("---Got a Registered Message, but the request ids don't match\n");
     }
 
     /**
@@ -102,7 +114,7 @@ class Callee extends AbstractRole
                 }
             }
         }
-        echo "---Got an Unregistered Message, but couldn't find corresponding request.\n";
+        $this->logger->error("---Got an Unregistered Message, but couldn't find corresponding request.\n");
     }
 
     /**
@@ -113,7 +125,7 @@ class Callee extends AbstractRole
     {
         foreach ($this->registrations as $key => $registration) {
             if (!isset($registration["registration_id"])) {
-                echo "Registration_id not set for " . $registration['procedure_name'] . "\n";
+                $this->logger->info("Registration_id not set for " . $registration['procedure_name'] . "\n");
             } else {
                 if ($registration["registration_id"] === $msg->getRegistrationId()) {
 
@@ -165,7 +177,7 @@ class Callee extends AbstractRole
         } elseif ($msg->getErrorMsgCode() == Message::MSG_UNREGISTER) {
             $this->handleErrorUnregister($session, $msg);
         } else {
-            echo "Unhandled error message: " . $msg->getSerializedMessage() . "\n";
+            $this->logger->error("Unhandled error message: " . $msg->getSerializedMessage() . "\n");
         }
 
     }
@@ -291,8 +303,7 @@ class Callee extends AbstractRole
         if (!isset($registration["registration_id"])) {
             // this would happen if the registration was never acknowledged by the router
             // we should remove the registration and resolve any pending deferreds
-
-            echo "Registration ID is not set while attempting to unregister " . $Uri . "\n";
+            $this->logger->error("Registration ID is not set while attempting to unregister " . $Uri . "\n");
 
             // reject the pending registration
             $registration['futureResult']->reject();
@@ -332,4 +343,22 @@ class Callee extends AbstractRole
         // not be associative (e.g. the keys array looked like {0:0, 1:1...}).
         return array_keys($keys) === $keys;
     }
+
+    /**
+     * @return NullLogger
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @param NullLogger $logger
+     */
+    public function setLogger($logger)
+    {
+        $this->logger = $logger;
+    }
+
+
 } 

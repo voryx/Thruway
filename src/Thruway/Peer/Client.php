@@ -8,7 +8,7 @@
 
 namespace Thruway\Peer;
 
-
+use Psr\Log\NullLogger;
 use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\ClientAuthenticationInterface;
@@ -131,6 +131,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $attemptRetry = true;
 
+    /* @var NullLogger */
+    private $logger;
+
     /**
      * @param $realm
      * @param LoopInterface $loop
@@ -164,6 +167,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
         $this->clientAuthenticators = array();
         $this->authId = "anonymous";
+
+        $this->setLogger(new NullLogger());
     }
 
 
@@ -257,7 +262,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $details["authmethods"] = $this->authMethods;
         $details["authid"] = $this->authId;
 
-        $this->addRole(new Callee())
+        $this->addRole(new Callee($this->getLogger()))
             ->addRole(new Caller())
             ->addRole(new Publisher())
             ->addRole(new Subscriber());
@@ -326,7 +331,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function processWelcome(ClientSession $session, WelcomeMessage $msg)
     {
-        echo "We have been welcomed...\n";
+        $this->logger->info("We have been welcomed...");
         //TODO: I'm sure that there are some other things that we need to do here
         $session->setSessionId($msg->getSessionId());
         $this->emit('open', [$session, $this->transport]);
@@ -569,4 +574,22 @@ class Client extends AbstractPeer implements EventEmitterInterface
     {
         $this->authMethods = $authMethods;
     }
+
+    /**
+     * @return NullLogger
+     */
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @param NullLogger $logger
+     */
+    public function setLogger($logger)
+    {
+        $this->logger = $logger;
+    }
+
+
 }
