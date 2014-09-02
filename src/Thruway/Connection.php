@@ -9,6 +9,7 @@
 namespace Thruway;
 
 
+use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Thruway\Message\AuthenticateMessage;
@@ -50,7 +51,7 @@ class Connection implements EventEmitterInterface
      * @param LoopInterface $loop
      * @throws \Exception
      */
-    function __construct(Array $options, LoopInterface $loop = null)
+    function __construct(Array $options, LoopInterface $loop = null, LoggerInterface $logger = null)
     {
 
         $this->options = $options;
@@ -62,7 +63,11 @@ class Connection implements EventEmitterInterface
          * TODO: Allow for multiple transport providers
          */
         $url = isset($options['url']) ? $options['url'] : null;
-        $this->client->addTransportProvider(new PawlTransportProvider($url));
+        $pawlTransport = new PawlTransportProvider($url);
+        if ($logger) {
+            $pawlTransport->getManager()->setLogger($logger);
+        }
+        $this->client->addTransportProvider($pawlTransport);
 
         $this->client->setReconnectOptions($options);
 
