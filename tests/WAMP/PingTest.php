@@ -48,7 +48,7 @@ class PingTest extends \PHPUnit_Framework_TestCase {
                 $session->call('com.example.ping', [])->then(
                     function ($res) {
                         $this->_conn->close();
-                        $this->_testResult = $res[0];
+                        $this->_testResult = $res;
                     },
                     function ($error = null) {
                         $this->_conn->close();
@@ -61,6 +61,6 @@ class PingTest extends \PHPUnit_Framework_TestCase {
         $this->_conn->open();
 
         $this->assertNull($this->_error, "Error is null");
-        $this->assertTrue(is_numeric($this->_testResult), "Server ping returned a sequence number");
+        $this->assertEquals("success", $this->_testResult[0], "Server ping returned a success");
     }
 } 
