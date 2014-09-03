@@ -7,7 +7,12 @@ require 'Clients/SimpleAuthProviderClient.php';
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
 
-$router = new Router();
+$mgr = new \Thruway\Manager\ManagerDummy();
+$mgr->setLogger(new \Thruway\ConsoleLogger());
+
+$router = new Router(null, $mgr);
+
+
 
 $authMgr = new \Thruway\Authentication\AuthenticationManager();
 

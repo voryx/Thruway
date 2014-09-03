@@ -79,7 +79,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
 
                 $this->manager->info("Pawl has connected\n");
 
-                $transport = new PawlTransport($conn);
+                $transport = new PawlTransport($conn, $this->loop);
 
                 $this->peer->onOpen($transport);
 
@@ -96,6 +96,13 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                     function ($conn) {
                         $this->manager->info("Pawl has closed\n");
                         $this->peer->onClose('close');
+                    }
+                );
+
+                $conn->on(
+                    'pong',
+                    function ($frame, $ws) use ($transport) {
+                        $transport->onPong($frame, $ws);
                     }
                 );
             },

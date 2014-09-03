@@ -8,6 +8,7 @@
 
 namespace Thruway\Transport;
 
+use Ratchet\WebSocket\Version\RFC6455\Frame;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
@@ -90,7 +91,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     {
         $this->manager->debug("RatchetTransportProvider::onOpen");
 
-        $transport = new RatchetTransport($conn);
+        $transport = new RatchetTransport($conn, $this->loop);
 
         $this->transports->attach($conn, $transport);
 
@@ -144,6 +145,14 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
         // TODO: Should deserialize in here
         $this->peer->onRawMessage($transport, $msg);
+    }
+
+    function onPong(ConnectionInterface $from, Frame $frame) {
+        $transport = $this->transports[$from];
+
+        if (method_exists($transport, 'onPong')) {
+            $transport->onPong($frame);
+        }
     }
 
     /**

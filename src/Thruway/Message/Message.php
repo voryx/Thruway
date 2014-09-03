@@ -32,10 +32,6 @@ abstract class Message implements \JsonSerializable
     const MSG_INTERRUPT = 69; // advanced
     const MSG_YIELD = 70;
 
-    // thruway specific messages
-    const MSG_PING = 260;
-    const MSG_PONG = 261;
-
     function __construct()
     {
     }
@@ -61,7 +57,7 @@ abstract class Message implements \JsonSerializable
     static public function createMessageFromRaw($rawMsg)
     {
         if (null === ($json = @json_decode($rawMsg, true))) {
-            throw new MessageException("Error decoding json");
+            throw new MessageException("Error decoding json \"${rawMsg}\"");
         }
 
         if (!is_array($json) || $json !== array_values($json)) {
@@ -131,18 +127,6 @@ abstract class Message implements \JsonSerializable
                 return new ChallengeMessage($json[1], $json[2], $extra);
             case Message::MSG_ERROR:
                 return new ErrorMessage($json[1], $json[2], $json[3], $json[4]);
-
-            case Message::MSG_PING:
-                $options = isset($json[2]) ? $json[2] : null;
-                $echo = isset($json[3]) ? $json[3] : null;
-                $discard = isset($json[4]) ? $json[4] : null;
-
-                return new PingMessage($json[1], $options, $echo, $discard);
-            case Message::MSG_PONG:
-                $details = isset($json[2]) ? $json[2] : null;
-                $echo = isset($json[3]) ? $json[3] : null;
-
-                return new PongMessage($json[1], $details, $echo);
 
             default:
                 throw new MessageException("Unhandled message type: " . $json[0]);

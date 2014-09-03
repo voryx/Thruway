@@ -13,8 +13,6 @@ use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\Message\Message;
-use Thruway\Message\PingMessage;
-use Thruway\Message\PongMessage;
 use Thruway\Transport\TransportInterface;
 
 /**
@@ -165,58 +163,10 @@ abstract class AbstractSession
 
     /**
      * @param int $timeout
-     * @param null $options
-     * @param null $echo
-     * @param null $discard
      * @return Promise
      */
-    public function ping($timeout = 0, $options = null, $echo = null, $discard = null) {
-
-        $loop = $this->getLoop();
-
-        $pingMsg = new PingMessage(Session::getUniqueId(), $options, $echo, $discard);
-
-        $this->sendMessage($pingMsg);
-
-        $pingRequest = new PingRequest($pingMsg);
-
-        $this->pingRequests[$pingMsg->getRequestId()] = $pingRequest;
-
-        $timer = null;
-        /** @var LoopInterface $loop */
-        if ($loop !== null && $timeout > 0) {
-            $timer = $loop->addTimer($timeout, function () use ($pingRequest) {
-                    $pingRequest->getDeferred()->reject("timeout");
-
-                    $requestId = $pingRequest->getPingMsg()->getRequestId();
-
-                    unset($this->pingRequests[$requestId]);
-                });
-            $pingRequest->setTimer($timer);
-            $pingRequest->setLoop($loop);
-        }
-
-        return $pingRequest->getDeferred()->promise();
-    }
-
-    public function processPong(PongMessage $msg) {
-        $requestId = $msg->getRequestId();
-
-        if (isset($this->pingRequests[$requestId])) {
-            /** @var Deferred $deferred */
-            /** @var PingRequest $pingRequest */
-            $pingRequest = $this->pingRequests[$requestId];
-
-            $deferred = $pingRequest->getDeferred();
-            $deferred->resolve($msg);
-
-            if ($pingRequest->getTimer() !== null
-                && $pingRequest->getLoop() !== null) {
-                $pingRequest->getLoop()->cancelTimer($pingRequest->getTimer());
-            }
-
-            unset($this->pingRequests[$requestId]);
-        }
+    public function ping($timeout = 5) {
+        return $this->getTransport()->ping($timeout);
     }
 
     /**

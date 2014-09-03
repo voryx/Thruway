@@ -70,4 +70,8 @@ class InternalClientTransport implements TransportInterface {
     public function ping() {
         throw new PingNotSupportedException;
     }
+
+    public function onPong() {
+
+    }
 } 
