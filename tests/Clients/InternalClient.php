@@ -61,18 +61,9 @@ class InternalClient extends Thruway\Peer\Client
             $sessionIdToPing = $details['caller'];
 
             $theSession = $this->getRouter()->getSessionBySessionId($sessionIdToPing);
-            $deferred = new \React\Promise\Deferred();
-            $theSession->getTransport()->ping(2)->then(function () use ($deferred) {
-                    $deferred->resolve("success");
 
-                },
-                function () use ($deferred) {
-                    $deferred->resolve("timeout");
-                }
-
-            );
-
-            return $deferred->promise();
+            // ping returns a promise - we can just return it
+            return $theSession->getTransport()->ping(2);
         }
 
         return array("no good");

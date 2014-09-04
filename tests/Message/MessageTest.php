@@ -9,6 +9,7 @@
 namespace Message;
 
 
+use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 
 class MessageTest extends \PHPUnit_Framework_TestCase {
@@ -73,5 +74,16 @@ class MessageTest extends \PHPUnit_Framework_TestCase {
             $pongMsg->getSerializedMessage(),
             "Serialized version matches"
         );
+    }
+
+    function testErrorMessage() {
+        $errorMsg = new ErrorMessage(Message::MSG_INVOCATION, 12345, new \stdClass(),
+            "some.error", array("some", "error"), array("some" => "error")
+        );
+
+        $deserialized = Message::createMessageFromRaw("[8,68,12345,{},\"some.error\",[\"some\",\"error\"],{\"some\":\"error\"}]");
+
+        $this->assertEquals("[8,68,12345,{},\"some.error\",[\"some\",\"error\"],{\"some\":\"error\"}]",$errorMsg->getSerializedMessage());
+        $this->assertEquals("[8,68,12345,{},\"some.error\",[\"some\",\"error\"],{\"some\":\"error\"}]",$deserialized->getSerializedMessage());
     }
 } 

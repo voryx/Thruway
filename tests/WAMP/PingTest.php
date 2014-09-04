@@ -51,8 +51,11 @@ class PingTest extends \PHPUnit_Framework_TestCase {
                         $this->_testResult = $res;
                     },
                     function ($error = null) {
+                        if ($error instanceof \Thruway\Message\ErrorMessage) {
+                            $this->_error = $error->getErrorURI();
+                        }
                         $this->_conn->close();
-                        $this->_error = $error;
+
                     }
                 );
             }

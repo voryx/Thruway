@@ -126,7 +126,9 @@ abstract class Message implements \JsonSerializable
                 $extra = $args = isset($json[3]) ? $json[3] : [];
                 return new ChallengeMessage($json[1], $json[2], $extra);
             case Message::MSG_ERROR:
-                return new ErrorMessage($json[1], $json[2], $json[3], $json[4]);
+                $args = isset($json[5]) ? $json[5] : null;
+                $argsKw = isset($json[6]) ? $json[6] : null;
+                return new ErrorMessage($json[1], $json[2], $json[3], $json[4], $args, $argsKw);
 
             default:
                 throw new MessageException("Unhandled message type: " . $json[0]);

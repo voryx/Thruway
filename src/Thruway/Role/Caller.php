@@ -76,12 +76,17 @@ class Caller extends AbstractRole
      */
     public function processError(ClientSession $session, ErrorMessage $msg)
     {
-        if (isset($this->callRequests[$msg->getRequestId()])) {
-            /* @var $futureResult Deferred */
-            $futureResult = $this->callRequests[$msg->getRequestId()]['future_result'];
-            $futureResult->reject($msg->getErrorURI());
-            unset($this->callRequests[$msg->getRequestId()]);
+        switch($msg->getErrorMsgCode()) {
+            case Message::MSG_CALL:
+                if (isset($this->callRequests[$msg->getRequestId()])) {
+                    /* @var $futureResult Deferred */
+                    $futureResult = $this->callRequests[$msg->getRequestId()]['future_result'];
+                    $futureResult->reject($msg);
+                    unset($this->callRequests[$msg->getRequestId()]);
+                }
+                break;
         }
+
     }
 
     /**

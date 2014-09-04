@@ -78,8 +78,8 @@ class Dealer extends AbstractRole
         elseif ($msg instanceof CallMessage):
             $this->processCall($session, $msg);
         elseif ($msg instanceof ErrorMessage):
-
-        elseif ($msg instanceof CancelMessage): //Advanced
+            $this->processError($session, $msg);
+        //elseif ($msg instanceof CancelMessage): //Advanced
 
         else:
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
@@ -237,7 +237,36 @@ class Dealer extends AbstractRole
      */
     public function processError(Session $session, ErrorMessage $msg)
     {
-        //@todo
+        switch ($msg->getErrorMsgCode()) {
+            case Message::MSG_INVOCATION:
+                $this->processInvocationError($session, $msg);
+                break;
+        }
+    }
+
+    public function processInvocationError(Session $session, ErrorMessage $msg) {
+        $call = $this->getCallByRequestId($msg->getRequestId());
+
+        if (!$call) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $this->manager->error('No call for invocation error message: ' . $msg->getRequestId());
+
+            // TODO: do we send a message back to the callee?
+            $errorMsg->setErrorURI('wamp.error.no_such_procedure');
+            $session->sendMessage($errorMsg);
+
+            return false;
+        }
+
+        $this->calls->detach($call);
+
+        $errorMsg = ErrorMessage::createErrorMessageFromMessage($call->getCallMessage());
+
+        $errorMsg->setErrorURI($msg->getErrorURI());
+        $errorMsg->setArguments($msg->getArguments());
+        $errorMsg->setArgumentsKw($msg->getArgumentsKw());
+
+        $call->getCallerSession()->sendMessage($errorMsg);
     }
 
     /**

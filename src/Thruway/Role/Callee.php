@@ -150,6 +150,25 @@ class Callee extends AbstractRole
                                 $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
 
                                 $session->sendMessage($yieldMsg);
+                            },
+                            function ($errorUri = null, $errorArgs = null, $errorArgsKw = null) use ($msg, $session, $registration) {
+                                $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+
+                                if ($errorUri !== null) {
+                                    $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
+                                } else {
+                                    $errorMsg->setErrorURI("thruway.invocation.error");
+                                }
+
+                                if (is_array($errorArgs)) {
+                                    $errorMsg->setArguments($errorArgs);
+                                }
+
+                                if (is_array($errorArgsKw)) {
+                                    $errorMsg->setArgumentsKw($errorArgsKw);
+                                }
+
+                                $session->sendMessage($errorMsg);
                             }
                         );
                     } else {
