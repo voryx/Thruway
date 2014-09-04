@@ -50,8 +50,8 @@ class InvocationMessage extends Message
         $this->requestId = $requestId;
         $this->registrationId = $registrationId;
         $this->details = $details;
-        $this->arguments = $arguments;
-        $this->argumentsKw = $argumentsKw;
+        $this->arguments = $arguments ? $arguments : (array)array();
+        $this->argumentsKw = $argumentsKw ? $argumentsKw : new \stdClass();
 
     }
 
@@ -78,11 +78,9 @@ class InvocationMessage extends Message
             $this->details
         );
 
-        if ($this->getArguments() != null) {
-            $a = array_merge($a, array($this->getArguments()));
-            if ($this->getArgumentsKw() != null) {
-                $a = array_merge($a, array($this->getArgumentsKw()));
-            }
+        $a = array_merge($a, array($this->getArguments()));
+        if ($this->getArgumentsKw() != null) {
+            $a = array_merge($a, array($this->getArgumentsKw()));
         }
 
         return $a;

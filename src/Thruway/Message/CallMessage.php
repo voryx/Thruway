@@ -47,7 +47,7 @@ class CallMessage extends Message
         $this->requestId = $requestId;
         $this->options = $options;
         $this->procedureName = $procedureName;
-        $this->arguments = $arguments ? $arguments : new \stdClass();
+        $this->arguments = $arguments ? $arguments : (array)array();
         $this->argumentsKw = $argumentsKw ? $argumentsKw : new \stdClass();
     }
 
@@ -74,11 +74,9 @@ class CallMessage extends Message
             $this->getProcedureName(),
         );
 
-        if ($this->getArguments() != null) {
-            $a = array_merge($a, array($this->getArguments()));
-            if ($this->getArgumentsKw()) {
-                $a = array_merge($a, array($this->getArgumentsKw()));
-            }
+        $a = array_merge($a, array($this->getArguments()));
+        if ($this->getArgumentsKw()) {
+            $a = array_merge($a, array($this->getArgumentsKw()));
         }
 
         return $a;
