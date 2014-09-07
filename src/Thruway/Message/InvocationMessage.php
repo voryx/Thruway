@@ -12,6 +12,7 @@ use Thruway\Session;
  */
 class InvocationMessage extends Message
 {
+    use ArgumentsTrait;
 
     /**
      * @var
@@ -29,16 +30,6 @@ class InvocationMessage extends Message
     private $details;
 
     /**
-     * @var null
-     */
-    private $arguments;
-
-    /**
-     * @var null
-     */
-    private $argumentsKw;
-
-    /**
      * @param $requestId
      * @param $registrationId
      * @param $details
@@ -50,8 +41,8 @@ class InvocationMessage extends Message
         $this->requestId = $requestId;
         $this->registrationId = $registrationId;
         $this->details = $details;
-        $this->arguments = $arguments;
-        $this->argumentsKw = $argumentsKw;
+        $this->setArguments($arguments);
+        $this->setArgumentsKw($argumentsKw);
 
     }
 
@@ -72,18 +63,15 @@ class InvocationMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
+        $details = $this->getDetails() === null ? new \stdClass() : (object)$this->getDetails();
+
         $a = array(
             $this->requestId,
             $this->registrationId,
-            $this->details
+            $details
         );
 
-        if ($this->getArguments() != null) {
-            $a = array_merge($a, array($this->getArguments()));
-            if ($this->getArgumentsKw() != null) {
-                $a = array_merge($a, array($this->getArgumentsKw()));
-            }
-        }
+        $a = array_merge($a, $this->getArgumentsForSerialization());
 
         return $a;
     }
@@ -115,38 +103,6 @@ class InvocationMessage extends Message
     public function setRequestId($requestId)
     {
         $this->requestId = $requestId;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArguments()
-    {
-        return $this->arguments;
-    }
-
-    /**
-     * @param mixed $arguments
-     */
-    public function setArguments($arguments)
-    {
-        $this->arguments = $arguments;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArgumentsKw()
-    {
-        return $this->argumentsKw;
-    }
-
-    /**
-     * @param mixed $argumentsKw
-     */
-    public function setArgumentsKw($argumentsKw)
-    {
-        $this->argumentsKw = $argumentsKw;
     }
 
     /**

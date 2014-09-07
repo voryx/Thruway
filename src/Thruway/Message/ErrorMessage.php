@@ -4,20 +4,22 @@ namespace Thruway\Message;
 
 class ErrorMessage extends Message
 {
+    use ArgumentsTrait;
+
     const MSG_CODE = Message::MSG_ERROR;
 
     private $errorMsgCode;
     private $errorRequestId;
     private $details;
     private $errorURI;
-    private $arguments;
-    private $argumentsKw;
 
     /**
      * @param $errorMsgCode
      * @param $errorRequestId
      * @param $details
      * @param $errorURI
+     * @param null $arguments
+     * @param null $argumentsKw
      */
     function __construct($errorMsgCode, $errorRequestId, $details, $errorURI, $arguments = null, $argumentsKw = null)
     {
@@ -26,8 +28,8 @@ class ErrorMessage extends Message
         if (is_array($details) && count($details) == 0) $details = new \stdClass();
         $this->details = $details;
         $this->errorURI = $errorURI;
-        $this->arguments = $arguments;
-        $this->argumentsKw = $argumentsKw;
+        $this->setArguments($arguments);
+        $this->setArgumentsKw($argumentsKw);
     }
 
     /**
@@ -79,17 +81,7 @@ class ErrorMessage extends Message
     {
         $a = array($this->getErrorMsgCode(), $this->getErrorRequestId(), $this->getDetails(), $this->getErrorURI());
 
-        if ($this->getArguments() !== null) {
-            $a = array_merge($a, array($this->getArguments()));
-        } else {
-            if ($this->getArgumentsKw() !== null) {
-                $a = array_merge($a, array());
-            }
-        }
-
-        if ($this->getArgumentsKw() !== null) {
-            $a = array_merge($a, array($this->getArgumentsKw()));
-        }
+        $a = array_merge($a, $this->getArgumentsForSerialization());
 
         return $a;
     }
@@ -153,6 +145,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $errorRequestId
+     * @return $this
      */
     public function setErrorRequestId($errorRequestId)
     {
@@ -168,38 +161,4 @@ class ErrorMessage extends Message
     {
         return $this->errorRequestId;
     }
-
-    /**
-     * @param mixed $arguments
-     */
-    public function setArguments($arguments)
-    {
-        $this->arguments = $arguments;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArguments()
-    {
-        return $this->arguments;
-    }
-
-    /**
-     * @param mixed $argumentsKw
-     */
-    public function setArgumentsKw($argumentsKw)
-    {
-        $this->argumentsKw = $argumentsKw;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArgumentsKw()
-    {
-        return $this->argumentsKw;
-    }
-
-
-} 
+}

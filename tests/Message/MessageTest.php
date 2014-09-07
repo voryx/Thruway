@@ -86,4 +86,55 @@ class MessageTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("[8,68,12345,{},\"some.error\",[\"some\",\"error\"],{\"some\":\"error\"}]",$errorMsg->getSerializedMessage());
         $this->assertEquals("[8,68,12345,{},\"some.error\",[\"some\",\"error\"],{\"some\":\"error\"}]",$deserialized->getSerializedMessage());
     }
+
+    function testCallMessage() {
+        $tests = [
+            // CallMessage
+            [ "in"=> '[48,12345,{},"com.example.rpc"]', "out"=>'[48,12345,{},"com.example.rpc"]' ],
+            [ "in"=> '[48,12345,{},"com.example.rpc", [], {}]', "out"=>'[48,12345,{},"com.example.rpc"]' ],
+            [ "in"=> '[48,12345,{},"com.example.rpc", [], {"test": "something"}]', "out"=>'[48,12345,{},"com.example.rpc",[],{"test":"something"}]' ],
+            [ "in"=> '[48,12345,{},"com.example.rpc", [{"test":"something"}], {}]', "out"=>'[48,12345,{},"com.example.rpc",[{"test":"something"}]]' ],
+
+            // ErrorMessage
+            [ "in"=> '[8,48,12345,{},"some.error.uri"]', "out"=>'[8,48,12345,{},"some.error.uri"]' ],
+            [ "in"=> '[8,48,12345,{},"some.error.uri",[],{}]', "out"=>'[8,48,12345,{},"some.error.uri"]' ],
+            [ "in"=> '[8,48,12345,{},"some.error.uri",[], {"test": "something"}]', "out"=>'[8,48,12345,{},"some.error.uri",[],{"test":"something"}]' ],
+            [ "in"=> '[8,48,12345,{},"some.error.uri",[{"test":"something"}], {}]', "out"=>'[8,48,12345,{},"some.error.uri",[{"test":"something"}]]' ],
+
+            // PublishMessage
+            [ "in"=> '[16, 239714735, {}, "com.myapp.mytopic1", [], {"color": "orange", "sizes": [23, 42, 7]}]', "out"=> '[16,239714735,{},"com.myapp.mytopic1",[],{"color":"orange","sizes":[23,42,7]}]'],
+            [ "in"=> '[16, 239714735, {}, "com.myapp.mytopic1", [], {"color": "orange", "sizes": [23, 42, 7]}]', "out"=> '[16,239714735,{},"com.myapp.mytopic1",[],{"color":"orange","sizes":[23,42,7]}]'],
+            [ "in"=> '[16, 239714735, {}, "com.myapp.mytopic1", [{"color": "orange", "sizes": [23, 42, 7]}],{}]', "out"=> '[16,239714735,{},"com.myapp.mytopic1",[{"color":"orange","sizes":[23,42,7]}]]'],
+
+            // EventMessage
+            [ "in" => '[36, 5512315355, 4429313566, {}]', "out" => '[36,5512315355,4429313566,{}]' ],
+            [ "in" => '[36, 5512315355, 4429313566, {}, ["Hello, world!"]]', "out" => '[36,5512315355,4429313566,{},["Hello, world!"]]'],
+            [ "in" => '[36, 5512315355, 4429313566, {}, [], {"color": "orange", "sizes": [23, 42, 7]}]', "out" => '[36,5512315355,4429313566,{},[],{"color":"orange","sizes":[23,42,7]}]'],
+
+            // ResultMessage
+            [ "in" => '[50, 7814135, {}]', "out" => '[50,7814135,{}]' ],
+            [ "in" => '[50, 7814135, {}, ["Hello, world!"]]', "out" => '[50,7814135,{},["Hello, world!"]]' ],
+            [ "in" => '[50, 7814135, {}, [30]]', "out" => '[50,7814135,{},[30]]' ],
+            [ "in" => '[50, 7814135, {}, [], {"userid": 123, "karma": 10}]', "out" => '[50,7814135,{},[],{"userid":123,"karma":10}]' ],
+
+            // InvocationMessage
+            [ "in" => '[68, 6131533, 9823526, {}]', "out" => '[68,6131533,9823526,{}]' ],
+            [ "in" => '[68, 6131533, 9823527, {}, ["Hello, world!"]]', "out" => '[68,6131533,9823527,{},["Hello, world!"]]' ],
+            [ "in" => '[68, 6131533, 9823528, {}, [23, 7]]', "out" => '[68,6131533,9823528,{},[23,7]]' ],
+            [ "in" => '[68, 6131533, 9823529, {}, ["johnny"], {"firstname": "John", "surname": "Doe"}]', "out" => '[68,6131533,9823529,{},["johnny"],{"firstname":"John","surname":"Doe"}]' ],
+
+            // YieldMessage
+            [ "in" => '[70,6131533,{}]', "out" => '[70,6131533,{}]' ],
+            [ "in" => '[70,6131533,{},["Hello, world!"], {}]', "out" => '[70,6131533,{},["Hello, world!"]]'],
+            [ "in" => '[70,6131533,{},[],{"userid":123,"karma":10}]', "out" => '[70,6131533,{},[],{"userid":123,"karma":10}]']
+
+        ];
+
+        foreach ($tests as $test) {
+            $msg = Message::createMessageFromRaw($test["in"]);
+
+            $this->assertEquals($test['out'], $msg->getSerializedMessage());
+        }
+
+    }
 } 

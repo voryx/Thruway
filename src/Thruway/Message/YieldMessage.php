@@ -9,6 +9,7 @@ namespace Thruway\Message;
  */
 class YieldMessage extends Message
 {
+    use ArgumentsTrait;
 
     /**
      * @var
@@ -21,17 +22,6 @@ class YieldMessage extends Message
     private $options;
 
     /**
-     * @var
-     */
-    private $arguments;
-
-    /**
-     * @var
-     */
-    private $argumentsKw;
-
-
-    /**
      * @param $requestId
      * @param $options
      * @param $arguments
@@ -41,8 +31,8 @@ class YieldMessage extends Message
     {
         $this->requestId = $requestId;
         $this->options = $options;
-        $this->arguments = $arguments;
-        $this->argumentsKw = $argumentsKw;
+        $this->setArguments($arguments);
+        $this->setArgumentsKw($argumentsKw);
 
     }
 
@@ -63,48 +53,13 @@ class YieldMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $a = array($this->getRequestId(), $this->getOptions());
+        $options = $this->getOptions() === null ? new \stdClass() : (object)$this->getOptions();
 
-        if ($this->getArguments() != null) {
-            $a = array_merge($a, array($this->getArguments()));
-            if ($this->getArgumentsKw()) {
-                $a = array_merge($a, array($this->getArgumentsKw()));
-            }
-        }
+        $a = array($this->getRequestId(), $options);
+
+        $a = array_merge($a, $this->getArgumentsForSerialization());
 
         return $a;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArguments()
-    {
-        return $this->arguments;
-    }
-
-    /**
-     * @param mixed $arguments
-     */
-    public function setArguments($arguments)
-    {
-        $this->arguments = $arguments;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArgumentsKw()
-    {
-        return $this->argumentsKw;
-    }
-
-    /**
-     * @param mixed $argumentsKw
-     */
-    public function setArgumentsKw($argumentsKw)
-    {
-        $this->argumentsKw = $argumentsKw;
     }
 
     /**
@@ -138,6 +93,4 @@ class YieldMessage extends Message
     {
         $this->requestId = $requestId;
     }
-
-
 }

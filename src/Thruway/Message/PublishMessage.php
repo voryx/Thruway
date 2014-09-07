@@ -5,12 +5,12 @@ namespace Thruway\Message;
 
 class PublishMessage extends Message
 {
+    use ArgumentsTrait;
+
     const MSG_CODE = Message::MSG_PUBLISH;
 
     private $options;
     private $topicName;
-    private $arguments;
-    private $argumentsKw;
     private $requestId;
 
     function __construct($requestId, $options, $topicName, $arguments = null, $argumentsKw = null)
@@ -19,8 +19,8 @@ class PublishMessage extends Message
 
         $this->setRequestId($requestId);
 
-        $this->arguments = $arguments;
-        $this->argumentsKw = $argumentsKw;
+        $this->setArguments($arguments);
+        $this->setArgumentsKw($argumentsKw);
         $this->options = $options;
         $this->topicName = $topicName;
     }
@@ -46,48 +46,13 @@ class PublishMessage extends Message
             $this->setOptions(new \stdClass());
         }
 
-        $a = array($this->getRequestId(), $this->getOptions(), $this->getTopicName());
+        $options = (object)$this->getOptions();
 
-        if ($this->getArguments() != null) {
-            $a = array_merge($a, array($this->getArguments()));
-            if ($this->getArgumentsKw() != null) {
-                $a = array_merge($a, array($this->getArgumentsKw()));
-            }
-        }
+        $a = array($this->getRequestId(), $options, $this->getTopicName());
+
+        $a = array_merge($a, $this->getArgumentsForSerialization());
 
         return $a;
-    }
-
-    /**
-     * @param mixed $arguments
-     */
-    public function setArguments($arguments)
-    {
-        $this->arguments = $arguments;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArguments()
-    {
-        return $this->arguments;
-    }
-
-    /**
-     * @param mixed $argumentsKw
-     */
-    public function setArgumentsKw($argumentsKw)
-    {
-        $this->argumentsKw = $argumentsKw;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArgumentsKw()
-    {
-        return $this->argumentsKw;
     }
 
     /**

@@ -9,6 +9,7 @@ namespace Thruway\Message;
  */
 class CallMessage extends Message
 {
+    use ArgumentsTrait;
 
     /**
      * @var
@@ -25,15 +26,7 @@ class CallMessage extends Message
      */
     private $procedureName;
 
-    /**
-     * @var null
-     */
-    private $arguments;
 
-    /**
-     * @var null
-     */
-    private $argumentsKw;
 
     /**
      * @param $requestId
@@ -44,11 +37,11 @@ class CallMessage extends Message
      */
     function __construct($requestId, $options, $procedureName, $arguments = null, $argumentsKw = null)
     {
-        $this->requestId = $requestId;
-        $this->options = $options;
-        $this->procedureName = $procedureName;
-        $this->arguments = $arguments ? $arguments : new \stdClass();
-        $this->argumentsKw = $argumentsKw ? $argumentsKw : new \stdClass();
+        $this->setRequestId($requestId);
+        $this->setOptions($options);
+        $this->setProcedureName($procedureName);
+        $this->setArguments($arguments);
+        $this->setArgumentsKw($argumentsKw);
     }
 
 
@@ -74,46 +67,9 @@ class CallMessage extends Message
             $this->getProcedureName(),
         );
 
-        if ($this->getArguments() != null) {
-            $a = array_merge($a, array($this->getArguments()));
-            if ($this->getArgumentsKw()) {
-                $a = array_merge($a, array($this->getArgumentsKw()));
-            }
-        }
+        $a = array_merge($a, $this->getArgumentsForSerialization());
 
         return $a;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArguments()
-    {
-        return $this->arguments;
-    }
-
-    /**
-     * @param mixed $arguments
-     */
-    public function setArguments($arguments)
-    {
-        $this->arguments = $arguments;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArgumentsKw()
-    {
-        return $this->argumentsKw;
-    }
-
-    /**
-     * @param mixed $argumentsKw
-     */
-    public function setArgumentsKw($argumentsKw)
-    {
-        $this->argumentsKw = $argumentsKw;
     }
 
     /**
@@ -129,7 +85,7 @@ class CallMessage extends Message
      */
     public function setOptions($options)
     {
-        $this->options = $options;
+        $this->options = Message::shouldBeDictionary($options);
     }
 
     /**

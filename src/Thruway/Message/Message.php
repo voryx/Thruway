@@ -163,4 +163,15 @@ abstract class Message implements \JsonSerializable
     }
 
 
+    public static function shouldBeDictionary($a) {
+        if (is_array($a) && count($a) == 0) $a = new \stdClass();
+        return $a;
+    }
+
+    public static function isAssoc($arr) {
+        // if this is an empty stdClass (which we use as empty dictionaries)
+        $arr = (array)$arr;
+
+        return array_keys($arr) !== range(0, count($arr) - 1);
+    }
 }

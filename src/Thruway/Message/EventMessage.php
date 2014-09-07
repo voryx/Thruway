@@ -9,7 +9,7 @@ namespace Thruway\Message;
  */
 class EventMessage extends Message
 {
-
+    use ArgumentsTrait;
 
     /**
      * @var
@@ -23,28 +23,20 @@ class EventMessage extends Message
      * @var
      */
     private $details;
-    /**
-     * @var
-     */
-    private $args;
-    /**
-     * @var
-     */
-    private $argsKw;
 
     /**
      * @param $subscriptionId
      * @param $publicationId
      * @param $details
-     * @param $args
-     * @param $argsKw
+     * @param null $arguments
+     * @param null $argumentsKw
      */
-    function __construct($subscriptionId, $publicationId, $details, $args, $argsKw)
+    function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null)
     {
         parent::__construct();
 
-        $this->args = $args;
-        $this->argsKw = $argsKw;
+        $this->setArguments($arguments);
+        $this->setArgumentsKw($argumentsKw);
         $this->details = $details;
         $this->publicationId = $publicationId;
         $this->subscriptionId = $subscriptionId;
@@ -67,18 +59,17 @@ class EventMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
+        $details = $this->getDetails();
+        if ($details === null) $details = new \stdClass();
+        $details = (object)$details;
+
         $a = array(
             $this->getSubscriptionId(),
             $this->getPublicationId(),
-            $this->getDetails()
+            $details
         );
 
-        if ($this->getArgs() != null) {
-            $a = array_merge($a, array($this->getArgs()));
-            if ($this->getArgsKw()) {
-                $a = array_merge($a, array($this->getArgsKw()));
-            }
-        }
+        $a = array_merge($a, $this->getArgumentsForSerialization());
 
         return $a;
     }
@@ -96,38 +87,6 @@ class EventMessage extends Message
             $msg->getArguments(),
             $msg->getArgumentsKw()
         );
-    }
-
-    /**
-     * @param mixed $args
-     */
-    public function setArgs($args)
-    {
-        $this->args = $args;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArgs()
-    {
-        return $this->args;
-    }
-
-    /**
-     * @param mixed $argsKw
-     */
-    public function setArgsKw($argsKw)
-    {
-        $this->argsKw = $argsKw;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArgsKw()
-    {
-        return $this->argsKw;
     }
 
     /**

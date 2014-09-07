@@ -13,6 +13,7 @@ namespace Thruway\Message;
  */
 class ResultMessage extends Message
 {
+    use ArgumentsTrait;
 
     /**
      * @var
@@ -25,17 +26,6 @@ class ResultMessage extends Message
     private $details;
 
     /**
-     * @var
-     */
-    private $arguments;
-
-    /**
-     * @var
-     */
-    private $argumentsKw;
-
-
-    /**
      * @param $requestId
      * @param $details
      * @param $arguments
@@ -45,8 +35,8 @@ class ResultMessage extends Message
     {
         $this->requestId = $requestId;
         $this->details = $details;
-        $this->arguments = $arguments;
-        $this->argumentsKw = $argumentsKw;
+        $this->setArguments($arguments);
+        $this->setArgumentsKw($argumentsKw);
 
     }
 
@@ -67,46 +57,18 @@ class ResultMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $a = array(
-            $this->getRequestId(), $this->getDetails(), $this->getArguments());
+        $details = $this->getDetails();
+        if ($details === null)
+            $details = new \stdClass();
 
-        if ($this->getArgumentsKw() != null) {
-            $a = array_merge($a, array($this->getArgumentsKw()));
-        }
+        $details = (object)$details;
+
+        $a = array(
+            $this->getRequestId(), $details);
+
+        $a = array_merge($a, $this->getArgumentsForSerialization());
 
         return $a;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArguments()
-    {
-        return $this->arguments;
-    }
-
-    /**
-     * @param mixed $arguments
-     */
-    public function setArguments($arguments)
-    {
-        $this->arguments = $arguments;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getArgumentsKw()
-    {
-        return $this->argumentsKw;
-    }
-
-    /**
-     * @param mixed $argumentsKw
-     */
-    public function setArgumentsKw($argumentsKw)
-    {
-        $this->argumentsKw = $argumentsKw;
     }
 
     /**
@@ -140,6 +102,4 @@ class ResultMessage extends Message
     {
         $this->requestId = $requestId;
     }
-
-
 }
