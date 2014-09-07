@@ -68,8 +68,7 @@ class Dealer extends AbstractRole
     {
 
         if ($msg instanceof RegisterMessage):
-            $replyMsg = $this->processRegister($session, $msg);
-            $session->sendMessage($replyMsg);
+            $this->processRegister($session, $msg);
         elseif ($msg instanceof UnregisterMessage):
             $replyMsg = $this->processUnregister($session, $msg);
             $session->sendMessage($replyMsg);
@@ -92,7 +91,7 @@ class Dealer extends AbstractRole
      * @param RegisterMessage $msg
      * @return $this|RegisteredMessage
      */
-    public function processRegister(Session $session, RegisterMessage $msg)
+    private function processRegister(Session $session, RegisterMessage $msg)
     {
         //Check to see if the procedure is already registered
         /* @registration Registration */
@@ -103,10 +102,38 @@ class Dealer extends AbstractRole
 
             $this->manager->error('Already Registered: ' . $registration->getProcedureName());
 
-            return $errorMsg->setErrorURI('wamp.error.procedure_already_exists');
+            $errorMsg->setErrorURI('wamp.error.procedure_already_exists');
+
+            $options = $msg->getOptions();
+            if (isset($options['replace_orphaned_session']) && $options['replace_orphaned_session'] == "yes") {
+                $this->getManager()->debug("Pinging existing registrant");
+                $registration->getSession()->ping(5)
+                    ->then(function ($res) use ($registration, $session, $errorMsg) {
+                            // the ping came back - send procedure_already_exists
+                            $session->sendMessage($errorMsg);
+                        },
+                    function ($r) use ($registration, $session, $msg) {
+                        $this->manager->debug("Removing session " . $registration->getSession()->getSessionId() . " because it didn't respond to ping.");
+                        // bring down the exiting session because the
+                        // ping timed out
+                        $deadSession = $registration->getSession();
+
+                        $deadSession->shutdown();
+
+                        // complete this registration now
+                        $this->completeRegistration($session, $msg);
+                    });
+            } else {
+                $session->sendMessage($errorMsg);
+            }
+        } else {
+            $this->completeRegistration($session, $msg);
         }
 
 
+    }
+
+    public function completeRegistration(Session $session, RegisterMessage $msg) {
         $registration = new Registration($session, $msg->getProcedureName());
 
         $options = (array)$msg->getOptions();
@@ -118,7 +145,7 @@ class Dealer extends AbstractRole
 
         $this->manager->debug('Registered: ' . $registration->getProcedureName());
 
-        return new RegisteredMessage($msg->getRequestId(), $registration->getId());
+        $session->sendMessage(new RegisteredMessage($msg->getRequestId(), $registration->getId()));
     }
 
     /**
@@ -127,7 +154,7 @@ class Dealer extends AbstractRole
      * @throws \Exception
      * @return Message
      */
-    public function processUnregister(Session $session, UnregisterMessage $msg)
+    private function processUnregister(Session $session, UnregisterMessage $msg)
     {
         //find the procedure by registration id
         $this->registrations->rewind();
@@ -163,7 +190,7 @@ class Dealer extends AbstractRole
      * @param CallMessage $msg
      * @return bool
      */
-    public function processCall(Session $session, CallMessage $msg)
+    private function processCall(Session $session, CallMessage $msg)
     {
 
         $registration = $this->getRegistrationByProcedureName($msg->getProcedureName());
@@ -203,7 +230,7 @@ class Dealer extends AbstractRole
      * @param YieldMessage $msg
      * @return bool
      */
-    public function processYield(Session $session, YieldMessage $msg)
+    private function processYield(Session $session, YieldMessage $msg)
     {
         $call = $this->getCallByRequestId($msg->getRequestId());
 
@@ -235,7 +262,7 @@ class Dealer extends AbstractRole
      * @param Session $session
      * @param ErrorMessage $msg
      */
-    public function processError(Session $session, ErrorMessage $msg)
+    private function processError(Session $session, ErrorMessage $msg)
     {
         switch ($msg->getErrorMsgCode()) {
             case Message::MSG_INVOCATION:
@@ -244,7 +271,7 @@ class Dealer extends AbstractRole
         }
     }
 
-    public function processInvocationError(Session $session, ErrorMessage $msg) {
+    private function processInvocationError(Session $session, ErrorMessage $msg) {
         $call = $this->getCallByRequestId($msg->getRequestId());
 
         if (!$call) {

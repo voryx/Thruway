@@ -53,10 +53,10 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
         $this->peer = $peer;
 
         // create a new transport for the router side to use
-        $transport = new InternalClientTransport($this->internalClient);
+        $transport = new InternalClientTransport($this->internalClient, $loop);
 
         // create a new transport for the client side to use
-        $clientTransport = new InternalClientTransport($this->peer);
+        $clientTransport = new InternalClientTransport($this->peer, $loop);
 
         // give the transports each other because they are going to call directly into the
         // other side

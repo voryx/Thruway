@@ -12,6 +12,7 @@ $mgr->setLogger(new \Thruway\ConsoleLogger());
 
 $router = new Router(null, $mgr);
 
+$loop = $router->getLoop();
 
 
 $authMgr = new \Thruway\Authentication\AuthenticationManager();
@@ -28,7 +29,7 @@ $transportProvider = new RatchetTransportProvider("127.0.0.1", 8080);
 
 $router->addTransportProvider($transportProvider);
 
-$theInternalClient = new InternalClient('testRealm');
+$theInternalClient = new InternalClient('testRealm',$loop);
 $theInternalClient->setRouter($router);
 
 $internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider($theInternalClient);

@@ -26,6 +26,12 @@ class InternalClient extends Thruway\Peer\Client
             ['discloseCaller' => true]
         );
 
+        $this->getCallee()->register(
+            $this->session,
+            'com.example.failure',
+            array($this, 'callFailure')
+        );
+
     }
 
     public function start()
@@ -67,6 +73,14 @@ class InternalClient extends Thruway\Peer\Client
         }
 
         return array("no good");
+    }
+
+    public function callFailure() {
+        $deferred = new \React\Promise\Deferred();
+        //$deferred->reject("Call has failed :(");
+        $this->getLoop()->addTimer(0, function () use ($deferred) { $deferred->reject("Call has failed :("); });
+
+        return $deferred->promise();
     }
 
     /**

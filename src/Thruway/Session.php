@@ -70,7 +70,13 @@ class Session extends AbstractSession
 
     public function shutdown()
     {
-
+        // we want to immediately remove
+        // all references
+        if ($this->realm !== null) {
+            $this->realm->leave($this);
+        }
+        // get rid of the realm so onClose doesn't try to leave again
+        $this->realm = null;
         $this->transport->close();
     }
 

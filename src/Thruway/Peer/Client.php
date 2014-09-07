@@ -8,6 +8,7 @@
 
 namespace Thruway\Peer;
 
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use React\Promise\Deferred;
 use React\Promise\Promise;
@@ -129,7 +130,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $attemptRetry = true;
 
-    /* @var NullLogger */
+    /* @var LoggerInterface */
     private $logger;
 
     /**
@@ -562,7 +563,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @return NullLogger
+     * @return LoggerInterface
      */
     public function getLogger()
     {
@@ -570,9 +571,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param NullLogger $logger
+     * @param LoggerInterface $logger
      */
-    public function setLogger($logger)
+    public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }

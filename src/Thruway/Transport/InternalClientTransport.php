@@ -9,6 +9,7 @@
 namespace Thruway\Transport;
 
 
+use React\EventLoop\LoopInterface;
 use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
@@ -26,9 +27,15 @@ class InternalClientTransport implements TransportInterface {
      */
     private $farPeerTransport;
 
-    function __construct(AbstractPeer $farPeer)
+    /**
+     * @var LoopInterface
+     */
+    private $loop;
+
+    function __construct(AbstractPeer $farPeer, LoopInterface $loop)
     {
         $this->farPeer = $farPeer;
+        $this->loop = $loop;
     }
 
     /**

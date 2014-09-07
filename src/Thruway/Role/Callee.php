@@ -244,11 +244,12 @@ class Callee extends AbstractRole
             Message::MSG_REGISTERED,
             Message::MSG_UNREGISTERED,
             Message::MSG_INVOCATION,
+            Message::MSG_REGISTER
         );
 
         $codeToCheck = $msg->getMsgCode();
 
-        if ($codeToCheck instanceof ErrorMessage) $codeToCheck = $msg->getErrorMsgCode();
+        if ($msg instanceof ErrorMessage) $codeToCheck = $msg->getErrorMsgCode();
 
         if (in_array($codeToCheck, $handledMsgCodes)) {
             return true;

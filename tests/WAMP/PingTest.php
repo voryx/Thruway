@@ -64,6 +64,7 @@ class PingTest extends \PHPUnit_Framework_TestCase {
         $this->_conn->open();
 
         $this->assertNull($this->_error, "Error is null");
-        $this->assertEquals("success", $this->_testResult[0], "Server ping returned a success");
+
+        $this->assertTrue(is_numeric($this->_testResult[0]), "Server ping returned a success");
     }
 } 
