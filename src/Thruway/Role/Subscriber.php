@@ -82,7 +82,7 @@ class Subscriber extends AbstractRole
     {
         foreach ($this->subscriptions as $key => $subscription) {
             if ($subscription["subscription_id"] === $msg->getSubscriptionId()) {
-                call_user_func_array($subscription["callback"], [$msg->getArgs(), $msg->getArgsKw(), $msg->getDetails(), $msg->getPublicationId()]);
+                call_user_func_array($subscription["callback"], [$msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails(), $msg->getPublicationId()]);
                 break;
             }
         }
