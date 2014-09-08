@@ -170,6 +170,11 @@ class Realm
     {
 
         $this->manager->debug("Leaving realm {$session->getRealm()->getRealmName()}");
+
+        if ($this->getAuthenticationManager() !== null) {
+            $this->getAuthenticationManager()->onSessionClose($session);
+        }
+
         foreach ($this->roles as $role) {
             $role->leave($session);
         }

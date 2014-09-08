@@ -151,10 +151,6 @@ class Router extends AbstractPeer
         /** @var  $session Session */
         $session = $this->sessions[$transport];
 
-        if ($this->getAuthenticationManager() !== null) {
-            $this->getAuthenticationManager()->onSessionClose($session);
-        }
-
         $session->onClose();
 
         $this->sessions->detach($transport);
