@@ -1,33 +1,42 @@
 {
-    "name": "voryx/thruway"
-  , "type": "library"
-  , "description": "PHP WAMP2 library"
-  , "keywords": ["WebSockets", "Server", "Client", "WAMP", "WAMP2", "Autobahn", "Sockets"]
-  , "license": "MIT"
-  , "authors": [
+    "name": "voryx/thruway",
+    "type": "library",
+    "description": "PHP WAMP2 library",
+    "keywords": [
+        "WebSockets",
+        "Server",
+        "Client",
+        "WAMP",
+        "WAMP2",
+        "Autobahn",
+        "Sockets"
+    ],
+    "license": "MIT",
+    "authors": [
         {
-            "name": "Matt Bonneau"
-          , "email": "matt@bonneau.net"
-          , "role": "Developer"
+            "name": "Matt Bonneau", "email": "matt@bonneau.net", "role": "Developer"
         },
 
         {
-            "name": "David Dan"
-          , "email": "davidwdan@gmail.com"
-          , "role": "Developer"
+            "name": "David Dan", "email": "davidwdan@gmail.com", "role": "Developer"
         }
-    ]
-  , "autoload": {
+    ],
+    "autoload": {
         "psr-0": {
             "Thruway": "src"
         }
-    }
-  , "require": {
-        "php": ">=5.4"
-      , "react/socket": "0.4.*",
-        "cboden/ratchet": "0.3.*",
+    },
+    "require": {
+        "php": ">=5.4", "react/socket": "0.4.*",
+        "cboden/ratchet": "dev-master as 0.3",
         "ratchet/pawl": "dev-master",
         "psr/log": "~1"
-    }
-    
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/mbonneau/Ratchet"
+        }
+    ]
+
 }
