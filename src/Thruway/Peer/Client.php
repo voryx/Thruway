@@ -326,7 +326,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function processWelcome(ClientSession $session, WelcomeMessage $msg)
     {
-        $this->logger->info("We have been welcomed...");
+        $this->getLogger()->info("We have been welcomed...");
         //TODO: I'm sure that there are some other things that we need to do here
         $session->setSessionId($msg->getSessionId());
         $this->emit('open', [$session, $this->transport]);
