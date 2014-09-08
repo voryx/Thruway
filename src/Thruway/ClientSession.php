@@ -75,9 +75,9 @@ class ClientSession extends AbstractSession
      * @param $arguments
      * @return \React\Promise\Promise
      */
-    public function call($procedureName, $arguments)
+    public function call($procedureName, $arguments = null, $argumentsKw = null)
     {
-        return $this->peer->getCaller()->call($this, $procedureName, $arguments);
+        return $this->peer->getCaller()->call($this, $procedureName, $arguments, $argumentsKw);
     }
 
     /**

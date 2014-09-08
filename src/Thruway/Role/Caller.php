@@ -114,7 +114,7 @@ class Caller extends AbstractRole
      * @param $arguments
      * @return \React\Promise\Promise
      */
-    public function call(ClientSession $session, $procedureName, $arguments)
+    public function call(ClientSession $session, $procedureName, $arguments = null, $argumentsKw = null)
     {
         //This promise gets resolved in Caller::processResult
         $futureResult = new Deferred();
@@ -125,7 +125,7 @@ class Caller extends AbstractRole
 
         $options = new \stdClass();
 
-        $callMsg = new CallMessage($requestId, $options, $procedureName, $arguments);
+        $callMsg = new CallMessage($requestId, $options, $procedureName, $arguments, $argumentsKw);
 
         $session->sendMessage($callMsg);
 
