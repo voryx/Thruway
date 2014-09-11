@@ -14,17 +14,6 @@ abstract class AbstractPeer
      */
     protected $manager;
 
-    public function onRawMessage(TransportInterface $transport, $msg)
-    {
-        if ($this->manager instanceof ManagerInterface) {
-            $this->manager->debug("Raw message: (" . $msg . ")");
-        }
-
-        $msgObj = Message::createMessageFromRaw($msg);
-
-        $this->onMessage($transport, $msgObj);
-    }
-
     abstract public function onMessage(TransportInterface $transport, Message $msg);
 
     abstract public function onOpen(TransportInterface $transport);

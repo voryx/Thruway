@@ -13,6 +13,7 @@ use React\EventLoop\LoopInterface;
 use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
+use Thruway\Serializer\SerializerInterface;
 
 class InternalClientTransport implements TransportInterface {
 
@@ -81,4 +82,10 @@ class InternalClientTransport implements TransportInterface {
     public function onPong() {
 
     }
+
+    /** These are required by interface but not used here because there is no serialization */
+    public function setSerializer(SerializerInterface $serializer){}
+    public function getSerializer(){}
+
+
 } 

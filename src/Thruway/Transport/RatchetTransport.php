@@ -15,12 +15,18 @@ use React\Promise\Deferred;
 use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Ratchet\ConnectionInterface;
+use Thruway\Serializer\SerializerInterface;
 
 class RatchetTransport implements TransportInterface {
     /**
      * @var ConnectionInterface
      */
     private $conn;
+
+    /**
+     * @var SerializerInterface
+     */
+    private $serializer;
 
     private $pingSeq;
     private $pingRequests;
@@ -41,7 +47,7 @@ class RatchetTransport implements TransportInterface {
 
     public function sendMessage(Message $msg)
     {
-        $this->conn->send($msg->getSerializedMessage());
+        $this->conn->send($this->getSerializer()->serialize($msg));
     }
 
     public function close()
@@ -106,5 +112,22 @@ class RatchetTransport implements TransportInterface {
             unset($this->pingRequests[$seq]);
         }
 
+    }
+
+    /**
+     * @param SerializerInterface $serializer
+     * @return $this
+     */
+    public function setSerializer(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
+    /**
+     * @return SerializerInterface
+     */
+    public function getSerializer()
+    {
+        return $this->serializer;
     }
 } 

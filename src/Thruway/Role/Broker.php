@@ -70,7 +70,7 @@ class Broker extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        $this->manager->debug("Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . $msg->getSerializedMessage());
+        $this->manager->debug("Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . json_encode($msg));
 
         if ($msg instanceof PublishMessage):
             $this->processPublish($session, $msg);

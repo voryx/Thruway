@@ -15,6 +15,7 @@ use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
+use Thruway\Serializer\JsonSerializer;
 
 /**
  * Class WebsocketClient
@@ -81,13 +82,15 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
 
                 $transport = new PawlTransport($conn, $this->loop);
 
+                $transport->setSerializer(new JsonSerializer());
+
                 $this->peer->onOpen($transport);
 
                 $conn->on(
                     'message',
                     function ($msg) use ($transport) {
                         $this->manager->info("Received: {$msg}\n");
-                        $this->peer->onRawMessage($transport, $msg);
+                        $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
                     }
                 );
 
@@ -140,7 +143,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     {
         $this->manager = $manager;
 
-        $this->manager->logInfo("Manager attached to PawlTransportProvider");
+        $this->manager->info("Manager attached to PawlTransportProvider");
     }
 
     /**

@@ -50,88 +50,83 @@ abstract class Message implements \JsonSerializable
     abstract public function getAdditionalMsgFields();
 
     /**
-     * @param $rawMsg
+     * @param $data
      * @throws MessageException
      * @return Message
      */
-    static public function createMessageFromRaw($rawMsg)
+    static public function createMessageFromArray($data)
     {
-        if (null === ($json = @json_decode($rawMsg, true))) {
-            throw new MessageException("Error decoding json \"${rawMsg}\"");
-        }
-
-        if (!is_array($json) || $json !== array_values($json)) {
+        if (!is_array($data) || $data !== array_values($data)) {
             throw new MessageException("Invalid WAMP message format");
         }
 
-
-        switch ($json[0]) {
+        switch ($data[0]) {
             case Message::MSG_ABORT:
-                return new AbortMessage($json[1], $json[2]);
+                return new AbortMessage($data[1], $data[2]);
             case Message::MSG_HELLO:
-                return new HelloMessage($json[1], $json[2]);
+                return new HelloMessage($data[1], $data[2]);
             case Message::MSG_SUBSCRIBE:
-                return new SubscribeMessage($json[1], $json[2], $json[3]);
+                return new SubscribeMessage($data[1], $data[2], $data[3]);
             case Message::MSG_UNSUBSCRIBE:
-                return new UnsubscribeMessage($json[1], $json[2]);
+                return new UnsubscribeMessage($data[1], $data[2]);
             case Message::MSG_PUBLISH:
-                $args = isset($json[4]) ? $json[4] : null;
-                $argsKw = isset($json[5]) ? $json[5] : null;
+                $args = isset($data[4]) ? $data[4] : null;
+                $argsKw = isset($data[5]) ? $data[5] : null;
 
-                return new PublishMessage($json[1], $json[2], $json[3], $args, $argsKw);
+                return new PublishMessage($data[1], $data[2], $data[3], $args, $argsKw);
             case Message::MSG_GOODBYE:
-                return new GoodbyeMessage($json[1], $json[2]);
+                return new GoodbyeMessage($data[1], $data[2]);
             case Message::MSG_AUTHENTICATE:
-                return new AuthenticateMessage($json[1]);
+                return new AuthenticateMessage($data[1]);
             case Message::MSG_REGISTER:
-                return new RegisterMessage($json[1], $json[2], $json[3]);
+                return new RegisterMessage($data[1], $data[2], $data[3]);
             case Message::MSG_UNREGISTER:
-                return new UnregisterMessage($json[1], $json[2]);
+                return new UnregisterMessage($data[1], $data[2]);
             case Message::MSG_UNREGISTERED:
-                return new UnregisteredMessage($json[1]);
+                return new UnregisteredMessage($data[1]);
             case Message::MSG_CALL:
-                $args = isset($json[4]) ? $json[4] : null;
-                $argsKw = isset($json[5]) ? $json[5] : null;
+                $args = isset($data[4]) ? $data[4] : null;
+                $argsKw = isset($data[5]) ? $data[5] : null;
 
-                return new CallMessage($json[1], $json[2], $json[3], $args, $argsKw);
+                return new CallMessage($data[1], $data[2], $data[3], $args, $argsKw);
             case Message::MSG_YIELD:
-                $args = isset($json[3]) ? $json[3] : null;
-                $argsKw = isset($json[4]) ? $json[4] : null;
+                $args = isset($data[3]) ? $data[3] : null;
+                $argsKw = isset($data[4]) ? $data[4] : null;
 
-                return new YieldMessage($json[1], $json[2], $args, $argsKw);
+                return new YieldMessage($data[1], $data[2], $args, $argsKw);
             case Message::MSG_WELCOME:
-                return new WelcomeMessage($json[1], $json[2]);
+                return new WelcomeMessage($data[1], $data[2]);
             case Message::MSG_SUBSCRIBED:
-                return new SubscribedMessage($json[1], $json[2]);
+                return new SubscribedMessage($data[1], $data[2]);
             case Message::MSG_EVENT:
-                $args = isset($json[4]) ? $json[4] : null;
-                $argsKw = isset($json[5]) ? $json[5] : null;
+                $args = isset($data[4]) ? $data[4] : null;
+                $argsKw = isset($data[5]) ? $data[5] : null;
 
-                return new EventMessage($json[1], $json[2], $json[3], $args, $argsKw);
+                return new EventMessage($data[1], $data[2], $data[3], $args, $argsKw);
             case Message::MSG_REGISTERED:
-                return new RegisteredMessage($json[1], $json[2]);
+                return new RegisteredMessage($data[1], $data[2]);
             case Message::MSG_INVOCATION:
-                $args = isset($json[4]) ? $json[4] : null;
-                $argsKw = isset($json[5]) ? $json[5] : null;
+                $args = isset($data[4]) ? $data[4] : null;
+                $argsKw = isset($data[5]) ? $data[5] : null;
 
-                return new InvocationMessage($json[1], $json[2], $json[3], $args, $argsKw);
+                return new InvocationMessage($data[1], $data[2], $data[3], $args, $argsKw);
             case Message::MSG_RESULT:
-                $args = isset($json[3]) ? $json[3] : null;
-                $argsKw = isset($json[4]) ? $json[4] : null;
+                $args = isset($data[3]) ? $data[3] : null;
+                $argsKw = isset($data[4]) ? $data[4] : null;
 
-                return new ResultMessage($json[1], $json[2], $args, $argsKw);
+                return new ResultMessage($data[1], $data[2], $args, $argsKw);
             case Message::MSG_PUBLISHED:
-                return new PublishedMessage($json[1], $json[2]);
+                return new PublishedMessage($data[1], $data[2]);
             case Message::MSG_CHALLENGE:
-                $extra = $args = isset($json[3]) ? $json[3] : [];
-                return new ChallengeMessage($json[1], $json[2], $extra);
+                $extra = $args = isset($data[3]) ? $data[3] : [];
+                return new ChallengeMessage($data[1], $data[2], $extra);
             case Message::MSG_ERROR:
-                $args = isset($json[5]) ? $json[5] : null;
-                $argsKw = isset($json[6]) ? $json[6] : null;
-                return new ErrorMessage($json[1], $json[2], $json[3], $json[4], $args, $argsKw);
+                $args = isset($data[5]) ? $data[5] : null;
+                $argsKw = isset($data[6]) ? $data[6] : null;
+                return new ErrorMessage($data[1], $data[2], $data[3], $data[4], $args, $argsKw);
 
             default:
-                throw new MessageException("Unhandled message type: " . $json[0]);
+                throw new MessageException("Unhandled message type: " . $data[0]);
         }
     }
 
@@ -143,11 +138,6 @@ abstract class Message implements \JsonSerializable
     public function getMessageParts()
     {
         return array_merge(array($this->getMsgCode()), $this->getAdditionalMsgFields());
-    }
-
-    public function getSerializedMessage()
-    {
-        return json_encode($this->getMessageParts());
     }
 
     /**

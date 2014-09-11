@@ -16,12 +16,18 @@ use React\Promise\Deferred;
 use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Ratchet\Client\WebSocket;
+use Thruway\Serializer\SerializerInterface;
 
 class PawlTransport implements TransportInterface {
 
     private $pingSeq;
 
     private $pingRequests;
+
+    /**
+     * @var SerializerInterface
+     */
+    private $serializer;
 
     /**
      * @var WebSocket
@@ -46,7 +52,7 @@ class PawlTransport implements TransportInterface {
 
     public function sendMessage(Message $msg)
     {
-        $this->conn->send($msg->getSerializedMessage());
+        $this->conn->send($this->getSerializer()->serialize($msg));
     }
 
     public function close()
@@ -108,5 +114,23 @@ class PawlTransport implements TransportInterface {
         // all sequence numbers before this one are probably no good anymore
         // and actually are probably errors
     }
+
+    /**
+     * @param SerializerInterface $serializer
+     * @return $this
+     */
+    public function setSerializer(SerializerInterface $serializer)
+    {
+        $this->serializer = $serializer;
+    }
+
+    /**
+     * @return SerializerInterface
+     */
+    public function getSerializer()
+    {
+        return $this->serializer;
+    }
+
 
 } 

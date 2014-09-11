@@ -12,6 +12,7 @@ use Ratchet\WebSocket\Version\RFC6455\Frame;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
+use Thruway\Serializer\JsonSerializer;
 use Thruway\Session;
 use Ratchet\ConnectionInterface;
 use Ratchet\Http\HttpServer;
@@ -93,6 +94,9 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
         $transport = new RatchetTransport($conn, $this->loop);
 
+        // this will need to be a little more dynamic at some point
+        $transport->setSerializer(new JsonSerializer());
+
         $this->transports->attach($conn, $transport);
 
         $this->peer->onOpen($transport);
@@ -141,10 +145,10 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     function onMessage(ConnectionInterface $from, $msg)
     {
         $this->manager->debug("onMessage...({$msg})");
+        /** @var TransportInterface $transport */
         $transport = $this->transports[$from];
 
-        // TODO: Should deserialize in here
-        $this->peer->onRawMessage($transport, $msg);
+        $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
     }
 
     function onPong(ConnectionInterface $from, Frame $frame) {
