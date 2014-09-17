@@ -9,6 +9,8 @@
 namespace Thruway\Message;
 
 
+use Thruway\Result;
+
 trait ArgumentsTrait {
     /**
      * @var null
@@ -69,5 +71,13 @@ trait ArgumentsTrait {
     public function setArgumentsKw($argumentsKw)
     {
         $this->argumentsKw = Message::shouldBeDictionary($argumentsKw);
+    }
+
+    /**
+     * @param Result $result
+     */
+    public function setArgumentsFromResult(Result $result) {
+        $this->setArguments($result->getArguments());
+        $this->setArgumentsKw($result->getArgumentsKw());
     }
 } 

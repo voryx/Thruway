@@ -28,14 +28,35 @@ class InternalClient extends Thruway\Peer\Client
 
         $this->getCallee()->register(
             $this->session,
-            'com.example.failure',
-            array($this, 'callFailure')
+            'com.example.failure_from_rejected_promise',
+            array($this, 'callFailureFromRejectedPromise')
         );
 
+        $this->getCallee()->register(
+            $this->session,
+            'com.example.failure_from_exception',
+            array($this, 'callFailureFromException')
+        );
+
+        $this->getCallee()->register(
+            $this->session,
+            'com.example.echo_with_argskw',
+            array($this, 'callEchoWithKw')
+        );
+
+        $this->getCallee()->register(
+            $this->session,
+            'com.example.echo_with_argskw_with_promise',
+            array($this, 'callEchoWithKwWithPromise')
+        );
     }
 
     public function start()
     {
+    }
+
+    public function testCallWithArguments($res) {
+
     }
 
     public function callTheTestCall($res)
@@ -75,10 +96,28 @@ class InternalClient extends Thruway\Peer\Client
         return array("no good");
     }
 
-    public function callFailure() {
+    public function callFailureFromRejectedPromise() {
         $deferred = new \React\Promise\Deferred();
         //$deferred->reject("Call has failed :(");
         $this->getLoop()->addTimer(0, function () use ($deferred) { $deferred->reject("Call has failed :("); });
+
+        return $deferred->promise();
+    }
+
+    public function callFailureFromException() {
+        throw new \Exception('Exception Happened');
+    }
+
+    public function callEchoWithKw($args, $argsKw) {
+        return new \Thruway\Result($args, $argsKw);
+    }
+
+    public function callEchoWithKwWithPromise($args, $argsKw) {
+        $deferred = new \React\Promise\Deferred();
+
+        $this->getLoop()->addTimer(0, function () use ($deferred, $args, $argsKw) {
+                $deferred->resolve(new \Thruway\Result($args, $argsKw));
+            });
 
         return $deferred->promise();
     }

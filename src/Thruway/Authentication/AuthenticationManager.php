@@ -54,17 +54,6 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     }
 
-//            new WelcomeMessage(
-//                $session->getSessionId(),
-//                array(
-//                    "authid" => $authenticationProvider->getAuthenticationId(),
-//                    "authmethod" => $authenticationProvider->getAuthenticationMethod(),
-//                    "authrole" => $authenticationProvider->getAuthenticationRole(),
-//                    "roles" => $roles,
-//                )
-//            )
-
-
     /**
      * Handles all messages for authentication (Hello and Authenticate)
      * This is called by the Realm to handle authentication
@@ -174,22 +163,11 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 )->then(
                     function ($res) use ($session, $msg) {
                         // this is handling the return of the onhello RPC call
-                        if (!is_array($res)) {
-                            $session->sendMessage(
-                                ErrorMessage::createErrorMessageFromMessage(
-                                    $msg
-                                )
-                            );
-
-                            return;
-                        };
-
                         if (count($res) < 2) {
                             $session->sendMessage(
-                                ErrorMessage::createErrorMessageFromMessage(
-                                    $msg
-                                )
+                                new AbortMessage(new \stdClass(), "thruway.auth.invalid_response_to_hello")
                             );
+
                             return;
                         }
 
@@ -239,7 +217,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
          */
         if (!$sentMessage) {
             if ($this->realmHasAuthProvider($realm->getRealmName())) {
-                $session->sendMessage(new AbortMessage(new \stdClass(), "realm_authorization_failure"));
+                $session->sendMessage(new AbortMessage(new \stdClass(), "wamp.error.not_authorized"));
             } else {
                 //Logged in as anonymous
 
@@ -280,9 +258,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                     )
                 )->then(
                     function ($res) use ($session) {
-                        if (!is_array($res)) {
-                            return;
-                        }
+//                        if (!is_array($res)) {
+//                            return;
+//                        }
                         if (count($res) < 1) {
                             return;
                         }

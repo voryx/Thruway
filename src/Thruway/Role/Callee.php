@@ -22,6 +22,7 @@ use Thruway\Message\RegisterMessage;
 use Thruway\Message\UnregisteredMessage;
 use Thruway\Message\UnregisterMessage;
 use Thruway\Message\YieldMessage;
+use Thruway\Result;
 use Thruway\Session;
 
 /**
@@ -138,46 +139,61 @@ class Callee extends AbstractRole
                         return;
                     }
 
-                    $results = $registration["callback"]($msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails());
+                    try {
+                        $results = $registration["callback"]($msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails());
 
-                    if ($results instanceof Promise) {
-                        // the result is a promise - hook up stuff as a callback
-                        $results->then(
-                            function ($promiseResults) use ($msg, $session) {
-                                $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
-                                $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults]: $promiseResults;
-                                $options = new \stdClass();
-                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
+                        if ($results instanceof Promise) {
+                            // the result is a promise - hook up stuff as a callback
+                            $results->then(
+                                function ($promiseResults) use ($msg, $session) {
+                                    $options = new \stdClass();
+                                    if ($promiseResults instanceof Result) {
+                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults->getArguments(), $promiseResults->getArgumentsKw());
+                                    } else {
+                                        $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
+                                        $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults]: $promiseResults;
 
-                                $session->sendMessage($yieldMsg);
-                            },
-                            function ($errorUri = null, $errorArgs = null, $errorArgsKw = null) use ($msg, $session, $registration) {
-                                $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
+                                    }
 
-                                if ($errorUri !== null) {
+                                    $session->sendMessage($yieldMsg);
+                                },
+                                function () use ($msg, $session, $registration) {
+                                    $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+
+                                    $errorUri = null;
+
                                     $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
-                                } else {
-                                    $errorMsg->setErrorURI("thruway.invocation.error");
-                                }
 
-                                if (is_array($errorArgs)) {
-                                    $errorMsg->setArguments($errorArgs);
+                                    $session->sendMessage($errorMsg);
                                 }
+                            );
+                        } else {
+                            $options = new \stdClass();
+                            if ($results instanceof Result) {
+                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(), $results->getArgumentsKw());
+                            } else {
+                                $results = is_array($results) ? $results : [$results];
+                                $results = !$this::is_list($results) ? [$results]: $results;
 
-                                if (is_array($errorArgsKw)) {
-                                    $errorMsg->setArgumentsKw($errorArgsKw);
-                                }
-
-                                $session->sendMessage($errorMsg);
+                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
                             }
-                        );
-                    } else {
-                        $results = !$this::is_list($results) ? [$results]: $results;
-                        $options = new \stdClass();
-                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
 
-                        $session->sendMessage($yieldMsg);
+                            $session->sendMessage($yieldMsg);
+                        }
+                    } catch (\Exception $e) {
+                        $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+
+                        $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
+
+                        $errorMsg->setArguments(array($e->getMessage()));
+
+                        $errorMsg->setArgumentsKw($e);
+
+                        $session->sendMessage($errorMsg);
                     }
+
+
                     break;
                 }
             }

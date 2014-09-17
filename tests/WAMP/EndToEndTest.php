@@ -235,4 +235,28 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals('wamp.error.not_authorized', $this->_testResult);
     }
+
+    public function xtestCallWithArguments()
+    {
+        $this->_conn->on(
+            'open',
+            function (\Thruway\ClientSession $session) {
+                $session->call('com.example.testcallwitharguments', ['testing123'])->then(
+                    function ($res) {
+                        $this->_conn->close();
+                        $this->_testResult = $res;
+                    },
+                    function ($error) {
+                        $this->_conn->close();
+                        $this->_error = $error;
+                    }
+                );
+            }
+        );
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
+        $this->assertEquals('testing123', $this->_testResult[0]);
+    }
 }

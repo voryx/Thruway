@@ -10,6 +10,7 @@ namespace Thruway\Role;
 
 
 use Thruway\AbstractSession;
+use Thruway\CallResult;
 use Thruway\ClientSession;
 use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
@@ -65,7 +66,10 @@ class Caller extends AbstractRole
         if (isset($this->callRequests[$msg->getRequestId()])) {
             /* @var $futureResult Deferred */
             $futureResult = $this->callRequests[$msg->getRequestId()]['future_result'];
-            $futureResult->resolve($msg->getArguments());
+
+            $callResult = new CallResult($msg);
+
+            $futureResult->resolve($callResult);
             unset($this->callRequests[$msg->getRequestId()]);
         }
     }
@@ -121,7 +125,10 @@ class Caller extends AbstractRole
 
         $requestId = Session::getUniqueId();
 
-        $this->callRequests[$requestId] = ["procedure_name" => $procedureName, "future_result" => $futureResult];
+        $this->callRequests[$requestId] = [
+            "procedure_name" => $procedureName,
+            "future_result" => $futureResult
+        ];
 
         $options = new \stdClass();
 
