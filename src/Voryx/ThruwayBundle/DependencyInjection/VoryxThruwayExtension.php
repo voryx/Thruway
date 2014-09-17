@@ -109,10 +109,9 @@ class VoryxThruwayExtension extends Extension
                 ->addMethodCall('setAuthenticationManager', [new Reference('voryx.thruway.authentication.manager')])
                 ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.auth.manager.transport.provider')])
                 ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.wamp.cra.auth.transport.provider')]);
-
-            $container->addAliases(["in_memory_user_provider" => "security.user.provider.concrete.in_memory"]);
-
         }
+        $container->addAliases(["in_memory_user_provider" => "security.user.provider.concrete.in_memory"]);
+
 
     }
 }
