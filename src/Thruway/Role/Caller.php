@@ -118,7 +118,7 @@ class Caller extends AbstractRole
      * @param $arguments
      * @return \React\Promise\Promise
      */
-    public function call(ClientSession $session, $procedureName, $arguments = null, $argumentsKw = null)
+    public function call(ClientSession $session, $procedureName, $arguments = null, $argumentsKw = null, $options = null)
     {
         //This promise gets resolved in Caller::processResult
         $futureResult = new Deferred();
@@ -130,7 +130,12 @@ class Caller extends AbstractRole
             "future_result" => $futureResult
         ];
 
-        $options = new \stdClass();
+        if ( ! (is_array($options) && Message::isAssoc($options))) {
+            if ($options !== null) {
+                echo "Warning: options don't appear to be the correct type.";
+            }
+            $options = new \stdClass();
+        }
 
         $callMsg = new CallMessage($requestId, $options, $procedureName, $arguments, $argumentsKw);
 

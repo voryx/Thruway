@@ -184,4 +184,73 @@ class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
 
 
     }
+
+    public function testCallWithProgressOption() {
+        $this->_testResult = null;
+        $this->_error = null;
+        $this->_errorMsg = null;
+        $this->_conn->on(
+            'open',
+            function (\Thruway\ClientSession $session) {
+                $session->call('com.example.progress_option', [], null, [ "receive_progress" => true ])->then(
+                        function ($res) {
+                            $this->_conn->close();
+                            $this->_testResult = $res;
+                        },
+                        function ($error = null) {
+                            $this->_error = "error";
+                            if ($error instanceof \Thruway\Message\ErrorMessage) {
+                                $this->_testResult = $error->getErrorURI();
+                                $this->_errorMsg = $error;
+                            } else {
+                                $this->_testResult = "rejected";
+                            }
+                            $this->_conn->close();
+
+                        }
+                    );
+            }
+        );
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error);
+        $this->assertEquals("SUCCESS", $this->_testResult[0], "Successfully saw the receive_progress option");
+
+    }
+
+    public function testCallWithoutProgressOption() {
+        $this->_testResult = null;
+        $this->_error = null;
+        $this->_errorMsg = null;
+        $this->_conn->on(
+            'open',
+            function (\Thruway\ClientSession $session) {
+                $session->call('com.example.progress_option', [])->then(
+                    function ($res) {
+                        $this->_conn->close();
+                        $this->_testResult = $res;
+                    },
+                    function ($error = null) {
+                        $this->_error = "error";
+                        if ($error instanceof \Thruway\Message\ErrorMessage) {
+                            $this->_testResult = $error->getErrorURI();
+                            $this->_errorMsg = $error;
+                        } else {
+                            $this->_testResult = "rejected";
+                        }
+                        $this->_conn->close();
+
+                    }
+                );
+            }
+        );
+
+        $this->_conn->open();
+
+        $this->assertNotNull($this->_error);
+        $this->assertEquals("com.example.progress_option.error", $this->_testResult, "Did not see receive_progress option");
+        $this->assertEquals("receive_progress option not set", $this->_errorMsg->getArguments()[0], "Did not see receive_progress option");
+
+    }
 } 

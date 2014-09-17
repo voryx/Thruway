@@ -206,6 +206,7 @@ class Dealer extends AbstractRole
 
         $invocationMessage = InvocationMessage::createMessageFrom($msg, $registration);
 
+        $details = [];
         if ($registration->getDiscloseCaller() === true && $session->getAuthenticationDetails()) {
             $details = [
                 "caller" => $session->getSessionId(),
@@ -213,9 +214,17 @@ class Dealer extends AbstractRole
                 //"authrole" => $session->getAuthenticationDetails()->getAuthRole(),
                 "authmethod" => $session->getAuthenticationDetails()->getAuthMethod(),
             ];
-
-            $invocationMessage->setDetails($details);
         }
+
+        // TODO: check to see if callee supports progressive call
+        $callOptions = $msg->getOptions();
+        if (is_array($callOptions) && isset($callOptions['receive_progress']) && $callOptions['receive_progress']) {
+            $details = array_merge($details, array("receive_progress" => true));
+        }
+
+        // if nothing was added to details - change ot stdClass so it will serialize correctly
+        if (count($details) == 0) $details = new \stdClass();
+        $invocationMessage->setDetails($details);
 
         $call = new Call($msg, $session, $invocationMessage, $registration->getSession());
 

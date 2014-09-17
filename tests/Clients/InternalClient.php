@@ -49,6 +49,13 @@ class InternalClient extends Thruway\Peer\Client
             'com.example.echo_with_argskw_with_promise',
             array($this, 'callEchoWithKwWithPromise')
         );
+
+        //callWithProgressOption
+        $this->getCallee()->register(
+            $this->session,
+            'com.example.progress_option',
+            array($this, 'callWithProgressOption')
+        );
     }
 
     public function start()
@@ -120,6 +127,14 @@ class InternalClient extends Thruway\Peer\Client
             });
 
         return $deferred->promise();
+    }
+
+    public function callWithProgressOption($args, $argsKw, $details) {
+        if (is_array($details) && isset($details['receive_progress']) && $details['receive_progress']) {
+            return "SUCCESS";
+        } else {
+            throw new \Exception("receive_progress option not set");
+        }
     }
 
     /**
