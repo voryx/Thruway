@@ -218,8 +218,10 @@ class Dealer extends AbstractRole
 
         // TODO: check to see if callee supports progressive call
         $callOptions = $msg->getOptions();
+        $isProgressive = false;
         if (is_array($callOptions) && isset($callOptions['receive_progress']) && $callOptions['receive_progress']) {
             $details = array_merge($details, array("receive_progress" => true));
+            $isProgressive = true;
         }
 
         // if nothing was added to details - change ot stdClass so it will serialize correctly
@@ -227,6 +229,8 @@ class Dealer extends AbstractRole
         $invocationMessage->setDetails($details);
 
         $call = new Call($msg, $session, $invocationMessage, $registration->getSession());
+
+        $call->setIsProgressive($isProgressive);
 
         $this->calls->attach($call);
 
@@ -255,7 +259,18 @@ class Dealer extends AbstractRole
 
         $details = new \stdClass();
 
-        $this->calls->detach($call);
+        $yieldOptions = $msg->getOptions();
+        if (is_array($yieldOptions) && isset($yieldOptions['progress']) && $yieldOptions['progress']) {
+            if ($call->isProgressive()) {
+                $details = [ "progress" => true ];
+            } else {
+                // not sure what to do here - just going to drop progress
+                // if we are getting progress messages that the caller didn't ask for
+            }
+        } else {
+            $this->calls->detach($call);
+
+        }
 
         $resultMessage = new ResultMessage(
             $call->getCallMessage()->getRequestId(),

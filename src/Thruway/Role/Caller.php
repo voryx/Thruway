@@ -69,8 +69,14 @@ class Caller extends AbstractRole
 
             $callResult = new CallResult($msg);
 
-            $futureResult->resolve($callResult);
-            unset($this->callRequests[$msg->getRequestId()]);
+            $details = $msg->getDetails();
+            if (is_array($details) && isset($details['progress']) && $details['progress']) {
+                // TODO: what if we didn't want progress?
+                $futureResult->progress($callResult);
+            } else {
+                $futureResult->resolve($callResult);
+                unset($this->callRequests[$msg->getRequestId()]);
+            }
         }
     }
 

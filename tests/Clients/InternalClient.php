@@ -56,6 +56,14 @@ class InternalClient extends Thruway\Peer\Client
             'com.example.progress_option',
             array($this, 'callWithProgressOption')
         );
+
+        //callReturnSomeProgress
+        $this->getCallee()->register(
+            $this->session,
+            'com.example.return_some_progress',
+            array($this, 'callReturnSomeProgress')
+        );
+
     }
 
     public function start()
@@ -132,6 +140,26 @@ class InternalClient extends Thruway\Peer\Client
     public function callWithProgressOption($args, $argsKw, $details) {
         if (is_array($details) && isset($details['receive_progress']) && $details['receive_progress']) {
             return "SUCCESS";
+        } else {
+            throw new \Exception("receive_progress option not set");
+        }
+    }
+
+    public function callReturnSomeProgress($args, $argsKw, $details) {
+        if (is_array($details) && isset($details['receive_progress']) && $details['receive_progress']) {
+            $deferred = new \React\Promise\Deferred();
+
+            $this->getLoop()->addTimer(1, function () use ($deferred) {
+                    $deferred->progress(1);
+                });
+            $this->getLoop()->addTimer(2, function () use ($deferred) {
+                    $deferred->progress(2);
+                });
+            $this->getLoop()->addTimer(3, function () use ($deferred) {
+                    $deferred->resolve("DONE");
+                });
+
+            return $deferred->promise();
         } else {
             throw new \Exception("receive_progress option not set");
         }

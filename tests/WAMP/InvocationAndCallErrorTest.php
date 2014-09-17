@@ -11,6 +11,8 @@ class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
     private $_testResult;
     private $_error;
     private $_errorMsg;
+    private $_progressMessages;
+    private $_loop;
 
     public function setUp()
     {
@@ -251,6 +253,58 @@ class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($this->_error);
         $this->assertEquals("com.example.progress_option.error", $this->_testResult, "Did not see receive_progress option");
         $this->assertEquals("receive_progress option not set", $this->_errorMsg->getArguments()[0], "Did not see receive_progress option");
+
+    }
+
+    public function testCallWithProgressReturned() {
+        $this->_testResult = null;
+        $this->_error = null;
+        $this->_errorMsg = null;
+        $this->_progressMessages = [];
+        $this->_conn->on(
+            'open',
+            function (\Thruway\ClientSession $session) {
+                $this->_loop = $session->getLoop();
+
+                // this timer is just to hold the loop from closing
+                // prior to getting the progressive results
+                $timer = $this->_loop->addTimer(5, function () {
+
+                    });
+                $session->call('com.example.return_some_progress', [], null, [ "receive_progress" => true ])->then(
+                    function ($res) use ($timer) {
+                        $this->_conn->close();
+                        $this->_testResult = $res;
+
+                        $timer->cancel();
+                    },
+                    function ($error = null) use ($timer) {
+                        $this->_error = "error";
+                        if ($error instanceof \Thruway\Message\ErrorMessage) {
+                            $this->_testResult = $error->getErrorURI();
+                            $this->_errorMsg = $error;
+                        } else {
+                            $this->_testResult = "rejected";
+                        }
+                        $this->_conn->close();
+
+                        $timer->cancel();
+                    },
+                    function ($res) {
+                        $this->_progressMessages[] = $res;
+                    }
+                );
+            }
+        );
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error);
+        $this->assertEquals("DONE", $this->_testResult[0], "Successfully finished progressive RPC");
+        $this->assertEquals(2, count($this->_progressMessages), "Correct number of progress messages");
+        $this->assertEquals(1, $this->_progressMessages[0][0], "Progress message zero returned correctly");
+        $this->assertEquals(2, $this->_progressMessages[1][0], "Progress message one returned correctly");
+
 
     }
 } 

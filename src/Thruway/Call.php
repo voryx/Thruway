@@ -34,6 +34,11 @@ class Call
     private $invocationMessage;
 
     /**
+     * @var bool
+     */
+    private $isProgressive;
+
+    /**
      * @param CallMessage $callMessage
      * @param Session $callerSession
      * @param InvocationMessage $invocationMessage
@@ -45,6 +50,8 @@ class Call
         $this->callerSession = $callerSession;
         $this->invocationMessage = $invocationMessage;
         $this->calleeSession = $calleeSession;
+
+        $this->isProgressive = false;
     }
 
     /**
@@ -111,7 +118,29 @@ class Call
         $this->invocationMessage = $invocationMessage;
     }
 
+    /**
+     * @param boolean $isProgressive
+     */
+    public function setIsProgressive($isProgressive)
+    {
+        $this->isProgressive = $isProgressive;
+    }
 
+    /**
+     * @return boolean
+     */
+    public function getIsProgressive()
+    {
+        return $this->isProgressive;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isProgressive()
+    {
+        return $this->isProgressive;
+    }
 
 
 } 

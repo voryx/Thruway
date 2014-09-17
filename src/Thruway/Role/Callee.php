@@ -166,6 +166,19 @@ class Callee extends AbstractRole
                                     $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
 
                                     $session->sendMessage($errorMsg);
+                                },
+                                function ($results) use ($msg, $session, $registration) {
+                                    $options = [ "progress" => true ];
+                                    if ($results instanceof Result) {
+                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(), $results->getArgumentsKw());
+                                    } else {
+                                        $results = is_array($results) ? $results : [$results];
+                                        $results = !$this::is_list($results) ? [$results]: $results;
+
+                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
+                                    }
+
+                                    $session->sendMessage($yieldMsg);
                                 }
                             );
                         } else {
