@@ -255,4 +255,28 @@ class Realm
     {
         return $this->authenticationManager;
     }
+
+    /**
+     * @return \SplObjectStorage
+     */
+    public function getSessions()
+    {
+        return $this->sessions;
+    }
+
+    /**
+     * @return Broker
+     */
+    public function getBroker()
+    {
+        return $this->broker;
+    }
+
+    /**
+     * @return Dealer
+     */
+    public function getDealer()
+    {
+        return $this->dealer;
+    }
 }
