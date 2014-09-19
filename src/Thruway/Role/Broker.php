@@ -272,4 +272,22 @@ class Broker extends AbstractRole
     }
 
 
+    /**
+     * @return array
+     */
+    public function managerGetSubscriptions()
+    {
+        $theSubscriptions = [];
+
+        /** @var $subscription Subscription */
+        foreach ($this->subscriptions as $subscription) {
+            $theSubscriptions[] = [
+                "id" => $subscription->getId(),
+                "topic" => $subscription->getTopic(),
+                "session" => $subscription->getSession()->getSessionId()
+            ];
+        }
+
+        return [$theSubscriptions];
+    }
 } 
