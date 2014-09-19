@@ -23,6 +23,7 @@ use Thruway\Message\WelcomeMessage;
 use Thruway\Role\AbstractRole;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
+use Thruway\Transport\TransportInterface;
 
 /**
  * Class Realm
@@ -180,6 +181,48 @@ class Realm
             $this->manager->error("Authenticate sent to realm without auth manager.");
         }
     }
+
+    /**
+     * @return array
+     */
+    public function managerGetSessions()
+    {
+        $theSessions = array();
+
+        /** @var $session Session */
+        /** @var $transport TransportInterface */
+        foreach ($this->sessions as $session) {
+
+            $sessionRealm = null;
+            // just in case the session is not in a realm yet
+            if ($session->getRealm() !== null) {
+                $sessionRealm = $session->getRealm()->getRealmName();
+            }
+
+            if ($session->getAuthenticationDetails() !== null) {
+                /** @var AuthenticationDetails $authDetails */
+                $authDetails = $session->getAuthenticationDetails();
+                $auth = array(
+                    "authid" => $authDetails->getAuthId(),
+                    "authmethod" => $authDetails->getAuthMethod()
+                );
+            } else {
+                $auth = new \stdClass();
+            }
+
+            $theSessions[] = [
+                "id" => $session->getSessionId(),
+                "transport" => $session->getTransport()->getTransportDetails(),
+                "messagesSent" => $session->getMessagesSent(),
+                "sessionStart" => $session->getSessionStart(),
+                "realm" => $sessionRealm,
+                "auth" => $auth
+            ];
+        }
+
+        return $theSessions;
+    }
+
 
     /**
      * @param mixed $realmName
