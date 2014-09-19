@@ -423,5 +423,11 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         }
     }
 
-
+    /**
+     * @return array
+     */
+    public function getAuthMethods()
+    {
+        return $this->authMethods;
+    }
 }
