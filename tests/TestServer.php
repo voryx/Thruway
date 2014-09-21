@@ -3,6 +3,8 @@
 require 'bootstrap.php';
 require 'Clients/InternalClient.php';
 require 'Clients/SimpleAuthProviderClient.php';
+require 'Clients/AbortAfterHelloAuthProviderClient.php';
+
 
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
@@ -24,6 +26,9 @@ $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProv
 $authProvClient = new SimpleAuthProviderClient(["testSimpleAuthRealm"]);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
 
+// provide aborting auth provider
+$authAbortAfterHello = new AbortAfterHelloAuthProviderClient(["abortafterhello"]);
+$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authAbortAfterHello));
 
 $transportProvider = new RatchetTransportProvider("127.0.0.1", 8080);
 
