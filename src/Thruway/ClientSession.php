@@ -63,7 +63,7 @@ class ClientSession extends AbstractSession
 
     /**
      * @param $procedureName
-     * @return \React\Promise\Promise
+     * @return \React\Promise\Promise|FALSE
      */
     public function unregister($procedureName)
     {

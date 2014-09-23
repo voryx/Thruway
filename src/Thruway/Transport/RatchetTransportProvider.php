@@ -148,7 +148,11 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
         /** @var TransportInterface $transport */
         $transport = $this->transports[$from];
 
-        $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
+        try {
+            $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
+        } catch (\Exception $e) {
+            $this->manager->warning("Deserialization exception occurred.");
+        }
     }
 
     function onPong(ConnectionInterface $from, Frame $frame) {

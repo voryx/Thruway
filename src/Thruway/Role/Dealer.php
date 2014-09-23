@@ -166,7 +166,11 @@ class Dealer extends AbstractRole
 
                 // make sure the session is the correct session
                 if ($registration->getSession() !== $session) {
-                    throw new \Exception("Tried to unregister a procedure that belongs to a different session.");
+                    $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+                    $errorMsg->setErrorURI("wamp.error.no_such_registration");
+                    $this->manager->warning("Tried to unregister a procedure that belongs to a different session.");
+
+                    return $errorMsg;
                 }
 
                 $this->manager->debug('Unegistered: ' . $registration->getProcedureName());

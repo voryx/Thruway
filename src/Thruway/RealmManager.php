@@ -44,21 +44,20 @@ class RealmManager
 
     /**
      * @param string
-     * @throws \Exception
+     * @throws InvalidRealmNameException
+     * @throws RealmNotFoundException
      * @return Realm
      */
     public function getRealm($realmName)
     {
-        if (!static::validRealmName($realmName)) {
-            throw new InvalidRealmNameException;
-        }
-
         if (!array_key_exists($realmName, $this->realms)) {
             if ($this->allowRealmAutocreate) {
                 $this->manager->debug("Creating new realm \"" . $realmName . "\"");
-                $this->realms[$realmName] = new Realm($realmName);
-                $this->realms[$realmName]->setAuthenticationManager($this->getDefaultAuthenticationManager());
-                $this->realms[$realmName]->setManager($this->manager);
+                $realm = new Realm($realmName);
+                $realm->setAuthenticationManager($this->getDefaultAuthenticationManager());
+                $realm->setManager($this->manager);
+
+                $this->addRealm($realm);
             } else {
                 throw new RealmNotFoundException();
             }

@@ -145,15 +145,20 @@ class Realm
             $this->manager->error(
                 "Connection tried to rejoin realm when it is already joined to the realm."
             );
-            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-            // TODO should shut down session here
+            // shutdown session here because it is obvious we are just on a different
+            // page than the client - maybe we should send abort?
+            $session->shutdown();
         } else {
             $this->sessions->attach($session);
             $session->setRealm($this);
             $session->setState(Session::STATE_UP); // this should probably be after authentication
 
             if ($this->getAuthenticationManager() !== null) {
-                $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
+                try {
+                    $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
+                } catch (\Exception $e) {
+
+                }
             } else {
                 $session->setAuthenticated(true);
 
@@ -175,9 +180,14 @@ class Realm
     private function processAuthenticate(Session $session, AuthenticateMessage $msg)
     {
         if ($this->getAuthenticationManager() !== null) {
-            $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
+            try {
+                $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
+            } catch (\Exception $e) {
+                $session->sendMessage(new AbortMessage(new \stdClass(), "thruway.error.internal"));
+                $this->manager->error("Authenticate sent to realm without auth manager.");
+            }
         } else {
-            // TODO: should shut down here probably
+            $session->sendMessage(new AbortMessage(new \stdClass(), "thruway.error.internal"));
             $this->manager->error("Authenticate sent to realm without auth manager.");
         }
     }

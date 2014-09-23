@@ -90,7 +90,11 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                     'message',
                     function ($msg) use ($transport) {
                         $this->manager->info("Received: {$msg}\n");
-                        $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
+                        try {
+                            $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
+                        } catch (\Exception $e) {
+                            $this->manager->warning("Deserialization exception occurred.");
+                        }
                     }
                 );
 

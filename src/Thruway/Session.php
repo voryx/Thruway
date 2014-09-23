@@ -105,17 +105,9 @@ class Session extends AbstractSession
      * @param ManagerInterface $manager
      * @throws \InvalidArgumentException
      */
-    public function setManager($manager)
+    public function setManager(ManagerInterface $manager)
     {
         $this->manager = $manager;
-
-        if ($manager instanceof ManagerInterface) {
-
-        } else {
-            if ($manager !== null) {
-                throw new \InvalidArgumentException("Manager must implement ManagerInterface");
-            }
-        }
     }
 
     /**

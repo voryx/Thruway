@@ -340,7 +340,8 @@ class Callee extends AbstractRole
         }
 
         if ($registration === null) {
-            throw new \Exception("registration not found");
+            $this->logger->warning("registration not found: " . $Uri);
+            return FALSE;
         }
 
         // we remove the callback from the client here

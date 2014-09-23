@@ -10,8 +10,11 @@ namespace Thruway\Peer;
 
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthenticationManagerInterface;
+use Thruway\Exception\InvalidRealmNameException;
+use Thruway\Exception\RealmNotFoundException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
+use Thruway\Message\AbortMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
@@ -98,15 +101,23 @@ class Router extends AbstractPeer
         if ($session->getRealm() === null) {
             // hopefully this is a HelloMessage or we have no place for this message to go
             if ($msg instanceof HelloMessage) {
-                if (RealmManager::validRealmName($msg->getRealm())) {
+                try {
                     $realm = $this->realmManager->getRealm($msg->getRealm());
 
                     $realm->onMessage($session, $msg);
-                } else {
-                    // TODO send bad realm error back and shutdown
+                } catch (\Exception $e) {
+                    // TODO: Test this
+                    $errorUri = "wamp.error.unknown";
+                    $description = $e->getMessage();
+                    if ($e instanceof InvalidRealmNameException || $e instanceof RealmNotFoundException) {
+                        $errorUri = "wamp.error.no_such_realm";
+                    }
+                    $session->sendMessage(new AbortMessage([ 'description' => $description ], $errorUri));
                     $session->shutdown();
                 }
             } else {
+                // TODO: Test this
+                $session->sendMessage(new AbortMessage(new \stdClass(), "wamp.error.no_such_realm"));
                 $session->shutdown();
             }
         } else {
