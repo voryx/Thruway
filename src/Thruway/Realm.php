@@ -265,6 +265,7 @@ class Realm
         foreach ($this->roles as $role) {
             $role->leave($session);
         }
+        $this->sessions->detach($session);
     }
 
     /**
