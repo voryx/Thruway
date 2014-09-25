@@ -161,4 +161,11 @@ class ErrorMessage extends Message
     {
         return $this->errorRequestId;
     }
+
+    function __toString()
+    {
+        return $this->getErrorURI();
+    }
+
+
 }

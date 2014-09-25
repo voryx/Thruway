@@ -152,6 +152,11 @@ abstract class Message implements \JsonSerializable
         return $this->getMessageParts();
     }
 
+    function __toString()
+    {
+        return "[" . get_class($this) . "]";
+    }
+
 
     public static function shouldBeDictionary($a) {
         if (is_array($a) && count($a) == 0) $a = new \stdClass();
