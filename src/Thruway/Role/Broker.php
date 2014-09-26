@@ -52,7 +52,9 @@ class Broker extends AbstractRole
      */
     function __construct(ManagerInterface $manager = null)
     {
-        if ($manager === null) $manager = new ManagerDummy();
+        if ($manager === null) {
+            $manager = new ManagerDummy();
+        }
         $this->manager = $manager;
 
         $this->manager->debug("Broker constructor");
@@ -70,7 +72,9 @@ class Broker extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        $this->manager->debug("Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . json_encode($msg));
+        $this->manager->debug(
+            "Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . json_encode($msg)
+        );
 
         if ($msg instanceof PublishMessage):
             $this->processPublish($session, $msg);
@@ -125,6 +129,13 @@ class Broker extends AbstractRole
      */
     public function processSubscribe(Session $session, SubscribeMessage $msg)
     {
+
+        if (!$this->uriIsValid($msg->getTopicName())) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
+
+            return;
+        }
 
         if (!isset($this->topics[$msg->getTopicName()])) {
             $this->topics[$msg->getTopicName()] = array();

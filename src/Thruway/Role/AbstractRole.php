@@ -31,4 +31,14 @@ abstract class AbstractRole
      * @return mixed
      */
     abstract public function handlesMessage(Message $msg);
+
+    /**
+     * Strict URI Test
+     * @param $uri
+     * @return bool
+     */
+    public function uriIsValid($uri)
+    {
+        return !!preg_match('/^([0-9a-z_]+\.)*([0-9a-z_]+)$/', $uri);
+    }
 } 
