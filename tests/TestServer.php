@@ -10,7 +10,6 @@ use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
 
 $timeout = isset($argv[1]) ? $argv[1] : 0;
-print_r($argv);
 
 $mgr = new \Thruway\Manager\ManagerDummy();
 $mgr->setLogger(new \Thruway\ConsoleLogger());
