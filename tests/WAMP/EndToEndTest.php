@@ -17,7 +17,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->testArgs = null;
+        $this->_testArgs = null;
         $this->_testResult = null;
         $this->_error = null;
 

@@ -9,10 +9,11 @@
         processIsolation="false"
         stopOnFailure="false"
         syntaxCheck="false"
-        bootstrap="bootstrap.php">
+        bootstrap="tests/bootstrap.php">
     <testsuites>
         <testsuite name="Thruway Tests">
-            <directory>./</directory>
+            <directory>tests/</directory>
+            <exclude>tests/WAMP/ReplaceOrphanedSessionTest.php</exclude>
         </testsuite>
     </testsuites>
 
