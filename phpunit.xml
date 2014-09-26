@@ -14,6 +14,7 @@
         <testsuite name="Thruway Tests">
             <directory>tests/</directory>
             <exclude>tests/WAMP/ReplaceOrphanedSessionTest.php</exclude>
+            <exclude>tests/WAMP/PingTest.php</exclude>
         </testsuite>
     </testsuites>
 
