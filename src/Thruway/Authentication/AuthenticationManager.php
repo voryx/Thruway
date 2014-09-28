@@ -1,7 +1,6 @@
 <?php
 namespace Thruway\Authentication;
 
-use Thruway\Message\AbortMessage;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
 use Thruway\Message\ErrorMessage;
@@ -101,7 +100,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         }
 
         if (!$this->readyToAuthenticate()) {
-            $session->sendMessage(new AbortMessage(new \stdClass(), 'thruway.authenticator.not_ready'));
+            $session->abort(new \stdClass(), 'thruway.authenticator.not_ready');
             return;
         }
 
@@ -164,10 +163,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                     function ($res) use ($session, $msg) {
                         // this is handling the return of the onhello RPC call
                         if (count($res) < 2) {
-                            $session->sendMessage(
-                                new AbortMessage(new \stdClass(), "thruway.auth.invalid_response_to_hello")
-                            );
-
+                            $session->abort(new \stdClass(), "thruway.auth.invalid_response_to_hello");
                             return;
                         }
 
@@ -198,9 +194,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                                 );
                             } else {
                                 if ($res[0] == "ERROR") {
-                                    $session->sendMessage(new AbortMessage(new \stdClass(), "authentication_failure"));
+                                    $session->abort(new \stdClass(), "authentication_failure");
                                 } else {
-                                    $session->sendMessage(new AbortMessage(new \stdClass(), "authentication_failure"));
+                                    $session->abort(new \stdClass(), "authentication_failure");
                                 }
                             }
                         }
@@ -217,7 +213,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
          */
         if (!$sentMessage) {
             if ($this->realmHasAuthProvider($realm->getRealmName())) {
-                $session->sendMessage(new AbortMessage(new \stdClass(), "wamp.error.not_authorized"));
+                $session->abort(new \stdClass(), "wamp.error.not_authorized");
             } else {
                 //Logged in as anonymous
 
@@ -289,7 +285,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                                 )
                             );
                         } else {
-                            $session->sendMessage(new AbortMessage(new \stdClass(), "bad.login"));
+                            $session->abort(new \stdClass(), "bad.login");
                         }
                     }
                 );

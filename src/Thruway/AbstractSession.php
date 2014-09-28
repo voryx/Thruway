@@ -12,6 +12,7 @@ namespace Thruway;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
 use React\Promise\Promise;
+use Thruway\Message\AbortMessage;
 use Thruway\Message\Message;
 use Thruway\Transport\TransportInterface;
 
@@ -167,6 +168,26 @@ abstract class AbstractSession
      */
     public function ping($timeout = 5) {
         return $this->getTransport()->ping($timeout);
+    }
+
+    public function abort($details = null, $responseURI = null) {
+        if ($this->isAuthenticated()) throw new \Exception("Session::abort called after we are authenticated");
+
+        $abortMsg = new AbortMessage($details, $responseURI);
+
+        $this->sendMessage($abortMsg);
+
+        $this->shutdown();
+    }
+
+    public function shutdown()
+    {
+        // we want to immediately remove
+        // all references
+
+        $this->onClose();
+
+        $this->transport->close();
     }
 
     /**

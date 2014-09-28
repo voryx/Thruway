@@ -99,6 +99,10 @@ class Router extends AbstractPeer
 
         // see if the session is in a realm
         if ($session->getRealm() === null) {
+            if ($msg instanceof AbortMessage) {
+                $session->shutdown();
+                return;
+            }
             // hopefully this is a HelloMessage or we have no place for this message to go
             if ($msg instanceof HelloMessage) {
                 try {
@@ -112,13 +116,11 @@ class Router extends AbstractPeer
                     if ($e instanceof InvalidRealmNameException || $e instanceof RealmNotFoundException) {
                         $errorUri = "wamp.error.no_such_realm";
                     }
-                    $session->sendMessage(new AbortMessage([ 'description' => $description ], $errorUri));
-                    $session->shutdown();
+                    $session->abort([ 'description' => $description ], $errorUri);
                 }
             } else {
                 // TODO: Test this
-                $session->sendMessage(new AbortMessage(new \stdClass(), "wamp.error.no_such_realm"));
-                $session->shutdown();
+                $session->abort(new \stdClass(), "wamp.error.no_such_realm");
             }
         } else {
             $realm = $session->getRealm();

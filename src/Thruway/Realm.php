@@ -94,21 +94,30 @@ class Realm
 
         if ($msg instanceof GoodByeMessage):
             $this->manager->info("Received a GoodBye, so shutting the session down");
+            $session->sendMessage(new GoodbyeMessage(new \stdClass(), "wamp.error.goodbye_and_out"));
             $session->shutdown();
         elseif ($session->isAuthenticated()):
             $this->processAuthenticated($session, $msg);
+        elseif ($msg instanceof AbortMessage):
+            $this->processAbort($session, $msg);
         elseif ($msg instanceof HelloMessage):
             $this->processHello($session, $msg);
         elseif ($msg instanceof AuthenticateMessage):
             $this->processAuthenticate($session, $msg);
         else:
             $this->manager->error("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
-            $session->sendMessage(new AbortMessage(new \stdClass(), "wamp.error.not_authorized"));
-            $session->shutdown();
+            $session->abort(new \stdClass(), "wamp.error.not_authorized");
         endif;
 
     }
 
+    /**
+     * @param Session $session
+     * @param Message $msg
+     */
+    private function processAbort(Session $session, Message $msg) {
+        $session->shutdown();
+    }
 
     /**
      * Process All Messages if the session has been authenticated
@@ -183,11 +192,11 @@ class Realm
             try {
                 $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
             } catch (\Exception $e) {
-                $session->sendMessage(new AbortMessage(new \stdClass(), "thruway.error.internal"));
+                $session->abort(new \stdClass(), "thruway.error.internal");
                 $this->manager->error("Authenticate sent to realm without auth manager.");
             }
         } else {
-            $session->sendMessage(new AbortMessage(new \stdClass(), "thruway.error.internal"));
+            $session->abort(new \stdClass(), "thruway.error.internal");
             $this->manager->error("Authenticate sent to realm without auth manager.");
         }
     }

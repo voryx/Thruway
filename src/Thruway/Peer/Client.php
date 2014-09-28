@@ -341,7 +341,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function processAbort(ClientSession $session, AbortMessage $msg)
     {
         $this->emit('error', [$msg->getResponseURI()]);
-        $session->close();
+        $session->shutdown();
     }
 
     /**

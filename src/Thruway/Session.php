@@ -68,15 +68,7 @@ class Session extends AbstractSession
         $this->transport->sendMessage($msg);
     }
 
-    public function shutdown()
-    {
-        // we want to immediately remove
-        // all references
 
-        $this->onClose();
-
-        $this->transport->close();
-    }
 
     /**
      *
