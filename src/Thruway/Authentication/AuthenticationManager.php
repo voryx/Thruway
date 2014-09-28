@@ -41,6 +41,10 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             ->then(
                 function () {
                     $this->setReady(true);
+                },
+                function () {
+                    $this->setReady(false);
+                    $this->getManager()->error("registration of registerAuthMethod failed.");
                 }
             );
     }
@@ -200,6 +204,10 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                                 }
                             }
                         }
+                    },
+                    function () use ($session) {
+                        $this->getManager()->error("onhello rejected the promise");
+                        $session->abort("thruway.error.unknown");
                     }
                 );
                 $sentMessage = true;
@@ -287,6 +295,10 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         } else {
                             $session->abort(new \stdClass(), "bad.login");
                         }
+                    },
+                    function () use ($session) {
+                        $this->getManager()->error("onauthenticate rejected the promise");
+                        $session->abort("thruway.error.unknown");
                     }
                 );
             }
