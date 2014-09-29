@@ -1,18 +1,28 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/20/14
- * Time: 4:59 PM
- */
 
 namespace Thruway\Manager;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerAwareInterface;
 
-interface ManagerInterface extends LoggerInterface {
+/**
+ * Interface manager
+ * 
+ * @package Thruway\Manager
+ */
+interface ManagerInterface extends LoggerInterface
+{
+
+    /**
+     * Add callable
+     * 
+     * @param string $name
+     * @param \Closure $callback
+     */
     public function addCallable($name, $callback);
 
+    /**
+     * @return Psr\Log\LoggerInterface
+     */
     public function getLogger();
-} 
+}
