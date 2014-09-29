@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 11:58 AM
- */
 
 namespace Thruway\Peer;
 
@@ -28,15 +22,19 @@ use React\EventLoop\LoopInterface;
 
 /**
  * Class Router
+ * 
  * @package Thruway\Peer
  */
 class Router extends AbstractPeer
 {
 
+    /**
+     * @var \Thruway\Transport\AbstractTransportProvider[]
+     */
     private $transportProviders;
 
     /**
-     * @var RealmManager
+     * @var \Thruway\RealmManager
      */
     private $realmManager;
 
@@ -46,12 +44,15 @@ class Router extends AbstractPeer
     private $sessions;
 
     /**
-     * @var AuthenticationManagerInterface
+     * @var \Thruway\Authentication\AuthenticationManagerInterface
      */
     private $authenticationManager;
 
     /**
-     *
+     * Constructor
+     * 
+     * @param \React\EventLoop\LoopInterface $loop
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
     {
@@ -73,10 +74,16 @@ class Router extends AbstractPeer
         }
 
         $this->loop = $loop;
-
+        
+        // TODO: remove variable unused in its scope
         $authenticationManager = null;
     }
 
+    /**
+     * Handle open transport
+     * 
+     * @param \Thruway\Transport\TransportInterface $transport
+     */
     public function onOpen(TransportInterface $transport)
     {
         $session = new Session($transport, $this->manager);
@@ -92,9 +99,16 @@ class Router extends AbstractPeer
 
     }
 
+    /**
+     * Handle transport recived message
+     * 
+     * @param \Thruway\Transport\TransportInterface $transport
+     * @param \Thruway\Message\Message $msg
+     * @return void
+     */
     public function onMessage(TransportInterface $transport, Message $msg)
     {
-        /** @var $session Session */
+        /* @var $session \Thruway\Session */
         $session = $this->sessions[$transport];
 
         // see if the session is in a realm
@@ -129,11 +143,20 @@ class Router extends AbstractPeer
         }
     }
 
+    /**
+     * Add transport provider
+     * @param \Thruway\Transport\AbstractTransportProvider $transportProvider
+     */
     public function addTransportProvider(AbstractTransportProvider $transportProvider)
     {
         array_push($this->transportProviders, $transportProvider);
     }
 
+    /**
+     * Start router
+     * 
+     * @throws \Exception
+     */
     public function start()
     {
         $this->manager->debug("Starting router");
@@ -145,7 +168,6 @@ class Router extends AbstractPeer
             throw new \Exception("No transport providers specified.");
         }
 
-        /** @var $transportProvider AbstractTransportProvider */
         foreach ($this->transportProviders as $transportProvider) {
             $this->manager->debug("Starting transport provider " . get_class($transportProvider));
             $transportProvider->startTransportProvider($this, $this->loop);
@@ -157,6 +179,11 @@ class Router extends AbstractPeer
         $this->loop->run();
     }
 
+    /**
+     * Handle close transport
+     * 
+     * @param \Thruway\Transport\TransportInterface $transport
+     */
     public function onClose(TransportInterface $transport)
     {
         $this->manager->debug("onClose from " . json_encode($transport->getTransportDetails()));
@@ -197,6 +224,9 @@ class Router extends AbstractPeer
         throw new \Exception('Manager needs to be set in the constructor');
     }
 
+    /**
+     * Setting up manger
+     */
     public function setupManager()
     {
         // setup the config for the manager
@@ -207,14 +237,12 @@ class Router extends AbstractPeer
     }
 
     /**
-     * @return \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|\React\EventLoop\LoopInterface|\React\EventLoop\StreamSelectLoop
+     * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
     {
         return $this->loop;
     }
-
-
 
     /**
      * @return ManagerInterface
@@ -224,6 +252,12 @@ class Router extends AbstractPeer
         return $this->manager;
     }
 
+    /**
+     * Get session by session ID
+     * 
+     * @param int $sessionId
+     * @return \Thruway\Session|boolean
+     */
     public function getSessionBySessionId($sessionId) {
         /** @var Session $session */
         $this->sessions->rewind();
@@ -254,19 +288,27 @@ class Router extends AbstractPeer
     }
 
 
-
+    /**
+     * Count number sessions
+     * 
+     * @return array
+     */
     public function managerGetSessionCount()
     {
-        return array(count($this->sessions));
+        return [count($this->sessions)];
     }
 
+    /**
+     * Get list sessions
+     * 
+     * @return array
+     */
     public function managerGetSessions()
     {
         $theSessions = array();
 
-        /** @var $session Session */
-        /** @var $transport TransportInterface */
         foreach ($this->sessions as $key) {
+            /* @var $session \Thruway\Session */
             $session = $this->sessions[$key];
 
             $sessionRealm = null;
@@ -276,48 +318,61 @@ class Router extends AbstractPeer
             }
 
             if ($session->getAuthenticationDetails() !== null) {
-                /** @var AuthenticationDetails $authDetails */
                 $authDetails = $session->getAuthenticationDetails();
-                $auth = array(
-                    "authid" => $authDetails->getAuthId(),
+                $auth = [
+                    "authid"     => $authDetails->getAuthId(),
                     "authmethod" => $authDetails->getAuthMethod()
-                );
+                ];
             } else {
                 $auth = new \stdClass();
             }
 
             $theSessions[] = [
-                "id" => $session->getSessionId(),
-                "transport" => $session->getTransport()->getTransportDetails(),
+                "id"           => $session->getSessionId(),
+                "transport"    => $session->getTransport()->getTransportDetails(),
                 "messagesSent" => $session->getMessagesSent(),
                 "sessionStart" => $session->getSessionStart(),
-                "realm" => $sessionRealm,
-                "auth" => $auth
+                "realm"        => $sessionRealm,
+                "auth"         => $auth
             ];
         }
 
-        return array($theSessions);
+        return [$theSessions];
     }
 
+    /**
+     * Get list realms
+     * 
+     * @return array
+     */
     public function managerGetRealms()
     {
         $theRealms = [];
 
-        /** @var $realm Realm */
         foreach ($this->realmManager->getRealms() as $realm) {
+            /* @var $realm \Thruway\Realm */
             $theRealms[] = [
                 "name" => $realm->getRealmName()
             ];
         }
 
-        return array($theRealms);
+        return [$theRealms];
     }
 
+    /**
+     * Get list transports
+     * 
+     * @return array
+     */
     public function managerGetTransports()
     {
 
     }
 
+    /**
+     * 
+     * @param array $args
+     */
     public function managerPruneSession($args) {
 
     }
