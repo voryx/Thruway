@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class RouterTest
+ */
 class RouterTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -19,11 +22,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 //    private $transportMock;
 
 
+    /**
+     * @var \Thruway\Transport\TransportInterface
+     */
     private $msg;
 
-    /**
-     *
-     */
+
     public function setup()
     {
         $this->router = new \Thruway\Peer\Router();
@@ -60,9 +64,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    /**
-     *
-     */
     public function testStart()
     {
         $this->router->addTransportProvider($this->transportProviderMock);
@@ -85,15 +86,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Configure the stub.
         $transport->expects($this->any())
             ->method('getTransportDetails')
-            ->will(
-                $this->returnValue(
-                    [
-                        "type" => "ratchet",
-                        "transportAddress" => "127.0.0.1"
-                    ]
-                )
-            );
-
+            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
 
         $router->onOpen($transport);
 
@@ -106,8 +99,10 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @depends testOnOpen
      * @param $rt array
      * @return array
+     *
+     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#hello-1
      */
-    public function testHelloWelcomeMessages($rt)
+    public function testHelloMessage($rt)
     {
 
 
@@ -130,11 +125,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testHelloWelcomeMessages
+     * @depends testHelloMessage
      * @param $rt array
      * @return array
+     *
+     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#subscribe-1
      */
-    public function testSubscribeMessages($rt)
+    public function testSubscribeMessage($rt)
     {
         $rt['transport']->expects($this->at(1))
             ->method('sendMessage')
@@ -159,11 +156,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testHelloWelcomeMessages
+     * @depends testHelloMessage
      * @param $rt array
      * @return array
+     *
+     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#subscription-error
      */
-    public function testSubscribeEmptyTopicMessages($rt)
+    public function testSubscribeEmptyTopicMessage($rt)
     {
         $rt['transport']->expects($this->at(1))
             ->method('sendMessage')
@@ -191,7 +190,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testHelloWelcomeMessages
+     * @depends testHelloMessage
      * @param $rt array
      * @return array
      */
@@ -206,7 +205,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                         $this->assertInstanceOf(
                             '\Thruway\Message\SubscribedMessage',
                             $msg,
-                            "Should return an error when trying to subscribe to topic more than once"
+                            "Should not return an error when trying to subscribe to topic more than once"
                         );
 
                         $this->assertEquals('333333', $msg->getRequestId());
@@ -230,7 +229,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
     /**
-     * @depends testHelloWelcomeMessages
+     * @depends testHelloMessage
      * @param $rt array
      * @return array
      */
@@ -262,5 +261,129 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
         return $rt;
+    }
+
+
+    /**
+     * Publish from within the same session as the subscribes
+     * @depends testHelloMessage
+     * @param $rt array
+     * @return array
+     *
+     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#publish-1
+     */
+    public function testPublishMessageSameSession($rt)
+    {
+        $rt['transport']->expects($this->at(1))
+            ->method('sendMessage')
+            ->with(
+                $this->callback(
+                    function ($msg) {
+                        $this->assertTrue(
+                            false,
+                            ' The Publisher of an event should never receive the published event even if the Publisher is also a Subscriber of the topic published to.'
+                        );
+
+                        return $msg instanceof Thruway\Message\EventMessage;
+                    }
+                )
+            )->will($this->returnValue(null));
+
+
+        $msg = new \Thruway\Message\PublishMessage('654321', new stdClass(), 'test.topic', ["hello world"]);
+        $rt['router']->onMessage($rt['transport'], $msg);
+
+        return $rt;
+    }
+
+    /**
+     * @depends testHelloMessage
+     * @param $rt array
+     * @return array
+     *
+     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#published-1
+     */
+    public function testPublishAcknowledgeMessage($rt)
+    {
+        $rt['transport']->expects($this->at(1))
+            ->method('sendMessage')
+            ->with(
+                $this->callback(
+                    function ($msg) {
+                        $this->assertInstanceOf('\Thruway\Message\PublishedMessage', $msg);
+                        $this->assertEquals('78654321', $msg->getRequestId());
+
+                        return $msg instanceof Thruway\Message\PublishedMessage;
+                    }
+                )
+            )->will($this->returnValue(null));
+
+
+        $msg = new \Thruway\Message\PublishMessage('78654321', ['acknowledge' => true], 'test.topic', ["hello world"]);
+        $rt['router']->onMessage($rt['transport'], $msg);
+
+        return $rt;
+    }
+
+
+    /**
+     * @depends testHelloMessage
+     * @param $rt array
+     * @return array
+     *
+     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#event-1
+     */
+    public function testEventMessages($rt)
+    {
+        $rt['transport']->expects($this->atMost(2))
+            ->method('sendMessage')
+            ->with(
+                $this->callback(
+                    function (\Thruway\Message\EventMessage $msg) {
+                        $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
+                        $this->assertEquals('999654321', $msg->getPublicationId());
+                        $this->assertEquals('test.topic', $msg->getSubscriptionId());
+                        $this->assertCount(1, $msg->getArguments());
+                        $this->assertEquals('hello world', $msg->getArguments()[0]);
+
+                        //@todo add argskw check
+
+                        return $msg instanceof Thruway\Message\EventMessage;
+                    }
+                )
+            )->will($this->returnValue(null));
+    }
+
+
+    /**
+     * Publish a message from a different session
+     *
+     * @depends testStart
+     * @param \Thruway\Peer\Router $router
+     * @return array
+     *
+     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#publish-1
+     */
+    public function testPublishMessage(\Thruway\Peer\Router $router)
+    {
+
+        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+
+        // Configure the stub.
+        $transport->expects($this->any())
+            ->method('getTransportDetails')
+            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+
+        //Simulate onOpen
+        $router->onOpen($transport);
+
+        //Simulate a HelloMessage
+        $helloMessage = new \Thruway\Message\HelloMessage("test.realm", []);
+        $router->onMessage($transport, $helloMessage);
+
+        //Publish Message
+        $msg = new \Thruway\Message\PublishMessage('999654321', new stdClass(), 'test.topic', ["hello world"]);
+        $router->onMessage($transport, $msg);
+
     }
 }
