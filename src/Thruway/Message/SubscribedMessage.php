@@ -2,21 +2,39 @@
 
 namespace Thruway\Message;
 
-
-class SubscribedMessage extends Message {
-    const MSG_CODE = Message::MSG_SUBSCRIBED;
-
+/**
+ * Class SubscribedMessage
+ * Acknowledge sent by a Broker to a Subscriber to acknowledge a subscription.
+ * <code>[SUBSCRIBED, SUBSCRIBE.Request|id, Subscription|id]</code>
+ * 
+ * @package Thruway\Message
+ */
+class SubscribedMessage extends Message
+{
+    /**
+     *
+     * @var mixed
+     */
     private $subscriptionId;
+    
+    /**
+     *
+     * @var mixed
+     */
     private $requestId;
 
+    /**
+     * Contructor
+     * 
+     * @param mixed $requestId
+     * @param mixed $subscriptionId
+     */
     function __construct($requestId, $subscriptionId)
     {
         parent::__construct();
 
         $this->setRequestId($requestId);
         $this->subscriptionId = $subscriptionId;
-
-
     }
 
     /**
@@ -35,11 +53,13 @@ class SubscribedMessage extends Message {
         return $this->subscriptionId;
     }
 
-
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_SUBSCRIBED;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -49,7 +69,7 @@ class SubscribedMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getRequestId(), $this->getSubscriptionId());
+        return [$this->getRequestId(), $this->getSubscriptionId()];
     }
 
     /**
@@ -68,6 +88,6 @@ class SubscribedMessage extends Message {
         return $this->requestId;
     }
 
-
-
+    
+    
 }

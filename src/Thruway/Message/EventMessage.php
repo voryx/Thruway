@@ -2,34 +2,43 @@
 
 namespace Thruway\Message;
 
-
 /**
  * Class EventMessage
+ * Event dispatched by Broker to Subscribers for subscription the event was matching.
+ * <code>[EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict]</code>
+ * <code>[EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list]</code>
+ * <code>[EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list, PUBLISH.ArgumentsKw|dict]</code>
+ * 
  * @package Thruway\Message
  */
+
 class EventMessage extends Message
 {
+    /**
+     * using arguments trait
+     * @see \Thruway\Message\ArgumentsTrait
+     */
     use ArgumentsTrait;
 
     /**
-     * @var
+     * @var int
      */
     private $subscriptionId;
     /**
-     * @var
+     * @var int
      */
     private $publicationId;
     /**
-     * @var
+     * @var mixed
      */
     private $details;
 
     /**
-     * @param $subscriptionId
-     * @param $publicationId
-     * @param $details
-     * @param null $arguments
-     * @param null $argumentsKw
+     * @param int $subscriptionId
+     * @param int $publicationId
+     * @param mixed $details
+     * @param mixedl $arguments
+     * @param mixed $argumentsKw
      */
     function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null)
     {
@@ -37,11 +46,10 @@ class EventMessage extends Message
 
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
-        $this->details = $details;
-        $this->publicationId = $publicationId;
+        $this->details        = $details;
+        $this->publicationId  = $publicationId;
         $this->subscriptionId = $subscriptionId;
     }
-
 
     /**
      * @return int
@@ -60,14 +68,17 @@ class EventMessage extends Message
     public function getAdditionalMsgFields()
     {
         $details = $this->getDetails();
-        if ($details === null) $details = new \stdClass();
+        if ($details === null) { 
+            $details = new \stdClass(); 
+        }
+        
         $details = (object)$details;
 
-        $a = array(
+        $a = [
             $this->getSubscriptionId(),
             $this->getPublicationId(),
             $details
-        );
+        ];
 
         $a = array_merge($a, $this->getArgumentsForSerialization());
 
@@ -106,7 +117,7 @@ class EventMessage extends Message
     }
 
     /**
-     * @param mixed $publicationId
+     * @param int $publicationId
      */
     public function setPublicationId($publicationId)
     {
@@ -114,7 +125,7 @@ class EventMessage extends Message
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getPublicationId()
     {
@@ -122,7 +133,7 @@ class EventMessage extends Message
     }
 
     /**
-     * @param mixed $subscriptionId
+     * @param int $subscriptionId
      */
     public function setSubscriptionId($subscriptionId)
     {
@@ -130,7 +141,7 @@ class EventMessage extends Message
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getSubscriptionId()
     {

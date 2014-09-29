@@ -2,9 +2,18 @@
 
 namespace Thruway\Message;
 
+/**
+ * abstract class message
+ * 
+ * @package Thruway\Message
+ */
 abstract class Message implements \JsonSerializable
 {
-
+    
+    /**
+     * Message code
+     * @const int
+     */
     const MSG_UNKNOWN = 0;
     const MSG_HELLO = 1;
     const MSG_WELCOME = 2;
@@ -32,6 +41,9 @@ abstract class Message implements \JsonSerializable
     const MSG_INTERRUPT = 69; // advanced
     const MSG_YIELD = 70;
 
+    /**
+     * Contructor
+     */
     function __construct()
     {
     }
@@ -50,9 +62,11 @@ abstract class Message implements \JsonSerializable
     abstract public function getAdditionalMsgFields();
 
     /**
+     * Create message factory
+     * 
      * @param $data
-     * @throws MessageException
-     * @return Message
+     * @throws \Thruway\Message\MessageException
+     * @return \Thruway\Message\Message
      */
     static public function createMessageFromArray($data)
     {
@@ -152,21 +166,41 @@ abstract class Message implements \JsonSerializable
         return $this->getMessageParts();
     }
 
+    /**
+     * Convert object to string
+     * 
+     * @return string
+     */
     function __toString()
     {
         return "[" . get_class($this) . "]";
     }
 
-
-    public static function shouldBeDictionary($a) {
-        if (is_array($a) && count($a) == 0) $a = new \stdClass();
+    /**
+     * Check and convert empty array to \stdClass object
+     * 
+     * @param mixed $a
+     * @return \stdClass|mixed
+     */
+    public static function shouldBeDictionary($a)
+    {
+        if (is_array($a) && count($a) == 0) {
+            $a = new \stdClass();
+        }
         return $a;
     }
 
-    public static function isAssoc($arr) {
+    /**
+     * Check array is associative array
+     * @param array $arr
+     * @return boolean
+     */
+    public static function isAssoc($arr)
+    {
         // if this is an empty stdClass (which we use as empty dictionaries)
-        $arr = (array)$arr;
+        $arr = (array) $arr;
 
         return array_keys($arr) !== range(0, count($arr) - 1);
     }
+
 }

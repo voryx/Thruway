@@ -1,40 +1,47 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 9/6/14
- * Time: 10:23 PM
- */
 
 namespace Thruway\Message;
 
-
 use Thruway\Result;
 
-trait ArgumentsTrait {
+/**
+ * Arguments trait
+ * 
+ * @package Thruway\Message
+ */
+
+trait ArgumentsTrait
+{
+
     /**
-     * @var null
+     * @var mixed
      */
     private $arguments;
 
     /**
-     * @var null
+     * @var mixed
      */
     private $argumentsKw;
 
-    public function getArgumentsForSerialization() {
-        $a = array();
+    /**
+     * Get argument for serialization
+     * 
+     * @return array
+     */
+    public function getArgumentsForSerialization()
+    {
+        $a = [];
 
-        $args = $this->getArguments();
+        $args   = $this->getArguments();
         $argsKw = $this->getArgumentsKw();
         if ($args !== null && is_array($args) && count($args) > 0) {
-            $a = array_merge($a, array($args));
-            if ($argsKw !== null && Message::isAssoc($argsKw) && count((array)$argsKw) > 0) {
-                $a = array_merge($a, array($argsKw));
+            $a = array_merge($a, [$args]);
+            if ($argsKw !== null && Message::isAssoc($argsKw) && count((array) $argsKw) > 0) {
+                $a = array_merge($a, [$argsKw]);
             }
         } else {
-            if ($argsKw !== null && Message::isAssoc($argsKw) && count((array)$argsKw) > 0) {
-                $a = array_merge($a, array(array(), $argsKw));
+            if ($argsKw !== null && Message::isAssoc($argsKw) && count((array) $argsKw) > 0) {
+                $a = array_merge($a, [[], $argsKw]);
             }
         }
 
@@ -76,8 +83,10 @@ trait ArgumentsTrait {
     /**
      * @param Result $result
      */
-    public function setArgumentsFromResult(Result $result) {
+    public function setArgumentsFromResult(Result $result)
+    {
         $this->setArguments($result->getArguments());
         $this->setArgumentsKw($result->getArgumentsKw());
     }
-} 
+
+}

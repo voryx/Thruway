@@ -2,27 +2,33 @@
 
 namespace Thruway\Message;
 
-
 /**
  * Class HelloMessage
+ * Sent by a Client to initiate opening of a WAMP session to a Router attaching to a Realm.
+ * <code>[HELLO, Realm|uri, Details|dict]</code>
+ * 
  * @package Thruway\Message
  */
 class HelloMessage extends Message
 {
+
     /**
-     * @var
+     * @var mixed
      */
     private $realm;
+
     /**
-     * @var
+     * @var mixed
      */
     private $details;
+
     /**
-     * @var
+     * @var array
      */
     private $roles;
+
     /**
-     * @var
+     * @var array
      */
     private $authMethods;
 
@@ -34,9 +40,8 @@ class HelloMessage extends Message
     function __construct($realm, $details)
     {
         $this->setDetails($details);
-        $this->realm = $realm;
-        $this->authMethods = isset($details['authmethods']) ? $details['authmethods'] : array();
-
+        $this->realm       = $realm;
+        $this->authMethods = isset($details['authmethods']) ? $details['authmethods'] : [];
     }
 
     /**
@@ -55,9 +60,8 @@ class HelloMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getRealm(), $this->getDetails());
+        return [$this->getRealm(), $this->getDetails()];
     }
-
 
     /**
      * @param mixed $details
@@ -103,4 +107,4 @@ class HelloMessage extends Message
         return $this->authMethods;
     }
 
-} 
+}

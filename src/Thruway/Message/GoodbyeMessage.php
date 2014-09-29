@@ -5,23 +5,26 @@ namespace Thruway\Message;
 
 /**
  * Class GoodbyeMessage
+ * Sent by a Peer to close a previously opened WAMP session. Must be echo'ed by the receiving Peer.
+ * <code>[GOODBYE, Details|dict, Reason|uri]</code>
+ * 
  * @package Thruway\Message
  */
 class GoodbyeMessage extends Message
 {
 
     /**
-     * @var
+     * @var mixed
      */
     private $details;
     /**
-     * @var
+     * @var mixed
      */
     private $reason;
 
     /**
-     * @param $details
-     * @param $reason
+     * @param mixed $details
+     * @param mixed $reason
      */
     function __construct($details, $reason)
     {
@@ -62,6 +65,8 @@ class GoodbyeMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -77,7 +82,7 @@ class GoodbyeMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getDetails(), $this->getReason());
+        return [$this->getDetails(), $this->getReason()];
     }
 
 } 

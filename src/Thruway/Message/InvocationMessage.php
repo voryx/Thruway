@@ -2,50 +2,59 @@
 
 namespace Thruway\Message;
 
-
 use Thruway\Registration;
 use Thruway\Session;
 
 /**
  * Class InvocationMessage
+ * Actual invocation of an endpoint sent by Dealer to a Callee.
+ * <code>[INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict]</code>
+ * <code>[INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict, CALL.Arguments|list]</code>
+ * <code>[INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict, CALL.Arguments|list, CALL.ArgumentsKw|dict]</code>
+ * 
  * @package Thruway\Message
  */
 class InvocationMessage extends Message
 {
+
+    /**
+     * using arguments trait
+     * @see \Thruway\Message\ArgumentsTrait
+     */
     use ArgumentsTrait;
 
     /**
-     * @var
+     * @var mixed
      */
     private $requestId;
 
     /**
-     * @var
+     * @var mixed
      */
     private $registrationId;
 
     /**
-     * @var
+     * @var mixed
      */
     private $details;
 
     /**
-     * @param $requestId
-     * @param $registrationId
-     * @param $details
-     * @param null $arguments
-     * @param null $argumentsKw
+     * Contructor
+     * 
+     * @param mixed $requestId
+     * @param mixed $registrationId
+     * @param mixed $details
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
      */
     function __construct($requestId, $registrationId, $details, $arguments = null, $argumentsKw = null)
     {
-        $this->requestId = $requestId;
+        $this->requestId      = $requestId;
         $this->registrationId = $registrationId;
-        $this->details = $details;
+        $this->details        = $details;
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
-
     }
-
 
     /**
      * @return int
@@ -63,13 +72,13 @@ class InvocationMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $details = $this->getDetails() === null ? new \stdClass() : (object)$this->getDetails();
+        $details = $this->getDetails() === null ? new \stdClass() : (object) $this->getDetails();
 
-        $a = array(
+        $a = [
             $this->requestId,
             $this->registrationId,
             $details
-        );
+        ];
 
         $a = array_merge($a, $this->getArgumentsForSerialization());
 
@@ -84,7 +93,7 @@ class InvocationMessage extends Message
     static function createMessageFrom(CallMessage $msg, Registration $registration)
     {
         $requestId = Session::getUniqueId();
-        $details = new \stdClass();
+        $details   = new \stdClass();
 
         return new static($requestId, $registration->getId(), $details, $msg->getArguments(), $msg->getArgumentsKw());
     }
@@ -136,6 +145,5 @@ class InvocationMessage extends Message
     {
         $this->registrationId = $registrationId;
     }
-
 
 }

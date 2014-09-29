@@ -5,35 +5,44 @@ namespace Thruway\Message;
 
 /**
  * Class CallMessage
+ * Call as originally issued by the Caller to the Dealer.
+ * <code>[CALL, Request|id, Options|dict, Procedure|uri]</code>
+ * <code>[CALL, Request|id, Options|dict, Procedure|uri, Arguments|list]</code>
+ * <code>[CALL, Request|id, Options|dict, Procedure|uri, Arguments|list, ArgumentsKw|dict]</code>
+ * 
  * @package Thruway\Message
  */
 class CallMessage extends Message
 {
+    /**
+     * using arguments trait
+     * @see \Thruway\Message\ArgumentsTrait
+     */
     use ArgumentsTrait;
 
     /**
-     * @var
+     * @var int
      */
     private $requestId;
 
     /**
-     * @var
+     * @var mixed
      */
     private $options;
 
     /**
-     * @var
+     * @var string
      */
     private $procedureName;
 
-
-
     /**
-     * @param $requestId
-     * @param $options
-     * @param $procedureName
-     * @param $arguments
-     * @param $argumentsKw
+     * Contructor
+     * 
+     * @param int $requestId
+     * @param mixed $options
+     * @param string $procedureName
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
      */
     function __construct($requestId, $options, $procedureName, $arguments = null, $argumentsKw = null)
     {
@@ -43,7 +52,6 @@ class CallMessage extends Message
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
     }
-
 
     /**
      * @return int
@@ -61,11 +69,11 @@ class CallMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $a = array(
+        $a = [
             $this->getRequestId(),
             $this->getOptions(),
             $this->getProcedureName(),
-        );
+        ];
 
         $a = array_merge($a, $this->getArgumentsForSerialization());
 

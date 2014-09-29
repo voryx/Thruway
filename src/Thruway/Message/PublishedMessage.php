@@ -2,29 +2,51 @@
 
 namespace Thruway\Message;
 
+/**
+ * Class PublishedMessage
+ * Acknowledge sent by a Broker to a Publisher for acknowledged publications.
+ * <code>[PUBLISHED, PUBLISH.Request|id, Publication|id]</code>
+ * 
+ * @package Thruway\Message
+ */
 
-class PublishedMessage extends Message {
-    const MSG_CODE = Message::MSG_PUBLISHED;
+class PublishedMessage extends Message
+{
 
+    /**
+     * 
+     * @var int
+     */
     private $requestId;
-
+    
+    /**
+     *
+     * @var int
+     */
     private $publicationId;
-
+    
+    /**
+     * Contructor
+     * 
+     * @param int $requestId
+     * @param int $publicationId
+     */
     function __construct($requestId, $publicationId)
     {
-        $this->requestId = $requestId;
+        $this->requestId     = $requestId;
         $this->publicationId = $publicationId;
-
     }
-
 
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_PUBLISHED;
+    }
 
     /**
-     * @param mixed $publicationId
+     * @param int $publicationId
      */
     public function setPublicationId($publicationId)
     {
@@ -32,7 +54,7 @@ class PublishedMessage extends Message {
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getPublicationId()
     {
@@ -40,7 +62,7 @@ class PublishedMessage extends Message {
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getRequestId()
     {
@@ -48,14 +70,12 @@ class PublishedMessage extends Message {
     }
 
     /**
-     * @param mixed $requestId
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {
         $this->requestId = $requestId;
     }
-
-
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -65,7 +85,7 @@ class PublishedMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getRequestId(), $this->getPublicationId());
+        return [$this->getRequestId(), $this->getPublicationId()];
     }
 
 }

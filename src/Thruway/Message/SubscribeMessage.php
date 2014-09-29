@@ -2,19 +2,46 @@
 
 namespace Thruway\Message;
 
-
-class SubscribeMessage extends Message {
-    const MSG_CODE = Message::MSG_SUBSCRIBE;
-
+/**
+ * Class SubscribeMessage
+ * Subscribe request sent by a Subscriber to a Broker to subscribe to a topic.
+ * <code>[SUBSCRIBE, Request|id, Options|dict, Topic|uri]</code>
+ * 
+ * @package Thruway\Message
+ */
+class SubscribeMessage extends Message
+{
+    
+    /**
+     *
+     * @var mixed
+     */
     private $options;
+    
+    /**
+     *
+     * @var string
+     */
     private $topicName;
+    
+    /**
+     *
+     * @var mixed
+     */
     private $requestId;
 
+    /**
+     * Contructor
+     * 
+     * @param mixed $requestId
+     * @param mixed $options
+     * @param string $topicName
+     */
     function __construct($requestId, $options, $topicName)
     {
         parent::__construct();
 
-        $this->options = $options;
+        $this->options   = $options;
         $this->topicName = $topicName;
         $this->setRequestId($requestId);
     }
@@ -22,7 +49,10 @@ class SubscribeMessage extends Message {
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_SUBSCRIBE;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -32,7 +62,7 @@ class SubscribeMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getRequestId(), $this->getOptions(), $this->getTopicName());
+        return [$this->getRequestId(), $this->getOptions(), $this->getTopicName()];
     }
 
     /**
@@ -83,5 +113,5 @@ class SubscribeMessage extends Message {
         return $this->requestId;
     }
 
-
-} 
+    
+}

@@ -2,17 +2,51 @@
 
 namespace Thruway\Message;
 
-
+/**
+ * Class Publish message
+ * Sent by a Publisher to a Broker to publish an event.
+ * <code>[PUBLISH, Request|id, Options|dict, Topic|uri]</code>
+ * <code>[PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list]</code>
+ * <code>[PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list, ArgumentsKw|dict]</code>
+ * 
+ * @package Thruway\Message
+ */
 class PublishMessage extends Message
 {
+
+    /**
+     * using arguments trait
+     * @see \Thruway\Message\ArgumentsTrait
+     */
     use ArgumentsTrait;
 
-    const MSG_CODE = Message::MSG_PUBLISH;
-
+    /**
+     *
+     * @var mixed
+     */
     private $options;
+    
+    /**
+     *
+     * @var string
+     */
     private $topicName;
+    
+    /**
+     *
+     * @var mixed
+     */
     private $requestId;
 
+    /**
+     * Contructor
+     * 
+     * @param mixed $requestId
+     * @param mixed $options
+     * @param string $topicName
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
+     */
     function __construct($requestId, $options, $topicName, $arguments = null, $argumentsKw = null)
     {
         parent::__construct();
@@ -21,17 +55,16 @@ class PublishMessage extends Message
 
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
-        $this->options = $options;
+        $this->options   = $options;
         $this->topicName = $topicName;
     }
-
 
     /**
      * @return int
      */
     public function getMsgCode()
     {
-        return static::MSG_CODE;
+        return static::MSG_PUBLISH;
     }
 
     /**
@@ -46,9 +79,9 @@ class PublishMessage extends Message
             $this->setOptions(new \stdClass());
         }
 
-        $options = (object)$this->getOptions();
+        $options = (object) $this->getOptions();
 
-        $a = array($this->getRequestId(), $options, $this->getTopicName());
+        $a = [$this->getRequestId(), $options, $this->getTopicName()];
 
         $a = array_merge($a, $this->getArgumentsForSerialization());
 
@@ -72,7 +105,7 @@ class PublishMessage extends Message
     }
 
     /**
-     * @param mixed $topicName
+     * @param string $topicName
      */
     public function setTopicName($topicName)
     {
@@ -80,7 +113,7 @@ class PublishMessage extends Message
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getTopicName()
     {
@@ -103,6 +136,4 @@ class PublishMessage extends Message
         return $this->requestId;
     }
 
-
-
-} 
+}

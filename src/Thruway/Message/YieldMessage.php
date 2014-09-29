@@ -2,40 +2,49 @@
 
 namespace Thruway\Message;
 
-
 /**
  * Class YieldMessage
+ * Actual yield from an endpoint send by a Callee to Dealer.
+ * <code>[YIELD, INVOCATION.Request|id, Options|dict]</code>
+ * <code>[YIELD, INVOCATION.Request|id, Options|dict, Arguments|list]</code>
+ * <code>[YIELD, INVOCATION.Request|id, Options|dict, Arguments|list, ArgumentsKw|dict]</code>
+ * 
  * @package Thruway\Message
  */
 class YieldMessage extends Message
 {
+
+    /**
+     * using arguments trait
+     * @see \Thruway\Message\ArgumentsTrait
+     */
     use ArgumentsTrait;
 
     /**
-     * @var
+     * @var mixed
      */
     private $requestId;
 
     /**
-     * @var
+     * @var mixed
      */
     private $options;
 
     /**
-     * @param $requestId
-     * @param $options
-     * @param $arguments
-     * @param $argumentsKw
+     * Contructor
+     * 
+     * @param mixed $requestId
+     * @param mixed $options
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
      */
     function __construct($requestId, $options, $arguments = null, $argumentsKw = null)
     {
         $this->requestId = $requestId;
-        $this->options = $options;
+        $this->options   = $options;
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
-
     }
-
 
     /**
      * @return int
@@ -55,7 +64,7 @@ class YieldMessage extends Message
     {
         $options = $this->getOptions() === null ? new \stdClass() : (object)$this->getOptions();
 
-        $a = array($this->getRequestId(), $options);
+        $a = [$this->getRequestId(), $options];
 
         $a = array_merge($a, $this->getArgumentsForSerialization());
 
@@ -93,4 +102,5 @@ class YieldMessage extends Message
     {
         $this->requestId = $requestId;
     }
+
 }

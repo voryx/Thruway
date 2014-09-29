@@ -2,13 +2,34 @@
 
 namespace Thruway\Message;
 
+/**
+ * Class UnsubscribeMessage
+ * Unsubscribe request sent by a Subscriber to a Broker to unsubscribe a subscription.
+ * <code>[UNSUBSCRIBE, Request|id, SUBSCRIBED.Subscription|id]</code>
+ * 
+ * @package Thruway\Message
+ */
+class UnsubscribeMessage extends Message
+{
 
-class UnsubscribeMessage extends Message {
-    const MSG_CODE = Message::MSG_UNSUBSCRIBE;
-
+    /**
+     *
+     * @var mixed
+     */
     private $requestId;
+
+    /**
+     *
+     * @var mixed
+     */
     private $subscriptionId;
 
+    /**
+     * Contructor
+     * 
+     * @param mixed $requestId
+     * @param mixed $subscriptionId
+     */
     function __construct($requestId, $subscriptionId)
     {
         parent::__construct();
@@ -34,11 +55,13 @@ class UnsubscribeMessage extends Message {
         return $this->subscriptionId;
     }
 
-
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_UNSUBSCRIBE;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -49,6 +72,7 @@ class UnsubscribeMessage extends Message {
     public function getAdditionalMsgFields()
     {
         // TODO: Implement getAdditionalMsgFields() method.
+        return [$this->getRequestId(), $this->getSubscriptionId()];
     }
 
     /**
@@ -66,6 +90,5 @@ class UnsubscribeMessage extends Message {
     {
         return $this->requestId;
     }
-
 
 }
