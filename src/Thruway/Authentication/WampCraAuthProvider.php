@@ -1,20 +1,28 @@
 <?php
 
-
 namespace Thruway\Authentication;
-
 
 use Thruway\Message\HelloMessage;
 
-class WampCraAuthProvider extends AbstractAuthProviderClient {
+/**
+ * Class WampCraAuthProvider
+ * 
+ * @package Thruway\Authentication
+ */
 
-    /** @var  WampCraUserDbInterface */
+class WampCraAuthProvider extends AbstractAuthProviderClient 
+{
+
+    /** 
+     * @var  WampCraUserDbInterface 
+     */
     private $userDb;
 
     /**
      * @return string
      */
-    public function getMethodName() {
+    public function getMethodName() 
+    {
         return 'wampcra';
     }
 
@@ -25,11 +33,12 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
      * The session information is an associative array that contains the sessionId and realm
      *
      * @param array $args
-     * @return array|void
+     * @return array
      */
-    public function processHello(array $args) {
+    public function processHello(array $args) 
+    {
         if (count($args) < 2) {
-            return array("ERROR");
+            return ["ERROR"];
         }
         if ($args[0] instanceof HelloMessage) {
             $helloMsg = $args[0];
@@ -38,20 +47,18 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
             if (isset($helloMsg->getDetails()['authid'])) {
                 $authid = $helloMsg->getDetails()['authid'];
             } else {
-                return array("ERROR");
+                return ["ERROR"];
             }
 
             // lookup the user
             if ($this->getUserDb() === null) {
-                return array("FAILURE");
+                return ["FAILURE"];
             }
 
             $user = $this->getUserDb()->get($authid);
             if ($user === null) {
-                return array("FAILURE");
+                return ["FAILURE"];
             }
-
-
 
             // create a challenge
             $nonce = bin2hex(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM));
@@ -65,41 +72,48 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
 
             $sessionId = $args[1]['sessionId'];
 
-            $challenge = array(
-                "authid" => $authid,
-                "authrole" => $authRole,
+            $challenge = [
+                "authid"       => $authid,
+                "authrole"     => $authRole,
                 "authprovider" => $authProvider,
-                "authmethod" => $authMethod,
-                "nonce" => $nonce,
-                "timestamp" => $timeStamp,
-                "session" => $sessionId
-            );
+                "authmethod"   => $authMethod,
+                "nonce"        => $nonce,
+                "timestamp"    => $timeStamp,
+                "session"      => $sessionId
+            ];
 
             $serializedChallenge = json_encode($challenge);
 
-            $challengeDetails = array(
+            $challengeDetails = [
                 "challenge" => $serializedChallenge,
                 "challenge_method" => $this->getMethodName()
-            );
+            ];
 
             if ($user['salt'] !== null) {
                 // we are using salty password
-                $saltInfo = array(
+                $saltInfo = [
                     "salt" => $user['salt'],
                     "keylen" => 32,
                     "iterations" => 1000
-                );
+                ];
 
                 $challengeDetails = array_merge($challengeDetails, $saltInfo);
             }
 
-            return array(
+            return [
                 "CHALLENGE",
                 $challengeDetails
-            );
+            ];
         }
     }
 
+    /**
+     * Process authenticate
+     * 
+     * @param mixed $signature
+     * @param mixed $extra
+     * @return array
+     */
     public function processAuthenticate($signature, $extra = NULL) {
         if (is_array($extra)) {
             if (isset($extra['challenge_details'])) {
@@ -111,18 +125,18 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
 
                         // lookup the user
                         if ($this->getUserDb() === null) {
-                            return array("FAILURE");
+                            return ["FAILURE"];
                         }
 
                         if ( ! isset($challengeArray->authid)) {
-                            return array("FAILURE");
+                            return ["FAILURE"];
                         }
 
                         $authid = $challengeArray->authid;
 
                         $user = $this->getUserDb()->get($authid);
                         if ($user === null) {
-                            return array("FAILURE");
+                            return ["FAILURE"];
                         }
 
                         $keyToUse = $user['key'];
@@ -130,19 +144,19 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
                         $token = base64_encode(hash_hmac('sha256', $challenge, $keyToUse, true));
 
                         if ($token == $signature) {
-                            return array("SUCCESS",array(
-                                "authmethod" => "wampcra",
-                                "authrole" => "user",
-                                "authid" => $challengeArray->authid,
-                                "authprovider" => $challengeArray->authprovider
-                            ));
+                            return ["SUCCESS", [
+                                    "authmethod"   => "wampcra",
+                                    "authrole"     => "user",
+                                    "authid"       => $challengeArray->authid,
+                                    "authprovider" => $challengeArray->authprovider
+                            ]];
                         }
                     }
                 }
             }
         }
 
-        return array("FAILURE");
+        return ["FAILURE"];
     }
 
     /**
@@ -160,8 +174,18 @@ class WampCraAuthProvider extends AbstractAuthProviderClient {
     {
         return $this->userDb;
     }
-
-    public static function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32) {
+    
+    /**
+     * Encode and get derived key
+     * 
+     * @param string $key
+     * @param string $salt
+     * @param int $iterations
+     * @param int $keyLen
+     * @return string
+     */
+    public static function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32) 
+    {
         return base64_encode(hash_pbkdf2('sha256', $key, $salt, $iterations, $keyLen, true));;
     }
 

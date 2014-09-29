@@ -6,12 +6,26 @@ use React\EventLoop\LoopInterface;
 use React\Promise\Promise;
 use Thruway\Peer\Client;
 
+/**
+ * Abstract class AbstractAuthProviderClient
+ * 
+ * @package Thruway\Authentication
+ */
 
 class AbstractAuthProviderClient extends Client
 {
-
+    /**
+     *
+     * @var array
+     */
     protected $authRealms;
 
+    /**
+     * Constructor
+     * 
+     * @param array $authRealms
+     * @param React\EventLoop\LoopInterface $loop
+     */
     function __construct(Array $authRealms, LoopInterface $loop = null)
     {
 
@@ -27,12 +41,24 @@ class AbstractAuthProviderClient extends Client
 
     }
 
+    /**
+     * Process HelloMessage
+     * 
+     * @param array $args
+     * @return array
+     */
     public function processHello(array $args)
     {
 
         return ["CHALLENGE", ["challenge" => new \stdClass(), "challenge_method" => $this->getMethodName()]];
     }
 
+    /**
+     * Handles session start
+     * 
+     * @param Thruway\AbstractSession $session
+     * @param Thruway\Transport\AbstractTransportProvider $transport
+     */
     public function onSessionStart($session, $transport)
     {
         $this->getCallee()->register(
@@ -67,6 +93,13 @@ class AbstractAuthProviderClient extends Client
             });
     }
 
+    /**
+     * Pre process AuthenticateMessage
+     * Extract and validate arguments
+     * 
+     * @param array $args
+     * @return array
+     */
     public function preProcessAuthenticate(array $args)
     {
 
@@ -81,6 +114,14 @@ class AbstractAuthProviderClient extends Client
 
     }
 
+    /**
+     * Process AuthenticateMessage
+     * Check authenticate and return ["SUCCESS"] and ["FAILURE"]
+     * 
+     * @param mixed $signature
+     * @param mixed $extra
+     * @return array
+     */
     public function processAuthenticate($signature, $extra = null)
     {
 
@@ -89,6 +130,8 @@ class AbstractAuthProviderClient extends Client
     }
 
     /**
+     * Get list supported realms
+     * 
      * @return array
      */
     public function getAuthRealms()
@@ -97,6 +140,8 @@ class AbstractAuthProviderClient extends Client
     }
 
     /**
+     * Set list supported realms
+     * 
      * @param array $authRealms
      */
     public function setAuthRealms($authRealms)
