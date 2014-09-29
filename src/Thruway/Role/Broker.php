@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 12:02 PM
- */
 
 namespace Thruway\Role;
-
 
 use Thruway\AbstractSession;
 use Thruway\Manager\ManagerDummy;
@@ -19,7 +12,6 @@ use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\SubscribedMessage;
 use Thruway\Message\SubscribeMessage;
-use Thruway\Message\UnregisterMessage;
 use Thruway\Message\UnsubscribedMessage;
 use Thruway\Message\UnsubscribeMessage;
 use Thruway\Session;
@@ -48,7 +40,7 @@ class Broker extends AbstractRole
     private $manager;
 
     /**
-     *
+     * @param ManagerInterface $manager
      */
     function __construct(ManagerInterface $manager = null)
     {
@@ -263,7 +255,7 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param \Thruway\ManagerInterface $manager
+     * @param ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -271,7 +263,7 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @return \Thruway\ManagerInterface
+     * @return ManagerInterface
      */
     public function getManager()
     {
