@@ -83,7 +83,7 @@ class Broker extends AbstractRole
      * @param Session $session
      * @param PublishMessage $msg
      */
-    public function processPublish(Session $session, PublishMessage $msg)
+    protected function processPublish(Session $session, PublishMessage $msg)
     {
         $this->manager->debug("processing publish message");
 
@@ -119,7 +119,7 @@ class Broker extends AbstractRole
      * @param Session $session
      * @param SubscribeMessage $msg
      */
-    public function processSubscribe(Session $session, SubscribeMessage $msg)
+    protected function processSubscribe(Session $session, SubscribeMessage $msg)
     {
 
         if (!$this->uriIsValid($msg->getTopicName())) {
@@ -147,7 +147,7 @@ class Broker extends AbstractRole
      * @param UnsubscribeMessage $msg
      * @return UnsubscribedMessage
      */
-    public function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
+    protected function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
     {
 
         $subscription = $this->getSubscriptionById($msg->getSubscriptionId());
