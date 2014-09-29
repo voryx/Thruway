@@ -2,6 +2,14 @@
 
 namespace Thruway\Exception;
 
-class SerializationException extends \Exception {
+/**
+ * Class SerializationException
+ * Throw this exception when serialozation error
+ * 
+ * @package Thruway\Exception
+ */
+
+class SerializationException extends \Exception 
+{
 
 } 

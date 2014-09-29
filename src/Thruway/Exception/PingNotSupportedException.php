@@ -1,14 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 8/29/14
- * Time: 9:07 PM
- */
 
 namespace Thruway\Exception;
 
+/**
+ * Class PingNotSupportedException
+ * Throw this exception when Ping isn't supported
+ * 
+ * @package Thruway\Exception
+ */
 
-class PingNotSupportedException extends \Exception {
+class PingNotSupportedException extends \Exception 
+{
 
 } 
