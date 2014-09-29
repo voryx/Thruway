@@ -190,47 +190,43 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         return $rt;
     }
 
-//    /**
-//     * @depends testHelloWelcomeMessages
-//     * @param $rt array
-//     * @return array
-//     */
-//    public function testSubscribeDuplicateTopic($rt)
-//    {
-//        $rt['transport']->expects($this->at(1))
-//            ->method('sendMessage')
-//            ->with(
-//                $this->callback(
-//                    function ($msg) {
-//
-//                        $this->assertInstanceOf(
-//                            '\Thruway\Message\SubscribedMessage',
-//                            $msg,
-//                            "Should return an error when trying to subscribe to topic more than once"
-//                        );
-//
-//                        $this->assert('333333', $msg->getRequestId());
-//
-//                        return $msg instanceof Thruway\Message\SubscribedMessage;
-//                    }
-//                )
-//            )->will($this->returnValue(null));
-//
-//
-//        $msg = new \Thruway\Message\SubscribeMessage('333333', [], 'test.topic');
-//        $rt['router']->onMessage($rt['transport'], $msg);
-////        $msg = new \Thruway\Message\SubscribeMessage('444444', [], 'test.topic1');
-////        $rt['router']->onMessage($rt['transport'], $msg);
-//
-//        /* @var $router \Thruway\Peer\Router */
-//        $router = $rt['router'];
-//        $subscriptions = $router->getRealmManager()->getRealm('test.realm')->getBroker()->managerGetSubscriptions()[0];
-//
-//        $this->assertEquals(2, count($subscriptions));
-//
-//        return $rt;
-//    }
+    /**
+     * @depends testHelloWelcomeMessages
+     * @param $rt array
+     * @return array
+     */
+    public function testSubscribeDuplicateTopic($rt)
+    {
+        $rt['transport']->expects($this->at(1))
+            ->method('sendMessage')
+            ->with(
+                $this->callback(
+                    function ($msg) {
 
+                        $this->assertInstanceOf(
+                            '\Thruway\Message\SubscribedMessage',
+                            $msg,
+                            "Should return an error when trying to subscribe to topic more than once"
+                        );
+
+                        $this->assertEquals('333333', $msg->getRequestId());
+
+                        return $msg instanceof Thruway\Message\SubscribedMessage;
+                    }
+                )
+            )->will($this->returnValue(null));
+
+        $msg = new \Thruway\Message\SubscribeMessage('333333', [], 'test.topic');
+        $rt['router']->onMessage($rt['transport'], $msg);
+
+        /* @var $router \Thruway\Peer\Router */
+        $router = $rt['router'];
+        $subscriptions = $router->getRealmManager()->getRealm('test.realm')->getBroker()->managerGetSubscriptions()[0];
+
+        $this->assertEquals(2, count($subscriptions));
+
+        return $rt;
+    }
 
 
     /**

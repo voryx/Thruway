@@ -143,15 +143,10 @@ class Broker extends AbstractRole
 
         array_push($this->topics[$msg->getTopicName()], $session);
 
-        //Check if this session has not already subscribed for this topic
-        $subscriptionCheck = $this->checkSubscriptions($session->getSessionId(), $msg->getTopicName());
-
-        if (!$subscriptionCheck) {
-            $subscription = new Subscription($msg->getTopicName(), $session);
-            $this->subscriptions->attach($subscription);
-            $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $msg->getTopicName());
-            $session->sendMessage($subscribedMsg);
-        }
+        $subscription = new Subscription($msg->getTopicName(), $session);
+        $this->subscriptions->attach($subscription);
+        $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $msg->getTopicName());
+        $session->sendMessage($subscribedMsg);
 
     }
 
@@ -186,6 +181,7 @@ class Broker extends AbstractRole
     }
 
     /**
+     * @deprecated
      * @param $sessionId
      * @param $topicName
      * @return Subscription|bool
