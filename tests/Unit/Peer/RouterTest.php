@@ -219,7 +219,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $rt['router']->onMessage($rt['transport'], $msg);
 
         /* @var $router \Thruway\Peer\Router */
-        $router = $rt['router'];
+        $router        = $rt['router'];
         $subscriptions = $router->getRealmManager()->getRealm('test.realm')->getBroker()->managerGetSubscriptions()[0];
 
         $this->assertEquals(2, count($subscriptions));
@@ -356,7 +356,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
     /**
-     * Publish a message from a different session
+     * Publish a message from a different session to the method above
      *
      * @depends testStart
      * @param \Thruway\Peer\Router $router
@@ -386,4 +386,139 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->onMessage($transport, $msg);
 
     }
+
+    /**
+     * Test onClose
+     *
+     * @depends testHelloMessage
+     * @param $rt array
+     * @return array
+     *
+     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#event-1
+     */
+    public function testOnClose($rt)
+    {
+
+        //Get the sessions before close
+        $sessions = $rt['router']->managerGetSessions()[0];
+
+        $rt['router']->onClose($rt['transport']);
+
+        $this->assertEquals(count($sessions) - 1, count($rt['router']->managerGetSessions()[0]),
+            "There should be one less session");
+
+    }
+
+
+    /**
+     * Abort Message
+     *
+     * @depends testStart
+     * @param \Thruway\Peer\Router $router
+     * @return array
+     *
+     * @see https://github.com/tavendo/WAMP/blob/master/spec/basic.md#abort
+     */
+    public function testAbortMessage(\Thruway\Peer\Router $router)
+    {
+
+        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+
+        // Configure the stub.
+        $transport->expects($this->any())
+            ->method('getTransportDetails')
+            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+
+        //No messages should be sent
+        $transport->expects($this->never())
+            ->method('sendMessage');
+
+        //Simulate onOpen
+        $router->onOpen($transport);
+
+        //Simulate a AbortMessage
+        $abortMessage = new \Thruway\Message\AbortMessage(["message" => "Client is shutting down"], "wamp.error.system_shutdown");
+        $router->onMessage($transport, $abortMessage);
+
+    }
+
+    /**
+     * Unhandled Message
+     *
+     * @depends testStart
+     * @param \Thruway\Peer\Router $router
+     * @return array
+     */
+    public function testUnhandledMessage(\Thruway\Peer\Router $router)
+    {
+
+        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+
+        // Configure the stub.
+        $transport->expects($this->any())
+            ->method('getTransportDetails')
+            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+
+        $transport->expects($this->once())
+            ->method('sendMessage')
+            ->with(
+                $this->callback(
+                    function (\Thruway\Message\AbortMessage $msg) {
+                        $this->assertInstanceOf('\Thruway\Message\AbortMessage', $msg);
+                        $this->assertEquals('wamp.error.unknown', $msg->getResponseURI());
+
+                        return $msg instanceof Thruway\Message\AbortMessage;
+                    }
+                )
+            )->will($this->returnValue(null));
+
+        //Simulate onOpen
+        $router->onOpen($transport);
+
+        //Simulate a GoodbyeMessage
+        $goodbyeMessage = new \Thruway\Message\GoodbyeMessage(["message" => "Client is shutting down"],
+            "wamp.error.system_shutdown");
+        $router->onMessage($transport, $goodbyeMessage);
+
+    }
+
+
+    /**
+     * Invalid Empty Realm Name
+     *
+     * @depends testStart
+     * @param \Thruway\Peer\Router $router
+     * @return array
+     */
+    public function testInvalidRealm(\Thruway\Peer\Router $router)
+    {
+
+        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+
+        // Configure the stub.
+        $transport->expects($this->any())
+            ->method('getTransportDetails')
+            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+
+        $transport->expects($this->once())
+            ->method('sendMessage')
+            ->with(
+                $this->callback(
+                    function (\Thruway\Message\AbortMessage $msg) {
+                        $this->assertInstanceOf('\Thruway\Message\AbortMessage', $msg);
+                        $this->assertEquals('wamp.error.no_such_realm', $msg->getResponseURI());
+
+                        return $msg instanceof Thruway\Message\AbortMessage;
+                    }
+                )
+            )->will($this->returnValue(null));
+
+        //Simulate onOpen
+        $router->onOpen($transport);
+
+        //Simulate a HelloMessage with an empty Realm
+        $helloMessage = new \Thruway\Message\HelloMessage("", []);
+        $router->onMessage($transport, $helloMessage);
+    }
+
 }
