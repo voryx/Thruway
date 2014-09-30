@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 12:02 PM
- */
 
 namespace Thruway\Role;
-
 
 use Thruway\AbstractSession;
 use Thruway\Manager\ManagerDummy;
@@ -19,7 +12,6 @@ use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\SubscribedMessage;
 use Thruway\Message\SubscribeMessage;
-use Thruway\Message\UnregisterMessage;
 use Thruway\Message\UnsubscribedMessage;
 use Thruway\Message\UnsubscribeMessage;
 use Thruway\Session;
@@ -48,7 +40,7 @@ class Broker extends AbstractRole
     private $manager;
 
     /**
-     *
+     * @param ManagerInterface $manager
      */
     function __construct(ManagerInterface $manager = null)
     {
@@ -91,7 +83,7 @@ class Broker extends AbstractRole
      * @param Session $session
      * @param PublishMessage $msg
      */
-    public function processPublish(Session $session, PublishMessage $msg)
+    protected function processPublish(Session $session, PublishMessage $msg)
     {
         $this->manager->debug("processing publish message");
 
@@ -127,7 +119,7 @@ class Broker extends AbstractRole
      * @param Session $session
      * @param SubscribeMessage $msg
      */
-    public function processSubscribe(Session $session, SubscribeMessage $msg)
+    protected function processSubscribe(Session $session, SubscribeMessage $msg)
     {
 
         if (!$this->uriIsValid($msg->getTopicName())) {
@@ -143,15 +135,10 @@ class Broker extends AbstractRole
 
         array_push($this->topics[$msg->getTopicName()], $session);
 
-        //Check if this session has not already subscribed for this topic
-        $subscriptionCheck = $this->checkSubscriptions($session->getSessionId(), $msg->getTopicName());
-
-        if (!$subscriptionCheck) {
-            $subscription = new Subscription($msg->getTopicName(), $session);
-            $this->subscriptions->attach($subscription);
-            $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $msg->getTopicName());
-            $session->sendMessage($subscribedMsg);
-        }
+        $subscription = new Subscription($msg->getTopicName(), $session);
+        $this->subscriptions->attach($subscription);
+        $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $msg->getTopicName());
+        $session->sendMessage($subscribedMsg);
 
     }
 
@@ -160,7 +147,7 @@ class Broker extends AbstractRole
      * @param UnsubscribeMessage $msg
      * @return UnsubscribedMessage
      */
-    public function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
+    protected function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
     {
 
         $subscription = $this->getSubscriptionById($msg->getSubscriptionId());
@@ -186,6 +173,7 @@ class Broker extends AbstractRole
     }
 
     /**
+     * @deprecated
      * @param $sessionId
      * @param $topicName
      * @return Subscription|bool
@@ -267,7 +255,7 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param \Thruway\ManagerInterface $manager
+     * @param ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -275,7 +263,7 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @return \Thruway\ManagerInterface
+     * @return ManagerInterface
      */
     public function getManager()
     {
