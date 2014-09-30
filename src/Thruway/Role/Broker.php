@@ -179,26 +179,6 @@ class Broker extends AbstractRole
     }
 
     /**
-     * Check realy subscribe
-     *
-     * @deprecated
-     * @param int $sessionId
-     * @param string $topicName
-     * @return \Thruway\Subscription|boolean
-     */
-    public function checkSubscriptions($sessionId, $topicName)
-    {
-        /* @var $subscription \Thruway\Subscription */
-        foreach ($this->subscriptions as $subscription) {
-            if ($subscription->getSession()->getSessionId() == $sessionId && $subscription->getTopic() == $topicName) {
-                return $subscription;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Get subscription by ID
      *
      * @param $subscriptionId
