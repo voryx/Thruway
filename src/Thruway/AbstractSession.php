@@ -3,12 +3,8 @@
 namespace Thruway;
 
 
-use React\EventLoop\LoopInterface;
-use React\Promise\Deferred;
-use React\Promise\Promise;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\Message;
-use Thruway\Transport\TransportInterface;
 
 /**
  * Class AbstractSession

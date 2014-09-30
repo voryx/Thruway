@@ -4,7 +4,6 @@ namespace Thruway\Authentication;
 
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
-use Thruway\Message\ErrorMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\WelcomeMessage;

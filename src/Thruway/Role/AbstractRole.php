@@ -5,7 +5,6 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\Message\Message;
-use Thruway\Session;
 
 /**
  * Class AbstractRole

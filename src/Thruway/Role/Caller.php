@@ -9,7 +9,6 @@ use Thruway\ClientSession;
 use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
-use Thruway\Message\RegisterMessage;
 use Thruway\Message\ResultMessage;
 use Thruway\Session;
 use React\Promise\Deferred;

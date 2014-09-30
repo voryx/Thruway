@@ -2,17 +2,14 @@
 
 namespace Thruway\Peer;
 
-use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\AbortMessage;
-use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
-use Thruway\Realm;
 use Thruway\RealmManager;
 use Thruway\Session;
 use Thruway\Transport\AbstractTransportProvider;

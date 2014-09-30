@@ -7,9 +7,7 @@ use Ratchet\WebSocket\Version\RFC6455\Frame;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 use React\Promise\Deferred;
-use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
-use Ratchet\Client\WebSocket;
 use Thruway\Serializer\SerializerInterface;
 
 /**

@@ -5,7 +5,6 @@ namespace Thruway;
 
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
-use Thruway\Peer\Client;
 use Thruway\Transport\TransportInterface;
 
 /**

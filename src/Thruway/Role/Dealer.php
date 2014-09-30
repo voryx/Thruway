@@ -8,7 +8,6 @@ use Thruway\Call;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\CallMessage;
-use Thruway\Message\CancelMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\InvocationMessage;
 use Thruway\Message\Message;
