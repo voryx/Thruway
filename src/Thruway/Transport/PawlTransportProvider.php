@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 5:06 PM
- */
 
 namespace Thruway\Transport;
 
@@ -19,14 +13,19 @@ use Thruway\Serializer\JsonSerializer;
 
 /**
  * Class WebsocketClient
+ * 
  * @package Thruway\Transport
  */
 class PawlTransportProvider extends AbstractTransportProvider implements EventEmitterInterface
 {
+    /**
+     * Using EventEmitterTrait do implements EventEmitterInterface
+     * @see \Evenement\EventEmitterTrailt
+     */
     use EventEmitterTrait;
 
     /**
-     * @var AbstractPeer
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
 
@@ -36,7 +35,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     private $URL;
 
     /**
-     * @var \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|\React\EventLoop\StreamSelectLoop
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
 
@@ -46,11 +45,15 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     private $connector;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
-
+    /**
+     * Constructor
+     * 
+     * @param string $URL
+     */
     function __construct($URL = "ws://127.0.0.1:9090/")
     {
 
@@ -63,7 +66,10 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     }
 
     /**
-     *
+     * Start transport provider
+     * 
+     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \React\EventLoop\LoopInterface $loop
      */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
@@ -124,7 +130,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
 
 
     /**
-     * @return AbstractPeer
+     * @return \Thruway\Peer\AbstractPeer
      */
     public function getPeer()
     {
@@ -133,7 +139,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
 
 
     /**
-     * @param AbstractPeer $peer
+     * @param \Thruway\Peer\AbstractPeer $peer
      */
     public function setPeer(AbstractPeer $peer)
     {
@@ -141,7 +147,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     }
 
     /**
-     * @param ManagerInterface $manager
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
     {
@@ -151,7 +157,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     }
 
     /**
-     * @return ManagerInterface
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {

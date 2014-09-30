@@ -1,32 +1,33 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 9:55 PM
- */
 
 namespace Thruway\Transport;
-
 
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
 
-abstract class AbstractTransportProvider {
+/**
+ * abstract class for transport provider
+ * 
+ * @package Thruway\Transport
+ */
+
+abstract class AbstractTransportProvider
+{
+
     /**
-     * @param AbstractPeer $peer
-     * @param LoopInterface $loop
+     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \React\EventLoop\LoopInterface $loop
      */
     abstract public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop);
 
     /**
-     * @return ManagerInterface
+     * @return \Thruway\Manager\ManagerInterface
      */
     abstract public function getManager();
 
     /**
-     * @param ManagerInterface $managerInterface
+     * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
     abstract public function setManager(ManagerInterface $managerInterface);
-} 
+}

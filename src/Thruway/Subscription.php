@@ -2,22 +2,24 @@
 
 namespace Thruway;
 
-
+/**
+ * Class Subscription
+ */
 class Subscription
 {
 
     /**
-     * @var
+     * @var int
      */
     private $id;
 
     /**
-     * @var Session
+     * @var \Thruway\Session
      */
     private $session;
 
     /**
-     * @var Topic
+     * @var string
      */
     private $topic;
 
@@ -26,7 +28,13 @@ class Subscription
      */
     private $options;
 
-
+    /**
+     * Constructor
+     * 
+     * @param string $topic
+     * @param \Thruway\Session $session
+     * @param mixed $options
+     */
     function __construct($topic, Session $session, $options = null)
     {
 
@@ -62,7 +70,7 @@ class Subscription
     }
 
     /**
-     * @param Topic $topic
+     * @param string $topic
      */
     public function setTopic($topic)
     {
@@ -78,7 +86,7 @@ class Subscription
     }
 
     /**
-     * @return Session
+     * @return \Thruway\Session
      */
     public function getSession()
     {
@@ -86,7 +94,7 @@ class Subscription
     }
 
     /**
-     * @param Session $session
+     * @param \Thruway\Session $session
      */
     public function setSession($session)
     {

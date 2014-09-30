@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/20/14
- * Time: 5:07 PM
- */
 
 namespace Thruway\Manager;
 
@@ -12,9 +6,24 @@ use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerTrait;
 use Psr\Log\NullLogger;
 
+/**
+ * Class ManagerDummy
+ * 
+ * @package Thruway\Manager
+ */
 
-class ManagerDummy implements ManagerInterface {
+class ManagerDummy implements ManagerInterface 
+{
+    /**
+     * Implements \Psr\Log\LoggerAwareInterface
+     * @see Psr\Log\LoggerAwareTrait
+     */
     use LoggerAwareTrait;
+    
+    /**
+     * Implements \Psr\Log\LoggerInterface
+     * @see Psr\Log\LoggerTrait
+     */
     use LoggerTrait;
 
     /**
@@ -22,6 +31,9 @@ class ManagerDummy implements ManagerInterface {
      */
     private $quiet;
     
+    /**
+     * Contructor
+     */
     public function __construct()
     {
         $this->setLogger(new NullLogger);
@@ -30,14 +42,22 @@ class ManagerDummy implements ManagerInterface {
     /**
      * This intentionally does nothing
      *
-     * @param $name
-     * @param $callback
+     * @param string $name
+     * @param \Closure $callback
      */
     public function addCallable($name, $callback)
     {
 
     }
 
+    /**
+     * Logging
+     * 
+     * @param mixed $level
+     * @param string $message
+     * @param array $context
+     * @see \Psr\Log\LoggerInterface::log($level, $message, $context);
+     */
     public function log($level, $message, array $context = array())
     {
         if ( ! $this->getQuiet()) {
@@ -64,7 +84,8 @@ class ManagerDummy implements ManagerInterface {
     /**
      * @return \Psr\Log\LoggerInterface|NullLogger
      */
-    public function getLogger(){
+    public function getLogger()
+    {
         return $this->logger;
     }
 } 

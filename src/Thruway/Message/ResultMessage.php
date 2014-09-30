@@ -2,44 +2,48 @@
 
 namespace Thruway\Message;
 
-
 /**
  * Class ResultMessage
- * @package Thruway\Message
- */
-/**
- * Class ResultMessage
+ * Result of a call as returned by Dealer to Caller.
+ * <code>[RESULT, CALL.Request|id, Details|dict]</code>
+ * <code>[RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list]</code>
+ * <code>[RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list, YIELD.ArgumentsKw|dict]</code>
+ * 
  * @package Thruway\Message
  */
 class ResultMessage extends Message
 {
+
+    /**
+     * using arguments trait
+     * @see \Thruway\Message\ArgumentsTrait
+     */
     use ArgumentsTrait;
 
     /**
-     * @var
+     * @var mixed
      */
     private $requestId;
 
     /**
-     * @var
+     * @var mixed
      */
     private $details;
 
     /**
-     * @param $requestId
-     * @param $details
-     * @param $arguments
-     * @param $argumentsKw
+     * Contructor
+     * @param mixed $requestId
+     * @param mixed $details
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
      */
     function __construct($requestId, $details, $arguments = null, $argumentsKw = null)
     {
         $this->requestId = $requestId;
-        $this->details = $details;
+        $this->details   = $details;
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
-
     }
-
 
     /**
      * @return int
@@ -58,13 +62,12 @@ class ResultMessage extends Message
     public function getAdditionalMsgFields()
     {
         $details = $this->getDetails();
-        if ($details === null)
+        if ($details === null) {
             $details = new \stdClass();
+        }
+        $details = (object) $details;
 
-        $details = (object)$details;
-
-        $a = array(
-            $this->getRequestId(), $details);
+        $a = [$this->getRequestId(), $details];
 
         $a = array_merge($a, $this->getArgumentsForSerialization());
 
@@ -102,4 +105,5 @@ class ResultMessage extends Message
     {
         $this->requestId = $requestId;
     }
+
 }

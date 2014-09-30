@@ -4,19 +4,29 @@ namespace Thruway;
 
 use Thruway\Message\ResultMessage;
 
-class CallResult extends \ArrayObject {
+/**
+ * Class CallResult
+ * 
+ * @package Thruway
+ */
+class CallResult extends \ArrayObject 
+{
     /**
-     * @var ResultMessage
+     * @var \Thruway\Message\ResultMessage
      */
     private $resultMessage;
 
+    /**
+     * Constructor
+     * 
+     * @param \Thruway\Message\ResultMessage $resultMessage
+     */
     function __construct($resultMessage)
     {
         $this->resultMessage = $resultMessage;
 
         parent::__construct($resultMessage->getArguments());
     }
-
 
     /**
      * @param \Thruway\Message\ResultMessage $resultMessage
@@ -33,16 +43,31 @@ class CallResult extends \ArrayObject {
     {
         return $this->resultMessage;
     }
-
-    public function getArguments() {
+    
+    /**
+     * 
+     * @return mixed
+     */
+    public function getArguments() 
+    {
         return $this->getResultMessage()->getArguments();
     }
 
-    public function getArgumentsKw() {
+    /**
+     * 
+     * @return mixed
+     */
+    public function getArgumentsKw() 
+    {
         return $this->getResultMessage()->getArgumentsKw();
     }
 
-    public function getDetails() {
+    /**
+     * 
+     * @return mixed
+     */
+    public function getDetails() 
+    {
         return $this->getResultMessage()->getDetails();
     }
 

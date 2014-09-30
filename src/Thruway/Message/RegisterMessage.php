@@ -2,21 +2,28 @@
 
 namespace Thruway\Message;
 
+/**
+ * Class RegisterMessage
+ * A Callees request to register an endpoint at a Dealer.
+ * <code>[REGISTER, Request|id, Options|dict, Procedure|uri]</code>
+ * 
+ * @package Thruway\Message
+ */
 class RegisterMessage extends Message
 {
 
     /**
-     * @var
+     * @var mixed
      */
     private $requestId;
 
     /**
-     * @var
+     * @var mixed
      */
     private $options;
 
     /**
-     * @var
+     * @var string
      */
     private $procedureName;
 
@@ -27,11 +34,10 @@ class RegisterMessage extends Message
      */
     function __construct($requestId, $options, $procedureName)
     {
-        $this->options = $options;
+        $this->options       = $options;
         $this->procedureName = $procedureName;
-        $this->requestId = $requestId;
+        $this->requestId     = $requestId;
     }
-
 
     /**
      * @return int
@@ -49,9 +55,8 @@ class RegisterMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-       return array($this->requestId, $this->getOptions(), $this->getProcedureName());
+        return [$this->requestId, $this->getOptions(), $this->getProcedureName()];
     }
-
 
     /**
      * @return mixed
@@ -76,7 +81,5 @@ class RegisterMessage extends Message
     {
         return $this->requestId;
     }
-
-
 
 }

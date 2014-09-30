@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/9/14
- * Time: 5:18 PM
- */
 
 namespace Thruway\Transport;
 
@@ -23,15 +17,37 @@ use Ratchet\WebSocket\WsServerInterface;
 use React\EventLoop\LoopInterface;
 use React\Socket\Server as Reactor;
 
-class RatchetTransportProvider extends AbstractTransportProvider implements MessageComponentInterface, WsServerInterface {
+/**
+ * Class RatchetTransportProvider
+ * 
+ * @package Thruway\Transport
+ */
+class RatchetTransportProvider extends AbstractTransportProvider implements MessageComponentInterface, WsServerInterface 
+{
 
     /**
-     * @var AbstractPeer
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
+    
+    /**
+     * @var string
+     */
     private $address;
+    
+    /**
+     * @var string|int
+     */
     private $port;
+    
+    /**
+     * @var \React\EventLoop\LoopInterface 
+     */
     private $loop;
+    
+    /**
+     * @var \Ratchet\Server\IoServer
+     */
     private $server;
 
     /**
@@ -44,7 +60,12 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     private $manager;
 
-
+    /**
+     * Constructor
+     * 
+     * @param string $address
+     * @param string|int $port
+     */
     function __construct($address = "127.0.0.1", $port = 8080) {
         $this->peer = null;
         $this->port = $port;
@@ -54,6 +75,12 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
         $this->manager = new ManagerDummy();
     }
 
+    /**
+     * Start transportprovider
+     * 
+     * @param AbstractPeer $peer
+     * @param \React\EventLoop\LoopInterface $loop
+     */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop) {
         $this->peer = $peer;
         $this->loop = $loop;
@@ -68,9 +95,9 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     }
 
 
-    /*
-    Interface stuff
-    */
+    /**
+     * Interface stuff
+     */
 
     /**
      * If any component in a stack supports a WebSocket sub-protocol return each supported in an array
@@ -79,13 +106,13 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     function getSubProtocols()
     {
-        return array('wamp.2.json');
+        return ['wamp.2.json'];
     }
 
 
     /**
      * When a new connection is opened it will be passed to this method
-     * @param  ConnectionInterface $conn The socket/connection that just connected to your application
+     * @param  \Ratchet\ConnectionInterface $conn The socket/connection that just connected to your application
      * @throws \Exception
      */
     function onOpen(ConnectionInterface $conn)
@@ -108,7 +135,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
     /**
      * This is called before or after a socket is closed (depends on how it's closed).  SendMessage to $conn will not result in an error if it has already been closed.
-     * @param  ConnectionInterface $conn The socket/connection that is closing/closed
+     * @param  \Ratchet\ConnectionInterface $conn The socket/connection that is closing/closed
      * @throws \Exception
      */
     function onClose(ConnectionInterface $conn)
@@ -126,7 +153,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     /**
      * If there is an error with one of the sockets, or somewhere in the application where an Exception is thrown,
      * the Exception is sent back down the stack, handled by the Server and bubbled back up the application through this method
-     * @param  ConnectionInterface $conn
+     * @param  \Ratchet\ConnectionInterface $conn
      * @param  \Exception $e
      * @throws \Exception
      */
@@ -155,6 +182,12 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
         }
     }
 
+    /**
+     * Handle on pong
+     * 
+     * @param \Ratchet\ConnectionInterface $from
+     * @param \Ratchet\WebSocket\Version\RFC6455\Frame $frame
+     */
     function onPong(ConnectionInterface $from, Frame $frame) {
         $transport = $this->transports[$from];
 
@@ -164,7 +197,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     }
 
     /**
-     * @param ManagerInterface $manager
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
     {
@@ -174,7 +207,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     }
 
     /**
-     * @return ManagerInterface
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {

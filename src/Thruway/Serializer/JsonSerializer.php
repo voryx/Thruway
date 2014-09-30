@@ -1,23 +1,37 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 9/10/14
- * Time: 10:19 PM
- */
 
 namespace Thruway\Serializer;
-
 
 use Thruway\Exception\DeserializationException;
 use Thruway\Message\Message;
 
-class JsonSerializer implements SerializerInterface {
+/**
+ * Class JsonSerializer
+ * Serialize and deserialize using JSON methods
+ * 
+ * @package Thruway\Serializer
+ */
+
+class JsonSerializer implements SerializerInterface
+{
+    /**
+     * Serialize message
+     * 
+     * @param \Thruway\Message\Message $msg
+     * @return string
+     */
     public function serialize(Message $msg)
     {
         return json_encode($msg);
     }
 
+    /**
+     * Deserialize message
+     * 
+     * @param string $serializedData
+     * @return \Thruway\Message\Message
+     * @throws \Thruway\Exception\DeserializationException
+     */
     public function deserialize($serializedData)
     {
         if (null === ($data = @json_decode($serializedData, true))) {
@@ -28,4 +42,5 @@ class JsonSerializer implements SerializerInterface {
 
         return $msg;
     }
+
 }

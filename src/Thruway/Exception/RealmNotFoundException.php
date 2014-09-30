@@ -1,14 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 7/19/14
- * Time: 1:55 PM
- */
 
 namespace Thruway\Exception;
 
+/**
+ * Class RealmNotFoundException
+ * Throw this exception when not fount realm
+ */
 
-class RealmNotFoundException extends \Exception {
+class RealmNotFoundException extends \Exception 
+{
 
 } 

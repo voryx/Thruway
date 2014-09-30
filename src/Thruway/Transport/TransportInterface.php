@@ -1,31 +1,44 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/18/14
- * Time: 10:32 PM
- */
 
 namespace Thruway\Transport;
-
 
 use Thruway\Message\Message;
 use Thruway\Serializer\SerializerInterface;
 
-interface TransportInterface {
+/**
+ * Interface transport
+ */
+
+interface TransportInterface
+{
+    /**
+     * @return mixed
+     */
     public function getTransportDetails();
+
+    /**
+     * @param \Thruway\Message\Message $msg
+     */
     public function sendMessage(Message $msg);
+
+    /**
+     * Close transport
+     */
     public function close();
+
+    /**
+     * Ping
+     */
     public function ping();
 
     /**
-     * @param SerializerInterface $serializer
-     * @return $this
+     * @param \Thruway\Serializer\SerializerInterface $serializer
+     * @return \Thruway\Transport\TransportInterface
      */
     public function setSerializer(SerializerInterface $serializer);
 
     /**
-     * @return SerializerInterface
+     * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer();
-} 
+}

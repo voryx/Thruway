@@ -2,39 +2,72 @@
 
 namespace Thruway\Message;
 
+/**
+ * Class error message
+ * Error reply sent by a Peer as an error response to different kinds of requests.
+ * <code>[ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri]</code>
+ * <code>[ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri, Arguments|list]</code>
+ * <code>[ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri, Arguments|list, ArgumentsKw|dict]</code>
+ * 
+ * @package Thruway\Message
+ */
+
 class ErrorMessage extends Message
 {
+    /**
+     * using arguments trait
+     * @see \Thruway\Message\ArgumentsTrait
+     */
     use ArgumentsTrait;
 
-    const MSG_CODE = Message::MSG_ERROR;
-
+    /**
+     * Error message code
+     * @var int
+     */
     private $errorMsgCode;
+    
+    /**
+     * Error request id
+     * @var mixed
+     */
     private $errorRequestId;
+    
+    /**
+     * Error details
+     * @var mixed
+     */
     private $details;
+    
+    /**
+     * Error URI
+     * @var string
+     */
     private $errorURI;
 
     /**
-     * @param $errorMsgCode
-     * @param $errorRequestId
-     * @param $details
-     * @param $errorURI
-     * @param null $arguments
-     * @param null $argumentsKw
+     * Contructor
+     * 
+     * @param int $errorMsgCode
+     * @param mixed $errorRequestId
+     * @param mixed $details
+     * @param string $errorURI
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
      */
     function __construct($errorMsgCode, $errorRequestId, $details, $errorURI, $arguments = null, $argumentsKw = null)
     {
         $this->errorRequestId = $errorRequestId;
-        $this->errorMsgCode = $errorMsgCode;
-        if (is_array($details) && count($details) == 0) $details = new \stdClass();
-        $this->details = $details;
-        $this->errorURI = $errorURI;
+        $this->errorMsgCode   = $errorMsgCode;
+        $this->details        = Message::shouldBeDictionary($details);
+        $this->errorURI       = $errorURI;
+        
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
     }
 
     /**
      * @param mixed $errorURI
-     * @return $this
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setErrorURI($errorURI)
     {
@@ -55,8 +88,8 @@ class ErrorMessage extends Message
      * This creates a specific error message depending on the message we are reporting
      * an error on.
      *
-     * @param Message $msg
-     * @return ErrorMessage
+     * @param \Thruway\Message\Message $msg
+     * @return \Thruway\Message\ErrorMessage
      */
     static public function createErrorMessageFromMessage(Message $msg)
     {
@@ -68,7 +101,7 @@ class ErrorMessage extends Message
      */
     public function getMsgCode()
     {
-        return static::MSG_CODE;
+        return static::MSG_ERROR;
     }
 
     /**
@@ -79,7 +112,7 @@ class ErrorMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $a = array($this->getErrorMsgCode(), $this->getErrorRequestId(), $this->getDetails(), $this->getErrorURI());
+        $a = [$this->getErrorMsgCode(), $this->getErrorRequestId(), $this->getDetails(), $this->getErrorURI()];
 
         $a = array_merge($a, $this->getArgumentsForSerialization());
 
@@ -88,7 +121,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $details
-     * @return $this
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setDetails($details)
     {
@@ -107,7 +140,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $errorMsgCode
-     * @return $this
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setErrorMsgCode($errorMsgCode)
     {
@@ -126,7 +159,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $requestId
-     * @return $this|void
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setRequestId($requestId)
     {
@@ -145,7 +178,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $errorRequestId
-     * @return $this
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setErrorRequestId($errorRequestId)
     {
@@ -162,10 +195,14 @@ class ErrorMessage extends Message
         return $this->errorRequestId;
     }
 
+    /**
+     * Convert error message to string
+     * 
+     * @return string
+     */
     function __toString()
     {
         return $this->getErrorURI();
     }
-
 
 }

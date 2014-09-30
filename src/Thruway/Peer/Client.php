@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 11:58 AM
- */
 
 namespace Thruway\Peer;
 
@@ -39,19 +33,25 @@ use React\EventLoop\LoopInterface;
 
 /**
  * Class Client
- * @package Thruway
+ * 
+ * @package Thruway\Peer
  */
 class Client extends AbstractPeer implements EventEmitterInterface
 {
+    /**
+     * Implements EventEmitterInterface
+     * 
+     * @uses EventEmitterTrait
+     */
     use EventEmitterTrait;
 
     /**
-     * @var
+     * @var array
      */
     private $roles;
 
     /**
-     * @var array
+     * @var \Thruway\ClientAuthenticationInterface[]
      */
     private $clientAuthenticators;
 
@@ -61,37 +61,37 @@ class Client extends AbstractPeer implements EventEmitterInterface
     private $authId;
 
     /**
-     * @var Callee
+     * @var \Thruway\Role\Callee
      */
     private $callee;
 
     /**
-     * @var Caller
+     * @var \Thruway\Role\Caller
      */
     private $caller;
 
     /**
-     * @var Publisher
+     * @var \Thruway\Role\Publisher
      */
     private $publisher;
 
     /**
-     * @var Subscriber
+     * @var \Thruway\Role\Subscriber
      */
     private $subscriber;
 
     /**
-     * @var AbstractTransportProvider
+     * @var \Thruway\Transport\AbstractTransportProvider
      */
     private $transportProvider;
 
     /**
-     * @var ClientSession
+     * @var \Thruway\ClientSession
      */
     protected $session;
 
     /**
-     * @var \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|\React\EventLoop\LoopInterface|\React\EventLoop\StreamSelectLoop
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
 
@@ -106,7 +106,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     private $authMethods = array();
 
     /**
-     * @var TransportInterface
+     * @var \Thruway\Transport\TransportInterface
      */
     private $transport;
 
@@ -130,19 +130,23 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $attemptRetry = true;
 
-    /* @var LoggerInterface */
+    /**
+     * @var \Psr\Log\LoggerInterface 
+     */
     private $logger;
 
     /**
-     * @param $realm
-     * @param LoopInterface $loop
+     * Contructor
+     * 
+     * @param string $realm
+     * @param \React\EventLoop\LoopInterface $loop
      */
     function __construct($realm, LoopInterface $loop = null)
     {
         $this->transportProvider = null;
-        $this->roles = array();
-        $this->realm = $realm;
-        $this->authMethods = array();
+        $this->roles             = [];
+        $this->realm             = $realm;
+        $this->authMethods       = [];
 
         if ($loop === null) {
             $loop = Factory::create();
@@ -151,20 +155,20 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->loop = $loop;
 
         $this->reconnectOptions = [
-            "max_retries" => 15,
+            "max_retries"         => 15,
             "initial_retry_delay" => 1.5,
-            "max_retry_delay" => 300,
-            "retry_delay_growth" => 1.5,
-            "retry_delay_jitter" => 0.1 //not implemented
+            "max_retry_delay"     => 300,
+            "retry_delay_growth"  => 1.5,
+            "retry_delay_jitter"  => 0.1 //not implemented
         ];
 
         $this->manager = new ManagerDummy();
 
         $this->session = null;
 
-        $this->on('open', array($this, 'onSessionStart'));
+        $this->on('open', [$this, 'onSessionStart']);
 
-        $this->clientAuthenticators = array();
+        $this->clientAuthenticators = [];
         $this->authId = "anonymous";
 
         $this->setLogger(new NullLogger());
@@ -175,8 +179,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
      * This is meant to be overridden so that the client can do its
      * thing
      *
-     * @param $session
-     * @param $transport
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Transport\TransportInterface $transport
      */
     public function onSessionStart($session, $transport)
     {
@@ -184,7 +188,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param AbstractTransportProvider $transportProvider
+     * Add transport provider
+     * 
+     * @param \Thruway\Transport\AbstractTransportProvider $transportProvider
      * @throws \Exception
      */
     public function addTransportProvider(AbstractTransportProvider $transportProvider)
@@ -196,6 +202,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Set reconnect options
+     * 
      * @param array $reconnectOptions
      */
     public function setReconnectOptions($reconnectOptions)
@@ -203,6 +211,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->reconnectOptions = array_merge($this->reconnectOptions, $reconnectOptions);
     }
 
+    /**
+     * Add client authenticator
+     * 
+     * @param \Thruway\ClientAuthenticationInterface $ca
+     */
     public function addClientAuthenticator(ClientAuthenticationInterface $ca)
     {
         array_push($this->clientAuthenticators, $ca);
@@ -210,6 +223,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Start the transport
+     * 
+     * @param boolean $startLoop
      */
     public function start($startLoop = true)
     {
@@ -221,6 +236,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Handle open transport
+     * 
      * @param TransportInterface $transport
      */
     public function onOpen(TransportInterface $transport)
@@ -240,7 +257,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param ClientSession $session
+     * Start client session
+     * 
+     * @param \Thruway\ClientSession $session
      */
     public function startSession(ClientSession $session)
     {
@@ -272,8 +291,10 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param AbstractRole $role
-     * @return $this
+     * Add role
+     * 
+     * @param \Thruway\Role\AbstractRole $role
+     * @return \Thruway\Peer\Client
      */
     public function addRole(AbstractRole $role)
     {
@@ -294,8 +315,10 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param TransportInterface $transport
-     * @param Message $msg
+     * Handle process message
+     * 
+     * @param \Thruway\Transport\TransportInterface $transport
+     * @param \Thruway\Message\Message $msg
      */
     public function onMessage(TransportInterface $transport, Message $msg)
     {
@@ -321,8 +344,10 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param ClientSession $session
-     * @param WelcomeMessage $msg
+     * Process Welcome message
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\WelcomeMessage $msg
      */
     public function processWelcome(ClientSession $session, WelcomeMessage $msg)
     {
@@ -335,8 +360,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param ClientSession $session
-     * @param AbortMessage $msg
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\AbortMessage $msg
      */
     public function processAbort(ClientSession $session, AbortMessage $msg)
     {
@@ -345,8 +370,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param ClientSession $session
-     * @param ChallengeMessage $msg
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\ChallengeMessage $msg
      */
     public function processChallenge(ClientSession $session, ChallengeMessage $msg)
     {
@@ -367,8 +392,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param ClientSession $session
-     * @param GoodbyeMessage $msg
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\GoodbyeMessage $msg
      */
     public function processGoodbye(ClientSession $session, GoodbyeMessage $msg)
     {
@@ -380,7 +405,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param ClientSession $session
+     * @param \Thruway\ClientSession $session
      * @param Message $msg
      */
     public function processOther(ClientSession $session, Message $msg)
@@ -394,13 +419,20 @@ class Client extends AbstractPeer implements EventEmitterInterface
         }
     }
 
+    /**
+     * Handle end session
+     * 
+     * @param \Thruway\ClientSession $session
+     */
     public function onSessionEnd($session)
     {
 
     }
 
     /**
-     * @param $reason
+     * Handle close session
+     * 
+     * @param mixed $reason
      */
     public function onClose($reason)
     {
@@ -457,6 +489,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
 
     /**
+     * Set attempt retry
+     * 
      * @param boolean $attemptRetry
      */
     public function setAttemptRetry($attemptRetry)
@@ -466,7 +500,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
 
     /**
-     * @return Callee
+     * @return \Thruway\Role\Callee
      */
     public function getCallee()
     {
@@ -475,7 +509,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
 
     /**
-     * @return Caller
+     * @return \Thruway\Role\Caller
      */
     public function getCaller()
     {
@@ -484,7 +518,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
 
     /**
-     * @return Publisher
+     * @return \Thruway\Role\Publisher
      */
     public function getPublisher()
     {
@@ -492,7 +526,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @return Subscriber
+     * @return \Thruway\Role\Subscriber
      */
     public function getSubscriber()
     {
@@ -508,7 +542,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param ManagerInterface $manager
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -516,7 +550,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @return ManagerInterface
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {
@@ -564,7 +598,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @return LoggerInterface
+     * @return Psr\Log\LoggerInterface
      */
     public function getLogger()
     {
@@ -572,7 +606,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param LoggerInterface $logger
+     * @param Psr\Log\LoggerInterface $logger
      */
     public function setLogger(LoggerInterface $logger)
     {

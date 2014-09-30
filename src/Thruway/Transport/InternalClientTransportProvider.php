@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/19/14
- * Time: 11:43 AM
- */
 
 namespace Thruway\Transport;
 
@@ -15,23 +9,33 @@ use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
 use Thruway\Peer\Client;
 
-class InternalClientTransportProvider extends AbstractTransportProvider {
+/**
+ * Class InternalClientTransportProvider
+ * 
+ * @package Thruway\Transport
+ */
+class InternalClientTransportProvider extends AbstractTransportProvider 
+{
 
     /**
-     * @var AbstractPeer
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
 
     /**
-     * @var AbstractPeer
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $internalClient;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
+    /**
+     * 
+     * @param \Thruway\Peer\AbstractPeer $internalClient
+     */
     function __construct(AbstractPeer $internalClient)
     {
         $this->internalClient = $internalClient;
@@ -46,7 +50,12 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
 
     }
 
-
+    /**
+     * Start transport
+     * 
+     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \React\EventLoop\LoopInterface $loop
+     */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
         // the peer that is passed into here is the server that our internal client connects to
@@ -78,7 +87,7 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
     }
 
     /**
-     * @param ManagerInterface $manager
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
     {
@@ -88,7 +97,7 @@ class InternalClientTransportProvider extends AbstractTransportProvider {
     }
 
     /**
-     * @return ManagerInterface
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {

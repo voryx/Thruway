@@ -1,14 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 12:02 PM
- */
 
 namespace Thruway\Role;
 
-
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use React\Promise\Deferred;
 use React\Promise\Promise;
@@ -27,6 +21,7 @@ use Thruway\Session;
 
 /**
  * Class Callee
+ * 
  * @package Thruway\Role
  */
 class Callee extends AbstractRole
@@ -38,11 +33,16 @@ class Callee extends AbstractRole
     private $registrations;
 
     /**
-     * @var NullLogger
+     * @var Psr\Log\LoggerInterface
      */
     private $logger;
 
-    function __construct($logger = null)
+    /**
+     * Contructor
+     * 
+     * @param Psr\Log\LoggerInterface $logger
+     */
+    function __construct(LoggerInterface $logger = null)
     {
         if (!$logger){
             $this->logger = new NullLogger();
@@ -50,18 +50,18 @@ class Callee extends AbstractRole
             $this->logger = $logger;
         }
 
-        $this->registrations = array();
+        $this->registrations = [];
     }
 
 
     /**
-     * @param AbstractSession $session
-     * @param Message $msg
-     * @return mixed
+     * handle process reveiced message
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\Message $msg
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-
         if ($msg instanceof RegisteredMessage):
             $this->processRegistered($session, $msg);
         elseif ($msg instanceof UnregisteredMessage):
@@ -76,8 +76,11 @@ class Callee extends AbstractRole
     }
 
     /**
-     * @param ClientSession $session
-     * @param RegisteredMessage $msg
+     * Process RegisteredMessage
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\RegisteredMessage $msg
+     * @return void
      */
     public function processRegistered(ClientSession $session, RegisteredMessage $msg)
     {
@@ -87,7 +90,7 @@ class Callee extends AbstractRole
                 $this->registrations[$key]['registration_id'] = $msg->getRegistrationId();
 
                 if ($this->registrations[$key]['futureResult'] instanceof Deferred) {
-                    /** @var Deferred $futureResult */
+                    /* @var $futureResult \React\Promise\Deferred */
                     $futureResult = $this->registrations[$key]['futureResult'];
                     $futureResult->resolve();
                 }
@@ -98,6 +101,8 @@ class Callee extends AbstractRole
     }
 
     /**
+     * Process Unregistered
+     * 
      * @param ClientSession $session
      * @param UnregisteredMessage $msg
      */
@@ -106,7 +111,7 @@ class Callee extends AbstractRole
         foreach ($this->registrations as $key => $registration) {
             if (isset($registration['unregister_request_id'])) {
                 if ($registration["unregister_request_id"] == $msg->getRequestId()) {
-                    /** @var Deferred $deferred */
+                    /** @var $deferred \React\Promise\Deferred */
                     $deferred = $registration['unregister_deferred'];
                     $deferred->resolve();
 
@@ -119,8 +124,10 @@ class Callee extends AbstractRole
     }
 
     /**
-     * @param ClientSession $session
-     * @param InvocationMessage $msg
+     * Process InvocationMessage
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\InvocationMessage $msg
      */
     public function processInvocation(ClientSession $session, InvocationMessage $msg)
     {
@@ -215,8 +222,10 @@ class Callee extends AbstractRole
     }
 
     /**
-     * @param ClientSession $session
-     * @param ErrorMessage $msg
+     * Process ErrorMessage
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
      */
     public function processError(ClientSession $session, ErrorMessage $msg)
     {
@@ -230,6 +239,12 @@ class Callee extends AbstractRole
 
     }
 
+    /**
+     * handle error when register
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
+     */
     public function handleErrorRegister(ClientSession $session, ErrorMessage $msg) {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
@@ -242,6 +257,12 @@ class Callee extends AbstractRole
         }
     }
 
+    /**
+     * handle error when unregister
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
+     */
     public function handleErrorUnregister(ClientSession $session, ErrorMessage $msg) {
         foreach ($this->registrations as $key => $registration) {
             if (isset($registration['unregister_request_id'])) {
@@ -263,22 +284,24 @@ class Callee extends AbstractRole
      * Error messages are checked according to the
      * message the error corresponds to.
      *
-     * @param Message $msg
-     * @return mixed
+     * @param \Thruway\Message\Message $msg
+     * @return boolean
      */
     public function handlesMessage(Message $msg)
     {
 
-        $handledMsgCodes = array(
+        $handledMsgCodes = [
             Message::MSG_REGISTERED,
             Message::MSG_UNREGISTERED,
             Message::MSG_INVOCATION,
             Message::MSG_REGISTER
-        );
+        ];
 
         $codeToCheck = $msg->getMsgCode();
 
-        if ($msg instanceof ErrorMessage) $codeToCheck = $msg->getErrorMsgCode();
+        if ($msg instanceof ErrorMessage) {
+            $codeToCheck = $msg->getErrorMsgCode();
+        }
 
         if (in_array($codeToCheck, $handledMsgCodes)) {
             return true;
@@ -289,10 +312,12 @@ class Callee extends AbstractRole
 
 
     /**
+     * process register
+     * 
      * @param \Thruway\ClientSession $session
-     * @param $procedureName
-     * @param $callback
-     * @param null $options
+     * @param string $procedureName
+     * @param \Closure $callback
+     * @param mixed $options
      * @return \React\Promise\Promise
      */
     public function register(ClientSession $session, $procedureName, $callback, $options = null)
@@ -320,7 +345,7 @@ class Callee extends AbstractRole
 
     /**
      * @param \Thruway\ClientSession $session
-     * @param $Uri
+     * @param string $Uri
      * @throws \Exception
      * @return \React\Promise\Promise
      */
@@ -379,7 +404,12 @@ class Callee extends AbstractRole
         return $futureResult->promise();
     }
 
-    // This belongs somewhere else I am thinking
+    /**
+     * This belongs somewhere else I am thinking
+     * 
+     * @param array $array
+     * @return boolean
+     */
     public static function is_list($array)
     {
         if (!is_array($array)){
@@ -395,7 +425,9 @@ class Callee extends AbstractRole
     }
 
     /**
-     * @return NullLogger
+     * Get logger
+     * 
+     * @return \Psr\Log\LoggerInterface
      */
     public function getLogger()
     {
@@ -403,9 +435,11 @@ class Callee extends AbstractRole
     }
 
     /**
-     * @param NullLogger $logger
+     * Set logger
+     * 
+     * @param \Psr\Log\LoggerInterface $logger
      */
-    public function setLogger($logger)
+    public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }

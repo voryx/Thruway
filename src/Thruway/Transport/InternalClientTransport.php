@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/19/14
- * Time: 11:43 AM
- */
 
 namespace Thruway\Transport;
-
 
 use React\EventLoop\LoopInterface;
 use Thruway\Exception\PingNotSupportedException;
@@ -15,24 +8,35 @@ use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\SerializerInterface;
 
-class InternalClientTransport implements TransportInterface {
-
+/**
+ * Class InternalClientTransport
+ * 
+ * @package Thruway\Transport
+ */
+class InternalClientTransport implements TransportInterface 
+{
 
     /**
-     * @var AbstractPeer
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $farPeer;
 
     /**
-     * @var TransportInterface
+     * @var \Thruway\Transport\TransportInterface
      */
     private $farPeerTransport;
 
     /**
-     * @var LoopInterface
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
 
+    /**
+     * Constructor
+     * 
+     * @param \Thruway\Peer\AbstractPeer $farPeer
+     * @param \React\EventLoop\LoopInterface $loop
+     */
     function __construct(AbstractPeer $farPeer, LoopInterface $loop)
     {
         $this->farPeer = $farPeer;
@@ -55,37 +59,74 @@ class InternalClientTransport implements TransportInterface {
         return $this->farPeerTransport;
     }
 
+    /**
+     * Send message
+     * 
+     * @param \Thruway\Message\Message $msg
+     * @throws \Exception
+     */
     public function sendMessage(Message $msg)
     {
-        if ($this->getFarPeerTransport() === null) throw new \Exception("You must set the farPeerTransport on internal client transports");
+        if ($this->getFarPeerTransport() === null) {
+            throw new \Exception("You must set the farPeerTransport on internal client transports");
+        }
 
         $this->farPeer->onMessage($this->getFarPeerTransport(), $msg);
     }
 
+    /**
+     * Close transport
+     */
     public function close()
     {
         // TODO: Implement close() method.
     }
 
+    /**
+     * Get transport details
+     * 
+     * @return array
+     */
     public function getTransportDetails()
     {
-        return array(
-            "type" => "internalClient",
+        return [
+            "type"             => "internalClient",
             "transportAddress" => "internal"
-        );
+        ];
     }
 
+    /**
+     * Ping
+     * 
+     * @throws \Thruway\Exception\PingNotSupportedException
+     */
     public function ping() {
         throw new PingNotSupportedException;
     }
 
+    /**
+     * Handle on pong
+     */
     public function onPong() {
 
     }
 
-    /** These are required by interface but not used here because there is no serialization */
-    public function setSerializer(SerializerInterface $serializer){}
-    public function getSerializer(){}
-
+    /** 
+     * Set Serializer
+     * 
+     * These are required by interface but not used here because there is no serialization 
+     */
+    public function setSerializer(SerializerInterface $serializer){
+        
+    }
+    
+    /** 
+     * Get Serializer
+     * 
+     * These are required by interface but not used here because there is no serialization 
+     */
+    public function getSerializer(){
+        
+    }
 
 } 

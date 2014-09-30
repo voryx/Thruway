@@ -1,45 +1,42 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daviddan
- * Date: 6/12/14
- * Time: 1:03 PM
- */
 
 namespace Thruway;
 
 
 /**
  * Class Registration
+ * 
  * @package Thruway
  */
 class Registration
 {
     /**
-     * @var
+     * @var mixed
      */
     private $id;
 
     /**
-     * @var Session
+     * @var \Thruway\Session
      */
     private $session;
 
     /**
-     * @var
+     * @var string
      */
     private $procedureName;
 
     /**
-     * @var
+     * @var mixed
      */
     private $discloseCaller;
 
 
     /**
-     * @param Session $session
-     * @param $procedureName
-     * @param $requestId
+     * Constructor
+     * 
+     * @param \Thruway\Session $session
+     * @param string $procedureName
+     * @param mixed $requestId
      */
     function __construct(Session $session, $procedureName)
     {
@@ -57,7 +54,7 @@ class Registration
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getProcedureName()
     {
@@ -65,7 +62,7 @@ class Registration
     }
 
     /**
-     * @return Session
+     * @return \Thruway\Session
      */
     public function getSession()
     {

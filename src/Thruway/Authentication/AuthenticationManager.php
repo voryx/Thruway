@@ -1,4 +1,5 @@
 <?php
+
 namespace Thruway\Authentication;
 
 use Thruway\Message\AuthenticateMessage;
@@ -12,30 +13,50 @@ use Thruway\Realm;
 use Thruway\Session;
 use Thruway\Transport\InternalClientTransport;
 
+/**
+ * Class AuthenticationManager
+ * 
+ * @package Thruway\Authentication
+ */
 class AuthenticationManager extends Client implements AuthenticationManagerInterface
 {
-
+    /**
+     * List authentication methods
+     * 
+     * @var array
+     */
     private $authMethods;
 
     /**
+     * Is authentication manager ready?
+     * 
      * @var bool
      */
     private $ready;
 
+    /**
+     * Constructor
+     */
     function __construct()
     {
         parent::__construct('thruway.auth');
 
-        $this->authMethods = array();
+        $this->authMethods = [];
         $this->ready = false;
     }
 
+    /**
+     * Handles session started
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Transport\AbstractTransportProvider $transport
+     */
     public function onSessionStart($session, $transport)
     {
         $this->getCallee()->register(
             $session,
             'thruway.auth.registermethod',
-            array($this, 'registerAuthMethod'),
+            [$this, 'registerAuthMethod'],
             ['discloseCaller' => true]
         )
             ->then(
@@ -61,9 +82,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      * Handles all messages for authentication (Hello and Authenticate)
      * This is called by the Realm to handle authentication
      *
-     * @param Realm $realm
-     * @param Session $session
-     * @param Message $msg
+     * @param \Thruway\Realm $realm
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\Message $msg
      * @throws \Exception
      */
     public function onAuthenticationMessage(Realm $realm, Session $session, Message $msg)
@@ -128,6 +149,13 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         }
     }
 
+    /**
+     * Handle HelloMessage
+     * 
+     * @param \Thruway\Realm $realm
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\HelloMessage $msg
+     */
     public function handleHelloMessage(Realm $realm, Session $session, HelloMessage $msg)
     {
         $requestedMethods = $msg->getAuthMethods();
@@ -236,6 +264,14 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         }
     }
 
+    /**
+     * Handle Authenticate message
+     * 
+     * @param \Thruway\Realm $realm
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\AuthenticateMessage $msg
+     * @throws \Exception
+     */
     public function handleAuthenticateMessage(Realm $realm, Session $session, AuthenticateMessage $msg)
     {
         if ($session->getAuthenticationDetails() === null) {
@@ -355,14 +391,14 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         }
 
 
-        $this->authMethods[$authMethod] = array(
+        $this->authMethods[$authMethod] = [
             'authMethod' => $authMethod,
             'handlers' => $methodInfo,
             'auth_realms' => $authRealms,
             'session_id' => $details['caller']
-        );
+        ];
 
-        return array("SUCCESS");
+        return ["SUCCESS"];
     }
 
     /**
@@ -392,7 +428,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Checks to see if a realm has a registered auth provider
-     * @param $realmName
+     * @param string $realmName
      * @return bool
      */
     private function realmHasAuthProvider($realmName)
@@ -414,7 +450,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      * sessions that are dieing. Otherwise the method could be hijacked by another client in the
      * thruway.auth realm.
      *
-     * @param Session $session
+     * @param \Thruway\Session $session
      */
     public function onSessionClose(Session $session)
     {
@@ -432,6 +468,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
     }
 
     /**
+     * Get list supported authentication methods
+     * 
      * @return array
      */
     public function getAuthMethods()

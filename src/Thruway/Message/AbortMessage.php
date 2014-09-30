@@ -2,22 +2,47 @@
 
 namespace Thruway\Message;
 
-class AbortMessage extends Message {
-    const MSG_CODE = Message::MSG_ABORT;
+/**
+ * Class AbortMessage
+ * Sent by a Peer to abort the opening of a WAMP session. No response is expected.
+ * <code>[ABORT, Details|dict, Reason|uri]</code>
+ * 
+ * @package Thruway\Message
+ */
 
+class AbortMessage extends Message
+{
+    /**
+     * Abort message details
+     * 
+     * @var array
+     */
     private $details;
-
+    
+    /**
+     * Response URI
+     * 
+     * @var mixed
+     */
     private $responseURI;
 
+    /**
+     * Contructor
+     * 
+     * @param array $details
+     * @param mixed $responseURI
+     */
     function __construct($details, $responseURI)
     {
         parent::__construct();
 
-        $this->details = $details;
+        $this->details     = $details;
         $this->responseURI = $responseURI;
     }
 
     /**
+     * Set abort message details
+     * 
      * @param array $details
      */
     public function setDetails(array $details)
@@ -26,6 +51,8 @@ class AbortMessage extends Message {
     }
 
     /**
+     * Get abort message details
+     * 
      * @return array
      */
     public function getDetails()
@@ -52,7 +79,10 @@ class AbortMessage extends Message {
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return Message::MSG_ABORT;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -62,7 +92,7 @@ class AbortMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getDetails(), $this->getResponseURI());
+        return [$this->getDetails(), $this->getResponseURI()];
     }
 
 }

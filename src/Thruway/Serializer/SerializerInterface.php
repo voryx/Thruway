@@ -2,7 +2,6 @@
 
 namespace Thruway\Serializer;
 
-
 use Thruway\Message\Message;
 
 /**
@@ -13,16 +12,22 @@ use Thruway\Message\Message;
  *
  * @package Thruway\Serializer
  */
-interface SerializerInterface {
+interface SerializerInterface
+{
+
     /**
-     * @param Message $msg
+     * Serialize message
+     * 
+     * @param \Thruway\Message\Message $msg
      * @return mixed
      */
     public function serialize(Message $msg);
 
     /**
-     * @param $serializedData
-     * @return Message
+     * Deserialize message
+     * 
+     * @param mixed $serializedData
+     * @return \Thruway\Message\Message
      */
     public function deserialize($serializedData);
-} 
+}

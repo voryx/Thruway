@@ -2,26 +2,36 @@
 
 namespace Thruway\Message;
 
+/**
+ * Class RegisteredMessage
+ * Acknowledge sent by a Dealer to a Callee for successful registration.
+ * <code>[REGISTERED, REGISTER.Request|id, Registration|id]</code>
+ * 
+ * @package Thruway\Message
+ */
 class RegisteredMessage extends Message
 {
+
     /**
-     * @var
+     * @var mixed
      */
     private $requestId;
 
     /**
-     * @var
+     * @var mixed
      */
     private $registrationId;
 
     /**
-     * @param $registrationId
-     * @param $requestId
+     * Contructor
+     * 
+     * @param mixed $registrationId
+     * @param mixed $requestId
      */
     function __construct($requestId, $registrationId)
     {
         $this->registrationId = $registrationId;
-        $this->requestId = $requestId;
+        $this->requestId      = $requestId;
     }
 
     /**
@@ -40,7 +50,7 @@ class RegisteredMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getRequestId(), $this->getRegistrationId());
+        return [$this->getRequestId(), $this->getRegistrationId()];
     }
 
     /**
@@ -59,5 +69,5 @@ class RegisteredMessage extends Message
         return $this->requestId;
     }
 
-
+    
 }

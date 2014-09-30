@@ -2,12 +2,28 @@
 
 namespace Thruway\Message;
 
+/**
+ * Class UnsubscribedMessage
+ * Acknowledge sent by a Broker to a Subscriber to acknowledge unsubscription.
+ * <code>[UNSUBSCRIBED, UNSUBSCRIBE.Request|id]</code>
+ * 
+ * @package Thruway\Message
+ */
 
-class UnsubscribedMessage extends Message {
-    const MSG_CODE = Message::MSG_UNSUBSCRIBED;
+class UnsubscribedMessage extends Message
+{
 
+    /**
+     *
+     * @var mixed
+     */
     private $requestId;
 
+    /**
+     * Contructor
+     * 
+     * @param mixed $requestId
+     */
     function __construct($requestId)
     {
         parent::__construct();
@@ -15,11 +31,13 @@ class UnsubscribedMessage extends Message {
         $this->setRequestId($requestId);
     }
 
-
     /**
      * @return int
      */
-    public function getMsgCode() { return static::MSG_CODE; }
+    public function getMsgCode()
+    {
+        return static::MSG_UNSUBSCRIBED;
+    }
 
     /**
      * This is used by get message parts to get the parts of the message beyond
@@ -29,7 +47,7 @@ class UnsubscribedMessage extends Message {
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getRequestId());
+        return [$this->getRequestId()];
     }
 
     /**

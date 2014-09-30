@@ -8,41 +8,42 @@ use Thruway\Message\InvocationMessage;
 
 /**
  * Class Call
+ * 
  * @package Thruway
  */
 class Call
 {
 
     /**
-     * @var Session
+     * @var \Thruway\Session
      */
     private $callerSession;
 
     /**
-     * @var Session
+     * @var \Thruway\Session
      */
     private $calleeSession;
 
     /**
-     * @var Message\CallMessage
+     * @var \Thruway\Message\CallMessage
      */
     private $callMessage;
 
     /**
-     * @var Message\InvocationMessage
+     * @var \Thruway\Message\InvocationMessage
      */
     private $invocationMessage;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $isProgressive;
 
     /**
-     * @param CallMessage $callMessage
-     * @param Session $callerSession
-     * @param InvocationMessage $invocationMessage
-     * @param Session $calleeSession
+     * @param \Thruway\Message\CallMessage $callMessage
+     * @param \Thruway\Session $callerSession
+     * @param \Thruway\Message\InvocationMessage $invocationMessage
+     * @param \Thruway\Session $calleeSession
      */
     function __construct(CallMessage $callMessage, Session $callerSession, InvocationMessage $invocationMessage, Session $calleeSession)
     {
@@ -55,7 +56,7 @@ class Call
     }
 
     /**
-     * @return CallMessage
+     * @return \Thruway\Message\CallMessage
      */
     public function getCallMessage()
     {
@@ -63,7 +64,7 @@ class Call
     }
 
     /**
-     * @param CallMessage $callMessage
+     * @param \Thruway\Message\CallMessage $callMessage
      */
     public function setCallMessage($callMessage)
     {
@@ -71,7 +72,7 @@ class Call
     }
 
     /**
-     * @return Session
+     * @return \Thruway\Session
      */
     public function getCalleeSession()
     {
@@ -79,7 +80,7 @@ class Call
     }
 
     /**
-     * @param Session $calleeSession
+     * @param \Thruway\Session $calleeSession
      */
     public function setCalleeSession($calleeSession)
     {
@@ -87,7 +88,7 @@ class Call
     }
 
     /**
-     * @return Session
+     * @return \Thruway\Session
      */
     public function getCallerSession()
     {
@@ -95,7 +96,7 @@ class Call
     }
 
     /**
-     * @param Session $callerSession
+     * @param \Thruway\Session $callerSession
      */
     public function setCallerSession($callerSession)
     {
@@ -103,7 +104,7 @@ class Call
     }
 
     /**
-     * @return InvocationMessage
+     * @return \Thruway\Message\InvocationMessage
      */
     public function getInvocationMessage()
     {
@@ -111,7 +112,7 @@ class Call
     }
 
     /**
-     * @param InvocationMessage $invocationMessage
+     * @param \Thruway\Message\InvocationMessage $invocationMessage
      */
     public function setInvocationMessage($invocationMessage)
     {

@@ -23,6 +23,7 @@ use Thruway\Session;
 
 /**
  * Class Dealer
+ * 
  * @package Thruway\Role
  */
 class Dealer extends AbstractRole
@@ -39,12 +40,14 @@ class Dealer extends AbstractRole
     private $calls;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
     /**
-     *
+     * Constructor
+     * 
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     function __construct(ManagerInterface $manager = null)
     {
@@ -60,8 +63,10 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param Message $msg
+     * process message
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\Message $msg
      * @return mixed|void
      */
     public function onMessage(AbstractSession $session, Message $msg)
@@ -87,14 +92,15 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param RegisterMessage $msg
-     * @return $this|RegisteredMessage
+     * process RegisterMessage
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\RegisterMessage $msg
      */
     private function processRegister(Session $session, RegisterMessage $msg)
     {
         //Check to see if the procedure is already registered
-        /* @registration Registration */
+        /* @var $registration \Thruway\Registration */
         $registration = $this->getRegistrationByProcedureName($msg->getProcedureName());
 
         if ($registration) {
@@ -133,7 +139,14 @@ class Dealer extends AbstractRole
 
     }
 
-    public function completeRegistration(Session $session, RegisterMessage $msg) {
+    /**
+     * process complete registration
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\RegisterMessage $msg
+     */
+    public function completeRegistration(Session $session, RegisterMessage $msg) 
+    {
         $registration = new Registration($session, $msg->getProcedureName());
 
         $options = (array)$msg->getOptions();
@@ -149,10 +162,12 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param UnregisterMessage $msg
+     * process UnregisterMessage
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\UnregisterMessage $msg
      * @throws \Exception
-     * @return Message
+     * @return \Thruway\Message\UnregisteredMessage|\Thruway\Message\ErrorMessage
      */
     private function processUnregister(Session $session, UnregisterMessage $msg)
     {
@@ -190,9 +205,11 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param CallMessage $msg
-     * @return bool
+     * Process call
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\CallMessage $msg
+     * @return boolean
      */
     private function processCall(Session $session, CallMessage $msg)
     {
@@ -229,7 +246,9 @@ class Dealer extends AbstractRole
         }
 
         // if nothing was added to details - change ot stdClass so it will serialize correctly
-        if (count($details) == 0) $details = new \stdClass();
+        if (count($details) == 0) { 
+            $details = new \stdClass(); 
+        }
         $invocationMessage->setDetails($details);
 
         $call = new Call($msg, $session, $invocationMessage, $registration->getSession());
@@ -243,9 +262,11 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param YieldMessage $msg
-     * @return bool
+     * process YieldMessage
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\YieldMessage $msg
+     * @return boolean|void
      */
     private function processYield(Session $session, YieldMessage $msg)
     {
@@ -287,8 +308,10 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param ErrorMessage $msg
+     * process ErrorMessage
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\ErrorMessage $msg
      */
     private function processError(Session $session, ErrorMessage $msg)
     {
@@ -299,6 +322,13 @@ class Dealer extends AbstractRole
         }
     }
 
+    /**
+     * Process InvocationError
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\ErrorMessage $msg
+     * @return boolean|void
+     */
     private function processInvocationError(Session $session, ErrorMessage $msg) {
         $call = $this->getCallByRequestId($msg->getRequestId());
 
@@ -325,8 +355,10 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param $procedureName
-     * @return Registration|bool
+     * Get registration by procedureName
+     * 
+     * @param string $procedureName
+     * @return \Thruway\Registration|boolean
      */
     public function getRegistrationByProcedureName($procedureName)
     {
@@ -341,8 +373,10 @@ class Dealer extends AbstractRole
     }
 
     /**
+     * Get Call by requestID
+     * 
      * @param $requestId
-     * @return Call|bool
+     * @return \Thruway\Call|boolean
      */
     public function getCallByRequestId($requestId)
     {
@@ -357,18 +391,20 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param Message $msg
-     * @return bool
+     * Returns true if this role handles this message.
+     * 
+     * @param \Thruway\Message\Message $msg
+     * @return boolean
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMsgCodes = array(
+        $handledMsgCodes = [
             Message::MSG_CALL,
             Message::MSG_CANCEL,
             Message::MSG_REGISTER,
             Message::MSG_UNREGISTER,
             Message::MSG_YIELD
-        );
+        ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
             return true;
@@ -380,26 +416,26 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * @param Session $session
+     * process leave session
+     * 
+     * @param \Thruway\Session $session
      */
     public function leave(Session $session)
     {
-        {
-            $this->registrations->rewind();
-            while ($this->registrations->valid()) {
-                /* @var $registration Registration */
-                $registration = $this->registrations->current();
-                $this->registrations->next();
-                if ($registration->getSession() == $session) {
-                    $this->manager->debug("Leaving and unegistering: {$registration->getProcedureName()}");
-                    $this->registrations->detach($registration);
-                }
+        $this->registrations->rewind();
+        while ($this->registrations->valid()) {
+            /* @var $registration Registration */
+            $registration = $this->registrations->current();
+            $this->registrations->next();
+            if ($registration->getSession() == $session) {
+                $this->manager->debug("Leaving and unegistering: {$registration->getProcedureName()}");
+                $this->registrations->detach($registration);
             }
         }
     }
 
     /**
-     * @param ManagerInterface $manager
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -413,18 +449,23 @@ class Dealer extends AbstractRole
 //    }
 
     /**
-     * @return ManagerInterface
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {
         return $this->manager;
     }
 
+    /**
+     * Get list registrations
+     * 
+     * @return array
+     */
     public function managerGetRegistrations()
     {
         $theRegistrations = [];
 
-        /** @var $registration Registration */
+        /* @var $registration \Thruway\Registration */
         foreach ($this->registrations as $registration) {
             $theRegistrations[] = [
                 "id" => $registration->getId(),
@@ -433,6 +474,6 @@ class Dealer extends AbstractRole
             ];
         }
 
-        return array($theRegistrations);
+        return [$theRegistrations];
     }
 }

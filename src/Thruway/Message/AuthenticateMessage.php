@@ -1,17 +1,19 @@
 <?php
-namespace Thruway\Message;
 
+namespace Thruway\Message;
 
 /**
  * Class AuthenticateMessage
+ * In response to a CHALLENGE message, an Endpoint MUST send an AUTHENTICATION message.
+ * <code>[AUTHENTICATE, Signature|string, Extra|dict]</code>
+ * 
  * @package Thruway\Message
  */
 class AuthenticateMessage extends Message
 {
 
-
     /**
-     * @var
+     * @var string
      */
     private $signature;
 
@@ -20,18 +22,19 @@ class AuthenticateMessage extends Message
      */
     private $extra;
 
-
     /**
-     * @param $signature
-     * @param $extra
+     * @param string $signature
+     * @param array $extra
      */
     public function __construct($signature, $extra = null)
     {
         $this->signature = $signature;
 
-        if ($extra === null) $extra = new \stdClass();
+        if ($extra === null) {
+            $extra = new \stdClass();
+        }
 
-        $this->extra = $extra;
+        $this->extra = Message::shouldBeDictionary($extra);
     }
 
     /**
@@ -50,11 +53,11 @@ class AuthenticateMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return array($this->getSignature(), $this->getExtra());
+        return [$this->getSignature(), $this->getExtra()];
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getSignature()
     {
@@ -69,4 +72,4 @@ class AuthenticateMessage extends Message
         return $this->extra;
     }
 
-} 
+}

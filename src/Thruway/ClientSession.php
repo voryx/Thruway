@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daviddan
- * Date: 6/17/14
- * Time: 12:43 AM
- */
 
 namespace Thruway;
 
@@ -16,18 +10,22 @@ use Thruway\Transport\TransportInterface;
 
 /**
  * Class ClientSession
+ * 
  * @package Thruway
  */
 class ClientSession extends AbstractSession
 {
-
-
-
     /**
-     * @var Client
+     * @var \Thruway\Peer\Client
      */
     private $peer;
 
+    /**
+     * Constructor
+     * 
+     * @param \Thruway\Transport\TransportInterface $transport
+     * @param \Thruway\Peer\AbstractPeer $peer
+     */
     function __construct(TransportInterface $transport, AbstractPeer $peer)
     {
         $this->transport = $transport;
@@ -35,23 +33,36 @@ class ClientSession extends AbstractSession
     }
 
     /**
-     * @param $topicName
-     * @param $callback
+     * Subscribe
+     * 
+     * @param string $topicName
+     * @param \Closure $callback
      */
     public function subscribe($topicName, $callback)
     {
         $this->peer->getSubscriber()->subscribe($this, $topicName, $callback);
     }
-
+    
+    /**
+     * Publish
+     * 
+     * @param string $topicName
+     * @param array|mixed $arguments
+     * @param array|mixed $argumentsKw
+     * @param array|mixed $options
+     * @return \React\Promise\Promise
+     */
     public function publish($topicName, $arguments, $argumentsKw = null, $options = null)
     {
         return $this->peer->getPublisher()->publish($this, $topicName, $arguments, $argumentsKw, $options);
     }
 
     /**
-     * @param $procedureName
-     * @param $callback
-     * @param null $options
+     * Register
+     * 
+     * @param string $procedureName
+     * @param \Closure $callback
+     * @param array|mixed $options
      * @return \React\Promise\Promise
      */
     public function register($procedureName, $callback, $options = null)
@@ -60,7 +71,9 @@ class ClientSession extends AbstractSession
     }
 
     /**
-     * @param $procedureName
+     * Unregister
+     * 
+     * @param string $procedureName
      * @return \React\Promise\Promise|FALSE
      */
     public function unregister($procedureName)
@@ -69,8 +82,10 @@ class ClientSession extends AbstractSession
     }
 
     /**
-     * @param $procedureName
-     * @param $arguments
+     * Call
+     * 
+     * @param string $procedureName
+     * @param array|mixed $arguments
      * @return \React\Promise\Promise
      */
     public function call($procedureName, $arguments = null, $argumentsKw = null, $options = null)
@@ -79,7 +94,7 @@ class ClientSession extends AbstractSession
     }
 
     /**
-     * @param Message $msg
+     * @param \Thruway\Message\Message $msg
      * @return mixed|void
      */
     public function sendMessage(Message $msg)
@@ -96,6 +111,7 @@ class ClientSession extends AbstractSession
     }
 
     /**
+     * Close client session
      * TODO: Need to send goodbye message
      */
     public function close()
@@ -103,7 +119,11 @@ class ClientSession extends AbstractSession
         $this->transport->close();
     }
 
-    public function onClose() {
+    /**
+     * Handle on close client session
+     */
+    public function onClose() 
+    {
 
     }
 
