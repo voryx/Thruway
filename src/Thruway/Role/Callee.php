@@ -44,12 +44,7 @@ class Callee extends AbstractRole
      */
     function __construct(LoggerInterface $logger = null)
     {
-        if (!$logger) {
-            $this->logger = new NullLogger();
-        } else {
-            $this->logger = $logger;
-        }
-
+        $this->logger        = $logger ? $logger : new NullLogger();
         $this->registrations = [];
     }
 

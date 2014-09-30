@@ -52,19 +52,15 @@ class Dealer extends AbstractRole
     {
         $this->registrations = new \SplObjectStorage();
         $this->calls         = new \SplObjectStorage();
+        $manager             = $manager === null ? $manager : new ManagerDummy();
 
-        if ($manager === null) {
-            $manager = new ManagerDummy();
-        }
         $this->setManager($manager);
-
-
     }
 
     /**
      * process message
      *
-     * @param \Thruway\Session $session
+     * @param AbstractSession|Session $session
      * @param \Thruway\Message\Message $msg
      * @return mixed|void
      */

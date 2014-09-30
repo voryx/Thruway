@@ -38,7 +38,7 @@ class Broker extends AbstractRole
     /**
      * @var \Thruway\Manager\ManagerInterface
      */
-    private $manager;
+    protected $manager;
 
     /**
      * Constructor
@@ -47,15 +47,13 @@ class Broker extends AbstractRole
      */
     function __construct(ManagerInterface $manager = null)
     {
-        if ($manager === null) {
-            $manager = new ManagerDummy();
-        }
 
-        $this->manager       = $manager;
         $this->subscriptions = new \SplObjectStorage();
         $this->topics        = [];
+        $manager             = $manager ? $manager : new ManagerDummy();
 
-        $this->manager->debug("Broker constructor");
+        $this->setManager($manager);
+        $this->getManager()->debug("Broker constructor");
     }
 
     /**
@@ -67,7 +65,7 @@ class Broker extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        $this->manager->debug(
+        $this->getManager()->debug(
             "Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . json_encode($msg)
         );
 
@@ -90,7 +88,7 @@ class Broker extends AbstractRole
      */
     protected function processPublish(Session $session, PublishMessage $msg)
     {
-        $this->manager->debug("processing publish message");
+        $this->getManager()->debug("processing publish message");
 
         $receivers = isset($this->topics[$msg->getTopicName()]) ? $this->topics[$msg->getTopicName()] : null;
 
@@ -255,7 +253,7 @@ class Broker extends AbstractRole
             $subscription = $this->subscriptions->current();
             $this->subscriptions->next();
             if ($subscription->getSession() == $session) {
-                $this->manager->debug("Leaving and unsubscribing: {$subscription->getTopic()}");
+                $this->getManager()->debug("Leaving and unsubscribing: {$subscription->getTopic()}");
                 $this->subscriptions->detach($subscription);
             }
         }
@@ -264,7 +262,7 @@ class Broker extends AbstractRole
             foreach ($subscribers as $key => $subscriber) {
                 if ($session == $subscriber) {
                     unset($subscribers[$key]);
-                    $this->manager->debug("Removing session from topic list: {$topicName}");
+                    $this->getManager()->debug("Removing session from topic list: {$topicName}");
 
                 }
             }
