@@ -19,6 +19,7 @@ use Thruway\Subscription;
 
 /**
  * Class Broker
+ * 
  * @package Thruway\Role
  */
 class Broker extends AbstractRole
@@ -35,12 +36,14 @@ class Broker extends AbstractRole
     private $topics;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
     /**
-     * @param ManagerInterface $manager
+     * Contructor
+     * 
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     function __construct(ManagerInterface $manager = null)
     {
@@ -58,8 +61,10 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param AbstractSession $session
-     * @param Message $msg
+     * Handle process revieced message
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\Message $msg
      * @return mixed|void
      */
     public function onMessage(AbstractSession $session, Message $msg)
@@ -80,8 +85,10 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param PublishMessage $msg
+     * Process publish message
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\PublishMessage $msg
      */
     protected function processPublish(Session $session, PublishMessage $msg)
     {
@@ -116,8 +123,10 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param SubscribeMessage $msg
+     * Process subscribe message
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\SubscribeMessage $msg
      */
     protected function processSubscribe(Session $session, SubscribeMessage $msg)
     {
@@ -143,9 +152,10 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param Session $session
-     * @param UnsubscribeMessage $msg
-     * @return UnsubscribedMessage
+     * Process Unsubcribe message
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\UnsubscribeMessage $msg
      */
     protected function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
     {
@@ -173,14 +183,16 @@ class Broker extends AbstractRole
     }
 
     /**
+     * Check realy subscribe
+     * 
      * @deprecated
-     * @param $sessionId
-     * @param $topicName
-     * @return Subscription|bool
+     * @param int $sessionId
+     * @param string $topicName
+     * @return \Thruway\Subscription|boolean
      */
     public function checkSubscriptions($sessionId, $topicName)
     {
-        /* @var $subscription Subscription */
+        /* @var $subscription \Thruway\Subscription */
         foreach ($this->subscriptions as $subscription) {
             if ($subscription->getSession()->getSessionId() == $sessionId && $subscription->getTopic() == $topicName) {
                 return $subscription;
@@ -191,12 +203,14 @@ class Broker extends AbstractRole
     }
 
     /**
+     * Get subscription by ID
+     * 
      * @param $subscriptionId
-     * @return Subscription|bool
+     * @return \Thruway\Subscription|boolean
      */
     public function getSubscriptionById($subscriptionId)
     {
-        /* @var $subscription Subscription */
+        /* @var $subscription \Thruway\Subscription */
         foreach ($this->subscriptions as $subscription) {
             if ($subscription->getId() == $subscriptionId) {
                 return $subscription;
@@ -207,16 +221,19 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param Message $msg
-     * @return bool
+     * Handle message
+     * Returns true if this role handles this message.
+     * 
+     * @param \Thruway\Message\Message $msg
+     * @return boolean
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMsgCodes = array(
+        $handledMsgCodes = [
             Message::MSG_SUBSCRIBE,
             Message::MSG_UNSUBSCRIBE,
             Message::MSG_PUBLISH
-        );
+        ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
             return true;
@@ -227,14 +244,16 @@ class Broker extends AbstractRole
     }
 
     /**
-     * //@todo make this better
-     * @param Session $session
+     * Process a session leave
+     * 
+     * @todo make this better
+     * @param \Thruway\Session $session
      */
     public function leave(Session $session)
     {
         $this->subscriptions->rewind();
         while ($this->subscriptions->valid()) {
-            /* @var $subscription Subscription */
+            /* @var $subscription \Thruway\Subscription */
             $subscription = $this->subscriptions->current();
             $this->subscriptions->next();
             if ($subscription->getSession() == $session) {
@@ -255,7 +274,9 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @param ManagerInterface $manager
+     * Set manager
+     * 
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -263,7 +284,9 @@ class Broker extends AbstractRole
     }
 
     /**
-     * @return ManagerInterface
+     * get manager
+     * 
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {
@@ -272,6 +295,8 @@ class Broker extends AbstractRole
 
 
     /**
+     * Get list subscriptions
+     * 
      * @return array
      */
     public function managerGetSubscriptions()

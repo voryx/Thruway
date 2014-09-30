@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 12:03 PM
- */
 
 namespace Thruway\Role;
 
@@ -20,6 +14,7 @@ use React\Promise\Deferred;
 
 /**
  * Class Publisher
+ * 
  * @package Thruway\Role
  */
 class Publisher extends AbstractRole
@@ -31,17 +26,19 @@ class Publisher extends AbstractRole
     private $publishRequests;
 
     /**
-     * @param $session
+     * Constructor
      */
     function __construct()
     {
-        $this->publishRequests = array();
+        $this->publishRequests = [];
     }
 
     /**
+     * handle received message
+     * 
      * @param \Thruway\AbstractSession $session
-     * @param Message $msg
-     * @return mixed
+     * @param \Thruway\Message\Message $msg
+     * @return void
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
@@ -55,8 +52,10 @@ class Publisher extends AbstractRole
     }
 
     /**
-     * @param ClientSession $session
-     * @param PublishedMessage $msg
+     * process PublishedMesage
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\PublishedMessage $msg
      */
     public function processPublished(ClientSession $session, PublishedMessage $msg)
     {
@@ -70,8 +69,10 @@ class Publisher extends AbstractRole
 
 
     /**
-     * @param ClientSession $session
-     * @param ErrorMessage $msg
+     * process error
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
      */
     public function processError(ClientSession $session, ErrorMessage $msg)
     {
@@ -84,14 +85,16 @@ class Publisher extends AbstractRole
     }
 
     /**
-     * @param Message $msg
-     * @return mixed
+     * Handle message
+     * 
+     * @param \Thruway\Message\Message $msg
+     * @return boolean
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMsgCodes = array(
+        $handledMsgCodes = [
             Message::MSG_PUBLISHED,
-        );
+        ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
             return true;
@@ -104,8 +107,13 @@ class Publisher extends AbstractRole
     }
 
     /**
-     * @param $topicName
-     * @param $arguments
+     * process publish
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param string $topicName
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
+     * @param mixed $options
      * @return \React\Promise\Promise
      */
     public function publish(ClientSession $session, $topicName, $arguments, $argumentsKw, $options)

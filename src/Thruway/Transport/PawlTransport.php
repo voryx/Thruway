@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/19/14
- * Time: 12:03 AM
- */
 
 namespace Thruway\Transport;
 
@@ -18,27 +12,45 @@ use Thruway\Message\Message;
 use Ratchet\Client\WebSocket;
 use Thruway\Serializer\SerializerInterface;
 
-class PawlTransport implements TransportInterface {
+/**
+ * Class PawlTransport
+ * 
+ * @package Thruway\Transport
+ */
 
+class PawlTransport implements TransportInterface 
+{
+    /**
+     * @var 
+     */
     private $pingSeq;
 
+    /**
+     * @var \Thruway\PingRequest
+     */
     private $pingRequests;
 
     /**
-     * @var SerializerInterface
+     * @var \Thruway\Serializer\SerializerInterface
      */
     private $serializer;
 
     /**
-     * @var WebSocket
+     * @var \Ratchet\Client\WebSocket
      */
     private $conn;
 
     /**
-     * @var LoopInterface
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
 
+    /**
+     * Constructor
+     * 
+     * @param \Ratchet\Client\WebSocket $conn
+     * @param \React\EventLoop\LoopInterface $loop
+     */
     function __construct($conn, LoopInterface $loop)
     {
         $this->conn = $conn;
@@ -49,25 +61,42 @@ class PawlTransport implements TransportInterface {
         $this->loop = $loop;
     }
 
-
+    /**
+     * Send message
+     * 
+     * @param \Thruway\Message\Message $msg
+     */
     public function sendMessage(Message $msg)
     {
         $this->conn->send($this->getSerializer()->serialize($msg));
     }
 
+    /**
+     * close transport
+     */
     public function close()
     {
         $this->conn->close();
     }
 
+    /**
+     * @return array
+     */
     public function getTransportDetails()
     {
-        return array(
+        return [
             "type" => "pawl"
-        );
+        ];
     }
 
-    public function ping($timeout = 10) {
+    /**
+     * ping
+     * 
+     * @param int $timeout
+     * @return \React\Promise\Promise
+     */
+    public function ping($timeout = 10) 
+    {
         $payload = $this->pingSeq;
 
         $this->conn->send(new Frame($payload, true, Frame::OP_PING));
@@ -98,8 +127,14 @@ class PawlTransport implements TransportInterface {
 
 
     }
-
-    public function onPong(Frame $frame) {
+    
+    /**
+     * Handle on pong
+     * 
+     * @param \Ratchet\WebSocket\Version\RFC6455\Frame $frame
+     */
+    public function onPong(Frame $frame) 
+    {
         $seq = $frame->getPayload();
 
         if (isset($this->pingRequests[$seq]) && isset($this->pingRequests[$seq]['deferred'])) {
@@ -116,7 +151,7 @@ class PawlTransport implements TransportInterface {
     }
 
     /**
-     * @param SerializerInterface $serializer
+     * @param \Thruway\Serializer\SerializerInterface $serializer
      * @return $this
      */
     public function setSerializer(SerializerInterface $serializer)
@@ -125,7 +160,7 @@ class PawlTransport implements TransportInterface {
     }
 
     /**
-     * @return SerializerInterface
+     * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()
     {

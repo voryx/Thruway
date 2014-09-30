@@ -15,18 +15,20 @@ use Thruway\Session;
 
 /**
  * Class Subscriber
+ * 
  * @package Thruway\Role
  */
 class Subscriber extends AbstractRole
 {
-
 
     /**
      * @var array
      */
     private $subscriptions;
 
-
+    /**
+     * Constructor
+     */
     function __construct()
     {
 
@@ -34,9 +36,11 @@ class Subscriber extends AbstractRole
     }
 
     /**
-     * @param AbstractSession $session
-     * @param Message $msg
-     * @return mixed
+     * Handle on recieved message
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\Message $msg
+     * @return void
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
@@ -52,8 +56,10 @@ class Subscriber extends AbstractRole
     }
 
     /**
-     * @param ClientSession $session
-     * @param SubscribedMessage $msg
+     * process subscribed
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\SubscribedMessage $msg
      */
     public function processSubscribed(ClientSession $session, SubscribedMessage $msg)
     {
@@ -66,17 +72,31 @@ class Subscriber extends AbstractRole
     }
 
     /**
-     * @param ClientSession $session
-     * @param UnsubscribedMessage $msg
+     * process unsubscribed
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\UnsubscribedMessage $msg
      */
     public function processUnsubscribed(ClientSession $session, UnsubscribedMessage $msg)
     {
+        foreach ($this->subscriptions as $key => $subscription) {
+            if (isset($subscription['unsubscribed_request_id']) && $subscription['unsubscribed_request_id'] == $msg->getRequestId()) {
+                /* @var $deferred \React\Promise\Deferred */
+                $deferred = $subscription['unsubscribed_deferred'];
+                $deferred->resolve();
 
+                unset($this->subscriptions[$key]);
+                return;
+            }
+        }
+        $this->logger->error("---Got an Unsubscribed Message, but couldn't find corresponding request.\n");
     }
 
     /**
-     * @param ClientSession $session
-     * @param EventMessage $msg
+     * Process event
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\EventMessage $msg
      */
     public function processEvent(ClientSession $session, EventMessage $msg)
     {
@@ -90,16 +110,18 @@ class Subscriber extends AbstractRole
 
 
     /**
-     * @param Message $msg
-     * @return mixed
+     * Returns true if this role handles this message.
+     * 
+     * @param \Thruway\Message\Message $msg
+     * @return boolean
      */
     public function handlesMessage(Message $msg)
     {
-        $handledMsgCodes = array(
+        $handledMsgCodes = [
             Message::MSG_SUBSCRIBED,
             Message::MSG_UNSUBSCRIBED,
             Message::MSG_EVENT
-        );
+        ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
             return true;
@@ -111,8 +133,11 @@ class Subscriber extends AbstractRole
     }
 
     /**
-     * @param $topicName
-     * @param $callback
+     * process subscribe
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param string $topicName
+     * @param \Closure $callback
      */
     public function subscribe(ClientSession $session, $topicName, $callback)
     {

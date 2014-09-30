@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/18/14
- * Time: 10:36 PM
- */
 
 namespace Thruway\Transport;
 
@@ -17,25 +11,42 @@ use Thruway\Message\Message;
 use Ratchet\ConnectionInterface;
 use Thruway\Serializer\SerializerInterface;
 
-class RatchetTransport implements TransportInterface {
+/**
+ * class RatchetTransport
+ */
+class RatchetTransport implements TransportInterface 
+{
     /**
-     * @var ConnectionInterface
+     * @var \Ratchet\ConnectionInterface
      */
     private $conn;
 
     /**
-     * @var SerializerInterface
+     * @var \Thruway\Serializer\SerializerInterface
      */
     private $serializer;
 
+    /**
+     * @var 
+     */
     private $pingSeq;
+    
+    /**
+     * @var 
+     */
     private $pingRequests;
 
     /**
-     * @var LoopInterface
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
 
+    /**
+     * Constructor
+     * 
+     * @param \Ratchet\ConnectionInterface $conn
+     * @param \React\EventLoop\LoopInterface $loop
+     */
     function __construct($conn, LoopInterface $loop)
     {
         $this->conn = $conn;
@@ -45,30 +56,49 @@ class RatchetTransport implements TransportInterface {
         $this->loop = $loop;
     }
 
+    /**
+     * Send message
+     * 
+     * @param \Thruway\Message\Message $msg
+     */
     public function sendMessage(Message $msg)
     {
         $this->conn->send($this->getSerializer()->serialize($msg));
     }
 
+    /**
+     * Close transport
+     */
     public function close()
     {
         $this->conn->close();
     }
 
+    /**
+     * Get transport details
+     * 
+     * @return array
+     */
     public function getTransportDetails()
     {
         $transportAddress = null;
 
         $transportAddress = $this->conn->remoteAddress;
 
-        return array(
-            "type" => "ratchet",
+        return [
+            "type"             => "ratchet",
             "transportAddress" => $transportAddress
-        );
-
+        ];
     }
 
-    public function ping($timeout = 10) {
+    /**
+     * Ping
+     * 
+     * @param int $timeout
+     * @return \React\Promise
+     */
+    public function ping($timeout = 10) 
+    {
         $payload = $this->pingSeq;
 
         $this->conn->send(new Frame($payload, true, Frame::OP_PING));
@@ -100,12 +130,18 @@ class RatchetTransport implements TransportInterface {
 
     }
 
-    public function onPong(Frame $frame) {
+    /**
+     * Handle on pong
+     * 
+     * @param \Ratchet\WebSocket\Version\RFC6455\Frame $frame
+     */
+    public function onPong(Frame $frame) 
+    {
         $seq = $frame->getPayload();
 
         if (isset($this->pingRequests[$seq]) && isset($this->pingRequests[$seq]['deferred'])) {
             $this->pingRequests[$seq]['deferred']->resolve($seq);
-            /** @var TimerInterface $timer */
+            /* @var $timer \React\EventLoop\Timer\TimerInterface*/
             $timer = $this->pingRequests[$seq]['timer'];
             $timer->cancel();
 
@@ -115,7 +151,9 @@ class RatchetTransport implements TransportInterface {
     }
 
     /**
-     * @param SerializerInterface $serializer
+     * Set serializer
+     * 
+     * @param \Thruway\Serializer\SerializerInterface $serializer
      * @return $this
      */
     public function setSerializer(SerializerInterface $serializer)
@@ -124,7 +162,9 @@ class RatchetTransport implements TransportInterface {
     }
 
     /**
-     * @return SerializerInterface
+     * Get serializer
+     * 
+     * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()
     {

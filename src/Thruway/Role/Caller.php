@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 12:02 PM
- */
 
 namespace Thruway\Role;
 
@@ -22,6 +16,7 @@ use React\Promise\Deferred;
 
 /**
  * Class Caller
+ * 
  * @package Thruway\Role
  */
 class Caller extends AbstractRole
@@ -33,17 +28,20 @@ class Caller extends AbstractRole
     private $callRequests;
 
     /**
-     * @param $session
+     * Contructor
+     * 
      */
     function __construct()
     {
-        $this->callRequests = array();
+        $this->callRequests = [];
     }
 
     /**
-     * @param AbstractSession $session
-     * @param Message $msg
-     * @return mixed
+     * process message
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\Message $msg
+     * @return void
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
@@ -58,8 +56,10 @@ class Caller extends AbstractRole
     }
 
     /**
-     * @param ClientSession $session
-     * @param ResultMessage $msg
+     * Process ResultMessage
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\ResultMessage $msg
      */
     public function processResult(ClientSession $session, ResultMessage $msg)
     {
@@ -81,8 +81,10 @@ class Caller extends AbstractRole
     }
 
     /**
-     * @param ClientSession $session
-     * @param ErrorMessage $msg
+     * Process ErrorMessage
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
      */
     public function processError(ClientSession $session, ErrorMessage $msg)
     {
@@ -100,15 +102,18 @@ class Caller extends AbstractRole
     }
 
     /**
-     * @param Message $msg
-     * @return mixed
+     * handle message
+     * Returns true if this role handles this message.
+     * 
+     * @param \Thruway\Message\Message $msg
+     * @return boolean
      */
     public function handlesMessage(Message $msg)
     {
 
-        $handledMsgCodes = array(
+        $handledMsgCodes = [
             Message::MSG_RESULT,
-        );
+        ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
             return true;
@@ -120,8 +125,13 @@ class Caller extends AbstractRole
     }
 
     /**
-     * @param $procedureName
-     * @param $arguments
+     * process call
+     * 
+     * @param \Thruway\ClientSession $session
+     * @param string $procedureName
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
+     * @param mixed $options
      * @return \React\Promise\Promise
      */
     public function call(ClientSession $session, $procedureName, $arguments = null, $argumentsKw = null, $options = null)

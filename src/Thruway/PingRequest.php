@@ -1,56 +1,81 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 8/23/14
- * Time: 1:13 AM
- */
 
 namespace Thruway;
-
 
 use React\Promise\Deferred;
 use Thruway\Message\PingMessage;
 
 /**
  * Class PingRequest
+ * 
  * @package Thruway
  */
-class PingRequest {
+class PingRequest
+{
+
     /**
      * @var PingMessage
      */
     private $pingMsg;
 
+    /**
+     * @var int
+     */
     private $timeout;
 
+    /**
+     * @var \React\Promise\Deferred
+     */
     private $deferred;
 
+    /**
+     *
+     * @var type 
+     */
     private $pingStart;
 
+    /**
+     * @var \React\EventLoop\Timer\TimerInterface
+     */
     private $timer;
-
+    
+    /**
+     * @var \React\EventLoop\LoopInterface
+     */
     private $loop;
 
+    /**
+     * @param \Thruway\Message\Message $pingMsg
+     */
     function __construct($pingMsg)
     {
         $this->pingMsg = $pingMsg;
     }
 
     /**
-     * @return Deferred
+     * @return \React\Promise\Deferred
      */
-    function getDeferred() {
-        if ($this->deferred === null) $this->deferred = new Deferred();
+    function getDeferred()
+    {
+        if ($this->deferred === null)
+            $this->deferred = new Deferred();
 
         return $this->deferred;
     }
 
-    function setTimer($timer) {
+    /**
+     * @param \React\EventLoop\Timer\TimerInterface $timer
+     */
+    function setTimer($timer)
+    {
         $this->timer = $timer;
     }
 
-    function getTimer() {
+    /**
+     * @return \React\EventLoop\Timer\TimerInterface
+     */
+    function getTimer()
+    {
         return $this->timer;
     }
 
@@ -71,7 +96,7 @@ class PingRequest {
     }
 
     /**
-     * @param mixed $loop
+     * @param \React\EventLoop\LoopInterface $loop
      */
     public function setLoop($loop)
     {
@@ -79,13 +104,11 @@ class PingRequest {
     }
 
     /**
-     * @return mixed
+     * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
     {
         return $this->loop;
     }
-
-
 
 }

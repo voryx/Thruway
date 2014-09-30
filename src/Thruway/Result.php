@@ -7,9 +7,11 @@ use React\Dns\Model\Message;
 
 /**
  * Class Result
+ * 
  * @package Thruway
  */
-class Result {
+class Result 
+{
     /**
      * @var array|null
      */
@@ -19,7 +21,13 @@ class Result {
      * @var array|null
      */
     private $argumentsKw;
-
+    
+    /**
+     * Constructor
+     * 
+     * @param array|null $arguments
+     * @param array|null $argumentsKw
+     */
     function __construct($arguments = null, $argumentsKw = null)
     {
         $this->setArguments($arguments);

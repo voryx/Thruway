@@ -29,7 +29,7 @@ abstract class AbstractPeer
     abstract public function onMessage(TransportInterface $transport, Message $msg);
 
     /**
-     * Handle proccess onpen
+     * Handle process onpen transport
      * 
      * @param \Thruway\Transport\TransportInterface $transport
      */

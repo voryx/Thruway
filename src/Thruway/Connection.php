@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daviddan
- * Date: 6/17/14
- * Time: 12:12 AM
- */
 
 namespace Thruway;
 
@@ -23,21 +17,24 @@ use Evenement\EventEmitterTrait;
 
 /**
  * Class Connection
+ * 
  * @package Thruway
  */
 class Connection implements EventEmitterInterface
-
 {
+    /**
+     * Using \Evenement\EventEmitterTrait to implements \Evenement\EventEmitterInterface
+     * @see \Evenement\EventEmitterTrait
+     */
     use EventEmitterTrait;
 
-
     /**
-     * @var Client
+     * @var \Thruway\Peer\Client
      */
     private $client;
 
     /**
-     * @var TransportInterface
+     * @var \Thruway\Transport\TransportInterface
      */
     private $transport;
 
@@ -47,8 +44,11 @@ class Connection implements EventEmitterInterface
     private $options;
 
     /**
+     * Constructer
+     * 
      * @param array $options
-     * @param LoopInterface $loop
+     * @param \React\LoopInterface $loop
+     * @param \Psr\Log\LoggerInterface $logger
      * @throws \Exception
      */
     function __construct(Array $options, LoopInterface $loop = null, LoggerInterface $logger = null)

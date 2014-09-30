@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daviddan
- * Date: 6/17/14
- * Time: 1:31 PM
- */
 
 namespace Thruway;
 
@@ -18,11 +12,15 @@ use Thruway\Transport\TransportInterface;
 
 /**
  * Class AbstractSession
+ * 
  * @package Thruway
  */
 abstract class AbstractSession
 {
-
+    /**
+     * Session state
+     * @const int
+     */
     const STATE_UNKNOWN = 0;
     const STATE_PRE_HELLO = 1;
     const STATE_CHALLENGE_SENT = 2;
@@ -30,50 +28,54 @@ abstract class AbstractSession
     const STATE_DOWN = 4;
 
     /**
-     * @var Realm
+     * @var \Thruway\Realm
      */
     protected $realm;
 
     /**
-     * @var bool
+     * @var boolean
      */
     protected $authenticated;
 
     /**
-     * @var
+     * @var int
      */
     protected $state;
 
     /**
-     * @var
+     * @var \Thruway\Transport\TransportInterface
      */
     protected $transport;
 
     /**
-     * @var
+     * @var int
      */
     protected $sessionId;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $goodbyeSent = false;
 
-    protected $pingRequests = array();
+    /**
+     *
+     * @var array
+     */
+    protected $pingRequests = [];
 
     /**
-     * @var LoopInterface
+     * @var \React\EventLoop\LoopInterface
      */
     protected $loop;
 
     /**
-     * @param Message $msg
+     * @param \Thruway\Message\Message $msg
      * @return mixed
      */
     abstract public function sendMessage(Message $msg);
 
     /**
-     * @param mixed $state
+     * @param int $state
      */
     public function setState($state)
     {
@@ -81,7 +83,7 @@ abstract class AbstractSession
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getState()
     {
@@ -106,7 +108,7 @@ abstract class AbstractSession
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
     public function isAuthenticated()
     {
@@ -131,7 +133,7 @@ abstract class AbstractSession
 
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getSessionId()
     {
@@ -139,7 +141,7 @@ abstract class AbstractSession
     }
 
     /**
-     * @return TransportInterface
+     * @return \Thruway\Transport\TransportInterface
      */
     public function getTransport()
     {
@@ -164,14 +166,25 @@ abstract class AbstractSession
 
     /**
      * @param int $timeout
-     * @return Promise
+     * @return \React\Promise\Promise
      */
-    public function ping($timeout = 5) {
+    public function ping($timeout = 5) 
+    {
         return $this->getTransport()->ping($timeout);
     }
 
-    public function abort($details = null, $responseURI = null) {
-        if ($this->isAuthenticated()) throw new \Exception("Session::abort called after we are authenticated");
+    /**
+     * process abort request
+     * 
+     * @param mixed $details
+     * @param mixed $responseURI
+     * @throws \Exception
+     */
+    public function abort($details = null, $responseURI = null) 
+    {
+        if ($this->isAuthenticated()){
+            throw new \Exception("Session::abort called after we are authenticated");
+        }
 
         $abortMsg = new AbortMessage($details, $responseURI);
 
@@ -180,6 +193,9 @@ abstract class AbstractSession
         $this->shutdown();
     }
 
+    /**
+     * Process Shutdown session
+     */
     public function shutdown()
     {
         // we want to immediately remove

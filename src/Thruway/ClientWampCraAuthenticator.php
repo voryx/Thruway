@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 8/5/14
- * Time: 8:11 PM
- */
 
 namespace Thruway;
 
@@ -12,13 +6,32 @@ namespace Thruway;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
 
-class ClientWampCraAuthenticator implements ClientAuthenticationInterface {
+/**
+ * Class ClientWampCraAuthenticator
+ */
+class ClientWampCraAuthenticator implements ClientAuthenticationInterface 
+{
+    /**
+     * @var string
+     */
     public $authid;
 
+    /**
+     * @var string
+     */
     public $derivedKey;
 
+    /**
+     * @var string
+     */
     public $key;
 
+    /**
+     * Constructor
+     * 
+     * @param string|int $authid
+     * @param string $key
+     */
     function __construct($authid, $key = null)
     {
         $this->authid = $authid;
@@ -26,6 +39,12 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface {
         $this->key = $key;
     }
 
+    /**
+     * Get Authenticate message from challenge message
+     * 
+     * @param \Thruway\Message\ChallengeMessage $msg
+     * @return \Thruway\Message\AuthenticateMessage|boolean
+     */
     public function getAuthenticateFromChallenge(ChallengeMessage $msg)
     {
         echo "Got challenge:\n";
@@ -82,23 +101,41 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface {
         return $authMessage;
     }
 
-    private function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32) {
+    /**
+     * Get Derived Key
+     * @param string $key
+     * @param string $salt
+     * @param int $iterations
+     * @param int $keyLen
+     * @return string
+     */
+    private function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32) 
+    {
         return base64_encode(hash_pbkdf2('sha256', $key, $salt, $iterations, $keyLen, true));;
     }
 
+    /**
+     * @return string
+     */
     public function getAuthId()
     {
         return $this->authid;
     }
 
+    /**
+     * @param string $authid
+     */
     public function setAuthId($authid)
     {
         $this->authid = $authid;
     }
 
+    /**
+     * @return array
+     */
     public function getAuthMethods()
     {
-        return array("wampcra");
+        return ['wampcra'];
     }
 
 

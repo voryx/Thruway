@@ -67,7 +67,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $errorURI
-     * @return $this
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setErrorURI($errorURI)
     {
@@ -88,7 +88,7 @@ class ErrorMessage extends Message
      * This creates a specific error message depending on the message we are reporting
      * an error on.
      *
-     * @param Message $msg
+     * @param \Thruway\Message\Message $msg
      * @return \Thruway\Message\ErrorMessage
      */
     static public function createErrorMessageFromMessage(Message $msg)
@@ -121,7 +121,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $details
-     * @return $this
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setDetails($details)
     {
@@ -140,7 +140,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $errorMsgCode
-     * @return $this
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setErrorMsgCode($errorMsgCode)
     {
@@ -159,7 +159,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $requestId
-     * @return $this|void
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setRequestId($requestId)
     {
@@ -178,7 +178,7 @@ class ErrorMessage extends Message
 
     /**
      * @param mixed $errorRequestId
-     * @return $this
+     * @return \Thruway\Message\ErrorMessage
      */
     public function setErrorRequestId($errorRequestId)
     {

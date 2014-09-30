@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/7/14
- * Time: 10:12 PM
- */
 
 namespace Thruway\Role;
 
@@ -15,27 +9,33 @@ use Thruway\Session;
 
 /**
  * Class AbstractRole
+ * 
  * @package Thruway\Role
  */
 abstract class AbstractRole
 {
     /**
-     * @param AbstractSession $session
-     * @param Message $msg
+     * Handle process reveiced message
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\Message $msg
      * @return mixed
      */
     abstract public function onMessage(AbstractSession $session, Message $msg);
 
     /**
-     * @param Message $msg
+     * Handle process message
+     * 
+     * @param \Thruway\Message\Message $msg
      * @return mixed
      */
     abstract public function handlesMessage(Message $msg);
 
     /**
      * Strict URI Test
+     * 
      * @param $uri
-     * @return bool
+     * @return boolean
      */
     public function uriIsValid($uri)
     {

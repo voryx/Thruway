@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/9/14
- * Time: 11:04 PM
- */
 
 namespace Thruway;
-
 
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthenticationManagerInterface;
@@ -27,56 +20,58 @@ use Thruway\Transport\TransportInterface;
 
 /**
  * Class Realm
+ * 
  * @package Thruway
  */
 class Realm
 {
 
-
     /**
-     * @var
+     * @var string
      */
     private $realmName;
+
     /**
      * @var \SplObjectStorage
      */
     private $sessions;
+
     /**
-     * @var array
+     * @var \Thruway\Role\AbstractRole[]
      */
     private $roles;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
     /**
-     * @var Broker
+     * @var \Thruway\Role\Broker
      */
     private $broker;
 
     /**
-     * @var Dealer
+     * @var \Thruway\Role\Dealer
      */
     private $dealer;
 
     /**
-     * @var AuthenticationManagerInterface
+     * @var \Thruway\Authentication\AuthenticationManagerInterface
      */
     private $authenticationManager;
 
     /**
-     * @param $realmName
+     * Contructor
+     * 
+     * @param string $realmName
      */
     function __construct($realmName)
     {
         $this->realmName = $realmName;
-        $this->sessions = new \SplObjectStorage();
-
-        $this->broker = new Broker();
-
-        $this->dealer = new Dealer();
+        $this->sessions  = new \SplObjectStorage();
+        $this->broker    = new Broker();
+        $this->dealer    = new Dealer();
 
         $this->setManager(new ManagerDummy());
 
@@ -86,8 +81,10 @@ class Realm
     }
 
     /**
-     * @param Session $session
-     * @param Message $msg
+     * Handle process received message
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\Message $msg
      */
     public function onMessage(Session $session, Message $msg)
     {
@@ -108,27 +105,28 @@ class Realm
             $this->manager->error("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
             $session->abort(new \stdClass(), "wamp.error.not_authorized");
         endif;
-
     }
 
     /**
-     * @param Session $session
-     * @param Message $msg
+     * Process AbortMessage
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\Message $msg
      */
-    private function processAbort(Session $session, Message $msg) {
+    private function processAbort(Session $session, Message $msg)
+    {
         $session->shutdown();
     }
 
     /**
      * Process All Messages if the session has been authenticated
      *
-     * @param Session $session
-     * @param Message $msg
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\Message $msg
      */
     private function processAuthenticated(Session $session, Message $msg)
     {
         $handled = false;
-        /* @var $role AbstractRole */
         foreach ($this->roles as $role) {
             if ($role->handlesMessage($msg)) {
                 $role->onMessage($session, $msg);
@@ -143,8 +141,10 @@ class Realm
     }
 
     /**
-     * @param Session $session
-     * @param HelloMessage $msg
+     * Process HelloMessage
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\HelloMessage $msg
      */
     private function processHello(Session $session, HelloMessage $msg)
     {
@@ -166,7 +166,7 @@ class Realm
                 try {
                     $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
                 } catch (\Exception $e) {
-
+                    
                 }
             } else {
                 $session->setAuthenticated(true);
@@ -174,15 +174,17 @@ class Realm
                 $session->setAuthenticationDetails(AuthenticationDetails::createAnonymous());
 
                 // the broker and dealer should give us this information
-                $roles = array("broker" => new \stdClass, "dealer" => new \stdClass);
+                $roles = ["broker" => new \stdClass, "dealer" => new \stdClass];
                 $session->sendMessage(
-                    new WelcomeMessage($session->getSessionId(), array("roles" => $roles))
+                    new WelcomeMessage($session->getSessionId(), ["roles" => $roles])
                 );
             }
         }
     }
 
     /**
+     * Process AuthenticateMessage
+     * 
      * @param Session $session
      * @param AuthenticateMessage $msg
      */
@@ -206,10 +208,9 @@ class Realm
      */
     public function managerGetSessions()
     {
-        $theSessions = array();
+        $theSessions = [];
 
-        /** @var $session Session */
-        /** @var $transport TransportInterface */
+        /* @var $session \Thruway\Session */
         foreach ($this->sessions as $session) {
 
             $sessionRealm = null;
@@ -219,10 +220,9 @@ class Realm
             }
 
             if ($session->getAuthenticationDetails() !== null) {
-                /** @var AuthenticationDetails $authDetails */
                 $authDetails = $session->getAuthenticationDetails();
                 $auth = array(
-                    "authid" => $authDetails->getAuthId(),
+                    "authid"     => $authDetails->getAuthId(),
                     "authmethod" => $authDetails->getAuthMethod()
                 );
             } else {
@@ -230,18 +230,17 @@ class Realm
             }
 
             $theSessions[] = [
-                "id" => $session->getSessionId(),
-                "transport" => $session->getTransport()->getTransportDetails(),
+                "id"           => $session->getSessionId(),
+                "transport"    => $session->getTransport()->getTransportDetails(),
                 "messagesSent" => $session->getMessagesSent(),
                 "sessionStart" => $session->getSessionStart(),
-                "realm" => $sessionRealm,
-                "auth" => $auth
+                "realm"        => $sessionRealm,
+                "auth"         => $auth
             ];
         }
 
         return $theSessions;
     }
-
 
     /**
      * @param mixed $realmName
@@ -260,7 +259,7 @@ class Realm
     }
 
     /**
-     * @param Session $session
+     * @param \Thruway\Session $session
      */
     public function leave(Session $session)
     {
@@ -278,7 +277,7 @@ class Realm
     }
 
     /**
-     * @param ManagerInterface $manager
+     * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
     {
@@ -288,15 +287,14 @@ class Realm
         $this->dealer->setManager($manager);
 
         $manager->addCallable(
-            "realm.{$this->getRealmName()}.registrations",
-            function () {
-                return $this->dealer->managerGetRegistrations();
-            }
+            "realm.{$this->getRealmName()}.registrations", function () {
+            return $this->dealer->managerGetRegistrations();
+        }
         );
     }
 
     /**
-     * @return ManagerInterface
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {
@@ -304,7 +302,7 @@ class Realm
     }
 
     /**
-     * @param AuthenticationManagerInterface $authenticationManager
+     * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager)
     {
@@ -312,7 +310,7 @@ class Realm
     }
 
     /**
-     * @return AuthenticationManagerInterface
+     * @return \Thruway\Authentication\AuthenticationManagerInterface
      */
     public function getAuthenticationManager()
     {
@@ -328,7 +326,7 @@ class Realm
     }
 
     /**
-     * @return Broker
+     * @return \Thruway\Role\Broker
      */
     public function getBroker()
     {
@@ -336,10 +334,11 @@ class Realm
     }
 
     /**
-     * @return Dealer
+     * @return \Thruway\Role\Dealer
      */
     public function getDealer()
     {
         return $this->dealer;
     }
+
 }

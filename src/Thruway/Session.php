@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 6/8/14
- * Time: 11:15 PM
- */
 
 namespace Thruway;
 
@@ -17,13 +11,14 @@ use Thruway\Transport\TransportInterface;
 
 /**
  * Class Session
+ * 
  * @package Thruway
  */
 class Session extends AbstractSession
 {
 
     /**
-     * @var AuthenticationDetails
+     * @var \Thruway\Authentication\AuthenticationDetails
      */
     private $authenticationDetails;
 
@@ -39,10 +34,16 @@ class Session extends AbstractSession
     private $sessionStart;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
+    /**
+     * Constructor
+     * 
+     * @param \Thruway\Transport\TransportInterface $transport
+     * @param \Thruway\Manager\ManagerInterface $manager
+     */
     function __construct(TransportInterface $transport, ManagerInterface $manager = null)
     {
         $this->transport = $transport;
@@ -62,6 +63,11 @@ class Session extends AbstractSession
         $this->authenticationDetails = null;
     }
 
+    /**
+     * Send message
+     * 
+     * @param \Thruway\Message\Message $msg
+     */
     public function sendMessage(Message $msg)
     {
         $this->messagesSent++;
@@ -71,7 +77,7 @@ class Session extends AbstractSession
 
 
     /**
-     *
+     * Handle close session
      */
     public function onClose()
     {
@@ -94,7 +100,7 @@ class Session extends AbstractSession
     }
 
     /**
-     * @param ManagerInterface $manager
+     * @param \Thruway\Manager\ManagerInterface $manager
      * @throws \InvalidArgumentException
      */
     public function setManager(ManagerInterface $manager)
@@ -103,13 +109,16 @@ class Session extends AbstractSession
     }
 
     /**
-     * @return ManagerInterface
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {
         return $this->manager;
     }
 
+    /**
+     * @return int
+     */
     public function getMessagesSent()
     {
         return $this->messagesSent;
@@ -124,7 +133,7 @@ class Session extends AbstractSession
     }
 
     /**
-     * @param AuthenticationDetails $authenticationDetails
+     * @param \Thruway\Authentication\AuthenticationDetails $authenticationDetails
      */
     public function setAuthenticationDetails($authenticationDetails)
     {
@@ -132,7 +141,7 @@ class Session extends AbstractSession
     }
 
     /**
-     * @return AuthenticationDetails
+     * @return \Thruway\Authentication\AuthenticationDetails
      */
     public function getAuthenticationDetails()
     {

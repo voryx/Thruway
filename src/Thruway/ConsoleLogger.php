@@ -1,16 +1,17 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 9/2/14
- * Time: 10:13 PM
- */
 
 namespace Thruway;
 
 use Psr\Log\AbstractLogger;
 
-class ConsoleLogger extends AbstractLogger {
+/**
+ * Class ConsoleLogger
+ * 
+ * @package Thruway
+ */
+class ConsoleLogger extends AbstractLogger
+{
+
     /**
      * Logs with an arbitrary level.
      *
@@ -24,4 +25,4 @@ class ConsoleLogger extends AbstractLogger {
         echo $level . ": " . $message . "\n";
     }
 
-} 
+}
