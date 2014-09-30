@@ -20,21 +20,23 @@ class CallResult extends \ArrayObject
     /**
      * Constructor
      *
-     * @param \Thruway\Message\ResultMessage $resultMessage
+     * @param \Thruway\Message\ResultMessage $msg
      */
-    function __construct($resultMessage)
+    function __construct(ResultMessage $msg)
     {
-        $this->resultMessage = $resultMessage;
+        $this->resultMessage = $msg;
 
-        parent::__construct($resultMessage->getArguments());
+        parent::__construct($msg->getArguments());
     }
 
     /**
-     * @param \Thruway\Message\ResultMessage $resultMessage
+     * Set Result Message
+     *
+     * @param \Thruway\Message\ResultMessage $msg
      */
-    public function setResultMessage($resultMessage)
+    public function setResultMessage(ResultMessage $msg)
     {
-        $this->resultMessage = $resultMessage;
+        $this->resultMessage = $msg;
     }
 
     /**
