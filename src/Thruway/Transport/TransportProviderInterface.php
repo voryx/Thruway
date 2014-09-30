@@ -7,27 +7,27 @@ use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
 
 /**
- * abstract class for transport provider
+ * Interface class for transport provider
  *
  * @package Thruway\Transport
  */
-abstract class AbstractTransportProvider
+interface TransportProviderInterface
 {
 
     /**
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    abstract public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop);
+    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop);
 
     /**
      * @return \Thruway\Manager\ManagerInterface
      */
-    abstract public function getManager();
+    public function getManager();
 
     /**
      * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
-    abstract public function setManager(ManagerInterface $managerInterface);
+    public function setManager(ManagerInterface $managerInterface);
 
 }

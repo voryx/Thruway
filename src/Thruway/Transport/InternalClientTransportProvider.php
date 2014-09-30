@@ -14,7 +14,7 @@ use Thruway\Peer\Client;
  *
  * @package Thruway\Transport
  */
-class InternalClientTransportProvider extends AbstractTransportProvider
+class InternalClientTransportProvider implements TransportProviderInterface
 {
 
     /**

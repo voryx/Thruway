@@ -16,7 +16,7 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class PawlTransportProvider extends AbstractTransportProvider implements EventEmitterInterface
+class PawlTransportProvider implements TransportProviderInterface, EventEmitterInterface
 {
 
     /**

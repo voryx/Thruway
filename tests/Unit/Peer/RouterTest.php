@@ -34,7 +34,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
         // Create a stub for the Transport Provider class.
-        $this->transportProviderMock = $this->getMock('\Thruway\Transport\RatchetTransportProvider');
+        $this->transportProviderMock = $this->getMock('\Thruway\Transport\TransportProviderInterface');
 
     }
 

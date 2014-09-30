@@ -4,8 +4,8 @@ namespace Thruway\Peer;
 
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\Message;
-use Thruway\Transport\AbstractTransportProvider;
 use Thruway\Transport\TransportInterface;
+use Thruway\Transport\TransportProviderInterface;
 
 /**
  * class AbstractPeer
@@ -37,9 +37,9 @@ abstract class AbstractPeer
     /**
      * Add transport provider
      *
-     * @param \Thruway\Transport\AbstractTransportProvider $transportProvider
+     * @param \Thruway\Transport\TransportProviderInterface $transportProvider
      */
-    abstract public function addTransportProvider(AbstractTransportProvider $transportProvider);
+    abstract public function addTransportProvider(TransportProviderInterface $transportProvider);
 
     /**
      * Set manager

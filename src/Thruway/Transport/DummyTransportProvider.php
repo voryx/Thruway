@@ -12,7 +12,7 @@ use Thruway\Peer\AbstractPeer;
  *
  * @package Thruway\Transport
  */
-class DummyTransportProvider extends AbstractTransportProvider
+class DummyTransportProvider implements TransportProviderInterface
 {
 
     /**

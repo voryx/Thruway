@@ -19,7 +19,7 @@ use Thruway\Role\Caller;
 use Thruway\Role\Publisher;
 use Thruway\Role\Subscriber;
 use Thruway\Session;
-use Thruway\Transport\AbstractTransportProvider;
+use Thruway\Transport\TransportProviderInterface;
 use Thruway\Transport\TransportInterface;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
@@ -77,7 +77,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     private $subscriber;
 
     /**
-     * @var \Thruway\Transport\AbstractTransportProvider
+     * @var \Thruway\Transport\TransportProviderInterface
      */
     private $transportProvider;
 
@@ -186,10 +186,10 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * Add transport provider
      *
-     * @param \Thruway\Transport\AbstractTransportProvider $transportProvider
+     * @param \Thruway\Transport\TransportProviderInterface $transportProvider
      * @throws \Exception
      */
-    public function addTransportProvider(AbstractTransportProvider $transportProvider)
+    public function addTransportProvider(TransportProviderInterface $transportProvider)
     {
         if ($this->transportProvider !== null) {
             throw new \Exception("You can only have one transport provider for a client");

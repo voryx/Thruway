@@ -21,7 +21,7 @@ use React\Socket\Server as Reactor;
  *
  * @package Thruway\Transport
  */
-class RatchetTransportProvider extends AbstractTransportProvider implements MessageComponentInterface, WsServerInterface
+class RatchetTransportProvider implements TransportProviderInterface, MessageComponentInterface, WsServerInterface
 {
 
     /**

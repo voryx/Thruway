@@ -48,7 +48,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      * Handles session started
      *
      * @param \Thruway\AbstractSession $session
-     * @param \Thruway\Transport\AbstractTransportProvider $transport
+     * @param \Thruway\Transport\TransportProviderInterface $transport
      */
     public function onSessionStart($session, $transport)
     {

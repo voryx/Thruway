@@ -12,7 +12,7 @@ use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\RealmManager;
 use Thruway\Session;
-use Thruway\Transport\AbstractTransportProvider;
+use Thruway\Transport\TransportProviderInterface;
 use Thruway\Transport\TransportInterface;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
@@ -26,7 +26,7 @@ class Router extends AbstractPeer
 {
 
     /**
-     * @var \Thruway\Transport\AbstractTransportProvider[]
+     * @var \Thruway\Transport\TransportProviderInterface[]
      */
     private $transportProviders;
 
@@ -142,9 +142,9 @@ class Router extends AbstractPeer
 
     /**
      * Add transport provider
-     * @param \Thruway\Transport\AbstractTransportProvider $transportProvider
+     * @param \Thruway\Transport\TransportProviderInterface $transportProvider
      */
-    public function addTransportProvider(AbstractTransportProvider $transportProvider)
+    public function addTransportProvider(TransportProviderInterface $transportProvider)
     {
         array_push($this->transportProviders, $transportProvider);
     }
