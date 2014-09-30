@@ -17,7 +17,7 @@ interface SerializerInterface
 
     /**
      * Serialize message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return mixed
      */
@@ -25,9 +25,10 @@ interface SerializerInterface
 
     /**
      * Deserialize message
-     * 
+     *
      * @param mixed $serializedData
      * @return \Thruway\Message\Message
      */
     public function deserialize($serializedData);
+
 }

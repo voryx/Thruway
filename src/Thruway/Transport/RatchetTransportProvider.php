@@ -19,32 +19,32 @@ use React\Socket\Server as Reactor;
 
 /**
  * Class RatchetTransportProvider
- * 
+ *
  * @package Thruway\Transport
  */
-class RatchetTransportProvider extends AbstractTransportProvider implements MessageComponentInterface, WsServerInterface 
+class RatchetTransportProvider extends AbstractTransportProvider implements MessageComponentInterface, WsServerInterface
 {
 
     /**
      * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
-    
+
     /**
      * @var string
      */
     private $address;
-    
+
     /**
      * @var string|int
      */
     private $port;
-    
+
     /**
-     * @var \React\EventLoop\LoopInterface 
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
-    
+
     /**
      * @var \Ratchet\Server\IoServer
      */
@@ -62,26 +62,27 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
     /**
      * Constructor
-     * 
+     *
      * @param string $address
      * @param string|int $port
      */
-    function __construct($address = "127.0.0.1", $port = 8080) {
-        $this->peer = null;
-        $this->port = $port;
-        $this->address = $address;
+    function __construct($address = "127.0.0.1", $port = 8080)
+    {
+        $this->peer       = null;
+        $this->port       = $port;
+        $this->address    = $address;
         $this->transports = new \SplObjectStorage();
-
-        $this->manager = new ManagerDummy();
+        $this->manager    = new ManagerDummy();
     }
 
     /**
      * Start transportprovider
-     * 
+     *
      * @param AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop) {
+    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
+    {
         $this->peer = $peer;
         $this->loop = $loop;
 
@@ -184,11 +185,12 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
     /**
      * Handle on pong
-     * 
+     *
      * @param \Ratchet\ConnectionInterface $from
      * @param \Ratchet\WebSocket\Version\RFC6455\Frame $frame
      */
-    function onPong(ConnectionInterface $from, Frame $frame) {
+    function onPong(ConnectionInterface $from, Frame $frame)
+    {
         $transport = $this->transports[$from];
 
         if (method_exists($transport, 'onPong')) {
@@ -213,6 +215,5 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     {
         return $this->manager;
     }
-
 
 } 

@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class AuthenticateMessage
  * In response to a CHALLENGE message, an Endpoint MUST send an AUTHENTICATION message.
  * <code>[AUTHENTICATE, Signature|string, Extra|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class AuthenticateMessage extends Message

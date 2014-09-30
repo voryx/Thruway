@@ -6,17 +6,18 @@ namespace Thruway\Message;
  * Class SubscribedMessage
  * Acknowledge sent by a Broker to a Subscriber to acknowledge a subscription.
  * <code>[SUBSCRIBED, SUBSCRIBE.Request|id, Subscription|id]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class SubscribedMessage extends Message
 {
+
     /**
      *
      * @var mixed
      */
     private $subscriptionId;
-    
+
     /**
      *
      * @var mixed
@@ -24,8 +25,8 @@ class SubscribedMessage extends Message
     private $requestId;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      * @param mixed $subscriptionId
      */
@@ -88,6 +89,4 @@ class SubscribedMessage extends Message
         return $this->requestId;
     }
 
-    
-    
 }

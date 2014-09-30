@@ -8,18 +8,18 @@ use Psr\Log\NullLogger;
 
 /**
  * Class ManagerDummy
- * 
+ *
  * @package Thruway\Manager
  */
-
-class ManagerDummy implements ManagerInterface 
+class ManagerDummy implements ManagerInterface
 {
+
     /**
      * Implements \Psr\Log\LoggerAwareInterface
      * @see Psr\Log\LoggerAwareTrait
      */
     use LoggerAwareTrait;
-    
+
     /**
      * Implements \Psr\Log\LoggerInterface
      * @see Psr\Log\LoggerTrait
@@ -27,12 +27,12 @@ class ManagerDummy implements ManagerInterface
     use LoggerTrait;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $quiet;
-    
+
     /**
-     * Contructor
+     * Constructor
      */
     public function __construct()
     {
@@ -52,15 +52,16 @@ class ManagerDummy implements ManagerInterface
 
     /**
      * Logging
-     * 
+     *
      * @param mixed $level
      * @param string $message
      * @param array $context
+     * @return null|void
      * @see \Psr\Log\LoggerInterface::log($level, $message, $context);
      */
-    public function log($level, $message, array $context = array())
+    public function log($level, $message, array $context = [])
     {
-        if ( ! $this->getQuiet()) {
+        if (!$this->getQuiet()) {
             $this->logger->log($level, $message, $context);
         }
     }
@@ -88,4 +89,5 @@ class ManagerDummy implements ManagerInterface
     {
         return $this->logger;
     }
+
 } 

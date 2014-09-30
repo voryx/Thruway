@@ -8,7 +8,7 @@ namespace Thruway\Message;
  * <code>[RESULT, CALL.Request|id, Details|dict]</code>
  * <code>[RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list]</code>
  * <code>[RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list, YIELD.ArgumentsKw|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class ResultMessage extends Message
@@ -31,7 +31,7 @@ class ResultMessage extends Message
     private $details;
 
     /**
-     * Contructor
+     * Constructor
      * @param mixed $requestId
      * @param mixed $details
      * @param mixed $arguments
@@ -65,7 +65,7 @@ class ResultMessage extends Message
         if ($details === null) {
             $details = new \stdClass();
         }
-        $details = (object) $details;
+        $details = (object)$details;
 
         $a = [$this->getRequestId(), $details];
 

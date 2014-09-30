@@ -6,7 +6,7 @@ use Psr\Log\AbstractLogger;
 
 /**
  * Class ConsoleLogger
- * 
+ *
  * @package Thruway
  */
 class ConsoleLogger extends AbstractLogger
@@ -20,7 +20,7 @@ class ConsoleLogger extends AbstractLogger
      * @param array $context
      * @return null
      */
-    public function log($level, $message, array $context = array())
+    public function log($level, $message, array $context = [])
     {
         echo $level . ": " . $message . "\n";
     }

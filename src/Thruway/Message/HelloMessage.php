@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class HelloMessage
  * Sent by a Client to initiate opening of a WAMP session to a Router attaching to a Realm.
  * <code>[HELLO, Realm|uri, Details|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class HelloMessage extends Message

@@ -6,10 +6,9 @@ use Thruway\Result;
 
 /**
  * Arguments trait
- * 
+ *
  * @package Thruway\Message
  */
-
 trait ArgumentsTrait
 {
 
@@ -25,7 +24,7 @@ trait ArgumentsTrait
 
     /**
      * Get argument for serialization
-     * 
+     *
      * @return array
      */
     public function getArgumentsForSerialization()
@@ -36,11 +35,11 @@ trait ArgumentsTrait
         $argsKw = $this->getArgumentsKw();
         if ($args !== null && is_array($args) && count($args) > 0) {
             $a = array_merge($a, [$args]);
-            if ($argsKw !== null && Message::isAssoc($argsKw) && count((array) $argsKw) > 0) {
+            if ($argsKw !== null && Message::isAssoc($argsKw) && count((array)$argsKw) > 0) {
                 $a = array_merge($a, [$argsKw]);
             }
         } else {
-            if ($argsKw !== null && Message::isAssoc($argsKw) && count((array) $argsKw) > 0) {
+            if ($argsKw !== null && Message::isAssoc($argsKw) && count((array)$argsKw) > 0) {
                 $a = array_merge($a, [[], $argsKw]);
             }
         }

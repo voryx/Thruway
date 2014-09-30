@@ -15,7 +15,7 @@ use Thruway\Session;
 
 /**
  * Class Subscriber
- * 
+ *
  * @package Thruway\Role
  */
 class Subscriber extends AbstractRole
@@ -32,12 +32,12 @@ class Subscriber extends AbstractRole
     function __construct()
     {
 
-        $this->subscriptions = array();
+        $this->subscriptions = [];
     }
 
     /**
      * Handle on recieved message
-     * 
+     *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
      * @return void
@@ -57,7 +57,7 @@ class Subscriber extends AbstractRole
 
     /**
      * process subscribed
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\SubscribedMessage $msg
      */
@@ -73,7 +73,7 @@ class Subscriber extends AbstractRole
 
     /**
      * process unsubscribed
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\UnsubscribedMessage $msg
      */
@@ -94,7 +94,7 @@ class Subscriber extends AbstractRole
 
     /**
      * Process event
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\EventMessage $msg
      */
@@ -102,7 +102,8 @@ class Subscriber extends AbstractRole
     {
         foreach ($this->subscriptions as $key => $subscription) {
             if ($subscription["subscription_id"] === $msg->getSubscriptionId()) {
-                call_user_func_array($subscription["callback"], [$msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails(), $msg->getPublicationId()]);
+                call_user_func_array($subscription["callback"],
+                    [$msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails(), $msg->getPublicationId()]);
                 break;
             }
         }
@@ -111,7 +112,7 @@ class Subscriber extends AbstractRole
 
     /**
      * Returns true if this role handles this message.
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return boolean
      */
@@ -134,20 +135,20 @@ class Subscriber extends AbstractRole
 
     /**
      * process subscribe
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param string $topicName
      * @param \Closure $callback
      */
     public function subscribe(ClientSession $session, $topicName, $callback)
     {
-        $requestId = Session::getUniqueId();
-        $options = new \stdClass();
+        $requestId    = Session::getUniqueId();
+        $options      = new \stdClass();
         $subscription = [
             "topic_name" => $topicName,
-            "callback" => $callback,
+            "callback"   => $callback,
             "request_id" => $requestId,
-            "options" => $options
+            "options"    => $options
         ];
 
         array_push($this->subscriptions, $subscription);
@@ -155,4 +156,5 @@ class Subscriber extends AbstractRole
         $subscribeMsg = new SubscribeMessage($requestId, $options, $topicName);
         $session->sendMessage($subscribeMsg);
     }
+
 } 

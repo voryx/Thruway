@@ -6,11 +6,12 @@ use Thruway\Message\ResultMessage;
 
 /**
  * Class CallResult
- * 
+ *
  * @package Thruway
  */
-class CallResult extends \ArrayObject 
+class CallResult extends \ArrayObject
 {
+
     /**
      * @var \Thruway\Message\ResultMessage
      */
@@ -18,7 +19,7 @@ class CallResult extends \ArrayObject
 
     /**
      * Constructor
-     * 
+     *
      * @param \Thruway\Message\ResultMessage $resultMessage
      */
     function __construct($resultMessage)
@@ -43,30 +44,30 @@ class CallResult extends \ArrayObject
     {
         return $this->resultMessage;
     }
-    
+
     /**
-     * 
+     *
      * @return mixed
      */
-    public function getArguments() 
+    public function getArguments()
     {
         return $this->getResultMessage()->getArguments();
     }
 
     /**
-     * 
+     *
      * @return mixed
      */
-    public function getArgumentsKw() 
+    public function getArgumentsKw()
     {
         return $this->getResultMessage()->getArgumentsKw();
     }
 
     /**
-     * 
+     *
      * @return mixed
      */
-    public function getDetails() 
+    public function getDetails()
     {
         return $this->getResultMessage()->getDetails();
     }

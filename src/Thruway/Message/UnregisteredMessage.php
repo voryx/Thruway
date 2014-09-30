@@ -6,12 +6,13 @@ namespace Thruway\Message;
  * Class UnregisteredMessage
  * Acknowledge sent by a Dealer to a Callee for successful unregistration.
  * <code>[UNREGISTERED, UNREGISTER.Request|id]</code>
- * 
+ *
  * @package Thruway\Message
  */
 
 class UnregisteredMessage extends Message
 {
+
     /**
      *
      * @var mixed
@@ -19,8 +20,8 @@ class UnregisteredMessage extends Message
     private $requestId;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      */
     function __construct($requestId)

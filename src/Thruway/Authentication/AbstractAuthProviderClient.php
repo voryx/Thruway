@@ -3,15 +3,13 @@
 namespace Thruway\Authentication;
 
 use React\EventLoop\LoopInterface;
-use React\Promise\Promise;
 use Thruway\Peer\Client;
 
 /**
  * Abstract class AbstractAuthProviderClient
- * 
+ *
  * @package Thruway\Authentication
  */
-
 class AbstractAuthProviderClient extends Client
 {
     /**
@@ -22,9 +20,9 @@ class AbstractAuthProviderClient extends Client
 
     /**
      * Constructor
-     * 
+     *
      * @param array $authRealms
-     * @param React\EventLoop\LoopInterface $loop
+     * @param \React\EventLoop\LoopInterface $loop
      */
     function __construct(Array $authRealms, LoopInterface $loop = null)
     {
@@ -43,7 +41,7 @@ class AbstractAuthProviderClient extends Client
 
     /**
      * Process HelloMessage
-     * 
+     *
      * @param array $args
      * @return array
      */
@@ -55,9 +53,9 @@ class AbstractAuthProviderClient extends Client
 
     /**
      * Handles session start
-     * 
-     * @param Thruway\AbstractSession $session
-     * @param Thruway\Transport\AbstractTransportProvider $transport
+     *
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Transport\AbstractTransportProvider $transport
      */
     public function onSessionStart($session, $transport)
     {
@@ -80,7 +78,7 @@ class AbstractAuthProviderClient extends Client
                             [
                                 $this->getMethodName(),
                                 [
-                                    "onhello" => "thruway.auth.{$this->getMethodName()}.onhello",
+                                    "onhello"        => "thruway.auth.{$this->getMethodName()}.onhello",
                                     "onauthenticate" => "thruway.auth.{$this->getMethodName()}.onauthenticate"
                                 ],
                                 $this->getAuthRealms()
@@ -96,7 +94,7 @@ class AbstractAuthProviderClient extends Client
     /**
      * Pre process AuthenticateMessage
      * Extract and validate arguments
-     * 
+     *
      * @param array $args
      * @return array
      */
@@ -104,7 +102,7 @@ class AbstractAuthProviderClient extends Client
     {
 
         $signature = isset($args['signature']) ? $args['signature'] : null;
-        $extra = isset($args['extra']) ? $args['extra'] : null;
+        $extra     = isset($args['extra']) ? $args['extra'] : null;
 
         if (!$signature) {
             return ["ERROR"];
@@ -117,7 +115,7 @@ class AbstractAuthProviderClient extends Client
     /**
      * Process AuthenticateMessage
      * Check authenticate and return ["SUCCESS"] and ["FAILURE"]
-     * 
+     *
      * @param mixed $signature
      * @param mixed $extra
      * @return array
@@ -131,7 +129,7 @@ class AbstractAuthProviderClient extends Client
 
     /**
      * Get list supported realms
-     * 
+     *
      * @return array
      */
     public function getAuthRealms()
@@ -141,11 +139,12 @@ class AbstractAuthProviderClient extends Client
 
     /**
      * Set list supported realms
-     * 
+     *
      * @param array $authRealms
      */
     public function setAuthRealms($authRealms)
     {
         $this->authRealms = $authRealms;
     }
+
 } 

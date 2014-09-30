@@ -14,14 +14,14 @@ use Thruway\Serializer\SerializerInterface;
 
 /**
  * Class PawlTransport
- * 
+ *
  * @package Thruway\Transport
  */
-
-class PawlTransport implements TransportInterface 
+class PawlTransport implements TransportInterface
 {
+
     /**
-     * @var 
+     * @var
      */
     private $pingSeq;
 
@@ -47,23 +47,21 @@ class PawlTransport implements TransportInterface
 
     /**
      * Constructor
-     * 
+     *
      * @param \Ratchet\Client\WebSocket $conn
      * @param \React\EventLoop\LoopInterface $loop
      */
     function __construct($conn, LoopInterface $loop)
     {
-        $this->conn = $conn;
-        $this->pingSeq = 0;
-
-        $this->pingRequests = array();
-
-        $this->loop = $loop;
+        $this->conn         = $conn;
+        $this->pingSeq      = 0;
+        $this->pingRequests = [];
+        $this->loop         = $loop;
     }
 
     /**
      * Send message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      */
     public function sendMessage(Message $msg)
@@ -91,11 +89,11 @@ class PawlTransport implements TransportInterface
 
     /**
      * ping
-     * 
+     *
      * @param int $timeout
      * @return \React\Promise\Promise
      */
-    public function ping($timeout = 10) 
+    public function ping($timeout = 10)
     {
         $payload = $this->pingSeq;
 
@@ -107,33 +105,33 @@ class PawlTransport implements TransportInterface
 
         if ($timeout > 0) {
             $timer = $this->loop->addTimer($timeout, function () use ($seq) {
-                    if (isset($this->pingRequests[$seq])) {
-                        $this->pingRequests[$seq]['deferred']->reject('timeout');
-                        unset($this->pingRequests[$seq]);
-                    }
+                if (isset($this->pingRequests[$seq])) {
+                    $this->pingRequests[$seq]['deferred']->reject('timeout');
+                    unset($this->pingRequests[$seq]);
+                }
 
-                });
+            });
 
             $deferred = new Deferred();
 
-            $this->pingRequests[$seq] = array(
-                'seq' => $seq,
+            $this->pingRequests[$seq] = [
+                'seq'      => $seq,
                 'deferred' => $deferred,
-                'timer' => $timer
-            );
+                'timer'    => $timer
+            ];
 
             return $deferred->promise();
         }
 
 
     }
-    
+
     /**
      * Handle on pong
-     * 
+     *
      * @param \Ratchet\WebSocket\Version\RFC6455\Frame $frame
      */
-    public function onPong(Frame $frame) 
+    public function onPong(Frame $frame)
     {
         $seq = $frame->getPayload();
 
@@ -166,6 +164,5 @@ class PawlTransport implements TransportInterface
     {
         return $this->serializer;
     }
-
 
 } 

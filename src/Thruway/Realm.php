@@ -3,24 +3,19 @@
 namespace Thruway;
 
 use Thruway\Authentication\AuthenticationDetails;
-use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\AuthenticateMessage;
-use Thruway\Message\ErrorMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\WelcomeMessage;
-use Thruway\Role\AbstractRole;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
-use Thruway\Transport\TransportInterface;
 
 /**
  * Class Realm
- * 
+ *
  * @package Thruway
  */
 class Realm
@@ -62,27 +57,26 @@ class Realm
     private $authenticationManager;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param string $realmName
      */
     function __construct($realmName)
     {
-        $this->realmName = $realmName;
-        $this->sessions  = new \SplObjectStorage();
-        $this->broker    = new Broker();
-        $this->dealer    = new Dealer();
+        $this->realmName             = $realmName;
+        $this->sessions              = new \SplObjectStorage();
+        $this->broker                = new Broker();
+        $this->dealer                = new Dealer();
+        $this->roles                 = [$this->broker, $this->dealer];
+        $this->authenticationManager = null;
 
         $this->setManager(new ManagerDummy());
 
-        $this->roles = array($this->broker, $this->dealer);
-
-        $this->authenticationManager = null;
     }
 
     /**
      * Handle process received message
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\Message $msg
      */
@@ -109,7 +103,7 @@ class Realm
 
     /**
      * Process AbortMessage
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\Message $msg
      */
@@ -142,7 +136,7 @@ class Realm
 
     /**
      * Process HelloMessage
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\HelloMessage $msg
      */
@@ -166,7 +160,7 @@ class Realm
                 try {
                     $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
                 } catch (\Exception $e) {
-                    
+
                 }
             } else {
                 $session->setAuthenticated(true);
@@ -184,7 +178,7 @@ class Realm
 
     /**
      * Process AuthenticateMessage
-     * 
+     *
      * @param Session $session
      * @param AuthenticateMessage $msg
      */
@@ -221,10 +215,10 @@ class Realm
 
             if ($session->getAuthenticationDetails() !== null) {
                 $authDetails = $session->getAuthenticationDetails();
-                $auth = array(
+                $auth        = [
                     "authid"     => $authDetails->getAuthId(),
                     "authmethod" => $authDetails->getAuthMethod()
-                );
+                ];
             } else {
                 $auth = new \stdClass();
             }
@@ -288,8 +282,8 @@ class Realm
 
         $manager->addCallable(
             "realm.{$this->getRealmName()}.registrations", function () {
-            return $this->dealer->managerGetRegistrations();
-        }
+                return $this->dealer->managerGetRegistrations();
+            }
         );
     }
 

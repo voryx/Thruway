@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class UnregisterMessage
  * A Callees request to unregister a previsouly established registration.
  * <code>[UNREGISTER, Request|id, REGISTERED.Registration|id]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class UnregisterMessage extends Message
@@ -25,8 +25,8 @@ class UnregisterMessage extends Message
     private $registrationId;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      * @param mixed $registrationId
      */
@@ -71,6 +71,4 @@ class UnregisterMessage extends Message
         return $this->requestId;
     }
 
-    
-    
 }

@@ -8,7 +8,7 @@ namespace Thruway\Message;
  * <code>[PUBLISH, Request|id, Options|dict, Topic|uri]</code>
  * <code>[PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list]</code>
  * <code>[PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list, ArgumentsKw|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class PublishMessage extends Message
@@ -25,13 +25,13 @@ class PublishMessage extends Message
      * @var mixed
      */
     private $options;
-    
+
     /**
      *
      * @var string
      */
     private $topicName;
-    
+
     /**
      *
      * @var mixed
@@ -39,8 +39,8 @@ class PublishMessage extends Message
     private $requestId;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      * @param mixed $options
      * @param string $topicName
@@ -79,7 +79,7 @@ class PublishMessage extends Message
             $this->setOptions(new \stdClass());
         }
 
-        $options = (object) $this->getOptions();
+        $options = (object)$this->getOptions();
 
         $a = [$this->getRequestId(), $options, $this->getTopicName()];
 

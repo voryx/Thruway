@@ -22,7 +22,7 @@ use React\EventLoop\LoopInterface;
 
 /**
  * Class Router
- * 
+ *
  * @package Thruway\Peer
  */
 class Router extends AbstractPeer
@@ -50,7 +50,7 @@ class Router extends AbstractPeer
 
     /**
      * Constructor
-     * 
+     *
      * @param \React\EventLoop\LoopInterface $loop
      * @param \Thruway\Manager\ManagerInterface $manager
      */
@@ -64,9 +64,9 @@ class Router extends AbstractPeer
 
         $manager->debug("New router created");
 
-        $this->realmManager = new RealmManager($manager);
-        $this->transportProviders = array();
-        $this->sessions = new \SplObjectStorage();
+        $this->realmManager       = new RealmManager($manager);
+        $this->transportProviders = [];
+        $this->sessions           = new \SplObjectStorage();
 
         if ($loop === null) {
             $manager->debug("No loop given, creating our own instance");
@@ -74,14 +74,14 @@ class Router extends AbstractPeer
         }
 
         $this->loop = $loop;
-        
+
         // TODO: remove variable unused in its scope
         $authenticationManager = null;
     }
 
     /**
      * Handle open transport
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $transport
      */
     public function onOpen(TransportInterface $transport)
@@ -101,7 +101,7 @@ class Router extends AbstractPeer
 
     /**
      * Handle transport recived message
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Message\Message $msg
      * @return void
@@ -125,12 +125,12 @@ class Router extends AbstractPeer
                     $realm->onMessage($session, $msg);
                 } catch (\Exception $e) {
                     // TODO: Test this
-                    $errorUri = "wamp.error.unknown";
+                    $errorUri    = "wamp.error.unknown";
                     $description = $e->getMessage();
                     if ($e instanceof InvalidRealmNameException || $e instanceof RealmNotFoundException) {
                         $errorUri = "wamp.error.no_such_realm";
                     }
-                    $session->abort([ 'description' => $description ], $errorUri);
+                    $session->abort(['description' => $description], $errorUri);
                 }
             } else {
                 // TODO: Test this
@@ -154,7 +154,7 @@ class Router extends AbstractPeer
 
     /**
      * Start router
-     * 
+     *
      * @throws \Exception
      */
     public function start()
@@ -181,7 +181,7 @@ class Router extends AbstractPeer
 
     /**
      * Handle close transport
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $transport
      */
     public function onClose(TransportInterface $transport)
@@ -214,10 +214,10 @@ class Router extends AbstractPeer
     }
 
 
-  /**
-   * @param ManagerInterface $manager
-   * @throws \Exception
-   */
+    /**
+     * @param ManagerInterface $manager
+     * @throws \Exception
+     */
     public function setManager($manager)
     {
 //        $this->manager = $manager;
@@ -230,10 +230,10 @@ class Router extends AbstractPeer
     public function setupManager()
     {
         // setup the config for the manager
-        $this->manager->addCallable("sessions.count", array($this, "managerGetSessionCount"));
+        $this->manager->addCallable("sessions.count", [$this, "managerGetSessionCount"]);
         //$this->manager->addCallable("sessions.list", array($this, "managerGetSessionList"));
-        $this->manager->addCallable("sessions.get", array($this, "managerGetSessions"));
-        $this->manager->addCallable("realms.get", array($this, "managerGetRealms"));
+        $this->manager->addCallable("sessions.get", [$this, "managerGetSessions"]);
+        $this->manager->addCallable("realms.get", [$this, "managerGetRealms"]);
     }
 
     /**
@@ -254,11 +254,12 @@ class Router extends AbstractPeer
 
     /**
      * Get session by session ID
-     * 
+     *
      * @param int $sessionId
      * @return \Thruway\Session|boolean
      */
-    public function getSessionBySessionId($sessionId) {
+    public function getSessionBySessionId($sessionId)
+    {
         /** @var Session $session */
         $this->sessions->rewind();
         while ($this->sessions->valid()) {
@@ -290,7 +291,7 @@ class Router extends AbstractPeer
 
     /**
      * Count number sessions
-     * 
+     *
      * @return array
      */
     public function managerGetSessionCount()
@@ -300,12 +301,12 @@ class Router extends AbstractPeer
 
     /**
      * Get list sessions
-     * 
+     *
      * @return array
      */
     public function managerGetSessions()
     {
-        $theSessions = array();
+        $theSessions = [];
 
         foreach ($this->sessions as $key) {
             /* @var $session \Thruway\Session */
@@ -319,7 +320,7 @@ class Router extends AbstractPeer
 
             if ($session->getAuthenticationDetails() !== null) {
                 $authDetails = $session->getAuthenticationDetails();
-                $auth = [
+                $auth        = [
                     "authid"     => $authDetails->getAuthId(),
                     "authmethod" => $authDetails->getAuthMethod()
                 ];
@@ -342,7 +343,7 @@ class Router extends AbstractPeer
 
     /**
      * Get list realms
-     * 
+     *
      * @return array
      */
     public function managerGetRealms()
@@ -361,7 +362,7 @@ class Router extends AbstractPeer
 
     /**
      * Get list transports
-     * 
+     *
      * @return array
      */
     public function managerGetTransports()
@@ -370,10 +371,12 @@ class Router extends AbstractPeer
     }
 
     /**
-     * 
+     *
      * @param array $args
      */
-    public function managerPruneSession($args) {
+    public function managerPruneSession($args)
+    {
 
     }
+
 }

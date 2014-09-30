@@ -9,12 +9,12 @@ use Thruway\Peer\AbstractPeer;
 
 /**
  * class DummyTransportProvider
- * 
+ *
  * @package Thruway\Transport
  */
-class DummyTransportProvider extends AbstractTransportProvider 
+class DummyTransportProvider extends AbstractTransportProvider
 {
-    
+
     /**
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop

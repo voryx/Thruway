@@ -3,7 +3,6 @@
 namespace Thruway;
 
 
-use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Manager\ManagerDummy;
@@ -11,11 +10,12 @@ use Thruway\Manager\ManagerInterface;
 
 /**
  * Class Realm Manager
- * 
+ *
  * @package Thruway
  */
 class RealmManager
 {
+
     /**
      * @var array
      */
@@ -38,17 +38,14 @@ class RealmManager
 
     /**
      * Constructor
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     function __construct(ManagerInterface $manager = null)
     {
-        $this->realms = array();
-
-        $this->manager = $manager;
-
-        $this->allowRealmAutocreate = true;
-
+        $this->realms                       = [];
+        $this->manager                      = $manager;
+        $this->allowRealmAutocreate         = true;
         $this->defaultAuthenticationManager = null;
     }
 
@@ -77,12 +74,13 @@ class RealmManager
     }
 
     /**
-     * 
+     *
      * @param \Thruway\Realm $realm
      * @throws \Thruway\Exception\InvalidRealmNameException
      * @throws \Exception
      */
-    public function addRealm(Realm $realm) {
+    public function addRealm(Realm $realm)
+    {
         $realmName = $realm->getRealmName();
 
         if (!static::validRealmName($realm->getRealmName())) {
@@ -106,7 +104,7 @@ class RealmManager
 
     /**
      * Validate realm name
-     * 
+     *
      * @param string $name
      * @return boolean
      */
@@ -166,6 +164,4 @@ class RealmManager
         return $this->defaultAuthenticationManager;
     }
 
-
-
-} 
+}

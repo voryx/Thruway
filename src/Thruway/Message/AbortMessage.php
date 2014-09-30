@@ -6,29 +6,30 @@ namespace Thruway\Message;
  * Class AbortMessage
  * Sent by a Peer to abort the opening of a WAMP session. No response is expected.
  * <code>[ABORT, Details|dict, Reason|uri]</code>
- * 
+ *
  * @package Thruway\Message
  */
 
 class AbortMessage extends Message
 {
+
     /**
      * Abort message details
-     * 
+     *
      * @var array
      */
     private $details;
-    
+
     /**
      * Response URI
-     * 
+     *
      * @var mixed
      */
     private $responseURI;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param array $details
      * @param mixed $responseURI
      */
@@ -42,7 +43,7 @@ class AbortMessage extends Message
 
     /**
      * Set abort message details
-     * 
+     *
      * @param array $details
      */
     public function setDetails(array $details)
@@ -52,7 +53,7 @@ class AbortMessage extends Message
 
     /**
      * Get abort message details
-     * 
+     *
      * @return array
      */
     public function getDetails()

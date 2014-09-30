@@ -5,11 +5,12 @@ namespace Thruway;
 
 /**
  * Class Registration
- * 
+ *
  * @package Thruway
  */
 class Registration
 {
+
     /**
      * @var mixed
      */
@@ -33,15 +34,14 @@ class Registration
 
     /**
      * Constructor
-     * 
+     *
      * @param \Thruway\Session $session
      * @param string $procedureName
-     * @param mixed $requestId
      */
     function __construct(Session $session, $procedureName)
     {
-        $this->id = Session::getUniqueId();
-        $this->session = $session;
+        $this->id            = Session::getUniqueId();
+        $this->session       = $session;
         $this->procedureName = $procedureName;
     }
 
@@ -84,4 +84,5 @@ class Registration
     {
         $this->discloseCaller = $discloseCaller;
     }
+
 }

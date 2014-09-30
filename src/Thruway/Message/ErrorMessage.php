@@ -8,12 +8,13 @@ namespace Thruway\Message;
  * <code>[ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri]</code>
  * <code>[ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri, Arguments|list]</code>
  * <code>[ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri, Arguments|list, ArgumentsKw|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 
 class ErrorMessage extends Message
 {
+
     /**
      * using arguments trait
      * @see \Thruway\Message\ArgumentsTrait
@@ -25,19 +26,19 @@ class ErrorMessage extends Message
      * @var int
      */
     private $errorMsgCode;
-    
+
     /**
      * Error request id
      * @var mixed
      */
     private $errorRequestId;
-    
+
     /**
      * Error details
      * @var mixed
      */
     private $details;
-    
+
     /**
      * Error URI
      * @var string
@@ -45,8 +46,8 @@ class ErrorMessage extends Message
     private $errorURI;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param int $errorMsgCode
      * @param mixed $errorRequestId
      * @param mixed $details
@@ -60,7 +61,7 @@ class ErrorMessage extends Message
         $this->errorMsgCode   = $errorMsgCode;
         $this->details        = Message::shouldBeDictionary($details);
         $this->errorURI       = $errorURI;
-        
+
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
     }
@@ -197,7 +198,7 @@ class ErrorMessage extends Message
 
     /**
      * Convert error message to string
-     * 
+     *
      * @return string
      */
     function __toString()

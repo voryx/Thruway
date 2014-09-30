@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class UnsubscribeMessage
  * Unsubscribe request sent by a Subscriber to a Broker to unsubscribe a subscription.
  * <code>[UNSUBSCRIBE, Request|id, SUBSCRIBED.Subscription|id]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class UnsubscribeMessage extends Message
@@ -25,8 +25,8 @@ class UnsubscribeMessage extends Message
     private $subscriptionId;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      * @param mixed $subscriptionId
      */

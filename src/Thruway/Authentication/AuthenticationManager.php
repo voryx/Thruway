@@ -15,22 +15,22 @@ use Thruway\Transport\InternalClientTransport;
 
 /**
  * Class AuthenticationManager
- * 
+ *
  * @package Thruway\Authentication
  */
 class AuthenticationManager extends Client implements AuthenticationManagerInterface
 {
     /**
      * List authentication methods
-     * 
+     *
      * @var array
      */
     private $authMethods;
 
     /**
      * Is authentication manager ready?
-     * 
-     * @var bool
+     *
+     * @var boolean
      */
     private $ready;
 
@@ -42,12 +42,12 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         parent::__construct('thruway.auth');
 
         $this->authMethods = [];
-        $this->ready = false;
+        $this->ready       = false;
     }
 
     /**
      * Handles session started
-     * 
+     *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Transport\AbstractTransportProvider $transport
      */
@@ -115,10 +115,10 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
             $session->sendMessage(
                 new WelcomeMessage(
-                    $session->getSessionId(), array(
-                        'authid' => $authDetails->getAuthId(),
+                    $session->getSessionId(), [
+                        'authid'     => $authDetails->getAuthId(),
                         'authmethod' => $authDetails->getAuthMethod()
-                    )
+                    ]
                 )
             );
             return;
@@ -151,7 +151,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Handle HelloMessage
-     * 
+     *
      * @param \Thruway\Realm $realm
      * @param \Thruway\Session $session
      * @param \Thruway\Message\HelloMessage $msg
@@ -180,17 +180,17 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
                 $session->setAuthenticationDetails($authDetails);
 
-                $sessionInfo = array(
+                $sessionInfo = [
                     "sessionId" => $session->getSessionId(),
-                    "realm" => $realm->getRealmName()
-                );
+                    "realm"     => $realm->getRealmName()
+                ];
 
                 $this->session->call(
                     $authMethodInfo['handlers']['onhello'],
-                    array(
+                    [
                         $msg,
                         $sessionInfo
-                    )
+                    ]
                 )->then(
                     function ($res) use ($session, $msg) {
                         // this is handling the return of the onhello RPC call
@@ -202,7 +202,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         if ($res[0] == "CHALLENGE") {
                             // TODO: validate challenge message
                             $authMethod = $res[1]['challenge_method'];
-                            $challenge = $res[1]['challenge'];
+                            $challenge  = $res[1]['challenge'];
 
                             $session->getAuthenticationDetails()->setChallenge($challenge);
                             $session->getAuthenticationDetails()->setChallengeDetails($res[1]);
@@ -218,10 +218,10 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                                 $session->sendMessage(
                                     new WelcomeMessage(
                                         $session->getSessionId(),
-                                        array(
-                                            "authid" => $res[1]["authid"],
+                                        [
+                                            "authid"     => $res[1]["authid"],
                                             "authmethod" => $session->getAuthenticationDetails()->getAuthMethod()
-                                        )
+                                        ]
                                     )
                                 );
                             } else {
@@ -255,9 +255,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
                 $session->setAuthenticationDetails(AuthenticationDetails::createAnonymous());
 
-                $roles = array("broker" => new \stdClass, "dealer" => new \stdClass);
+                $roles = ["broker" => new \stdClass, "dealer" => new \stdClass];
                 $session->sendMessage(
-                    new WelcomeMessage($session->getSessionId(), array("roles" => $roles))
+                    new WelcomeMessage($session->getSessionId(), ["roles" => $roles])
                 );
                 $session->setAuthenticated(true);
             }
@@ -266,7 +266,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Handle Authenticate message
-     * 
+     *
      * @param \Thruway\Realm $realm
      * @param \Thruway\Session $session
      * @param \Thruway\Message\AuthenticateMessage $msg
@@ -288,14 +288,14 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 $this->getCaller()->call(
                     $this->session,
                     $authMethodInfo['handlers']['onauthenticate'],
-                    array(
+                    [
                         'authmethod' => $authMethod,
-                        'challenge' => $session->getAuthenticationDetails()->getChallenge(),
-                        'extra' => array(
+                        'challenge'  => $session->getAuthenticationDetails()->getChallenge(),
+                        'extra'      => [
                             'challenge_details' => $session->getAuthenticationDetails()->getChallengeDetails()
-                        ),
-                        'signature' => $msg->getSignature()
-                    )
+                        ],
+                        'signature'  => $msg->getSignature()
+                    ]
                 )->then(
                     function ($res) use ($session) {
 //                        if (!is_array($res)) {
@@ -309,7 +309,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         // message so that the roles and extras that go along with it can be
                         // filled in
                         if ($res[0] == "SUCCESS") {
-                            $welcomeDetails = array("roles" => array());
+                            $welcomeDetails = ["roles" => []];
 
                             if (isset($res[1])) {
                                 if (is_array($res[1])) {
@@ -357,11 +357,11 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
         // TODO: should return different error
         if (!is_array($args)) {
-            return array("Received non-array arguments in registerAuthMethod");
+            return ["Received non-array arguments in registerAuthMethod"];
         }
 
         if (count($args) < 2) {
-            return array("Not enough arguments sent to registerAuthMethod");
+            return ["Not enough arguments sent to registerAuthMethod"];
         }
 
         echo "Trying to register auth method \"" . $args[0] . "\"";
@@ -375,27 +375,27 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         // TODO: validate this stuff
         if (isset($this->authMethods[$authMethod])) {
             // error - there is alreay a registered authMethod of this name
-            return array("ERROR", "Method registration already exists");
+            return ["ERROR", "Method registration already exists"];
         }
 
         if (!isset($methodInfo['onhello'])) {
-            return array("ERROR", "Authentication provider must provide \"onhello\" handler");
+            return ["ERROR", "Authentication provider must provide \"onhello\" handler"];
         }
 
         if (!isset($methodInfo['onauthenticate'])) {
-            return array("ERROR", "Authentication provider must provide \"onauthenticate\" handler");
+            return ["ERROR", "Authentication provider must provide \"onauthenticate\" handler"];
         }
 
-        if ( ! isset($details['caller'])) {
-            return array("ERROR", "Invocation must provide \"caller\" detail on registration");
+        if (!isset($details['caller'])) {
+            return ["ERROR", "Invocation must provide \"caller\" detail on registration"];
         }
 
 
         $this->authMethods[$authMethod] = [
-            'authMethod' => $authMethod,
-            'handlers' => $methodInfo,
+            'authMethod'  => $authMethod,
+            'handlers'    => $methodInfo,
             'auth_realms' => $authRealms,
-            'session_id' => $details['caller']
+            'session_id'  => $details['caller']
         ];
 
         return ["SUCCESS"];
@@ -429,7 +429,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
     /**
      * Checks to see if a realm has a registered auth provider
      * @param string $realmName
-     * @return bool
+     * @return boolean
      */
     private function realmHasAuthProvider($realmName)
     {
@@ -469,11 +469,12 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Get list supported authentication methods
-     * 
+     *
      * @return array
      */
     public function getAuthMethods()
     {
         return $this->authMethods;
     }
+
 }

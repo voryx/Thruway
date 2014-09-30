@@ -19,7 +19,7 @@ use Thruway\Subscription;
 
 /**
  * Class Broker
- * 
+ *
  * @package Thruway\Role
  */
 class Broker extends AbstractRole
@@ -41,8 +41,8 @@ class Broker extends AbstractRole
     private $manager;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     function __construct(ManagerInterface $manager = null)
@@ -50,19 +50,17 @@ class Broker extends AbstractRole
         if ($manager === null) {
             $manager = new ManagerDummy();
         }
-        $this->manager = $manager;
+
+        $this->manager       = $manager;
+        $this->subscriptions = new \SplObjectStorage();
+        $this->topics        = [];
 
         $this->manager->debug("Broker constructor");
-
-        $this->subscriptions = new \SplObjectStorage();
-        $this->topics = array();
-
-
     }
 
     /**
      * Handle process revieced message
-     * 
+     *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
      * @return mixed|void
@@ -86,7 +84,7 @@ class Broker extends AbstractRole
 
     /**
      * Process publish message
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\PublishMessage $msg
      */
@@ -98,7 +96,7 @@ class Broker extends AbstractRole
 
         //If the topic doesn't have any subscribers
         if (empty($receivers)) {
-            $receivers = array();
+            $receivers = [];
         }
 
         // see if they wanted confirmation
@@ -124,7 +122,7 @@ class Broker extends AbstractRole
 
     /**
      * Process subscribe message
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\SubscribeMessage $msg
      */
@@ -139,7 +137,7 @@ class Broker extends AbstractRole
         }
 
         if (!isset($this->topics[$msg->getTopicName()])) {
-            $this->topics[$msg->getTopicName()] = array();
+            $this->topics[$msg->getTopicName()] = [];
         }
 
         array_push($this->topics[$msg->getTopicName()], $session);
@@ -153,7 +151,7 @@ class Broker extends AbstractRole
 
     /**
      * Process Unsubcribe message
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\UnsubscribeMessage $msg
      */
@@ -167,7 +165,7 @@ class Broker extends AbstractRole
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.no_such_subscription'));
         }
 
-        $topicName = $subscription->getTopic();
+        $topicName   = $subscription->getTopic();
         $subscribers = $this->topics[$topicName];
 
         /* @var $subscriber Session */
@@ -184,7 +182,7 @@ class Broker extends AbstractRole
 
     /**
      * Check realy subscribe
-     * 
+     *
      * @deprecated
      * @param int $sessionId
      * @param string $topicName
@@ -204,7 +202,7 @@ class Broker extends AbstractRole
 
     /**
      * Get subscription by ID
-     * 
+     *
      * @param $subscriptionId
      * @return \Thruway\Subscription|boolean
      */
@@ -223,7 +221,7 @@ class Broker extends AbstractRole
     /**
      * Handle message
      * Returns true if this role handles this message.
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return boolean
      */
@@ -245,7 +243,7 @@ class Broker extends AbstractRole
 
     /**
      * Process a session leave
-     * 
+     *
      * @todo make this better
      * @param \Thruway\Session $session
      */
@@ -275,7 +273,7 @@ class Broker extends AbstractRole
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
@@ -285,7 +283,7 @@ class Broker extends AbstractRole
 
     /**
      * get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -296,7 +294,7 @@ class Broker extends AbstractRole
 
     /**
      * Get list subscriptions
-     * 
+     *
      * @return array
      */
     public function managerGetSubscriptions()
@@ -306,12 +304,13 @@ class Broker extends AbstractRole
         /** @var $subscription Subscription */
         foreach ($this->subscriptions as $subscription) {
             $theSubscriptions[] = [
-                "id" => $subscription->getId(),
-                "topic" => $subscription->getTopic(),
+                "id"      => $subscription->getId(),
+                "topic"   => $subscription->getTopic(),
                 "session" => $subscription->getSession()->getSessionId()
             ];
         }
 
         return [$theSubscriptions];
     }
+
 } 

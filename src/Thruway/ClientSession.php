@@ -10,11 +10,12 @@ use Thruway\Transport\TransportInterface;
 
 /**
  * Class ClientSession
- * 
+ *
  * @package Thruway
  */
 class ClientSession extends AbstractSession
 {
+
     /**
      * @var \Thruway\Peer\Client
      */
@@ -22,19 +23,19 @@ class ClientSession extends AbstractSession
 
     /**
      * Constructor
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Peer\AbstractPeer $peer
      */
     function __construct(TransportInterface $transport, AbstractPeer $peer)
     {
         $this->transport = $transport;
-        $this->peer = $peer;
+        $this->peer      = $peer;
     }
 
     /**
      * Subscribe
-     * 
+     *
      * @param string $topicName
      * @param \Closure $callback
      */
@@ -42,10 +43,10 @@ class ClientSession extends AbstractSession
     {
         $this->peer->getSubscriber()->subscribe($this, $topicName, $callback);
     }
-    
+
     /**
      * Publish
-     * 
+     *
      * @param string $topicName
      * @param array|mixed $arguments
      * @param array|mixed $argumentsKw
@@ -59,7 +60,7 @@ class ClientSession extends AbstractSession
 
     /**
      * Register
-     * 
+     *
      * @param string $procedureName
      * @param \Closure $callback
      * @param array|mixed $options
@@ -72,7 +73,7 @@ class ClientSession extends AbstractSession
 
     /**
      * Unregister
-     * 
+     *
      * @param string $procedureName
      * @return \React\Promise\Promise|FALSE
      */
@@ -83,7 +84,7 @@ class ClientSession extends AbstractSession
 
     /**
      * Call
-     * 
+     *
      * @param string $procedureName
      * @param array|mixed $arguments
      * @return \React\Promise\Promise
@@ -122,7 +123,7 @@ class ClientSession extends AbstractSession
     /**
      * Handle on close client session
      */
-    public function onClose() 
+    public function onClose()
     {
 
     }

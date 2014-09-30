@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class PublishedMessage
  * Acknowledge sent by a Broker to a Publisher for acknowledged publications.
  * <code>[PUBLISHED, PUBLISH.Request|id, Publication|id]</code>
- * 
+ *
  * @package Thruway\Message
  */
 
@@ -14,20 +14,20 @@ class PublishedMessage extends Message
 {
 
     /**
-     * 
+     *
      * @var int
      */
     private $requestId;
-    
+
     /**
      *
      * @var int
      */
     private $publicationId;
-    
+
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param int $requestId
      * @param int $publicationId
      */

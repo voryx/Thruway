@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class ChallengeMessage
  * During authenticated session establishment, a Router sends a challenge message.
  * <code>[CHALLENGE, AuthMethod|string, Extra|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class ChallengeMessage extends Message

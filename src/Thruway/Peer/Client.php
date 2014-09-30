@@ -33,14 +33,15 @@ use React\EventLoop\LoopInterface;
 
 /**
  * Class Client
- * 
+ *
  * @package Thruway\Peer
  */
 class Client extends AbstractPeer implements EventEmitterInterface
 {
+
     /**
      * Implements EventEmitterInterface
-     * 
+     *
      * @uses EventEmitterTrait
      */
     use EventEmitterTrait;
@@ -103,7 +104,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * @var array
      */
-    private $authMethods = array();
+    private $authMethods = [];
 
     /**
      * @var \Thruway\Transport\TransportInterface
@@ -126,18 +127,18 @@ class Client extends AbstractPeer implements EventEmitterInterface
     private $retryAttempts = 0;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $attemptRetry = true;
 
     /**
-     * @var \Psr\Log\LoggerInterface 
+     * @var \Psr\Log\LoggerInterface
      */
     private $logger;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param string $realm
      * @param \React\EventLoop\LoopInterface $loop
      */
@@ -169,7 +170,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->on('open', [$this, 'onSessionStart']);
 
         $this->clientAuthenticators = [];
-        $this->authId = "anonymous";
+        $this->authId               = "anonymous";
 
         $this->setLogger(new NullLogger());
     }
@@ -189,7 +190,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Add transport provider
-     * 
+     *
      * @param \Thruway\Transport\AbstractTransportProvider $transportProvider
      * @throws \Exception
      */
@@ -203,7 +204,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Set reconnect options
-     * 
+     *
      * @param array $reconnectOptions
      */
     public function setReconnectOptions($reconnectOptions)
@@ -213,7 +214,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Add client authenticator
-     * 
+     *
      * @param \Thruway\ClientAuthenticationInterface $ca
      */
     public function addClientAuthenticator(ClientAuthenticationInterface $ca)
@@ -223,7 +224,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Start the transport
-     * 
+     *
      * @param boolean $startLoop
      */
     public function start($startLoop = true)
@@ -237,15 +238,15 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Handle open transport
-     * 
+     *
      * @param TransportInterface $transport
      */
     public function onOpen(TransportInterface $transport)
     {
-        $this->retryTimer = 0;
+        $this->retryTimer    = 0;
         $this->retryAttempts = 0;
-        $this->transport = $transport;
-        $session = new ClientSession($transport, $this);
+        $this->transport     = $transport;
+        $session             = new ClientSession($transport, $this);
 
         $session->setLoop($this->getLoop());
 
@@ -258,17 +259,17 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Start client session
-     * 
+     *
      * @param \Thruway\ClientSession $session
      */
     public function startSession(ClientSession $session)
     {
         $details = [
             "roles" => [
-                "publisher" => new \stdClass(),
+                "publisher"  => new \stdClass(),
                 "subscriber" => new \stdClass(),
-                "caller" => new \stdClass(),
-                "callee" => new \stdClass(),
+                "caller"     => new \stdClass(),
+                "callee"     => new \stdClass(),
             ]
         ];
 
@@ -278,7 +279,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
         }
 
         $details["authmethods"] = $this->authMethods;
-        $details["authid"] = $this->authId;
+        $details["authid"]      = $this->authId;
 
         $this->addRole(new Callee($this->getLogger()))
             ->addRole(new Caller())
@@ -287,12 +288,12 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
         $session->setRealm($this->realm);
 
-        $session->sendMessage(new HelloMessage($session->getRealm(), $details, array()));
+        $session->sendMessage(new HelloMessage($session->getRealm(), $details, []));
     }
 
     /**
      * Add role
-     * 
+     *
      * @param \Thruway\Role\AbstractRole $role
      * @return \Thruway\Peer\Client
      */
@@ -316,7 +317,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Handle process message
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Message\Message $msg
      */
@@ -345,7 +346,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Process Welcome message
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\WelcomeMessage $msg
      */
@@ -421,7 +422,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Handle end session
-     * 
+     *
      * @param \Thruway\ClientSession $session
      */
     public function onSessionEnd($session)
@@ -431,7 +432,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Handle close session
-     * 
+     *
      * @param mixed $reason
      */
     public function onClose($reason)
@@ -444,11 +445,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
             $this->emit('close', [$reason]);
         }
 
-        $this->roles = array();
-        $this->callee = null;
-        $this->caller = null;
+        $this->roles      = [];
+        $this->callee     = null;
+        $this->caller     = null;
         $this->subscriber = null;
-        $this->publisher = null;
+        $this->publisher  = null;
 
         $this->retryConnection();
 
@@ -490,7 +491,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Set attempt retry
-     * 
+     *
      * @param boolean $attemptRetry
      */
     public function setAttemptRetry($attemptRetry)
@@ -598,7 +599,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @return Psr\Log\LoggerInterface
+     * @return \Psr\Log\LoggerInterface
      */
     public function getLogger()
     {
@@ -606,12 +607,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @param Psr\Log\LoggerInterface $logger
+     * @param \Psr\Log\LoggerInterface $logger
      */
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
-
 
 }

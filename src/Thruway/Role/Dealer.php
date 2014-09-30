@@ -23,7 +23,7 @@ use Thruway\Session;
 
 /**
  * Class Dealer
- * 
+ *
  * @package Thruway\Role
  */
 class Dealer extends AbstractRole
@@ -46,13 +46,13 @@ class Dealer extends AbstractRole
 
     /**
      * Constructor
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     function __construct(ManagerInterface $manager = null)
     {
         $this->registrations = new \SplObjectStorage();
-        $this->calls = new \SplObjectStorage();
+        $this->calls         = new \SplObjectStorage();
 
         if ($manager === null) {
             $manager = new ManagerDummy();
@@ -64,7 +64,7 @@ class Dealer extends AbstractRole
 
     /**
      * process message
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\Message $msg
      * @return mixed|void
@@ -93,7 +93,7 @@ class Dealer extends AbstractRole
 
     /**
      * process RegisterMessage
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\RegisterMessage $msg
      */
@@ -118,17 +118,17 @@ class Dealer extends AbstractRole
                             // the ping came back - send procedure_already_exists
                             $session->sendMessage($errorMsg);
                         },
-                    function ($r) use ($registration, $session, $msg) {
-                        $this->manager->debug("Removing session " . $registration->getSession()->getSessionId() . " because it didn't respond to ping.");
-                        // bring down the exiting session because the
-                        // ping timed out
-                        $deadSession = $registration->getSession();
+                        function ($r) use ($registration, $session, $msg) {
+                            $this->manager->debug("Removing session " . $registration->getSession()->getSessionId() . " because it didn't respond to ping.");
+                            // bring down the exiting session because the
+                            // ping timed out
+                            $deadSession = $registration->getSession();
 
-                        $deadSession->shutdown();
+                            $deadSession->shutdown();
 
-                        // complete this registration now
-                        $this->completeRegistration($session, $msg);
-                    });
+                            // complete this registration now
+                            $this->completeRegistration($session, $msg);
+                        });
             } else {
                 $session->sendMessage($errorMsg);
             }
@@ -141,11 +141,11 @@ class Dealer extends AbstractRole
 
     /**
      * process complete registration
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\RegisterMessage $msg
      */
-    public function completeRegistration(Session $session, RegisterMessage $msg) 
+    public function completeRegistration(Session $session, RegisterMessage $msg)
     {
         $registration = new Registration($session, $msg->getProcedureName());
 
@@ -163,7 +163,7 @@ class Dealer extends AbstractRole
 
     /**
      * process UnregisterMessage
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\UnregisterMessage $msg
      * @throws \Exception
@@ -206,7 +206,7 @@ class Dealer extends AbstractRole
 
     /**
      * Process call
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\CallMessage $msg
      * @return boolean
@@ -230,24 +230,24 @@ class Dealer extends AbstractRole
         $details = [];
         if ($registration->getDiscloseCaller() === true && $session->getAuthenticationDetails()) {
             $details = [
-                "caller" => $session->getSessionId(),
-                "authid" => $session->getAuthenticationDetails()->getAuthId(),
+                "caller"     => $session->getSessionId(),
+                "authid"     => $session->getAuthenticationDetails()->getAuthId(),
                 //"authrole" => $session->getAuthenticationDetails()->getAuthRole(),
                 "authmethod" => $session->getAuthenticationDetails()->getAuthMethod(),
             ];
         }
 
         // TODO: check to see if callee supports progressive call
-        $callOptions = $msg->getOptions();
+        $callOptions   = $msg->getOptions();
         $isProgressive = false;
         if (is_array($callOptions) && isset($callOptions['receive_progress']) && $callOptions['receive_progress']) {
-            $details = array_merge($details, array("receive_progress" => true));
+            $details       = array_merge($details, ["receive_progress" => true]);
             $isProgressive = true;
         }
 
         // if nothing was added to details - change ot stdClass so it will serialize correctly
-        if (count($details) == 0) { 
-            $details = new \stdClass(); 
+        if (count($details) == 0) {
+            $details = new \stdClass();
         }
         $invocationMessage->setDetails($details);
 
@@ -263,7 +263,7 @@ class Dealer extends AbstractRole
 
     /**
      * process YieldMessage
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\YieldMessage $msg
      * @return boolean|void
@@ -287,7 +287,7 @@ class Dealer extends AbstractRole
         $yieldOptions = $msg->getOptions();
         if (is_array($yieldOptions) && isset($yieldOptions['progress']) && $yieldOptions['progress']) {
             if ($call->isProgressive()) {
-                $details = [ "progress" => true ];
+                $details = ["progress" => true];
             } else {
                 // not sure what to do here - just going to drop progress
                 // if we are getting progress messages that the caller didn't ask for
@@ -309,7 +309,7 @@ class Dealer extends AbstractRole
 
     /**
      * process ErrorMessage
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\ErrorMessage $msg
      */
@@ -324,12 +324,13 @@ class Dealer extends AbstractRole
 
     /**
      * Process InvocationError
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\ErrorMessage $msg
      * @return boolean|void
      */
-    private function processInvocationError(Session $session, ErrorMessage $msg) {
+    private function processInvocationError(Session $session, ErrorMessage $msg)
+    {
         $call = $this->getCallByRequestId($msg->getRequestId());
 
         if (!$call) {
@@ -356,7 +357,7 @@ class Dealer extends AbstractRole
 
     /**
      * Get registration by procedureName
-     * 
+     *
      * @param string $procedureName
      * @return \Thruway\Registration|boolean
      */
@@ -374,7 +375,7 @@ class Dealer extends AbstractRole
 
     /**
      * Get Call by requestID
-     * 
+     *
      * @param $requestId
      * @return \Thruway\Call|boolean
      */
@@ -392,7 +393,7 @@ class Dealer extends AbstractRole
 
     /**
      * Returns true if this role handles this message.
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return boolean
      */
@@ -417,7 +418,7 @@ class Dealer extends AbstractRole
 
     /**
      * process leave session
-     * 
+     *
      * @param \Thruway\Session $session
      */
     public function leave(Session $session)
@@ -458,7 +459,7 @@ class Dealer extends AbstractRole
 
     /**
      * Get list registrations
-     * 
+     *
      * @return array
      */
     public function managerGetRegistrations()
@@ -468,12 +469,13 @@ class Dealer extends AbstractRole
         /* @var $registration \Thruway\Registration */
         foreach ($this->registrations as $registration) {
             $theRegistrations[] = [
-                "id" => $registration->getId(),
-                "name" => $registration->getProcedureName(),
+                "id"      => $registration->getId(),
+                "name"    => $registration->getProcedureName(),
                 "session" => $registration->getSession()->getSessionId()
             ];
         }
 
         return [$theRegistrations];
     }
+
 }

@@ -30,7 +30,7 @@ class Subscription
 
     /**
      * Constructor
-     * 
+     *
      * @param string $topic
      * @param \Thruway\Session $session
      * @param mixed $options
@@ -38,10 +38,10 @@ class Subscription
     function __construct($topic, Session $session, $options = null)
     {
 
-        $this->topic = $topic;
+        $this->topic   = $topic;
         $this->session = $session;
         $this->options = new \stdClass();
-        $this->id = Session::getUniqueId();
+        $this->id      = Session::getUniqueId();
 
     }
 
@@ -100,6 +100,5 @@ class Subscription
     {
         $this->session = $session;
     }
-
 
 } 

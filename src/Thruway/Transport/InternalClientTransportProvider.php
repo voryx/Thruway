@@ -11,10 +11,10 @@ use Thruway\Peer\Client;
 
 /**
  * Class InternalClientTransportProvider
- * 
+ *
  * @package Thruway\Transport
  */
-class InternalClientTransportProvider extends AbstractTransportProvider 
+class InternalClientTransportProvider extends AbstractTransportProvider
 {
 
     /**
@@ -33,7 +33,7 @@ class InternalClientTransportProvider extends AbstractTransportProvider
     private $manager;
 
     /**
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $internalClient
      */
     function __construct(AbstractPeer $internalClient)
@@ -44,15 +44,15 @@ class InternalClientTransportProvider extends AbstractTransportProvider
 
         $this->manager = new ManagerDummy();
 
-        if ($this->internalClient instanceof Client){
-           $this->internalClient->setLogger($this->getManager()->getLogger());
+        if ($this->internalClient instanceof Client) {
+            $this->internalClient->setLogger($this->getManager()->getLogger());
         }
 
     }
 
     /**
      * Start transport
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
@@ -73,13 +73,11 @@ class InternalClientTransportProvider extends AbstractTransportProvider
         $clientTransport->setFarPeerTransport($transport);
 
 
-
         // connect the transport to the Router/Peer
         $this->peer->onOpen($transport);
 
         // open the client side
         $this->internalClient->onOpen($clientTransport);
-
 
 
         // tell the internal client to start up
@@ -103,6 +101,5 @@ class InternalClientTransportProvider extends AbstractTransportProvider
     {
         return $this->manager;
     }
-
 
 } 

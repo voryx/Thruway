@@ -6,24 +6,24 @@ namespace Thruway\Message;
  * Class SubscribeMessage
  * Subscribe request sent by a Subscriber to a Broker to subscribe to a topic.
  * <code>[SUBSCRIBE, Request|id, Options|dict, Topic|uri]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class SubscribeMessage extends Message
 {
-    
+
     /**
      *
      * @var mixed
      */
     private $options;
-    
+
     /**
      *
      * @var string
      */
     private $topicName;
-    
+
     /**
      *
      * @var mixed
@@ -31,8 +31,8 @@ class SubscribeMessage extends Message
     private $requestId;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      * @param mixed $options
      * @param string $topicName
@@ -113,5 +113,4 @@ class SubscribeMessage extends Message
         return $this->requestId;
     }
 
-    
 }

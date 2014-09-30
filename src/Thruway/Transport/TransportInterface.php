@@ -8,9 +8,9 @@ use Thruway\Serializer\SerializerInterface;
 /**
  * Interface transport
  */
-
 interface TransportInterface
 {
+
     /**
      * @return mixed
      */
@@ -41,4 +41,5 @@ interface TransportInterface
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer();
+
 }

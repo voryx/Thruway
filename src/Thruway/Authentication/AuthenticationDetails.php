@@ -4,21 +4,37 @@ namespace Thruway\Authentication;
 
 /**
  * Class AuthenticationDetails
- * 
+ *
  * @package Thruway\Authentication
  */
 
-class AuthenticationDetails 
+/**
+ * Class AuthenticationDetails
+ * @package Thruway\Authentication
+ */
+class AuthenticationDetails
 {
-    
+
+    /**
+     * @var int
+     */
     private $authId;
+    /**
+     * @var mixed
+     */
     private $authMethod;
+    /**
+     * @var mixed
+     */
     private $challenge;
+    /**
+     * @var mixed
+     */
     private $challengeDetails;
 
     /**
      * Set challenge details
-     * 
+     *
      * @param mixed $challengeDetails
      */
     public function setChallengeDetails($challengeDetails)
@@ -28,7 +44,7 @@ class AuthenticationDetails
 
     /**
      * Get challenge details
-     * 
+     *
      * @return mixed
      */
     public function getChallengeDetails()
@@ -38,7 +54,7 @@ class AuthenticationDetails
 
     /**
      * Set challenge info
-     * 
+     *
      * @param mixed $challenge
      */
     public function setChallenge($challenge)
@@ -48,7 +64,7 @@ class AuthenticationDetails
 
     /**
      * Get challenge data
-     * 
+     *
      * @return mixed
      */
     public function getChallenge()
@@ -58,7 +74,7 @@ class AuthenticationDetails
 
     /**
      * Set authentiocation ID
-     * 
+     *
      * @param mixed $authId
      */
     public function setAuthId($authId)
@@ -68,7 +84,7 @@ class AuthenticationDetails
 
     /**
      * Get authentication ID
-     * 
+     *
      * @return mixed
      */
     public function getAuthId()
@@ -78,7 +94,7 @@ class AuthenticationDetails
 
     /**
      * Set authentication method
-     * 
+     *
      * @param mixed $authMethod
      */
     public function setAuthMethod($authMethod)
@@ -88,7 +104,7 @@ class AuthenticationDetails
 
     /**
      * Get authentication method
-     * 
+     *
      * @return mixed
      */
     public function getAuthMethod()
@@ -98,10 +114,10 @@ class AuthenticationDetails
 
     /**
      * Create anonymous
-     * 
+     *
      * @return \Thruway\Authentication\AuthenticationDetails
      */
-    static public function createAnonymous() 
+    static public function createAnonymous()
     {
         $authDetails = new AuthenticationDetails();
         $authDetails->setAuthId("anonymous");
@@ -109,4 +125,5 @@ class AuthenticationDetails
 
         return $authDetails;
     }
+
 }

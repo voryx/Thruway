@@ -9,11 +9,12 @@ namespace Thruway\Message;
  * <code>[CALL, Request|id, Options|dict, Procedure|uri]</code>
  * <code>[CALL, Request|id, Options|dict, Procedure|uri, Arguments|list]</code>
  * <code>[CALL, Request|id, Options|dict, Procedure|uri, Arguments|list, ArgumentsKw|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class CallMessage extends Message
 {
+
     /**
      * using arguments trait
      * @see \Thruway\Message\ArgumentsTrait
@@ -36,8 +37,8 @@ class CallMessage extends Message
     private $procedureName;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param int $requestId
      * @param mixed $options
      * @param string $procedureName

@@ -8,12 +8,13 @@ namespace Thruway\Message;
  * <code>[EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict]</code>
  * <code>[EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list]</code>
  * <code>[EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list, PUBLISH.ArgumentsKw|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 
 class EventMessage extends Message
 {
+
     /**
      * using arguments trait
      * @see \Thruway\Message\ArgumentsTrait
@@ -37,7 +38,7 @@ class EventMessage extends Message
      * @param int $subscriptionId
      * @param int $publicationId
      * @param mixed $details
-     * @param mixedl $arguments
+     * @param mixed $arguments
      * @param mixed $argumentsKw
      */
     function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null)
@@ -68,10 +69,10 @@ class EventMessage extends Message
     public function getAdditionalMsgFields()
     {
         $details = $this->getDetails();
-        if ($details === null) { 
-            $details = new \stdClass(); 
+        if ($details === null) {
+            $details = new \stdClass();
         }
-        
+
         $details = (object)$details;
 
         $a = [
@@ -147,6 +148,5 @@ class EventMessage extends Message
     {
         return $this->subscriptionId;
     }
-
 
 } 

@@ -7,7 +7,7 @@ namespace Thruway\Exception;
  * Throw this exception when not fount realm
  */
 
-class RealmNotFoundException extends \Exception 
+class RealmNotFoundException extends \Exception
 {
 
 } 

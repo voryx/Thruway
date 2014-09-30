@@ -12,11 +12,12 @@ use Thruway\Transport\TransportInterface;
 
 /**
  * Class AbstractSession
- * 
+ *
  * @package Thruway
  */
 abstract class AbstractSession
 {
+
     /**
      * Session state
      * @const int
@@ -168,21 +169,21 @@ abstract class AbstractSession
      * @param int $timeout
      * @return \React\Promise\Promise
      */
-    public function ping($timeout = 5) 
+    public function ping($timeout = 5)
     {
         return $this->getTransport()->ping($timeout);
     }
 
     /**
      * process abort request
-     * 
+     *
      * @param mixed $details
      * @param mixed $responseURI
      * @throws \Exception
      */
-    public function abort($details = null, $responseURI = null) 
+    public function abort($details = null, $responseURI = null)
     {
-        if ($this->isAuthenticated()){
+        if ($this->isAuthenticated()) {
             throw new \Exception("Session::abort called after we are authenticated");
         }
 
@@ -221,6 +222,5 @@ abstract class AbstractSession
     {
         return $this->loop;
     }
-
 
 } 

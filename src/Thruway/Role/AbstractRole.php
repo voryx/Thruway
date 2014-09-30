@@ -9,14 +9,15 @@ use Thruway\Session;
 
 /**
  * Class AbstractRole
- * 
+ *
  * @package Thruway\Role
  */
 abstract class AbstractRole
 {
+
     /**
      * Handle process reveiced message
-     * 
+     *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
      * @return mixed
@@ -25,7 +26,7 @@ abstract class AbstractRole
 
     /**
      * Handle process message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return mixed
      */
@@ -33,7 +34,7 @@ abstract class AbstractRole
 
     /**
      * Strict URI Test
-     * 
+     *
      * @param $uri
      * @return boolean
      */
@@ -41,4 +42,5 @@ abstract class AbstractRole
     {
         return !!preg_match('/^([0-9a-z_]+\.)*([0-9a-z_]+)$/', $uri);
     }
+
 } 

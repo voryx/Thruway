@@ -10,10 +10,10 @@ use Thruway\Serializer\SerializerInterface;
 
 /**
  * Class InternalClientTransport
- * 
+ *
  * @package Thruway\Transport
  */
-class InternalClientTransport implements TransportInterface 
+class InternalClientTransport implements TransportInterface
 {
 
     /**
@@ -33,14 +33,14 @@ class InternalClientTransport implements TransportInterface
 
     /**
      * Constructor
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $farPeer
      * @param \React\EventLoop\LoopInterface $loop
      */
     function __construct(AbstractPeer $farPeer, LoopInterface $loop)
     {
         $this->farPeer = $farPeer;
-        $this->loop = $loop;
+        $this->loop    = $loop;
     }
 
     /**
@@ -61,7 +61,7 @@ class InternalClientTransport implements TransportInterface
 
     /**
      * Send message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @throws \Exception
      */
@@ -84,7 +84,7 @@ class InternalClientTransport implements TransportInterface
 
     /**
      * Get transport details
-     * 
+     *
      * @return array
      */
     public function getTransportDetails()
@@ -97,36 +97,40 @@ class InternalClientTransport implements TransportInterface
 
     /**
      * Ping
-     * 
+     *
      * @throws \Thruway\Exception\PingNotSupportedException
      */
-    public function ping() {
+    public function ping()
+    {
         throw new PingNotSupportedException;
     }
 
     /**
      * Handle on pong
      */
-    public function onPong() {
+    public function onPong()
+    {
 
     }
 
-    /** 
+    /**
      * Set Serializer
-     * 
-     * These are required by interface but not used here because there is no serialization 
+     *
+     * These are required by interface but not used here because there is no serialization
      */
-    public function setSerializer(SerializerInterface $serializer){
-        
+    public function setSerializer(SerializerInterface $serializer)
+    {
+
     }
-    
-    /** 
+
+    /**
      * Get Serializer
-     * 
-     * These are required by interface but not used here because there is no serialization 
+     *
+     * These are required by interface but not used here because there is no serialization
      */
-    public function getSerializer(){
-        
+    public function getSerializer()
+    {
+
     }
 
 } 

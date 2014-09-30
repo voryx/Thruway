@@ -3,7 +3,6 @@
 namespace Thruway\Manager;
 
 use Thruway\Peer\Client;
-use Thruway\Role\Publisher;
 use Thruway\Session;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerTrait;
@@ -11,18 +10,18 @@ use Psr\Log\NullLogger;
 
 /**
  * Class managerClient
- * 
+ *
  * @package Thruway\Manager
  */
-
 class ManagerClient extends Client implements ManagerInterface
 {
+
     /**
      * Implements \Psr\Log\LoggerAwareInterface
      * @see Psr\Log\LoggerAwareTrait
      */
     use LoggerAwareTrait;
-    
+
     /**
      * Implements \Psr\Log\LoggerInterface
      * @see Psr\Log\LoggerTrait
@@ -35,7 +34,7 @@ class ManagerClient extends Client implements ManagerInterface
     private $loggingPublish = true;
 
     /**
-     * Contructor
+     * Constructor
      */
     function __construct()
     {
@@ -63,7 +62,7 @@ class ManagerClient extends Client implements ManagerInterface
 
     /**
      * Add callable
-     * 
+     *
      * @param string $name
      * @param \Closure $callback
      */
@@ -79,11 +78,11 @@ class ManagerClient extends Client implements ManagerInterface
     /**
      * Handle start session
      * Register all added callables for manager
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Transport\TransportInterface $transport
      */
-    public function onSessionStart($session, $transport) 
+    public function onSessionStart($session, $transport)
     {
         foreach ($this->callables as $callable) {
             $this->getCallee()->register($this->session, "manager." . $callable[0], $callable[1]);
@@ -103,7 +102,7 @@ class ManagerClient extends Client implements ManagerInterface
 
     /**
      * Check session is up (started)
-     * 
+     *
      * @return boolean
      */
     public function sessionIsUp()
@@ -120,13 +119,14 @@ class ManagerClient extends Client implements ManagerInterface
 
     /**
      * Logging
-     * 
+     *
      * @param mixed $level
      * @param string $message
      * @param array $context
+     * @return null|void
      * @see \Psr\Log\LoggerInterface::log($level, $message, $context)
      */
-    public function log($level, $message, array $context = array()) 
+    public function log($level, $message, array $context = [])
     {
         $this->logger->log($level, $message, $context);
     }
@@ -139,4 +139,5 @@ class ManagerClient extends Client implements ManagerInterface
     {
         return $this->logger;
     }
+
 }

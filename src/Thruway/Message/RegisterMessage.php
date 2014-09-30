@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class RegisterMessage
  * A Callees request to register an endpoint at a Dealer.
  * <code>[REGISTER, Request|id, Options|dict, Procedure|uri]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class RegisterMessage extends Message

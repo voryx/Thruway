@@ -14,7 +14,7 @@ use React\Promise\Deferred;
 
 /**
  * Class Publisher
- * 
+ *
  * @package Thruway\Role
  */
 class Publisher extends AbstractRole
@@ -35,7 +35,7 @@ class Publisher extends AbstractRole
 
     /**
      * handle received message
-     * 
+     *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
      * @return void
@@ -53,7 +53,7 @@ class Publisher extends AbstractRole
 
     /**
      * process PublishedMesage
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\PublishedMessage $msg
      */
@@ -70,7 +70,7 @@ class Publisher extends AbstractRole
 
     /**
      * process error
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
      */
@@ -86,7 +86,7 @@ class Publisher extends AbstractRole
 
     /**
      * Handle message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return boolean
      */
@@ -108,7 +108,7 @@ class Publisher extends AbstractRole
 
     /**
      * process publish
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param string $topicName
      * @param mixed $arguments
@@ -121,7 +121,7 @@ class Publisher extends AbstractRole
         $requestId = Session::getUniqueId();
 
         if (isset($options['acknowledge']) && $options['acknowledge'] === true) {
-            $futureResult = new Deferred();
+            $futureResult                      = new Deferred();
             $this->publishRequests[$requestId] = ['future_result' => $futureResult];
         }
 

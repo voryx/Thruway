@@ -11,7 +11,7 @@ use Thruway\Session;
  * <code>[INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict]</code>
  * <code>[INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict, CALL.Arguments|list]</code>
  * <code>[INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict, CALL.Arguments|list, CALL.ArgumentsKw|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class InvocationMessage extends Message
@@ -39,8 +39,8 @@ class InvocationMessage extends Message
     private $details;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      * @param mixed $registrationId
      * @param mixed $details
@@ -72,7 +72,7 @@ class InvocationMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $details = $this->getDetails() === null ? new \stdClass() : (object) $this->getDetails();
+        $details = $this->getDetails() === null ? new \stdClass() : (object)$this->getDetails();
 
         $a = [
             $this->requestId,

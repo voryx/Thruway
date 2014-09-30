@@ -7,7 +7,7 @@ use Thruway\Message\PingMessage;
 
 /**
  * Class PingRequest
- * 
+ *
  * @package Thruway
  */
 class PingRequest
@@ -30,7 +30,7 @@ class PingRequest
 
     /**
      *
-     * @var type 
+     * @var type
      */
     private $pingStart;
 
@@ -38,7 +38,7 @@ class PingRequest
      * @var \React\EventLoop\Timer\TimerInterface
      */
     private $timer;
-    
+
     /**
      * @var \React\EventLoop\LoopInterface
      */
@@ -57,8 +57,9 @@ class PingRequest
      */
     function getDeferred()
     {
-        if ($this->deferred === null)
+        if ($this->deferred === null) {
             $this->deferred = new Deferred();
+        }
 
         return $this->deferred;
     }

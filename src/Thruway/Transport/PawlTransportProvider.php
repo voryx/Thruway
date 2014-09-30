@@ -13,11 +13,12 @@ use Thruway\Serializer\JsonSerializer;
 
 /**
  * Class WebsocketClient
- * 
+ *
  * @package Thruway\Transport
  */
 class PawlTransportProvider extends AbstractTransportProvider implements EventEmitterInterface
 {
+
     /**
      * Using EventEmitterTrait do implements EventEmitterInterface
      * @see \Evenement\EventEmitterTrailt
@@ -51,23 +52,19 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
 
     /**
      * Constructor
-     * 
+     *
      * @param string $URL
      */
     function __construct($URL = "ws://127.0.0.1:9090/")
     {
-
-        $this->peer = null;
-
-        $this->URL = $URL;
-
+        $this->peer    = null;
+        $this->URL     = $URL;
         $this->manager = new ManagerDummy();
-
     }
 
     /**
      * Start transport provider
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
@@ -75,10 +72,8 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     {
         $this->manager->info("Starting Transport\n");
 
-        $this->peer = $peer;
-
-        $this->loop = $loop;
-
+        $this->peer      = $peer;
+        $this->loop      = $loop;
         $this->connector = new \Ratchet\Client\Factory($this->loop);
 
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
@@ -87,7 +82,6 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                 $this->manager->info("Pawl has connected\n");
 
                 $transport = new PawlTransport($conn, $this->loop);
-
                 $transport->setSerializer(new JsonSerializer());
 
                 $this->peer->onOpen($transport);
@@ -125,9 +119,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
                 // $this->loop->stop();
             }
         );
-
     }
-
 
     /**
      * @return \Thruway\Peer\AbstractPeer
@@ -136,7 +128,6 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     {
         return $this->peer;
     }
-
 
     /**
      * @param \Thruway\Peer\AbstractPeer $peer
@@ -163,7 +154,5 @@ class PawlTransportProvider extends AbstractTransportProvider implements EventEm
     {
         return $this->manager;
     }
-
-
 
 }

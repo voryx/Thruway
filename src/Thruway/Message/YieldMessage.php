@@ -8,7 +8,7 @@ namespace Thruway\Message;
  * <code>[YIELD, INVOCATION.Request|id, Options|dict]</code>
  * <code>[YIELD, INVOCATION.Request|id, Options|dict, Arguments|list]</code>
  * <code>[YIELD, INVOCATION.Request|id, Options|dict, Arguments|list, ArgumentsKw|dict]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class YieldMessage extends Message
@@ -31,8 +31,8 @@ class YieldMessage extends Message
     private $options;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      * @param mixed $options
      * @param mixed $arguments

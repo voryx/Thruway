@@ -3,15 +3,14 @@
 namespace Thruway;
 
 
-use React\Dns\Model\Message;
-
 /**
  * Class Result
- * 
+ *
  * @package Thruway
  */
-class Result 
+class Result
 {
+
     /**
      * @var array|null
      */
@@ -21,10 +20,10 @@ class Result
      * @var array|null
      */
     private $argumentsKw;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param array|null $arguments
      * @param array|null $argumentsKw
      */
@@ -40,7 +39,7 @@ class Result
      */
     public function setArguments($arguments)
     {
-        if ($arguments !== null && ! is_array($arguments)) {
+        if ($arguments !== null && !is_array($arguments)) {
             throw new \InvalidArgumentException("Arguments must be null or an array");
         }
 
@@ -70,7 +69,5 @@ class Result
     {
         return $this->argumentsKw;
     }
-
-
 
 }

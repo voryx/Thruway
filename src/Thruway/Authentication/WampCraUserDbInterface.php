@@ -4,7 +4,7 @@ namespace Thruway\Authentication;
 
 /**
  * Interface of Wamp CraUserDb
- * 
+ *
  * @package Thruway\Authentication
  */
 
@@ -21,4 +21,5 @@ interface WampCraUserDbInterface
      * @return mixed
      */
     public function get($authid);
+
 }

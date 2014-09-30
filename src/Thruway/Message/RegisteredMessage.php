@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class RegisteredMessage
  * Acknowledge sent by a Dealer to a Callee for successful registration.
  * <code>[REGISTERED, REGISTER.Request|id, Registration|id]</code>
- * 
+ *
  * @package Thruway\Message
  */
 class RegisteredMessage extends Message
@@ -23,8 +23,8 @@ class RegisteredMessage extends Message
     private $registrationId;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $registrationId
      * @param mixed $requestId
      */
@@ -69,5 +69,4 @@ class RegisteredMessage extends Message
         return $this->requestId;
     }
 
-    
 }

@@ -8,7 +8,7 @@ use Thruway\Message\InvocationMessage;
 
 /**
  * Class Call
- * 
+ *
  * @package Thruway
  */
 class Call
@@ -45,14 +45,17 @@ class Call
      * @param \Thruway\Message\InvocationMessage $invocationMessage
      * @param \Thruway\Session $calleeSession
      */
-    function __construct(CallMessage $callMessage, Session $callerSession, InvocationMessage $invocationMessage, Session $calleeSession)
-    {
-        $this->callMessage = $callMessage;
-        $this->callerSession = $callerSession;
+    function __construct(
+        CallMessage $callMessage,
+        Session $callerSession,
+        InvocationMessage $invocationMessage,
+        Session $calleeSession
+    ) {
+        $this->callMessage       = $callMessage;
+        $this->callerSession     = $callerSession;
         $this->invocationMessage = $invocationMessage;
-        $this->calleeSession = $calleeSession;
-
-        $this->isProgressive = false;
+        $this->calleeSession     = $calleeSession;
+        $this->isProgressive     = false;
     }
 
     /**
@@ -142,6 +145,5 @@ class Call
     {
         return $this->isProgressive;
     }
-
 
 } 

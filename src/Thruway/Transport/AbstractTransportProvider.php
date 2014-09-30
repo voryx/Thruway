@@ -8,10 +8,9 @@ use React\EventLoop\LoopInterface;
 
 /**
  * abstract class for transport provider
- * 
+ *
  * @package Thruway\Transport
  */
-
 abstract class AbstractTransportProvider
 {
 
@@ -30,4 +29,5 @@ abstract class AbstractTransportProvider
      * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
     abstract public function setManager(ManagerInterface $managerInterface);
+
 }

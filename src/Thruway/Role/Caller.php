@@ -16,7 +16,7 @@ use React\Promise\Deferred;
 
 /**
  * Class Caller
- * 
+ *
  * @package Thruway\Role
  */
 class Caller extends AbstractRole
@@ -28,8 +28,8 @@ class Caller extends AbstractRole
     private $callRequests;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      */
     function __construct()
     {
@@ -38,7 +38,7 @@ class Caller extends AbstractRole
 
     /**
      * process message
-     * 
+     *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
      * @return void
@@ -57,7 +57,7 @@ class Caller extends AbstractRole
 
     /**
      * Process ResultMessage
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ResultMessage $msg
      */
@@ -82,13 +82,13 @@ class Caller extends AbstractRole
 
     /**
      * Process ErrorMessage
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
      */
     public function processError(ClientSession $session, ErrorMessage $msg)
     {
-        switch($msg->getErrorMsgCode()) {
+        switch ($msg->getErrorMsgCode()) {
             case Message::MSG_CALL:
                 if (isset($this->callRequests[$msg->getRequestId()])) {
                     /* @var $futureResult Deferred */
@@ -104,7 +104,7 @@ class Caller extends AbstractRole
     /**
      * handle message
      * Returns true if this role handles this message.
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return boolean
      */
@@ -126,7 +126,7 @@ class Caller extends AbstractRole
 
     /**
      * process call
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param string $procedureName
      * @param mixed $arguments
@@ -143,10 +143,10 @@ class Caller extends AbstractRole
 
         $this->callRequests[$requestId] = [
             "procedure_name" => $procedureName,
-            "future_result" => $futureResult
+            "future_result"  => $futureResult
         ];
 
-        if ( ! (is_array($options) && Message::isAssoc($options))) {
+        if (!(is_array($options) && Message::isAssoc($options))) {
             if ($options !== null) {
                 echo "Warning: options don't appear to be the correct type.";
             }
@@ -159,6 +159,5 @@ class Caller extends AbstractRole
 
         return $futureResult->promise();
     }
-
 
 } 

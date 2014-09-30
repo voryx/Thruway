@@ -6,22 +6,21 @@ use Thruway\Message\HelloMessage;
 
 /**
  * Class WampCraAuthProvider
- * 
+ *
  * @package Thruway\Authentication
  */
-
-class WampCraAuthProvider extends AbstractAuthProviderClient 
+class WampCraAuthProvider extends AbstractAuthProviderClient
 {
 
-    /** 
-     * @var  WampCraUserDbInterface 
+    /**
+     * @var  WampCraUserDbInterface
      */
     private $userDb;
 
     /**
      * @return string
      */
-    public function getMethodName() 
+    public function getMethodName()
     {
         return 'wampcra';
     }
@@ -35,7 +34,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
      * @param array $args
      * @return array
      */
-    public function processHello(array $args) 
+    public function processHello(array $args)
     {
         if (count($args) < 2) {
             return ["ERROR"];
@@ -61,16 +60,13 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
             }
 
             // create a challenge
-            $nonce = bin2hex(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM));
-            $authRole = "user";
-            $authMethod = "wampcra";
+            $nonce        = bin2hex(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM));
+            $authRole     = "user";
+            $authMethod   = "wampcra";
             $authProvider = "nunya";
-
-            $now = new \DateTime();
-
-            $timeStamp = $now->format($now::ISO8601);
-
-            $sessionId = $args[1]['sessionId'];
+            $now          = new \DateTime();
+            $timeStamp    = $now->format($now::ISO8601);
+            $sessionId    = $args[1]['sessionId'];
 
             $challenge = [
                 "authid"       => $authid,
@@ -85,15 +81,15 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
             $serializedChallenge = json_encode($challenge);
 
             $challengeDetails = [
-                "challenge" => $serializedChallenge,
+                "challenge"        => $serializedChallenge,
                 "challenge_method" => $this->getMethodName()
             ];
 
             if ($user['salt'] !== null) {
                 // we are using salty password
                 $saltInfo = [
-                    "salt" => $user['salt'],
-                    "keylen" => 32,
+                    "salt"       => $user['salt'],
+                    "keylen"     => 32,
                     "iterations" => 1000
                 ];
 
@@ -109,18 +105,19 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
 
     /**
      * Process authenticate
-     * 
+     *
      * @param mixed $signature
      * @param mixed $extra
      * @return array
      */
-    public function processAuthenticate($signature, $extra = NULL) {
+    public function processAuthenticate($signature, $extra = null)
+    {
         if (is_array($extra)) {
             if (isset($extra['challenge_details'])) {
                 $challengeDetails = $extra['challenge_details'];
                 if (is_array($challengeDetails)) {
                     if (isset($challengeDetails['challenge'])) {
-                        $challenge = $challengeDetails['challenge'];
+                        $challenge      = $challengeDetails['challenge'];
                         $challengeArray = json_decode($challenge);
 
                         // lookup the user
@@ -128,7 +125,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
                             return ["FAILURE"];
                         }
 
-                        if ( ! isset($challengeArray->authid)) {
+                        if (!isset($challengeArray->authid)) {
                             return ["FAILURE"];
                         }
 
@@ -144,12 +141,15 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
                         $token = base64_encode(hash_hmac('sha256', $challenge, $keyToUse, true));
 
                         if ($token == $signature) {
-                            return ["SUCCESS", [
+                            return [
+                                "SUCCESS",
+                                [
                                     "authmethod"   => "wampcra",
                                     "authrole"     => "user",
                                     "authid"       => $challengeArray->authid,
                                     "authprovider" => $challengeArray->authprovider
-                            ]];
+                                ]
+                            ];
                         }
                     }
                 }
@@ -174,17 +174,17 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
     {
         return $this->userDb;
     }
-    
+
     /**
      * Encode and get derived key
-     * 
+     *
      * @param string $key
      * @param string $salt
      * @param int $iterations
      * @param int $keyLen
      * @return string
      */
-    public static function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32) 
+    public static function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32)
     {
         return base64_encode(hash_pbkdf2('sha256', $key, $salt, $iterations, $keyLen, true));;
     }

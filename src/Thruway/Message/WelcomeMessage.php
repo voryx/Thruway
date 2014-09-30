@@ -6,37 +6,38 @@ namespace Thruway\Message;
  * Class WelcomeMessage
  * Sent by a Router to accept a Client. The WAMP session is now open.
  * [WELCOME, Session|id, Details|dict]
- * 
+ *
  * @package Thruway\Message
  */
 class WelcomeMessage extends Message
 {
+
     /**
      * @var int
      */
     private $sessionId;
-    
+
     /**
      * @var mixed
      */
     private $details;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param int $sessionId
      * @param mixed $details
      */
     function __construct($sessionId, $details)
     {
-        $this->details = $details;
+        $this->details   = $details;
         $this->sessionId = $sessionId;
     }
 
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -70,6 +71,5 @@ class WelcomeMessage extends Message
     {
         return $this->sessionId;
     }
-
 
 } 

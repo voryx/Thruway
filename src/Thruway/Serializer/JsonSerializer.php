@@ -8,15 +8,15 @@ use Thruway\Message\Message;
 /**
  * Class JsonSerializer
  * Serialize and deserialize using JSON methods
- * 
+ *
  * @package Thruway\Serializer
  */
-
 class JsonSerializer implements SerializerInterface
 {
+
     /**
      * Serialize message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return string
      */
@@ -27,7 +27,7 @@ class JsonSerializer implements SerializerInterface
 
     /**
      * Deserialize message
-     * 
+     *
      * @param string $serializedData
      * @return \Thruway\Message\Message
      * @throws \Thruway\Exception\DeserializationException

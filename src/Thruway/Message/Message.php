@@ -4,12 +4,12 @@ namespace Thruway\Message;
 
 /**
  * abstract class message
- * 
+ *
  * @package Thruway\Message
  */
 abstract class Message implements \JsonSerializable
 {
-    
+
     /**
      * Message code
      * @const int
@@ -42,7 +42,7 @@ abstract class Message implements \JsonSerializable
     const MSG_YIELD = 70;
 
     /**
-     * Contructor
+     * Constructor
      */
     function __construct()
     {
@@ -63,7 +63,7 @@ abstract class Message implements \JsonSerializable
 
     /**
      * Create message factory
-     * 
+     *
      * @param $data
      * @throws \Thruway\Message\MessageException
      * @return \Thruway\Message\Message
@@ -84,7 +84,7 @@ abstract class Message implements \JsonSerializable
             case Message::MSG_UNSUBSCRIBE:
                 return new UnsubscribeMessage($data[1], $data[2]);
             case Message::MSG_PUBLISH:
-                $args = isset($data[4]) ? $data[4] : null;
+                $args   = isset($data[4]) ? $data[4] : null;
                 $argsKw = isset($data[5]) ? $data[5] : null;
 
                 return new PublishMessage($data[1], $data[2], $data[3], $args, $argsKw);
@@ -99,12 +99,12 @@ abstract class Message implements \JsonSerializable
             case Message::MSG_UNREGISTERED:
                 return new UnregisteredMessage($data[1]);
             case Message::MSG_CALL:
-                $args = isset($data[4]) ? $data[4] : null;
+                $args   = isset($data[4]) ? $data[4] : null;
                 $argsKw = isset($data[5]) ? $data[5] : null;
 
                 return new CallMessage($data[1], $data[2], $data[3], $args, $argsKw);
             case Message::MSG_YIELD:
-                $args = isset($data[3]) ? $data[3] : null;
+                $args   = isset($data[3]) ? $data[3] : null;
                 $argsKw = isset($data[4]) ? $data[4] : null;
 
                 return new YieldMessage($data[1], $data[2], $args, $argsKw);
@@ -113,19 +113,19 @@ abstract class Message implements \JsonSerializable
             case Message::MSG_SUBSCRIBED:
                 return new SubscribedMessage($data[1], $data[2]);
             case Message::MSG_EVENT:
-                $args = isset($data[4]) ? $data[4] : null;
+                $args   = isset($data[4]) ? $data[4] : null;
                 $argsKw = isset($data[5]) ? $data[5] : null;
 
                 return new EventMessage($data[1], $data[2], $data[3], $args, $argsKw);
             case Message::MSG_REGISTERED:
                 return new RegisteredMessage($data[1], $data[2]);
             case Message::MSG_INVOCATION:
-                $args = isset($data[4]) ? $data[4] : null;
+                $args   = isset($data[4]) ? $data[4] : null;
                 $argsKw = isset($data[5]) ? $data[5] : null;
 
                 return new InvocationMessage($data[1], $data[2], $data[3], $args, $argsKw);
             case Message::MSG_RESULT:
-                $args = isset($data[3]) ? $data[3] : null;
+                $args   = isset($data[3]) ? $data[3] : null;
                 $argsKw = isset($data[4]) ? $data[4] : null;
 
                 return new ResultMessage($data[1], $data[2], $args, $argsKw);
@@ -135,7 +135,7 @@ abstract class Message implements \JsonSerializable
                 $extra = $args = isset($data[3]) ? $data[3] : [];
                 return new ChallengeMessage($data[1], $data[2], $extra);
             case Message::MSG_ERROR:
-                $args = isset($data[5]) ? $data[5] : null;
+                $args   = isset($data[5]) ? $data[5] : null;
                 $argsKw = isset($data[6]) ? $data[6] : null;
                 return new ErrorMessage($data[1], $data[2], $data[3], $data[4], $args, $argsKw);
 
@@ -151,7 +151,7 @@ abstract class Message implements \JsonSerializable
      */
     public function getMessageParts()
     {
-        return array_merge(array($this->getMsgCode()), $this->getAdditionalMsgFields());
+        return array_merge([$this->getMsgCode()], $this->getAdditionalMsgFields());
     }
 
     /**
@@ -168,7 +168,7 @@ abstract class Message implements \JsonSerializable
 
     /**
      * Convert object to string
-     * 
+     *
      * @return string
      */
     function __toString()
@@ -178,7 +178,7 @@ abstract class Message implements \JsonSerializable
 
     /**
      * Check and convert empty array to \stdClass object
-     * 
+     *
      * @param mixed $a
      * @return \stdClass|mixed
      */
@@ -198,7 +198,7 @@ abstract class Message implements \JsonSerializable
     public static function isAssoc($arr)
     {
         // if this is an empty stdClass (which we use as empty dictionaries)
-        $arr = (array) $arr;
+        $arr = (array)$arr;
 
         return array_keys($arr) !== range(0, count($arr) - 1);
     }

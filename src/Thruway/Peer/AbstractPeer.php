@@ -9,10 +9,9 @@ use Thruway\Transport\TransportInterface;
 
 /**
  * class AbstractPeer
- * 
+ *
  * @package Thruway\Peer
  */
-
 abstract class AbstractPeer
 {
     /**
@@ -22,7 +21,7 @@ abstract class AbstractPeer
 
     /**
      * Handle process message
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Message\Message $msg
      */
@@ -30,21 +29,21 @@ abstract class AbstractPeer
 
     /**
      * Handle process onpen transport
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $transport
      */
     abstract public function onOpen(TransportInterface $transport);
 
     /**
      * Add transport provider
-     * 
+     *
      * @param \Thruway\Transport\AbstractTransportProvider $transportProvider
      */
     abstract public function addTransportProvider(AbstractTransportProvider $transportProvider);
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     abstract public function setManager($manager);

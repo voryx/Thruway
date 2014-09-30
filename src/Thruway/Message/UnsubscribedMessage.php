@@ -6,7 +6,7 @@ namespace Thruway\Message;
  * Class UnsubscribedMessage
  * Acknowledge sent by a Broker to a Subscriber to acknowledge unsubscription.
  * <code>[UNSUBSCRIBED, UNSUBSCRIBE.Request|id]</code>
- * 
+ *
  * @package Thruway\Message
  */
 
@@ -20,8 +20,8 @@ class UnsubscribedMessage extends Message
     private $requestId;
 
     /**
-     * Contructor
-     * 
+     * Constructor
+     *
      * @param mixed $requestId
      */
     function __construct($requestId)

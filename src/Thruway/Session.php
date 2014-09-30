@@ -3,7 +3,6 @@
 namespace Thruway;
 
 
-use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\Message;
@@ -11,7 +10,7 @@ use Thruway\Transport\TransportInterface;
 
 /**
  * Class Session
- * 
+ *
  * @package Thruway
  */
 class Session extends AbstractSession
@@ -40,19 +39,19 @@ class Session extends AbstractSession
 
     /**
      * Constructor
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     function __construct(TransportInterface $transport, ManagerInterface $manager = null)
     {
-        $this->transport = $transport;
-        $this->state = static::STATE_PRE_HELLO;
-        $this->sessionId = static::getUniqueId();
-        $this->realm = null;
-
-        $this->messagesSent = 0;
-        $this->sessionStart = new \DateTime();
+        $this->transport             = $transport;
+        $this->state                 = static::STATE_PRE_HELLO;
+        $this->sessionId             = static::getUniqueId();
+        $this->realm                 = null;
+        $this->messagesSent          = 0;
+        $this->sessionStart          = new \DateTime();
+        $this->authenticationDetails = null;
 
         if ($manager === null) {
             $manager = new ManagerDummy();
@@ -60,20 +59,19 @@ class Session extends AbstractSession
 
         $this->setManager($manager);
 
-        $this->authenticationDetails = null;
     }
 
     /**
      * Send message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
+     * @return mixed|void
      */
     public function sendMessage(Message $msg)
     {
         $this->messagesSent++;
         $this->transport->sendMessage($msg);
     }
-
 
 
     /**
@@ -147,6 +145,5 @@ class Session extends AbstractSession
     {
         return $this->authenticationDetails;
     }
-
 
 }

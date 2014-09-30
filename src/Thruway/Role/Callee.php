@@ -21,7 +21,7 @@ use Thruway\Session;
 
 /**
  * Class Callee
- * 
+ *
  * @package Thruway\Role
  */
 class Callee extends AbstractRole
@@ -33,18 +33,18 @@ class Callee extends AbstractRole
     private $registrations;
 
     /**
-     * @var Psr\Log\LoggerInterface
+     * @var \Psr\Log\LoggerInterface
      */
     private $logger;
 
     /**
-     * Contructor
-     * 
-     * @param Psr\Log\LoggerInterface $logger
+     * Constructor
+     *
+     * @param \Psr\Log\LoggerInterface $logger
      */
     function __construct(LoggerInterface $logger = null)
     {
-        if (!$logger){
+        if (!$logger) {
             $this->logger = new NullLogger();
         } else {
             $this->logger = $logger;
@@ -56,7 +56,7 @@ class Callee extends AbstractRole
 
     /**
      * handle process reveiced message
-     * 
+     *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
      */
@@ -77,7 +77,7 @@ class Callee extends AbstractRole
 
     /**
      * Process RegisteredMessage
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\RegisteredMessage $msg
      * @return void
@@ -102,7 +102,7 @@ class Callee extends AbstractRole
 
     /**
      * Process Unregistered
-     * 
+     *
      * @param ClientSession $session
      * @param UnregisteredMessage $msg
      */
@@ -125,7 +125,7 @@ class Callee extends AbstractRole
 
     /**
      * Process InvocationMessage
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\InvocationMessage $msg
      */
@@ -141,7 +141,7 @@ class Callee extends AbstractRole
                         // this is where calls end up if the client has called unregister but
                         // have not yet received confirmation from the router about the
                         // unregistration
-                        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg,"thruway.error.unregistering"));
+                        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "thruway.error.unregistering"));
 
                         return;
                     }
@@ -155,10 +155,11 @@ class Callee extends AbstractRole
                                 function ($promiseResults) use ($msg, $session) {
                                     $options = new \stdClass();
                                     if ($promiseResults instanceof Result) {
-                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults->getArguments(), $promiseResults->getArgumentsKw());
+                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options,
+                                            $promiseResults->getArguments(), $promiseResults->getArgumentsKw());
                                     } else {
                                         $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
-                                        $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults]: $promiseResults;
+                                        $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults] : $promiseResults;
 
                                         $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
                                     }
@@ -175,12 +176,13 @@ class Callee extends AbstractRole
                                     $session->sendMessage($errorMsg);
                                 },
                                 function ($results) use ($msg, $session, $registration) {
-                                    $options = [ "progress" => true ];
+                                    $options = ["progress" => true];
                                     if ($results instanceof Result) {
-                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(), $results->getArgumentsKw());
+                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
+                                            $results->getArgumentsKw());
                                     } else {
                                         $results = is_array($results) ? $results : [$results];
-                                        $results = !$this::is_list($results) ? [$results]: $results;
+                                        $results = !$this::is_list($results) ? [$results] : $results;
 
                                         $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
                                     }
@@ -191,10 +193,11 @@ class Callee extends AbstractRole
                         } else {
                             $options = new \stdClass();
                             if ($results instanceof Result) {
-                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(), $results->getArgumentsKw());
+                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
+                                    $results->getArgumentsKw());
                             } else {
                                 $results = is_array($results) ? $results : [$results];
-                                $results = !$this::is_list($results) ? [$results]: $results;
+                                $results = !$this::is_list($results) ? [$results] : $results;
 
                                 $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
                             }
@@ -206,7 +209,7 @@ class Callee extends AbstractRole
 
                         $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
 
-                        $errorMsg->setArguments(array($e->getMessage()));
+                        $errorMsg->setArguments([$e->getMessage()]);
 
                         $errorMsg->setArgumentsKw($e);
 
@@ -223,7 +226,7 @@ class Callee extends AbstractRole
 
     /**
      * Process ErrorMessage
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
      */
@@ -241,11 +244,12 @@ class Callee extends AbstractRole
 
     /**
      * handle error when register
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
      */
-    public function handleErrorRegister(ClientSession $session, ErrorMessage $msg) {
+    public function handleErrorRegister(ClientSession $session, ErrorMessage $msg)
+    {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
                 /** @var Deferred $deferred */
@@ -259,11 +263,12 @@ class Callee extends AbstractRole
 
     /**
      * handle error when unregister
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
      */
-    public function handleErrorUnregister(ClientSession $session, ErrorMessage $msg) {
+    public function handleErrorUnregister(ClientSession $session, ErrorMessage $msg)
+    {
         foreach ($this->registrations as $key => $registration) {
             if (isset($registration['unregister_request_id'])) {
                 if ($registration["unregister_request_id"] === $msg->getRequestId()) {
@@ -313,7 +318,7 @@ class Callee extends AbstractRole
 
     /**
      * process register
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param string $procedureName
      * @param \Closure $callback
@@ -324,14 +329,14 @@ class Callee extends AbstractRole
     {
         $futureResult = new Deferred();
 
-        $requestId = Session::getUniqueId();
-        $options = isset($options) ? $options : new \stdClass();
+        $requestId    = Session::getUniqueId();
+        $options      = isset($options) ? $options : new \stdClass();
         $registration = [
             "procedure_name" => $procedureName,
-            "callback" => $callback,
-            "request_id" => $requestId,
-            'options' => $options,
-            'futureResult' => $futureResult
+            "callback"       => $callback,
+            "request_id"     => $requestId,
+            'options'        => $options,
+            'futureResult'   => $futureResult
         ];
 
         array_push($this->registrations, $registration);
@@ -355,7 +360,7 @@ class Callee extends AbstractRole
 
         $registration = null;
 
-        foreach($this->registrations as $k => $r) {
+        foreach ($this->registrations as $k => $r) {
             if (isset($r['procedure_name'])) {
                 if ($r['procedure_name'] == $Uri) {
                     $registration = &$this->registrations[$k];
@@ -366,7 +371,7 @@ class Callee extends AbstractRole
 
         if ($registration === null) {
             $this->logger->warning("registration not found: " . $Uri);
-            return FALSE;
+            return false;
         }
 
         // we remove the callback from the client here
@@ -395,7 +400,7 @@ class Callee extends AbstractRole
         // save the request id so we can find this in the registration
         // list to call the deferred and remove it from the list
         $registration['unregister_request_id'] = $requestId;
-        $registration['unregister_deferred'] = $futureResult;
+        $registration['unregister_deferred']   = $futureResult;
 
         $unregisterMsg = new UnregisterMessage($requestId, $registration['registration_id']);
 
@@ -406,13 +411,13 @@ class Callee extends AbstractRole
 
     /**
      * This belongs somewhere else I am thinking
-     * 
+     *
      * @param array $array
      * @return boolean
      */
     public static function is_list($array)
     {
-        if (!is_array($array)){
+        if (!is_array($array)) {
             return false;
         }
 
@@ -426,7 +431,7 @@ class Callee extends AbstractRole
 
     /**
      * Get logger
-     * 
+     *
      * @return \Psr\Log\LoggerInterface
      */
     public function getLogger()
@@ -436,13 +441,12 @@ class Callee extends AbstractRole
 
     /**
      * Set logger
-     * 
+     *
      * @param \Psr\Log\LoggerInterface $logger
      */
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
-
 
 } 

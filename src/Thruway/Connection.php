@@ -5,7 +5,6 @@ namespace Thruway;
 
 use Psr\Log\LoggerInterface;
 use React\EventLoop\LoopInterface;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
 use Thruway\Peer\Client;
@@ -17,11 +16,12 @@ use Evenement\EventEmitterTrait;
 
 /**
  * Class Connection
- * 
+ *
  * @package Thruway
  */
 class Connection implements EventEmitterInterface
 {
+
     /**
      * Using \Evenement\EventEmitterTrait to implements \Evenement\EventEmitterInterface
      * @see \Evenement\EventEmitterTrait
@@ -44,10 +44,10 @@ class Connection implements EventEmitterInterface
     private $options;
 
     /**
-     * Constructer
-     * 
+     * Constructor
+     *
      * @param array $options
-     * @param \React\LoopInterface $loop
+     * @param \React\EventLoop\LoopInterface $loop
      * @param \Psr\Log\LoggerInterface $logger
      * @throws \Exception
      */
@@ -55,14 +55,13 @@ class Connection implements EventEmitterInterface
     {
 
         $this->options = $options;
-
-        $this->client = new Client($options['realm'], $loop);
+        $this->client  = new Client($options['realm'], $loop);
 
         /*
          * Add the transport provider
          * TODO: Allow for multiple transport providers
          */
-        $url = isset($options['url']) ? $options['url'] : null;
+        $url           = isset($options['url']) ? $options['url'] : null;
         $pawlTransport = new PawlTransportProvider($url);
         if ($logger) {
             $pawlTransport->getManager()->setLogger($logger);
@@ -115,9 +114,9 @@ class Connection implements EventEmitterInterface
         );
 
         $this->client->on('error', function ($reason) {
-                $this->emit('error', [$reason]);
+            $this->emit('error', [$reason]);
 
-            });
+        });
     }
 
     /**
@@ -167,6 +166,5 @@ class Connection implements EventEmitterInterface
     {
         return $this->client;
     }
-
 
 }
