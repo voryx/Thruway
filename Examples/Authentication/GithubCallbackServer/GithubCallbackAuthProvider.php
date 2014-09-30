@@ -1,16 +1,15 @@
 <?php
+
 use React\Promise\Deferred;
 use Thruway\Authentication\AbstractAuthProviderClient;
 
-
 /**
- * requires  https://github.com/reactphp/http
  * Class GithubCallbackAuthProvider
- * ref https://developer.github.com/v3/oauth/
+ * requires  https://github.com/reactphp/http
+ * @see https://developer.github.com/v3/oauth/
  */
 class GithubCallbackAuthProvider extends AbstractAuthProviderClient
 {
-
 
     /**
      * @var
@@ -35,8 +34,9 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
     function __construct($authRealms, $http, $clientId, $clientSecret)
     {
 
-        $this->clientId = $clientId;
+        $this->clientId     = $clientId;
         $this->clientSecret = $clientSecret;
+
         parent::__construct($authRealms);
 
         //Register Http request event
@@ -67,7 +67,7 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
 
         //If we don't already have a promise for this state, create one
         if (!isset($this->promises[$state])) {
-            $deferred = new Deferred();
+            $deferred               = new Deferred();
             $this->promises[$state] = $deferred;
         }
 
@@ -105,7 +105,7 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
 
         //If we don't already have a promise for this state, create one
         if (!isset($this->promises[$query['state']])) {
-            $deferred = new Deferred();
+            $deferred                        = new Deferred();
             $this->promises[$query['state']] = $deferred;
         }
 
@@ -126,15 +126,15 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
 
     /**
      * @param $code
-     * @return bool
+     * @return boolean
      */
     private function getAccessToken($code)
     {
 
-        $data = [
-            "client_id" => $this->clientId,
+        $data        = [
+            "client_id"     => $this->clientId,
             "client_secret" => $this->clientSecret,
-            "code" => $code
+            "code"          => $code
         ];
         $data_string = json_encode($data);
 
@@ -183,4 +183,5 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
         return json_decode($result);
 
     }
+
 }

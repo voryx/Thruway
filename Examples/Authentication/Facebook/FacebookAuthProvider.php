@@ -1,41 +1,63 @@
 <?php
 
 
-class FacebookAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient {
+/**
+ * Class FacebookAuthProvider
+ */
+class FacebookAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient
+{
 
-  private $appId;
+    /**
+     * @var \React\EventLoop\LoopInterface
+     */
+    private $appId;
 
-  private $appSecret;
+    /**
+     * @var
+     */
+    private $appSecret;
 
-  public function __construct(Array $authRealms, $appId, $appSecret) {
-    $this->appId = $appId;
-    $this->appSecret = $appSecret;
+    /**
+     * @param array $authRealms
+     * @param \React\EventLoop\LoopInterface $appId
+     * @param $appSecret
+     */
+    public function __construct(Array $authRealms, $appId, $appSecret)
+    {
+        $this->appId     = $appId;
+        $this->appSecret = $appSecret;
 
-    parent::__construct($authRealms);
+        parent::__construct($authRealms);
 
-  }
-
-  /**
-   * @return string
-   */
-  public function getMethodName() {
-    return 'facebook';
-  }
-
-  public function processAuthenticate($signature, $extra = NULL) {
-
-    \Facebook\FacebookSession::setDefaultApplication($this->appId, $this->appSecret);
-
-    $session = new \Facebook\FacebookSession($signature);
-    $sessionInfo = $session->getSessionInfo();
-
-    //Make sure that we received a valid token
-    if ($sessionInfo->isValid()) {
-      return array("SUCCESS");
-    }
-    else {
-      return array("FAILURE");
     }
 
-  }
+    /**
+     * @return string
+     */
+    public function getMethodName()
+    {
+        return 'facebook';
+    }
+
+    /**
+     * @param mixed $signature
+     * @param null $extra
+     * @return array
+     */
+    public function processAuthenticate($signature, $extra = null)
+    {
+
+        \Facebook\FacebookSession::setDefaultApplication($this->appId, $this->appSecret);
+
+        $session     = new \Facebook\FacebookSession($signature);
+        $sessionInfo = $session->getSessionInfo();
+
+        //Make sure that we received a valid token
+        if ($sessionInfo->isValid()) {
+            return ["SUCCESS"];
+        } else {
+            return ["FAILURE"];
+        }
+    }
+
 }

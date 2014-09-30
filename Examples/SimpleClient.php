@@ -10,11 +10,11 @@ $onClose = function ($msg) {
 };
 
 $connection = new Connection(
-    array(
-        "realm" => 'realm1',
+    [
+        "realm"   => 'realm1',
         "onClose" => $onClose,
-        "url" => 'ws://127.0.0.1:9090',
-    )
+        "url"     => 'ws://127.0.0.1:9090',
+    ]
 );
 
 $connection->on(
@@ -28,7 +28,7 @@ $connection->on(
         $session->subscribe('com.myapp.hello', $onevent);
 
         // 2) publish an event
-        $session->publish('com.myapp.hello', array('Hello, world from PHP!!!'), [], ["acknowledge" => true])->then(
+        $session->publish('com.myapp.hello', ['Hello, world from PHP!!!'], [], ["acknowledge" => true])->then(
             function () {
                 echo "Publish Acknowledged!\n";
             },
@@ -45,7 +45,7 @@ $connection->on(
         $session->register('com.myapp.add2', $add2);
 
         // 4) call a remote procedure
-        $session->call('com.myapp.add2', array(2, 3))->then(
+        $session->call('com.myapp.add2', [2, 3])->then(
             function ($res) {
                 echo "Result: {$res}\n";
             },

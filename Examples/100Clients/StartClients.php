@@ -6,9 +6,9 @@ require __DIR__ . '/CallingClient.php';
 
 $loop = \React\EventLoop\Factory::create();
 
-$theClients = array();
+$theClients = [];
 
-$promises = array();
+$promises = [];
 
 $url = "ws://demo.thruway.ws:9090/";
 $url = "ws://127.0.0.1:9090/";

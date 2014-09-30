@@ -1,9 +1,8 @@
 <?php
 /**
  * This client can connect to this server:
- * https://github.com/tavendo/AutobahnPython/tree/master/examples/twisted/wamp/authentication/wampcra
+ * @see https://github.com/tavendo/AutobahnPython/tree/master/examples/twisted/wamp/authentication/wampcra
  */
-
 
 require "../bootstrap.php";
 require 'MyClient.php';
@@ -12,10 +11,10 @@ $client = new MyClient('realm1');
 
 $client->setAttemptRetry(false);
 
-$user = "peter";
+$user   = "peter";
 $secret = "secret1";
 
-$user = "joe";
+$user     = "joe";
 $password = "secret2";
 
 $client->setAuthId($user);

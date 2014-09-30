@@ -1,23 +1,34 @@
 <?php
 
 
-class SimpleAuthProviderClient extends \Thruway\Authentication\AbstractAuthProviderClient {
+/**
+ * Class SimpleAuthProviderClient
+ */
+class SimpleAuthProviderClient extends \Thruway\Authentication\AbstractAuthProviderClient
+{
 
-  /**
-   * @return string
-   */
-  public function getMethodName() {
-    return 'simplysimple';
-  }
-
-  public function processAuthenticate($signature, $extra = NULL) {
-
-    if ($signature == "letMeIn") {
-      return array("SUCCESS");
-    }
-    else {
-      return array("FAILURE");
+    /**
+     * @return string
+     */
+    public function getMethodName()
+    {
+        return 'simplysimple';
     }
 
-  }
+    /**
+     * @param mixed $signature
+     * @param null $extra
+     * @return array
+     */
+    public function processAuthenticate($signature, $extra = null)
+    {
+
+        if ($signature == "letMeIn") {
+            return ["SUCCESS"];
+        } else {
+            return ["FAILURE"];
+        }
+
+    }
+
 }

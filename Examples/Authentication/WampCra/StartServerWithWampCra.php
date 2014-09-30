@@ -30,15 +30,12 @@ $authMgr = new \Thruway\Authentication\AuthenticationManager();
 $router->setAuthenticationManager($authMgr);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
 
-
-$authProvClient = new WampCraAuthProvider(array("realm1"));
+$authProvClient = new WampCraAuthProvider(["realm1"]);
 $authProvClient->setUserDb($userDb);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
-
 
 $transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
 
 $router->addTransportProvider($transportProvider);
-
 
 $router->start();

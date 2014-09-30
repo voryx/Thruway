@@ -1,17 +1,27 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 7/22/14
- * Time: 9:57 PM
- */
 
-class FullBufferClient extends \Thruway\Peer\Client {
-    public function onBufferFill($args) {
+
+/**
+ * Class FullBufferClient
+ */
+class FullBufferClient extends \Thruway\Peer\Client
+{
+
+    /**
+     * @param $args
+     */
+    public function onBufferFill($args)
+    {
         var_dump($args);
     }
 
-    public function onSessionStart($session, $transport) {
-        $this->getSubscriber()->subscribe($session, 'bufferFill', array($this, 'onBufferFill'));
+    /**
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Transport\TransportInterface $transport
+     */
+    public function onSessionStart($session, $transport)
+    {
+        $this->getSubscriber()->subscribe($session, 'bufferFill', [$this, 'onBufferFill']);
     }
-} 
+
+}

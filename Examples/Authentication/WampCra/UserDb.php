@@ -1,36 +1,49 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 8/6/14
- * Time: 11:35 PM
- */
 
-class UserDb implements \Thruway\Authentication\WampCraUserDbInterface {
+
+/**
+ * Class UserDb
+ */
+class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
+{
+
+    /**
+     * @var array
+     */
     private $users;
 
     function __construct()
     {
-        $this->users = array();
+        $this->users = [];
     }
 
-    function add($userName, $password, $salt = null) {
+    /**
+     * @param $userName
+     * @param $password
+     * @param null $salt
+     */
+    function add($userName, $password, $salt = null)
+    {
         if ($salt !== null) {
             $key = \Thruway\Authentication\WampCraAuthProvider::getDerivedKey($password, $salt);
         } else {
             $key = $password;
         }
 
-        $this->users[$userName] = array("authid" => $userName, "key" => $key, "salt" => $salt);
+        $this->users[$userName] = ["authid" => $userName, "key" => $key, "salt" => $salt];
     }
 
-    function get($authId) {
+    /**
+     * @param string $authId
+     * @return boolean
+     */
+    function get($authId)
+    {
         if (isset($this->users[$authId])) {
             return $this->users[$authId];
         } else {
             return false;
         }
     }
-
 
 } 
