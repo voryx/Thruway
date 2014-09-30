@@ -123,8 +123,7 @@ class Router extends AbstractPeer
                     $session->abort(['description' => $description], $errorUri);
                 }
             } else {
-                // TODO: Test this
-                $session->abort(new \stdClass(), "wamp.error.no_such_realm");
+                $session->abort(new \stdClass(), "wamp.error.unknown");
             }
         } else {
             $realm = $session->getRealm();
