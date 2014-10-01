@@ -393,8 +393,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @depends testHelloMessage
      * @param $rt array
      * @return array
-     *
-     * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#event-1
      */
     public function testOnClose($rt)
     {
@@ -409,6 +407,45 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    /**
+     * Test Get Session By Session Id
+     *
+     * @depends testHelloMessage
+     * @param $rt array
+     * @return array
+     */
+    public function testGetSessionBySessionId($rt)
+    {
+        //Get the sessions
+        $sessions = $rt['router']->managerGetSessions()[0];
+
+        $this->assertCount(1, $sessions);
+
+        foreach ($sessions as $s) {
+            /* @var $session \Thruway\Session */
+            $session = $rt['router']->getSessionBySessionId($s['id']);
+
+            $this->assertInstanceOf('\Thruway\Session', $session);
+            $this->assertEquals($session->getSessionId(), $s['id']);
+
+        }
+    }
+
+
+    /**
+     * Test Try Get Session By Session Id - Id Does not exist
+     *
+     * @depends testHelloMessage
+     * @param $rt array
+     * @return array
+     */
+    public function testGetSessionBySessionIdFalse($rt)
+    {
+        /* @var $session \Thruway\Session */
+        $session = $rt['router']->getSessionBySessionId("12231234123412341234");
+
+        $this->assertFalse($session);
+    }
 
     /**
      * Abort Message
