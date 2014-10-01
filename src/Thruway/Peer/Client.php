@@ -139,16 +139,16 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     function __construct($realm, LoopInterface $loop = null)
     {
-        $this->transportProvider = null;
-        $this->roles             = [];
-        $this->realm             = $realm;
-        $this->authMethods       = [];
-
-        if ($loop === null) {
-            $loop = Factory::create();
-        }
-
-        $this->loop = $loop;
+        $this->realm                = $realm;
+        $this->loop                 = $loop ? $loop : Factory::create();
+        $this->transportProvider    = null;
+        $this->roles                = [];
+        $this->authMethods          = [];
+        $this->manager              = new ManagerDummy();
+        $this->session              = null;
+        $this->clientAuthenticators = [];
+        $this->authId               = "anonymous";
+        $this->logger               = new NullLogger();
 
         $this->reconnectOptions = [
             "max_retries"         => 15,
@@ -158,18 +158,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
             "retry_delay_jitter"  => 0.1 //not implemented
         ];
 
-        $this->manager = new ManagerDummy();
-
-        $this->session = null;
-
         $this->on('open', [$this, 'onSessionStart']);
 
-        $this->clientAuthenticators = [];
-        $this->authId               = "anonymous";
+        $this->manager->debug("New client created");
 
-        $this->setLogger(new NullLogger());
     }
-
 
     /**
      * This is meant to be overridden so that the client can do its
@@ -242,11 +235,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->retryAttempts = 0;
         $this->transport     = $transport;
         $session             = new ClientSession($transport, $this);
+        $this->session       = $session;
 
         $session->setLoop($this->getLoop());
-
-        $this->session = $session;
-
         $session->setState(Session::STATE_DOWN);
 
         $this->startSession($session);
@@ -335,7 +326,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
         } else:
             $this->processOther($session, $msg);
         endif;
-
 
     }
 

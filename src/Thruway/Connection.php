@@ -57,12 +57,9 @@ class Connection implements EventEmitterInterface
         $this->options = $options;
         $this->client  = new Client($options['realm'], $loop);
 
-        /*
-         * Add the transport provider
-         * TODO: Allow for multiple transport providers
-         */
         $url           = isset($options['url']) ? $options['url'] : null;
         $pawlTransport = new PawlTransportProvider($url);
+
         if ($logger) {
             $pawlTransport->getManager()->setLogger($logger);
         }

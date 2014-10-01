@@ -53,21 +53,13 @@ class Router extends AbstractPeer
      */
     function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
     {
-        // initially we are just going to start with a dummy manager
+        $this->loop               = $loop ? $loop : Factory::create();
         $this->manager            = $manager ? $manager : new ManagerDummy();
         $this->realmManager       = new RealmManager($this->manager);
         $this->transportProviders = [];
         $this->sessions           = new \SplObjectStorage();
 
         $this->manager->debug("New router created");
-
-        if ($loop === null) {
-            $this->manager->debug("No loop given, creating our own instance");
-            $loop = Factory::create();
-        }
-
-        $this->loop = $loop;
-
     }
 
     /**
