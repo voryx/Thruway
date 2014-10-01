@@ -11,17 +11,17 @@ matrix:
         - php: hhvm
 
 before_install:
-     - sudo apt-get install python-pip -qq
-     - sudo apt-get install -qq coreutils
-     - sudo apt-get install -qq build-essential libssl-dev libffi-dev python-dev python-pip
-     - sudo pip install crossbar
+#     - sudo apt-get install python-pip -qq
+#     - sudo apt-get install -qq coreutils
+#     - sudo apt-get install -qq build-essential libssl-dev libffi-dev python-dev python-pip
+#     - sudo pip install crossbar
 
 before_script:
     - composer require "ratchet/pawl":"dev-master"
     - composer install
-    - sh tests/Crossbar/travis_install
+#    - sh tests/Crossbar/travis_install
 
 script:
     - php tests/TestServer.php 10 & phpunit
-    - sh tests/Crossbar/run_tests
+#    - sh tests/Crossbar/run_tests
 
