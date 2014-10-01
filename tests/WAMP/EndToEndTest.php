@@ -24,7 +24,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->_conn = new \Thruway\Connection(
             array(
                 "realm" => 'testRealm',
-                "url" => 'ws://127.0.0.1:8080',
+                "url" => 'ws://127.0.0.1:8090',
                 "max_retries" => 0,
             )
         );
@@ -214,7 +214,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $conn = new \Thruway\Connection(
             array(
                 "realm" => 'not_allowed',
-                "url" => 'ws://127.0.0.1:8080',
+                "url" => 'ws://127.0.0.1:8090',
                 "max_retries" => 0,
             )
         );

@@ -1,7 +1,5 @@
 #!/bin/sh
 
-sleep 11 #wait for other stuff to finish
-
 timeout 10s /usr/local/bin/crossbar start --cbdir $HOME/hello/.crossbar &
 
 sleep 3

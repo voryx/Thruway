@@ -32,7 +32,7 @@ $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProv
 $authAbortAfterHello = new AbortAfterHelloAuthProviderClient(["abortafterhello"]);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authAbortAfterHello));
 
-$transportProvider = new RatchetTransportProvider("127.0.0.1", 8080);
+$transportProvider = new RatchetTransportProvider("127.0.0.1", 8090);
 
 $router->addTransportProvider($transportProvider);
 

@@ -23,7 +23,7 @@ class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
         $this->_conn = new \Thruway\Connection(
             array(
                 "realm" => 'testRealm',
-                "url" => 'ws://127.0.0.1:8080',
+                "url" => 'ws://127.0.0.1:8090',
                 "max_retries" => 0,
             )
         );
