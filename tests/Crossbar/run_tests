@@ -1,8 +1,8 @@
 #!/bin/sh
 
-timeout 20s /usr/local/bin/crossbar start --cbdir $HOME/hello/.crossbar &
+timeout 45s /usr/local/bin/crossbar start --cbdir $HOME/hello/.crossbar &
 
-sleep 10
+sleep 20
 
 phpunit tests/Crossbar/CrossbarTest.php
 
