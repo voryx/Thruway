@@ -52,6 +52,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->_conn->open();
 
         $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
+        $this->assertEquals($this->_testResult[0], $this->_testResult, "__toString should be the 0 index of the result");
         $this->assertEquals('testing123', $this->_testResult[0]);
     }
 

@@ -30,6 +30,14 @@ class CallResult extends \ArrayObject
     }
 
     /**
+     * @return mixed
+     */
+    function __toString()
+    {
+        return isset($this[0]) ? $this[0] : null;
+    }
+
+    /**
      * Set Result Message
      *
      * @param \Thruway\Message\ResultMessage $msg
