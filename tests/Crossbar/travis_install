@@ -1,0 +1,7 @@
+#!/bin/sh
+
+/usr/local/bin/crossbar init --template hello:php --appdir $HOME/hello
+
+cd $HOME/hello
+
+make install
