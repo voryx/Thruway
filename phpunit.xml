@@ -15,6 +15,7 @@
             <directory>tests/</directory>
             <exclude>tests/WAMP/ReplaceOrphanedSessionTest.php</exclude>
             <exclude>tests/WAMP/PingTest.php</exclude>
+            <exclude>tests/Crossbar/CrossbarTest.php</exclude>
         </testsuite>
     </testsuites>
 

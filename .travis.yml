@@ -23,4 +23,5 @@ before_script:
 
 script:
     - php tests/TestServer.php 10 & phpunit
+    - sh tests/Crossbar/run_tests
 
