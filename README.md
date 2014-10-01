@@ -8,7 +8,6 @@ and [WAMP v2](http://wamp.ws/)  (Web Application Messaging Protocol).
 
 Basically, we like the WAMP idea, but we wanted to be able to work with it in PHP.
 
-The project is brand new (as of June 12, 2014), so there is a lot of it that is in flux.
 
 Please feel free to ask us what is going on or make suggests or fork it and make a pull request.
 
@@ -41,7 +40,7 @@ Start the WAMP server
     
 Thruway is now running on 127.0.0.1 port 9090 
 
-### PHP Client Example (alpha)
+### PHP Client Example
 
 ```php
 <?php
@@ -56,11 +55,11 @@ $onClose = function ($msg) {
 };
 
 $connection = new Connection(
-    array(
+     [
         "realm" => 'realm1',
         "onClose" => $onClose,
         "url" => 'ws://127.0.0.1:9090',
-    )
+     ]
 );
 
 $connection->on('open',function (ClientSession $session) {
@@ -106,7 +105,7 @@ $connection->open();
 
 ### Javascript Client
 
-For the client, you can use [AutobahnJS](https://github.com/tavendo/AutobahnJS) or any other WAMPv2 compatible client.
+You can also use [AutobahnJS](https://github.com/tavendo/AutobahnJS) or any other WAMPv2 compatible client.
 
 Here are some [examples] (https://github.com/tavendo/AutobahnJS#show-me-some-code)
 
