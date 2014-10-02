@@ -89,7 +89,7 @@ class Subscriber extends AbstractRole
                 return;
             }
         }
-        $this->logger->error("---Got an Unsubscribed Message, but couldn't find corresponding request.\n");
+//        $this->logger->error("---Got an Unsubscribed Message, but couldn't find corresponding request.\n");
     }
 
     /**
