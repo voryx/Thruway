@@ -232,7 +232,7 @@ class Callee extends AbstractRole
         } elseif ($msg->getErrorMsgCode() == Message::MSG_UNREGISTER) {
             $this->handleErrorUnregister($session, $msg);
         } else {
-            $this->logger->error("Unhandled error message: " . $msg->getSerializedMessage() . "\n");
+            $this->logger->error("Unhandled error message: " . json_encode($msg) . "\n");
         }
 
     }

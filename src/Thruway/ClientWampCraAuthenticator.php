@@ -49,7 +49,7 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
     public function getAuthenticateFromChallenge(ChallengeMessage $msg)
     {
         echo "Got challenge:\n";
-        echo $msg->getSerializedMessage();
+        echo json_encode($msg);
         echo "\n";
         if (!in_array($msg->getAuthMethod(), $this->getAuthMethods())) {
             //throw new \Exception("method isn't in methods");
@@ -97,7 +97,7 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
 
         $authMessage = new AuthenticateMessage($token);
 
-        echo "returning: " . $authMessage->getSerializedMessage() . "\n";
+        echo "returning: " . json_encode($authMessage) . "\n";
 
         return $authMessage;
     }
