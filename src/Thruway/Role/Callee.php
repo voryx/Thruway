@@ -54,6 +54,7 @@ class Callee extends AbstractRole
      *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
+     * @return mixed|void
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
@@ -136,7 +137,7 @@ class Callee extends AbstractRole
                         // this is where calls end up if the client has called unregister but
                         // have not yet received confirmation from the router about the
                         // unregistration
-                        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "thruway.error.unregistering"));
+                        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
 
                         return;
                     }
@@ -145,78 +146,97 @@ class Callee extends AbstractRole
                         $results = $registration["callback"]($msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails());
 
                         if ($results instanceof Promise) {
-                            // the result is a promise - hook up stuff as a callback
-                            $results->then(
-                                function ($promiseResults) use ($msg, $session) {
-                                    $options = new \stdClass();
-                                    if ($promiseResults instanceof Result) {
-                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options,
-                                            $promiseResults->getArguments(), $promiseResults->getArgumentsKw());
-                                    } else {
-                                        $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
-                                        $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults] : $promiseResults;
-
-                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
-                                    }
-
-                                    $session->sendMessage($yieldMsg);
-                                },
-                                function () use ($msg, $session, $registration) {
-                                    $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-
-                                    $errorUri = null;
-
-                                    $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
-
-                                    $session->sendMessage($errorMsg);
-                                },
-                                function ($results) use ($msg, $session, $registration) {
-                                    $options = ["progress" => true];
-                                    if ($results instanceof Result) {
-                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
-                                            $results->getArgumentsKw());
-                                    } else {
-                                        $results = is_array($results) ? $results : [$results];
-                                        $results = !$this::is_list($results) ? [$results] : $results;
-
-                                        $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
-                                    }
-
-                                    $session->sendMessage($yieldMsg);
-                                }
-                            );
+                            $this->processResultAsPromise($results, $msg, $session, $registration);
                         } else {
-                            $options = new \stdClass();
-                            if ($results instanceof Result) {
-                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
-                                    $results->getArgumentsKw());
-                            } else {
-                                $results = is_array($results) ? $results : [$results];
-                                $results = !$this::is_list($results) ? [$results] : $results;
-
-                                $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
-                            }
-
-                            $session->sendMessage($yieldMsg);
+                            $this->processResultAsArray($results, $msg, $session);
                         }
+
                     } catch (\Exception $e) {
                         $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-
                         $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
-
                         $errorMsg->setArguments([$e->getMessage()]);
-
                         $errorMsg->setArgumentsKw($e);
 
                         $session->sendMessage($errorMsg);
                     }
-
 
                     break;
                 }
             }
         }
 
+    }
+
+    /**
+     *  Process a result as a promise
+     *
+     * @param Promise $promise
+     * @param InvocationMessage $msg
+     * @param ClientSession $session
+     * @param $registration
+     */
+    private function processResultAsPromise(Promise $promise, InvocationMessage $msg, ClientSession $session, $registration)
+    {
+
+        $promise->then(
+            function ($promiseResults) use ($msg, $session) {
+                $options = new \stdClass();
+                if ($promiseResults instanceof Result) {
+                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options,
+                        $promiseResults->getArguments(), $promiseResults->getArgumentsKw());
+                } else {
+                    $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
+                    $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults] : $promiseResults;
+
+                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
+                }
+
+                $session->sendMessage($yieldMsg);
+            },
+            function () use ($msg, $session, $registration) {
+                $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+                $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
+
+                $session->sendMessage($errorMsg);
+            },
+            function ($results) use ($msg, $session, $registration) {
+                $options = ["progress" => true];
+                if ($results instanceof Result) {
+                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
+                        $results->getArgumentsKw());
+                } else {
+                    $results = is_array($results) ? $results : [$results];
+                    $results = !$this::is_list($results) ? [$results] : $results;
+
+                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
+                }
+
+                $session->sendMessage($yieldMsg);
+            }
+        );
+    }
+
+    /**
+     * Process result as an array
+     *
+     * @param $results
+     * @param InvocationMessage $msg
+     * @param ClientSession $session
+     */
+    private function processResultAsArray($results, InvocationMessage $msg, ClientSession $session)
+    {
+        $options = new \stdClass();
+        if ($results instanceof Result) {
+            $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
+                $results->getArgumentsKw());
+        } else {
+            $results = is_array($results) ? $results : [$results];
+            $results = !$this::is_list($results) ? [$results] : $results;
+
+            $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
+        }
+
+        $session->sendMessage($yieldMsg);
     }
 
     /**
