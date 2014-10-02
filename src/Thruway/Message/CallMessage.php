@@ -106,7 +106,7 @@ class CallMessage extends Message
     }
 
     /**
-     * @param mixed $procedureName
+     * @param string $procedureName
      */
     public function setProcedureName($procedureName)
     {
@@ -122,7 +122,7 @@ class CallMessage extends Message
     }
 
     /**
-     * @param mixed $requestId
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {

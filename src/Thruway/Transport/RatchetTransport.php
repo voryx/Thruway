@@ -31,7 +31,7 @@ class RatchetTransport implements TransportInterface
     private $pingSeq;
 
     /**
-     * @var
+     * @var array
      */
     private $pingRequests;
 

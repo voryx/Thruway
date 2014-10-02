@@ -347,7 +347,7 @@ class Callee extends AbstractRole
      * @param \Thruway\ClientSession $session
      * @param string $Uri
      * @throws \Exception
-     * @return \React\Promise\Promise
+     * @return \React\Promise\Promise|false
      */
     public function unregister(ClientSession $session, $Uri)
     {

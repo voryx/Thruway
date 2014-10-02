@@ -32,7 +32,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
      * The session information is an associative array that contains the sessionId and realm
      *
      * @param array $args
-     * @return array
+     * @return array<string|array>
      */
     public function processHello(array $args)
     {
@@ -108,7 +108,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
      *
      * @param mixed $signature
      * @param mixed $extra
-     * @return array
+     * @return array<string|array>
      */
     public function processAuthenticate($signature, $extra = null)
     {

@@ -16,7 +16,7 @@ class ClientSession extends AbstractSession
 {
 
     /**
-     * @var \Thruway\Peer\Client
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
 
@@ -103,7 +103,7 @@ class ClientSession extends AbstractSession
     }
 
     /**
-     * @param mixed $sessionId
+     * @param int $sessionId
      */
     public function setSessionId($sessionId)
     {

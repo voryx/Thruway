@@ -13,7 +13,7 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
 {
 
     /**
-     * @var string
+     * @var string|int
      */
     public $authid;
 

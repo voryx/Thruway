@@ -237,7 +237,7 @@ class Realm
     }
 
     /**
-     * @param mixed $realmName
+     * @param string $realmName
      */
     public function setRealmName($realmName)
     {
