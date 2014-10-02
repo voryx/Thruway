@@ -188,7 +188,7 @@ abstract class Message implements \JsonSerializable
      * @param $position
      * @return null
      */
-    private static function getArgs($data, $position)
+    protected static function getArgs($data, $position)
     {
         return isset($data[$position]) ? $data[$position] : null;
     }

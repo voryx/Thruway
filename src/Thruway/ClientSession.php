@@ -16,7 +16,7 @@ class ClientSession extends AbstractSession
 {
 
     /**
-     * @var \Thruway\Peer\AbstractPeer
+     * @var \Thruway\Peer\Client
      */
     private $peer;
 
