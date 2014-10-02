@@ -208,6 +208,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function addClientAuthenticator(ClientAuthenticationInterface $ca)
     {
         array_push($this->clientAuthenticators, $ca);
+        $this->authMethods = array_merge($this->authMethods, $ca->getAuthMethods());
+
     }
 
     /**
@@ -258,11 +260,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
                 "callee"     => new \stdClass(),
             ]
         ];
-
-        /** @var ClientAuthenticationInterface $ca */
-        foreach ($this->clientAuthenticators as $ca) {
-            $this->authMethods = array_merge($this->authMethods, $ca->getAuthMethods());
-        }
 
         $details["authmethods"] = $this->authMethods;
         $details["authid"]      = $this->authId;
