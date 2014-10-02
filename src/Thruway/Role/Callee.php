@@ -59,9 +59,9 @@ class Callee extends AbstractRole
     public function onMessage(AbstractSession $session, Message $msg)
     {
         if ($msg instanceof RegisteredMessage):
-            $this->processRegistered($session, $msg);
+            $this->processRegistered($msg);
         elseif ($msg instanceof UnregisteredMessage):
-            $this->processUnregistered($session, $msg);
+            $this->processUnregistered($msg);
         elseif ($msg instanceof InvocationMessage):
             $this->processInvocation($session, $msg);
         elseif ($msg instanceof ErrorMessage):
@@ -74,11 +74,10 @@ class Callee extends AbstractRole
     /**
      * Process RegisteredMessage
      *
-     * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\RegisteredMessage $msg
      * @return void
      */
-    public function processRegistered(ClientSession $session, RegisteredMessage $msg)
+    protected function processRegistered(RegisteredMessage $msg)
     {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
@@ -99,10 +98,9 @@ class Callee extends AbstractRole
     /**
      * Process Unregistered
      *
-     * @param ClientSession $session
      * @param UnregisteredMessage $msg
      */
-    public function processUnregistered(ClientSession $session, UnregisteredMessage $msg)
+    protected function processUnregistered(UnregisteredMessage $msg)
     {
         foreach ($this->registrations as $key => $registration) {
             if (isset($registration['unregister_request_id'])) {
@@ -125,7 +123,7 @@ class Callee extends AbstractRole
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\InvocationMessage $msg
      */
-    public function processInvocation(ClientSession $session, InvocationMessage $msg)
+    protected function processInvocation(ClientSession $session, InvocationMessage $msg)
     {
         foreach ($this->registrations as $key => $registration) {
             if (!isset($registration["registration_id"])) {
