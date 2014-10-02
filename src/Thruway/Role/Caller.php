@@ -46,9 +46,9 @@ class Caller extends AbstractRole
     {
 
         if ($msg instanceof ResultMessage):
-            $this->processResult($session, $msg);
+            $this->processResult($msg);
         elseif ($msg instanceof ErrorMessage):
-            $this->processError($session, $msg);
+            $this->processError($msg);
         else:
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
         endif;
@@ -57,10 +57,9 @@ class Caller extends AbstractRole
     /**
      * Process ResultMessage
      *
-     * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ResultMessage $msg
      */
-    public function processResult(ClientSession $session, ResultMessage $msg)
+    protected function processResult(ResultMessage $msg)
     {
         if (isset($this->callRequests[$msg->getRequestId()])) {
             /* @var $futureResult Deferred */
@@ -82,10 +81,9 @@ class Caller extends AbstractRole
     /**
      * Process ErrorMessage
      *
-     * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
      */
-    public function processError(ClientSession $session, ErrorMessage $msg)
+    protected function processError(ErrorMessage $msg)
     {
         switch ($msg->getErrorMsgCode()) {
             case Message::MSG_CALL:
