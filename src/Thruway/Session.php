@@ -91,10 +91,46 @@ class Session extends AbstractSession
      */
     static public function getUniqueId()
     {
-        // TODO: make this better
-        $result = sscanf(uniqid(), "%x");
-
-        return $result[0];
+        $uid = self::makeUID(16);
+        return $uid;
+    }
+    
+    /**
+     * Function : makeUID
+     * -------------------
+     * Creates an alphabet to use inside the UID in a string of length $length.
+     * @param {int} $length
+     */
+    public static function makeUID($length){
+        $UID = "";
+        $codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                . "abcdefghijklmnopqrstuvwxyz" 
+                . "0123456789";
+        for($i=0;$i<$length;$i++){
+            $UID .= $codeAlphabet[self::generateRandomCrypto(0,strlen($codeAlphabet))];
+        }
+        return $UID;
+    }
+    
+    /**
+     * Function : generateRandomCrypto
+     * -----------------------------
+     * Create a random number between $min and $max using openssl_random_pseudo_bytes
+     * @param {int} $max
+     * @return {int} $max
+     */
+    public static function generateRandomCrypto($min, $max) {
+            $range = $max - $min;
+            if ($range < 0) return $min; // not so random...
+            $log = log($range, 2);
+            $bytes = (int) ($log / 8) + 1; // length in bytes
+            $bits = (int) $log + 1; // length in bits
+            $filter = (int) (1 << $bits) - 1; // set all lower bits to 1
+            do {
+                $rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
+                $rnd = $rnd & $filter; // discard irrelevant bits
+            } while ($rnd >= $range);
+            return $min + $rnd;
     }
 
     /**
