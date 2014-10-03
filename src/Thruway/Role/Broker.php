@@ -73,7 +73,7 @@ class Broker extends AbstractRole
             $this->processPublish($session, $msg);
         elseif ($msg instanceof SubscribeMessage):
             $this->processSubscribe($session, $msg);
-        elseif ($msg instanceof UnsubscribedMessage):
+        elseif ($msg instanceof UnsubscribeMessage):
             $this->processUnsubscribe($session, $msg);
         else:
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
