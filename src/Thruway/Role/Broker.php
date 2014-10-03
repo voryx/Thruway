@@ -142,7 +142,7 @@ class Broker extends AbstractRole
 
         $subscription = new Subscription($msg->getTopicName(), $session);
         $this->subscriptions->attach($subscription);
-        $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $msg->getTopicName());
+        $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $subscription->getId());
         $session->sendMessage($subscribedMsg);
 
     }
@@ -161,12 +161,14 @@ class Broker extends AbstractRole
         if (!$subscription || !isset($this->topics[$subscription->getTopic()])) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.no_such_subscription'));
+            
+            return;
         }
 
         $topicName   = $subscription->getTopic();
         $subscribers = $this->topics[$topicName];
 
-        /* @var $subscriber Session */
+        /* @var $subscriber \Thruway\Session */
         foreach ($this->topics[$topicName] as $key => $subscriber) {
             if ($subscriber == $session) {
                 unset($subscribers[$key]);
