@@ -90,12 +90,12 @@ class Broker extends AbstractRole
     {
         $this->getManager()->debug("processing publish message");
 
-        $receivers = isset($this->topics[$msg->getTopicName()]) ? $this->topics[$msg->getTopicName()] : null;
-
-        //If the topic doesn't have any subscribers
-        if (empty($receivers)) {
-            $receivers = [];
-        }
+//        $receivers = isset($this->topics[$msg->getTopicName()]) ? $this->topics[$msg->getTopicName()] : null;
+//
+//        //If the topic doesn't have any subscribers
+//        if (empty($receivers)) {
+//            $receivers = [];
+//        }
 
         // see if they wanted confirmation
         $options = $msg->getOptions();
@@ -107,15 +107,29 @@ class Broker extends AbstractRole
                 );
             }
         }
-
-        $eventMsg = EventMessage::createFromPublishMessage($msg);
-
-        /* @var $receiver Session */
-        foreach ($receivers as $receiver) {
-            if ($receiver != $session) {
-                $receiver->sendMessage($eventMsg);
+        
+        /* @var $subscription \Thruway\Subscription */
+        foreach ($this->subscriptions as $subscription) {
+            if ($msg->getTopicName() == $subscription->getTopic()) {
+                $subscription->getSession()->sendMessage(new EventMessage(
+                    $subscription->getId(),
+                    $msg->getRequestId(), // $publicationId
+                    new \stdClass(),
+                    $msg->getArguments(),
+                    $msg->getArgumentsKw()
+                ));
             }
         }
+        
+//        // TODO: invalid 
+//        $eventMsg = EventMessage::createFromPublishMessage($msg);
+//
+//        /* @var $receiver \Thruway\Session */
+//        foreach ($receivers as $receiver) {
+//            if ($receiver != $session) {
+//                $receiver->sendMessage($eventMsg);
+//            }
+//        }
     }
 
     /**
@@ -166,12 +180,12 @@ class Broker extends AbstractRole
         }
 
         $topicName   = $subscription->getTopic();
-        $subscribers = $this->topics[$topicName];
+        //$subscribers = $this->topics[$topicName];
 
         /* @var $subscriber \Thruway\Session */
         foreach ($this->topics[$topicName] as $key => $subscriber) {
             if ($subscriber == $session) {
-                unset($subscribers[$key]);
+                unset($this->topics[$topicName][$key]);
             }
         }
 
