@@ -173,7 +173,9 @@ class Broker extends AbstractRole
             }
         }
 
-        $this->subscriptions->detach($subscription);
+        if ($subscription) {
+            $this->subscriptions->detach($subscription);
+        }
 
         $session->sendMessage(new UnsubscribedMessage($msg->getRequestId()));
     }

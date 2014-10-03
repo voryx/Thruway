@@ -35,7 +35,7 @@ interface ClientAuthenticationInterface
      * Get authentication message from challenge message
      *
      * @param \Thruway\Message\ChallengeMessage $msg
-     * @return \Thruway\Message\AuthenticateMessage
+     * @return \Thruway\Message\AuthenticateMessage|boolean
      */
     public function getAuthenticateFromChallenge(ChallengeMessage $msg);
 

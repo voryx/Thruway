@@ -10,7 +10,7 @@ use Thruway\Peer\Client;
  *
  * @package Thruway\Authentication
  */
-class AbstractAuthProviderClient extends Client
+abstract class AbstractAuthProviderClient extends Client
 {
     /**
      *
@@ -43,7 +43,7 @@ class AbstractAuthProviderClient extends Client
      * Process HelloMessage
      *
      * @param array $args
-     * @return array
+     * @return array<string|array>
      */
     public function processHello(array $args)
     {
@@ -146,5 +146,10 @@ class AbstractAuthProviderClient extends Client
     {
         $this->authRealms = $authRealms;
     }
+
+    /**
+     * @return mixed
+     */
+    abstract public function getMethodName();
 
 } 

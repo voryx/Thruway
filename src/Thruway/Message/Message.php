@@ -84,10 +84,7 @@ abstract class Message implements \JsonSerializable
             case Message::MSG_UNSUBSCRIBE:
                 return new UnsubscribeMessage($data[1], $data[2]);
             case Message::MSG_PUBLISH:
-                $args   = isset($data[4]) ? $data[4] : null;
-                $argsKw = isset($data[5]) ? $data[5] : null;
-
-                return new PublishMessage($data[1], $data[2], $data[3], $args, $argsKw);
+                return new PublishMessage($data[1], $data[2], $data[3], static::getArgs($data, 4), static::getArgs($data, 5));
             case Message::MSG_GOODBYE:
                 return new GoodbyeMessage($data[1], $data[2]);
             case Message::MSG_AUTHENTICATE:
@@ -99,46 +96,28 @@ abstract class Message implements \JsonSerializable
             case Message::MSG_UNREGISTERED:
                 return new UnregisteredMessage($data[1]);
             case Message::MSG_CALL:
-                $args   = isset($data[4]) ? $data[4] : null;
-                $argsKw = isset($data[5]) ? $data[5] : null;
-
-                return new CallMessage($data[1], $data[2], $data[3], $args, $argsKw);
+                return new CallMessage($data[1], $data[2], $data[3], static::getArgs($data, 4), static::getArgs($data, 5));
             case Message::MSG_YIELD:
-                $args   = isset($data[3]) ? $data[3] : null;
-                $argsKw = isset($data[4]) ? $data[4] : null;
-
-                return new YieldMessage($data[1], $data[2], $args, $argsKw);
+                return new YieldMessage($data[1], $data[2], static::getArgs($data, 3), static::getArgs($data, 4));
             case Message::MSG_WELCOME:
                 return new WelcomeMessage($data[1], $data[2]);
             case Message::MSG_SUBSCRIBED:
                 return new SubscribedMessage($data[1], $data[2]);
             case Message::MSG_EVENT:
-                $args   = isset($data[4]) ? $data[4] : null;
-                $argsKw = isset($data[5]) ? $data[5] : null;
-
-                return new EventMessage($data[1], $data[2], $data[3], $args, $argsKw);
+                return new EventMessage($data[1], $data[2], $data[3], static::getArgs($data, 4), static::getArgs($data, 5));
             case Message::MSG_REGISTERED:
                 return new RegisteredMessage($data[1], $data[2]);
             case Message::MSG_INVOCATION:
-                $args   = isset($data[4]) ? $data[4] : null;
-                $argsKw = isset($data[5]) ? $data[5] : null;
-
-                return new InvocationMessage($data[1], $data[2], $data[3], $args, $argsKw);
+                return new InvocationMessage($data[1], $data[2], $data[3], static::getArgs($data, 4), static::getArgs($data, 5));
             case Message::MSG_RESULT:
-                $args   = isset($data[3]) ? $data[3] : null;
-                $argsKw = isset($data[4]) ? $data[4] : null;
-
-                return new ResultMessage($data[1], $data[2], $args, $argsKw);
+                return new ResultMessage($data[1], $data[2], static::getArgs($data, 3), static::getArgs($data, 4));
             case Message::MSG_PUBLISHED:
                 return new PublishedMessage($data[1], $data[2]);
             case Message::MSG_CHALLENGE:
-                $extra = $args = isset($data[3]) ? $data[3] : [];
-                return new ChallengeMessage($data[1], $data[2], $extra);
+                return new ChallengeMessage($data[1], $data[2]);
             case Message::MSG_ERROR:
-                $args   = isset($data[5]) ? $data[5] : null;
-                $argsKw = isset($data[6]) ? $data[6] : null;
-                return new ErrorMessage($data[1], $data[2], $data[3], $data[4], $args, $argsKw);
-
+                return new ErrorMessage($data[1], $data[2], $data[3], $data[4], static::getArgs($data, 5),
+                    static::getArgs($data, 6));
             default:
                 throw new MessageException("Unhandled message type: " . $data[0]);
         }
@@ -201,6 +180,17 @@ abstract class Message implements \JsonSerializable
         $arr = (array)$arr;
 
         return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+
+    /**
+     * Get the args from the message data
+     * @param $data
+     * @param $position
+     * @return null
+     */
+    protected static function getArgs($data, $position)
+    {
+        return isset($data[$position]) ? $data[$position] : null;
     }
 
 }

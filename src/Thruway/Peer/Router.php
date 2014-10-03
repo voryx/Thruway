@@ -46,6 +46,11 @@ class Router extends AbstractPeer
     private $authenticationManager;
 
     /**
+     * @var \React\EventLoop\LoopInterface
+     */
+    private $loop;
+
+    /**
      * Constructor
      *
      * @param \React\EventLoop\LoopInterface $loop

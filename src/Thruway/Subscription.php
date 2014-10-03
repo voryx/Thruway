@@ -9,7 +9,7 @@ class Subscription
 {
 
     /**
-     * @var int
+     * @var string
      */
     private $id;
 

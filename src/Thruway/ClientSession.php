@@ -105,7 +105,7 @@ class ClientSession extends AbstractSession
     }
 
     /**
-     * @param mixed $sessionId
+     * @param int $sessionId
      */
     public function setSessionId($sessionId)
     {

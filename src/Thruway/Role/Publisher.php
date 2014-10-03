@@ -43,9 +43,9 @@ class Publisher extends AbstractRole
     public function onMessage(AbstractSession $session, Message $msg)
     {
         if ($msg instanceof PublishedMessage):
-            $this->processPublished($session, $msg);
+            $this->processPublished($msg);
         elseif ($msg instanceof ErrorMessage):
-            $this->processError($session, $msg);
+            $this->processError($msg);
         else:
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
         endif;
@@ -54,10 +54,9 @@ class Publisher extends AbstractRole
     /**
      * process PublishedMesage
      *
-     * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\PublishedMessage $msg
      */
-    public function processPublished(ClientSession $session, PublishedMessage $msg)
+    protected function processPublished(PublishedMessage $msg)
     {
         if (isset($this->publishRequests[$msg->getRequestId()])) {
             /* @var $futureResult Deferred */
@@ -71,10 +70,9 @@ class Publisher extends AbstractRole
     /**
      * process error
      *
-     * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
      */
-    public function processError(ClientSession $session, ErrorMessage $msg)
+    protected function processError(ErrorMessage $msg)
     {
         if (isset($this->publishRequests[$msg->getRequestId()])) {
             /* @var $futureResult Deferred */

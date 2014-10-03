@@ -107,7 +107,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     private $transport;
 
     /**
-     * @var int
+     * @var int|double
      */
     private $retryTimer = 0;
 

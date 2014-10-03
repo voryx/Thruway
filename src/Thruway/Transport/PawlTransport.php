@@ -24,7 +24,7 @@ class PawlTransport implements TransportInterface
     private $pingSeq;
 
     /**
-     * @var \Thruway\PingRequest
+     * @var array
      */
     private $pingRequests;
 

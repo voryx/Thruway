@@ -101,6 +101,8 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
                 $challengeDetails
             ];
         }
+
+        return ["FAILURE"];
     }
 
     /**

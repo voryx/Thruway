@@ -78,7 +78,7 @@ class ErrorMessage extends Message
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getErrorURI()
     {
@@ -140,7 +140,7 @@ class ErrorMessage extends Message
     }
 
     /**
-     * @param mixed $errorMsgCode
+     * @param int $errorMsgCode
      * @return \Thruway\Message\ErrorMessage
      */
     public function setErrorMsgCode($errorMsgCode)
