@@ -342,7 +342,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                     function (\Thruway\Message\EventMessage $msg) {
                         $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
                         $this->assertEquals('999654321', $msg->getPublicationId());
-                        $this->assertEquals('test.topic', $msg->getSubscriptionId());
                         $this->assertCount(1, $msg->getArguments());
                         $this->assertEquals('hello world', $msg->getArguments()[0]);
 
