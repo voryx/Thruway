@@ -73,7 +73,7 @@ class Broker extends AbstractRole
             $this->processPublish($session, $msg);
         elseif ($msg instanceof SubscribeMessage):
             $this->processSubscribe($session, $msg);
-        elseif ($msg instanceof UnsubscribedMessage):
+        elseif ($msg instanceof UnsubscribeMessage):
             $this->processUnsubscribe($session, $msg);
         else:
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
@@ -90,13 +90,6 @@ class Broker extends AbstractRole
     {
         $this->getManager()->debug("processing publish message");
 
-        $receivers = isset($this->topics[$msg->getTopicName()]) ? $this->topics[$msg->getTopicName()] : null;
-
-        //If the topic doesn't have any subscribers
-        if (empty($receivers)) {
-            $receivers = [];
-        }
-
         // see if they wanted confirmation
         $options = $msg->getOptions();
         if (is_array($options)) {
@@ -107,15 +100,15 @@ class Broker extends AbstractRole
                 );
             }
         }
-
-        $eventMsg = EventMessage::createFromPublishMessage($msg);
-
-        /* @var $receiver Session */
-        foreach ($receivers as $receiver) {
-            if ($receiver != $session) {
-                $receiver->sendMessage($eventMsg);
+        
+        /* @var $subscription \Thruway\Subscription */
+        foreach ($this->subscriptions as $subscription) {
+            if ($msg->getTopicName() == $subscription->getTopic() && $subscription->getSession() != $session) {
+                $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
+                $subscription->getSession()->sendMessage($eventMsg);
             }
         }
+        
     }
 
     /**
@@ -142,7 +135,7 @@ class Broker extends AbstractRole
 
         $subscription = new Subscription($msg->getTopicName(), $session);
         $this->subscriptions->attach($subscription);
-        $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $msg->getTopicName());
+        $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $subscription->getId());
         $session->sendMessage($subscribedMsg);
 
     }
@@ -161,15 +154,17 @@ class Broker extends AbstractRole
         if (!$subscription || !isset($this->topics[$subscription->getTopic()])) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.no_such_subscription'));
+            
+            return;
         }
 
         $topicName   = $subscription->getTopic();
-        $subscribers = $this->topics[$topicName];
+        //$subscribers = $this->topics[$topicName];
 
-        /* @var $subscriber Session */
+        /* @var $subscriber \Thruway\Session */
         foreach ($this->topics[$topicName] as $key => $subscriber) {
             if ($subscriber == $session) {
-                unset($subscribers[$key]);
+                unset($this->topics[$topicName][$key]);
             }
         }
 

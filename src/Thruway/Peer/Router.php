@@ -174,7 +174,7 @@ class Router extends AbstractPeer
     {
         $this->manager->debug("onClose from " . json_encode($transport->getTransportDetails()));
 
-        /** @var  $session Session */
+        /* @var  $session \Thruway\Session */
         $session = $this->sessions[$transport];
 
         $session->onClose();

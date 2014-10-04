@@ -86,6 +86,8 @@ class ClientSession extends AbstractSession
      *
      * @param string $procedureName
      * @param array|mixed $arguments
+     * @param array|mixed $argumentsKw
+     * @param array|mixed $options
      * @return \React\Promise\Promise
      */
     public function call($procedureName, $arguments = null, $argumentsKw = null, $options = null)
