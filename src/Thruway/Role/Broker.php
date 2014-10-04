@@ -90,13 +90,6 @@ class Broker extends AbstractRole
     {
         $this->getManager()->debug("processing publish message");
 
-//        $receivers = isset($this->topics[$msg->getTopicName()]) ? $this->topics[$msg->getTopicName()] : null;
-//
-//        //If the topic doesn't have any subscribers
-//        if (empty($receivers)) {
-//            $receivers = [];
-//        }
-
         // see if they wanted confirmation
         $options = $msg->getOptions();
         if (is_array($options)) {
@@ -110,26 +103,12 @@ class Broker extends AbstractRole
         
         /* @var $subscription \Thruway\Subscription */
         foreach ($this->subscriptions as $subscription) {
-            if ($msg->getTopicName() == $subscription->getTopic()) {
-                $subscription->getSession()->sendMessage(new EventMessage(
-                    $subscription->getId(),
-                    $msg->getRequestId(), // $publicationId
-                    new \stdClass(),
-                    $msg->getArguments(),
-                    $msg->getArgumentsKw()
-                ));
+            if ($msg->getTopicName() == $subscription->getTopic() && $subscription->getSession() != $session) {
+                $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
+                $subscription->getSession()->sendMessage($eventMsg);
             }
         }
         
-//        // TODO: invalid 
-//        $eventMsg = EventMessage::createFromPublishMessage($msg);
-//
-//        /* @var $receiver \Thruway\Session */
-//        foreach ($receivers as $receiver) {
-//            if ($receiver != $session) {
-//                $receiver->sendMessage($eventMsg);
-//            }
-//        }
     }
 
     /**
