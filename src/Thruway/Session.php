@@ -91,31 +91,6 @@ class Session extends AbstractSession
      */
     static public function getUniqueId()
     {
-        $uid = self::makeUID(16);
-        return $uid;
-    }
-    
-    /**
-     * Function : makeUID
-     * -------------------
-     * Creates an alphabet to use inside the UID in a string of length $length.
-     * @param {int} $length
-     */
-    public static function makeUID($length){
-        
-        $eligible_nums = "0123456789";
-        return self::generateRandomCrypto(0,strlen($eligible_nums));
-    }
-    
-    /**
-     * Function : generateRandomCrypto
-     * -----------------------------
-     * Create a random number between $min and $max using openssl_random_pseudo_bytes
-     * @param {int} $max
-     * @return {int} $max
-     */
-    public static function generateRandomCrypto($high, $low) {
-        
         $filter = 0x1fffffffffffff; // 53 bits
 
         $randomBytes = openssl_random_pseudo_bytes(8);
@@ -123,9 +98,8 @@ class Session extends AbstractSession
         list($high, $low) = array_values(unpack("N2", $randomBytes));
 
         return ($high << 32 | $low) & $filter;
-       
     }
-
+    
     /**
      * @param \Thruway\Manager\ManagerInterface $manager
      * @throws \InvalidArgumentException
