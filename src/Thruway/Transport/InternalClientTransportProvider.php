@@ -43,11 +43,6 @@ class InternalClientTransportProvider implements TransportProviderInterface
         $this->internalClient->addTransportProvider(new DummyTransportProvider());
 
         $this->manager = new ManagerDummy();
-
-        if ($this->internalClient instanceof Client) {
-            $this->internalClient->setLogger($this->getManager()->getLogger());
-        }
-
     }
 
     /**
@@ -90,6 +85,10 @@ class InternalClientTransportProvider implements TransportProviderInterface
     public function setManager(ManagerInterface $manager)
     {
         $this->manager = $manager;
+
+        if ($this->internalClient instanceof Client) {
+            $this->internalClient->setLogger($this->getManager()->getLogger());
+        }
 
         $this->manager->info("Manager attached to InternalClientTransportProvider");
     }
