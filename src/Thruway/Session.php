@@ -91,12 +91,15 @@ class Session extends AbstractSession
      */
     static public function getUniqueId()
     {
-        // TODO: make this better
-        $result = sscanf(uniqid(), "%x");
+        $filter = 0x1fffffffffffff; // 53 bits
 
-        return $result[0];
+        $randomBytes = openssl_random_pseudo_bytes(8);
+
+        list($high, $low) = array_values(unpack("N2", $randomBytes));
+
+        return ($high << 32 | $low) & $filter;
     }
-
+    
     /**
      * @param \Thruway\Manager\ManagerInterface $manager
      * @throws \InvalidArgumentException
