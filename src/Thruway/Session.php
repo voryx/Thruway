@@ -102,12 +102,9 @@ class Session extends AbstractSession
      * @param {int} $length
      */
     public static function makeUID($length){
-        $UID = "";
+        
         $eligible_nums = "0123456789";
-        for($i=0;$i<$length;$i++){
-            $UID .= $eligible_nums[self::generateRandomCrypto(0,strlen($eligible_nums))];
-        }
-        return $UID;
+        return self::generateRandomCrypto(0,strlen($eligible_nums));
     }
     
     /**
@@ -117,17 +114,15 @@ class Session extends AbstractSession
      * @param {int} $max
      * @return {int} $max
      */
-    public static function generateRandomCrypto($min, $max) {
-        $range = $max - $min;
-        if ($range < 0) return $min; 
-        $log = log($range, 2);
-        $bytes = (int) ($log / 8) + 1; // length in bytes
+    public static function generateRandomCrypto($high, $low) {
+        
         $filter = 0x1fffffffffffff; // 53 bits
-        do {
-            $rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
-            $rnd = $rnd & $filter; // discard irrelevant bits
-        } while ($rnd >= $range);
-        return $min + $rnd;
+
+        $randomBytes = openssl_random_pseudo_bytes(8);
+
+        list($high, $low) = array_values(unpack("N2", $randomBytes));
+
+        return ($high << 32 | $low) & $filter;
        
     }
 
