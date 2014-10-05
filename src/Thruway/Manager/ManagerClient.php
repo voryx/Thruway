@@ -89,17 +89,6 @@ class ManagerClient extends Client implements ManagerInterface
         }
     }
 
-
-//    function testSubscribe() {
-//        $this->getSubscriber()->subscribe($this->session, "com.myapp.hello", array($this, "onSomethingElse"));
-//    }
-//
-//    function onSomethingElse($msg) {
-//        echo "\n\n\n---------------------------------\n";
-//        var_dump($msg);
-//        echo "---------------------------------\n";
-//    }
-
     /**
      * Check session is up (started)
      *
