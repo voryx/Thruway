@@ -156,6 +156,7 @@ class Router extends AbstractPeer
 
         foreach ($this->transportProviders as $transportProvider) {
             $this->manager->debug("Starting transport provider " . get_class($transportProvider));
+            $transportProvider->setManager($this->manager);
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
