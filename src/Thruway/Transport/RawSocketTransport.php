@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 8/9/14
- * Time: 6:18 PM
- */
 
 namespace Thruway\Transport;
 
