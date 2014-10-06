@@ -5,6 +5,7 @@ namespace Thruway\Transport;
 
 use React\EventLoop\LoopInterface;
 use React\Socket\Connection;
+use React\Stream\Stream;
 use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
@@ -12,7 +13,7 @@ use Thruway\Serializer\SerializerInterface;
 
 class RawSocketTransport implements TransportInterface {
     /**
-     * @var Connection
+     * @var Stream
      */
     private $conn;
 
@@ -50,7 +51,7 @@ class RawSocketTransport implements TransportInterface {
      */
     private $peer;
 
-    function __construct(Connection $conn, LoopInterface $loop, AbstractPeer $peer)
+    function __construct(Stream $conn, LoopInterface $loop, AbstractPeer $peer)
     {
         $this->conn = $conn;
         $this->loop = $loop;
@@ -68,12 +69,6 @@ class RawSocketTransport implements TransportInterface {
 //            $data = substr($data, 1);
 //        }
         $this->buffer = $this->buffer . $data;
-
-        echo "Data: " . $data . "\n";
-
-        for ($i = 0; $i < 8; $i++) {
-            echo ord($this->buffer[$i]) . "(" . $this->buffer[$i] . "),";
-        }
 
         $bufferLen = strlen($this->buffer);
 
@@ -98,8 +93,6 @@ class RawSocketTransport implements TransportInterface {
 
             if ($bufferLen >= $this->msgLen) {
                 $msg = $this->getSerializer()->deserialize(substr($this->buffer, 0, $this->msgLen));
-
-                echo "Received Message " . json_encode($msg) . "\n";
 
                 $this->peer->onMessage($this, $msg);
 

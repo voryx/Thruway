@@ -48,7 +48,7 @@ class RawSocketTransportProvider implements TransportProviderInterface {
     function __construct($address = "127.0.0.1", $port = 8181)
     {
         $this->address = $address;
-        $this->port = 8181;
+        $this->port = $port;
 
         $this->setManager(new ManagerDummy());
 
