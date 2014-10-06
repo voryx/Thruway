@@ -9,8 +9,10 @@
 namespace Message;
 
 
+use Thruway\CallResult;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
+use Thruway\Message\ResultMessage;
 use Thruway\Serializer\JsonSerializer;
 
 class MessageTest extends \PHPUnit_Framework_TestCase {
@@ -88,6 +90,18 @@ class MessageTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals("[8,68,12345,{},\"some.error\",[\"some\",\"error\"],{\"some\":\"error\"}]",$serializer->serialize($errorMsg));
         $this->assertEquals("[8,68,12345,{},\"some.error\",[\"some\",\"error\"],{\"some\":\"error\"}]",$serializer->serialize($deserialized));
+    }
+
+    function testCallResultIntegerArg() {
+        $callResult = new CallResult(new ResultMessage(1, new \stdClass(), [5]));
+
+        $this->assertEquals("5", $callResult, "Conversion of CallResult[0] from int to string.");
+    }
+
+    function testCallResultNoArgs() {
+        $callResult = new CallResult(new ResultMessage(1, new \stdClass(), []));
+
+        $this->assertEquals("", $callResult, "CallResult null when zero arguments.");
     }
 
     function testCallMessage() {

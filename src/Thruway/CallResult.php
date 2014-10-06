@@ -34,7 +34,7 @@ class CallResult extends \ArrayObject
      */
     function __toString()
     {
-        return isset($this[0]) ? $this[0] : null;
+        return isset($this[0]) ? (string)$this[0] : "";
     }
 
     /**
