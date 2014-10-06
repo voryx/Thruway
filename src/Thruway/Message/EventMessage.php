@@ -88,12 +88,13 @@ class EventMessage extends Message
 
     /**
      * @param PublishMessage $msg
+     * @param int $subscriptionId
      * @return static
      */
-    static public function createFromPublishMessage(PublishMessage $msg)
+    public static function createFromPublishMessage(PublishMessage $msg, $subscriptionId)
     {
         return new static(
-            $msg->getTopicName(),
+            $subscriptionId,
             $msg->getRequestId(),
             new \stdClass,
             $msg->getArguments(),

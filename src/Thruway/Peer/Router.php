@@ -156,6 +156,7 @@ class Router extends AbstractPeer
 
         foreach ($this->transportProviders as $transportProvider) {
             $this->manager->debug("Starting transport provider " . get_class($transportProvider));
+            $transportProvider->setManager($this->manager);
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
@@ -174,7 +175,7 @@ class Router extends AbstractPeer
     {
         $this->manager->debug("onClose from " . json_encode($transport->getTransportDetails()));
 
-        /** @var  $session Session */
+        /* @var  $session \Thruway\Session */
         $session = $this->sessions[$transport];
 
         $session->onClose();
