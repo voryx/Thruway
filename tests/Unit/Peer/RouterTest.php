@@ -63,7 +63,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->router->start();
     }
 
-
+    /**
+     * Test router start
+     *
+     * @return \Thruway\Peer\Router
+     * @throws Exception
+     */
     public function testStart()
     {
         $this->router->addTransportProvider($this->transportProviderMock);
@@ -75,6 +80,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test onOpen
+     *
      * @depends testStart
      * @param \Thruway\Peer\Router $router
      * @return array
@@ -96,6 +103,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test Hello message
+     *
      * @depends testOnOpen
      * @param $rt array
      * @return array
@@ -104,8 +113,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testHelloMessage($rt)
     {
-
-
         $rt['transport']->expects($this->at(0))
             ->method('sendMessage')
             ->with(
@@ -125,6 +132,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test Subscribe message
+     *
      * @depends testHelloMessage
      * @param $rt array
      * @return array
@@ -156,6 +165,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test Subscribe to an empty topic
+     *
      * @depends testHelloMessage
      * @param $rt array
      * @return array
@@ -190,6 +201,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test Duplicate Subscription from the same session
+     *
      * @depends testHelloMessage
      * @param $rt array
      * @return array
@@ -229,6 +242,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
     /**
+     * Test Subscribe with an invalid URI
+     *
      * @depends testHelloMessage
      * @param $rt array
      * @return array
@@ -266,6 +281,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Publish from within the same session as the subscribes
+     *
      * @depends testHelloMessage
      * @param $rt array
      * @return array
@@ -297,6 +313,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test Publish with Acknowledge flag
+     *
      * @depends testHelloMessage
      * @param $rt array
      * @return array
@@ -327,6 +345,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
     /**
+     * Test Event Message
+     *
      * @depends testHelloMessage
      * @param $rt array
      * @return array
