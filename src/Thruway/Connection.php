@@ -141,10 +141,11 @@ class Connection implements EventEmitterInterface
 
     /**
      *  Starts the open sequence
+     * @param bool $startLoop
      */
-    public function open()
+    public function open($startLoop = true)
     {
-        $this->client->start();
+        $this->client->start($startLoop);
     }
 
     /**
