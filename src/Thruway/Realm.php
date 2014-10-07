@@ -9,9 +9,11 @@ use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
+use Thruway\Message\PublishMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
+use Thruway\Transport\DummyTransport;
 
 /**
  * Class Realm
@@ -55,6 +57,13 @@ class Realm
      * @var \Thruway\Authentication\AuthenticationManagerInterface
      */
     private $authenticationManager;
+
+    /**
+     * The metaSession is used as a dummy session to send meta events from
+     *
+     * @var Session
+     */
+    private $metaSession;
 
     /**
      * Constructor
@@ -335,4 +344,21 @@ class Realm
         return $this->dealer;
     }
 
+    public function publishMeta($topicName, $arguments, $argumentsKw = null, $options = null)
+    {
+        if ($this->metaSession === null) {
+            // setup a new metaSession
+            $s = new Session(new DummyTransport());
+            $this->metaSession = $s;
+        }
+
+        $this->getBroker()->onMessage($this->metaSession,
+            new PublishMessage(
+                Session::getUniqueId(),
+                $options,
+                $topicName,
+                $arguments,
+                $argumentsKw
+            ));
+    }
 }

@@ -3,9 +3,11 @@
 namespace Thruway;
 
 
+use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\Message;
+use Thruway\Peer\Client;
 use Thruway\Transport\TransportInterface;
 
 /**
@@ -80,6 +82,11 @@ class Session extends AbstractSession
     public function onClose()
     {
         if ($this->realm !== null) {
+            // only send the leave metaevent if we actually made it into the realm
+            if ($this->isAuthenticated()) {
+                // metaevent
+                $this->getRealm()->publishMeta('wamp.metaevent.session.on_leave', [$this->getMetaInfo()]);
+            }
             $this->realm->leave($this);
             $this->realm = null;
         }
@@ -144,6 +151,51 @@ class Session extends AbstractSession
     public function getAuthenticationDetails()
     {
         return $this->authenticationDetails;
+    }
+
+    /**
+     * @param boolean $authenticated
+     */
+    public function setAuthenticated($authenticated)
+    {
+        // generally, there is no provisions in the WAMP specs to change from
+        // authenticated to unauthenticated
+        if ($this->authenticated && ! $authenticated) {
+            $this->getManager()->error("Session changed from authenticated to unauthenticated");
+        }
+
+        // make sure the metaevent is only sent when changing from
+        // not-authenticate to authenticated
+        if ($authenticated && ! $this->authenticated) {
+            // metaevent
+            $this->getRealm()->publishMeta('wamp.metaevent.session.on_join', [$this->getMetaInfo()]);
+        }
+        parent::setAuthenticated($authenticated);
+
+
+
+    }
+
+    /**
+     * @return array
+     */
+    public function getMetaInfo() {
+        if ($this->getAuthenticationDetails() instanceof AuthenticationDetails) {
+            $authId = $this->getAuthenticationDetails()->getAuthId();
+            $authMethod = $this->getAuthenticationDetails()->getAuthMethod();
+        } else {
+            $authId = "anonymous";
+            $authMethod = "anonymous";
+        }
+
+        return [
+            "realm" => $this->getRealm()->getRealmName(),
+            "authprovider" => null,
+            "authid" => $authId,
+            "authrole" => "none",
+            "authmethod" => $authMethod,
+            "session" => $this->getSessionId()
+        ];
     }
 
 }

@@ -3,6 +3,9 @@
 
 class DiscloseCallerTest extends PHPUnit_Framework_TestCase
 {
+    /**
+     * @var \Thruway\Connection
+     */
     protected $_conn;
     protected $_error;
     protected $_testResult;
@@ -70,6 +73,8 @@ class DiscloseCallerTest extends PHPUnit_Framework_TestCase
 
             }
         );
+
+        $this->_conn->getClient()->setAuthId("me@example.com");
 
         $this->_conn->open();
 

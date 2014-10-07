@@ -293,7 +293,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         'extra'      => [
                             'challenge_details' => $session->getAuthenticationDetails()->getChallengeDetails()
                         ],
-                        'signature'  => $msg->getSignature()
+                        'signature'  => $msg->getSignature(),
+                        'authid'     => $session->getAuthenticationDetails()->getAuthId()
                     ]
                 )->then(
                     function ($res) use ($session) {

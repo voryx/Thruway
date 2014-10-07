@@ -596,4 +596,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->logger = $logger;
     }
 
+    /**
+     * @return ClientSession
+     */
+    public function getSession()
+    {
+        return $this->session;
+    }
 }
