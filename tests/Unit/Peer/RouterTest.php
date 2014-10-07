@@ -386,6 +386,74 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     }
 
+
+    /**
+     * Test UnSubscribe message
+     *
+     * @see https://github.com/tavendo/WAMP/blob/master/spec/basic.md#unsubscribe-1
+     */
+    public function testUnSubscribeMessage()
+    {
+        $router = $this->router;
+        $router->addTransportProvider($this->transportProviderMock);
+        $router->start();
+        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+
+        // Configure the stub.
+        $transport->expects($this->any())
+            ->method('getTransportDetails')
+            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+
+        //Simulate onOpen
+        $router->onOpen($transport);
+
+        //Simulate HelloMessage
+        $helloMessage = new \Thruway\Message\HelloMessage("test.realm2", []);
+        $router->onMessage($transport, $helloMessage);
+
+        //Subscribe to a topic
+        $subscriptionId = null;
+        $transport->expects($this->at(1))
+            ->method('sendMessage')
+            ->with(
+                $this->callback(
+                    function ($msg) use (&$subscriptionId) {
+                        $this->assertInstanceOf('\Thruway\Message\SubscribedMessage', $msg);
+                        $this->assertEquals('7777777', $msg->getRequestId());
+                        $subscriptionId = $msg->getSubscriptionId();
+                        return $msg instanceof Thruway\Message\SubscribedMessage;
+                    }
+                )
+            )->will($this->returnValue(null));
+
+        $msg = new \Thruway\Message\SubscribeMessage('7777777', [], 'test.topic123');
+        $router->onMessage($transport, $msg);
+
+        //Unsubscribe
+        $transport->expects($this->at(1))
+            ->method('sendMessage')
+            ->with(
+                $this->callback(
+                    function ($msg) {
+                        $this->assertInstanceOf('\Thruway\Message\UnsubscribedMessage', $msg);
+                        $this->assertEquals('888888', $msg->getRequestId());
+
+                        return $msg instanceof Thruway\Message\UnsubscribedMessage;
+                    }
+                )
+            )->will($this->returnValue(null));
+
+        $this->assertInstanceOf('\Thruway\Subscription',
+            $router->getRealmManager()->getRealm('test.realm2')->getBroker()->getSubscriptionById($subscriptionId)
+        );
+
+        $msg = new \Thruway\Message\UnsubscribeMessage('888888', $subscriptionId);
+        $router->onMessage($transport, $msg);
+
+        $this->assertFalse($router->getRealmManager()->getRealm('test.realm2')->getBroker()->getSubscriptionById($subscriptionId));
+
+    }
+
     /**
      * Test onClose
      *
