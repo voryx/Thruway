@@ -364,8 +364,6 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             return ["Not enough arguments sent to registerAuthMethod"];
         }
 
-        echo "Trying to register auth method \"" . $args[0] . "\"";
-
         $authMethod = $args[0];
 
         $methodInfo = $args[1];
@@ -406,7 +404,6 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      */
     public function setReady($ready)
     {
-        echo "Authentication Manager is now ready.\n";
         $this->ready = $ready;
     }
 
@@ -436,7 +433,6 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         foreach ($this->authMethods as $authMethod) {
             foreach ($authMethod['auth_realms'] as $authRealm) {
                 if ($authRealm === "*" || $authRealm === $realmName) {
-                    echo "Tried to access realm: {$realmName}, but it expects an authmethod from the client\n";
                     return true;
                 }
             }
