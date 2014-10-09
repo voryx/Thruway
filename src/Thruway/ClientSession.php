@@ -3,6 +3,7 @@
 namespace Thruway;
 
 
+use React\Promise\Promise;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Transport\TransportInterface;
@@ -37,10 +38,12 @@ class ClientSession extends AbstractSession
      *
      * @param string $topicName
      * @param \Closure $callback
+     *
+     * @return Promise
      */
     public function subscribe($topicName, $callback)
     {
-        $this->peer->getSubscriber()->subscribe($this, $topicName, $callback);
+        return $this->peer->getSubscriber()->subscribe($this, $topicName, $callback);
     }
 
     /**
