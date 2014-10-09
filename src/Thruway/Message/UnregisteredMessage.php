@@ -29,6 +29,10 @@ class UnregisteredMessage extends Message
         $this->requestId = $requestId;
     }
 
+    static function createFromUnregisterMessage(UnregisterMessage $msg) {
+        return new UnregisteredMessage($msg->getRequestId());
+    }
+
     /**
      * @return int
      */

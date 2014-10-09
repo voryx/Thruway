@@ -126,7 +126,7 @@ class Broker extends AbstractRole
     protected function processSubscribe(Session $session, SubscribeMessage $msg)
     {
 
-        if (!$this->uriIsValid($msg->getTopicName())) {
+        if (!static::uriIsValid($msg->getTopicName())) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
 

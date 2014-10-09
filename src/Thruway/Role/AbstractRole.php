@@ -37,7 +37,7 @@ abstract class AbstractRole
      * @param $uri
      * @return boolean
      */
-    public function uriIsValid($uri)
+    static function uriIsValid($uri)
     {
         return !!preg_match('/^([0-9a-z_]+\.)*([0-9a-z_]+)$/', $uri);
     }

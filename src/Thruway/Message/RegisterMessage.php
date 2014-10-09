@@ -35,7 +35,7 @@ class RegisterMessage extends Message
     function __construct($requestId, $options, $procedureName)
     {
         $this->options       = $options;
-        $this->procedureName = $procedureName;
+        $this->procedureName = strtolower($procedureName);
         $this->requestId     = $requestId;
     }
 

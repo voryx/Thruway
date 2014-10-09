@@ -11,12 +11,12 @@ use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\InvocationMessage;
 use Thruway\Message\Message;
-use Thruway\Message\RegisteredMessage;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\ResultMessage;
 use Thruway\Message\UnregisteredMessage;
 use Thruway\Message\UnregisterMessage;
 use Thruway\Message\YieldMessage;
+use Thruway\Procedure;
 use Thruway\Registration;
 use Thruway\Session;
 
@@ -27,16 +27,10 @@ use Thruway\Session;
  */
 class Dealer extends AbstractRole
 {
-
     /**
-     * @var \SplObjectStorage
+     * @var array
      */
-    private $registrations;
-
-    /**
-     * @var \SplObjectStorage
-     */
-    private $calls;
+    private $procedures;
 
     /**
      * @var \Thruway\Manager\ManagerInterface
@@ -50,8 +44,7 @@ class Dealer extends AbstractRole
      */
     function __construct(ManagerInterface $manager = null)
     {
-        $this->registrations = new \SplObjectStorage();
-        $this->calls         = new \SplObjectStorage();
+        $this->procedures    = [];
         $manager             = $manager === null ? $manager : new ManagerDummy();
 
         $this->setManager($manager);
@@ -70,8 +63,7 @@ class Dealer extends AbstractRole
         if ($msg instanceof RegisterMessage):
             $this->processRegister($session, $msg);
         elseif ($msg instanceof UnregisterMessage):
-            $replyMsg = $this->processUnregister($session, $msg);
-            $session->sendMessage($replyMsg);
+            $this->processUnregister($session, $msg);
         elseif ($msg instanceof YieldMessage):
             $this->processYield($session, $msg);
         elseif ($msg instanceof CallMessage):
@@ -94,66 +86,22 @@ class Dealer extends AbstractRole
      */
     private function processRegister(Session $session, RegisterMessage $msg)
     {
+        // check for valid URI
+        if (!static::uriIsValid($msg->getProcedureName())) {
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.invalid_uri'));
+            return;
+        }
+
         //Check to see if the procedure is already registered
-        /* @var $registration \Thruway\Registration */
-        $registration = $this->getRegistrationByProcedureName($msg->getProcedureName());
-
-        if ($registration) {
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-
-            $this->manager->error('Already Registered: ' . $registration->getProcedureName());
-
-            $errorMsg->setErrorURI('wamp.error.procedure_already_exists');
-
-            $options = $msg->getOptions();
-            if (isset($options['replace_orphaned_session']) && $options['replace_orphaned_session'] == "yes") {
-                $this->getManager()->debug("Pinging existing registrant");
-                $registration->getSession()->ping(5)
-                    ->then(function ($res) use ($registration, $session, $errorMsg) {
-                            // the ping came back - send procedure_already_exists
-                            $session->sendMessage($errorMsg);
-                        },
-                        function ($r) use ($registration, $session, $msg) {
-                            $this->manager->debug("Removing session " . $registration->getSession()->getSessionId() . " because it didn't respond to ping.");
-                            // bring down the exiting session because the
-                            // ping timed out
-                            $deadSession = $registration->getSession();
-
-                            $deadSession->shutdown();
-
-                            // complete this registration now
-                            $this->completeRegistration($session, $msg);
-                        });
-            } else {
-                $session->sendMessage($errorMsg);
-            }
+        /** @var Procedure $procedure */
+        if (isset($this->procedures[$msg->getProcedureName()])) {
+            $procedure = $this->procedures[$msg->getProcedureName()];
         } else {
-            $this->completeRegistration($session, $msg);
+            $procedure =  new Procedure($msg->getProcedureName());
+            $this->procedures[$msg->getProcedureName()] = $procedure;
         }
 
-
-    }
-
-    /**
-     * process complete registration
-     *
-     * @param \Thruway\Session $session
-     * @param \Thruway\Message\RegisterMessage $msg
-     */
-    public function completeRegistration(Session $session, RegisterMessage $msg)
-    {
-        $registration = new Registration($session, $msg->getProcedureName());
-
-        $options = (array)$msg->getOptions();
-        if (isset($options['discloseCaller']) && $options['discloseCaller'] === true) {
-            $registration->setDiscloseCaller(true);
-        }
-
-        $this->registrations->attach($registration);
-
-        $this->manager->debug('Registered: ' . $registration->getProcedureName());
-
-        $session->sendMessage(new RegisteredMessage($msg->getRequestId(), $registration->getId()));
+        $procedure->processRegister($session, $msg);
     }
 
     /**
@@ -162,41 +110,23 @@ class Dealer extends AbstractRole
      * @param \Thruway\Session $session
      * @param \Thruway\Message\UnregisterMessage $msg
      * @throws \Exception
-     * @return \Thruway\Message\UnregisteredMessage|\Thruway\Message\ErrorMessage
      */
     private function processUnregister(Session $session, UnregisterMessage $msg)
     {
-        //find the procedure by registration id
-        $this->registrations->rewind();
-        while ($this->registrations->valid()) {
-            $registration = $this->registrations->current();
-            if ($registration->getId() == $msg->getRegistrationId()) {
-                $this->registrations->next();
+        // we are going to assume that the registration only exists in one spot
+        /** @var Procedure $procedure */
+        foreach ($this->procedures as $procedure) {
+            /** @var Registration $registration */
+            $registration = $procedure->getRegistrationById($msg->getRegistrationId());
 
-
-                // make sure the session is the correct session
-                if ($registration->getSession() !== $session) {
-                    $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-                    $errorMsg->setErrorURI("wamp.error.no_such_registration");
-                    $this->manager->warning("Tried to unregister a procedure that belongs to a different session.");
-
-                    return $errorMsg;
-                }
-
-                $this->manager->debug('Unegistered: ' . $registration->getProcedureName());
-                $this->registrations->detach($registration);
-
-                return new UnregisteredMessage($msg->getRequestId());
-            } else {
-                $this->registrations->next();
+            if ($registration) {
+                $procedure->processUnregister($session, $msg);
+                return;
             }
         }
 
-        $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-        $this->manager->error('No registration: ' . $msg->getRegistrationId());
-
-        return $errorMsg->setErrorURI('wamp.error.no_such_registration');
-
+        // apparently we didn't find anything to unregister
+        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_procedure'));
     }
 
     /**
@@ -208,52 +138,20 @@ class Dealer extends AbstractRole
      */
     private function processCall(Session $session, CallMessage $msg)
     {
-
-        $registration = $this->getRegistrationByProcedureName($msg->getProcedureName());
-        if (!$registration) {
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $this->manager->error('No registration for call message: ' . $msg->getProcedureName());
-
-            $errorMsg->setErrorURI('wamp.error.no_such_registration');
-            $session->sendMessage($errorMsg);
-
-            return false;
+        if (!static::uriIsValid($msg->getProcedureName())) {
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.invalid_uri'));
+            return;
         }
 
-        $invocationMessage = InvocationMessage::createMessageFrom($msg, $registration);
-
-        $details = [];
-        if ($registration->getDiscloseCaller() === true && $session->getAuthenticationDetails()) {
-            $details = [
-                "caller"     => $session->getSessionId(),
-                "authid"     => $session->getAuthenticationDetails()->getAuthId(),
-                //"authrole" => $session->getAuthenticationDetails()->getAuthRole(),
-                "authmethod" => $session->getAuthenticationDetails()->getAuthMethod(),
-            ];
+        if (!isset($this->procedures[$msg->getProcedureName()])) {
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_procedure'));
+            return;
         }
 
-        // TODO: check to see if callee supports progressive call
-        $callOptions   = $msg->getOptions();
-        $isProgressive = false;
-        if (is_array($callOptions) && isset($callOptions['receive_progress']) && $callOptions['receive_progress']) {
-            $details       = array_merge($details, ["receive_progress" => true]);
-            $isProgressive = true;
-        }
+        /** @var Procedure $procedure */
+        $procedure = $this->procedures[$msg->getProcedureName()];
 
-        // if nothing was added to details - change ot stdClass so it will serialize correctly
-        if (count($details) == 0) {
-            $details = new \stdClass();
-        }
-        $invocationMessage->setDetails($details);
-
-        $call = new Call($msg, $session, $invocationMessage, $registration->getSession());
-
-        $call->setIsProgressive($isProgressive);
-
-        $this->calls->attach($call);
-
-        $registration->getSession()->sendMessage($invocationMessage);
-
+        $procedure->processCall($session, $msg);
     }
 
     /**
@@ -261,45 +159,23 @@ class Dealer extends AbstractRole
      *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\YieldMessage $msg
-     * @return boolean|void
      */
     private function processYield(Session $session, YieldMessage $msg)
     {
-        $call = $this->getCallByRequestId($msg->getRequestId());
+        /** @var Procedure $procedure */
+        $call = null;
+        foreach ($this->procedures as $procedure) {
+            $call = $procedure->getCallByRequestId($msg->getRequestId());
+            if ($call) {
+                $call->processYield($session, $msg);
 
-        if (!$call) {
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $this->manager->error('No call for yield message: ' . $msg->getRequestId());
-
-            $errorMsg->setErrorURI('wamp.error.no_such_procedure');
-            $session->sendMessage($errorMsg);
-
-            return false;
-        }
-
-        $details = new \stdClass();
-
-        $yieldOptions = $msg->getOptions();
-        if (is_array($yieldOptions) && isset($yieldOptions['progress']) && $yieldOptions['progress']) {
-            if ($call->isProgressive()) {
-                $details = ["progress" => true];
-            } else {
-                // not sure what to do here - just going to drop progress
-                // if we are getting progress messages that the caller didn't ask for
+                return;
             }
-        } else {
-            $this->calls->detach($call);
-
         }
 
-        $resultMessage = new ResultMessage(
-            $call->getCallMessage()->getRequestId(),
-            $details,
-            $msg->getArguments(),
-            $msg->getArgumentsKw()
-        );
+        // TODO: This is an error - can I return a yield error?
 
-        $call->getCallerSession()->sendMessage($resultMessage);
+
     }
 
     /**
@@ -339,7 +215,7 @@ class Dealer extends AbstractRole
             return false;
         }
 
-        $this->calls->detach($call);
+        $call->getRegistration()->removeCall($call);
 
         $errorMsg = ErrorMessage::createErrorMessageFromMessage($call->getCallMessage());
 
@@ -351,24 +227,6 @@ class Dealer extends AbstractRole
     }
 
     /**
-     * Get registration by procedureName
-     *
-     * @param string $procedureName
-     * @return \Thruway\Registration|boolean
-     */
-    public function getRegistrationByProcedureName($procedureName)
-    {
-        /* @var $registration \Thruway\Registration */
-        foreach ($this->registrations as $registration) {
-            if ($registration->getProcedureName() == $procedureName) {
-                return $registration;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Get Call by requestID
      *
      * @param $requestId
@@ -376,11 +234,10 @@ class Dealer extends AbstractRole
      */
     public function getCallByRequestId($requestId)
     {
-        /* @var $call Call */
-        foreach ($this->calls as $call) {
-            if ($call->getInvocationMessage()->getRequestId() == $requestId) {
-                return $call;
-            }
+        /** @var Procedure $procedure */
+        foreach ($this->procedures as $procedure) {
+            $call = $procedure->getCallByRequestId($requestId);
+            if ($call) return $call;
         }
 
         return false;
@@ -418,15 +275,9 @@ class Dealer extends AbstractRole
      */
     public function leave(Session $session)
     {
-        $this->registrations->rewind();
-        while ($this->registrations->valid()) {
-            /* @var $registration Registration */
-            $registration = $this->registrations->current();
-            $this->registrations->next();
-            if ($registration->getSession() == $session) {
-                $this->manager->debug("Leaving and unegistering: {$registration->getProcedureName()}");
-                $this->registrations->detach($registration);
-            }
+        /** @var Procedure $procedure */
+        foreach($this->procedures as $procedure) {
+            $procedure->leave($session);
         }
     }
 
@@ -439,10 +290,6 @@ class Dealer extends AbstractRole
 
 
     }
-
-//    public function startManager() {
-//        $this->manager->addCallable("dealer.get_registrations", array($this, "managerGetRegistrations"));
-//    }
 
     /**
      * @return \Thruway\Manager\ManagerInterface
@@ -461,13 +308,16 @@ class Dealer extends AbstractRole
     {
         $theRegistrations = [];
 
-        /* @var $registration \Thruway\Registration */
-        foreach ($this->registrations as $registration) {
-            $theRegistrations[] = [
-                "id"      => $registration->getId(),
-                "name"    => $registration->getProcedureName(),
-                "session" => $registration->getSession()->getSessionId()
-            ];
+        /** @var Procedure $procedure */
+        foreach ($this->procedures as $procedure) {
+            /* @var $registration \Thruway\Registration */
+            foreach ($procedure->getRegistrations() as $registration) {
+                $theRegistrations[] = [
+                    "id" => $registration->getId(),
+                    "name" => $registration->getProcedureName(),
+                    "session" => $registration->getSession()->getSessionId()
+                ];
+            }
         }
 
         return [$theRegistrations];

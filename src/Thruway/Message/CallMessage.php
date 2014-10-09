@@ -110,7 +110,7 @@ class CallMessage extends Message
      */
     public function setProcedureName($procedureName)
     {
-        $this->procedureName = $procedureName;
+        $this->procedureName = strtolower($procedureName);
     }
 
     /**
