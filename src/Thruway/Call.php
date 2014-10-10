@@ -47,6 +47,11 @@ class Call
     private $registration;
 
     /**
+     * @var string
+     */
+    private $callStart;
+
+    /**
      * @param \Thruway\Message\CallMessage $callMessage
      * @param \Thruway\Session $callerSession
      * @param \Thruway\Message\InvocationMessage $invocationMessage
@@ -66,6 +71,16 @@ class Call
         $this->calleeSession     = $calleeSession;
         $this->isProgressive     = false;
         $this->setRegistration($registration);
+
+        $this->callStart = microtime();
+    }
+
+    /**
+     * @return string
+     */
+    public function getCallStart()
+    {
+        return $this->callStart;
     }
 
     public function processYield(Session $session, YieldMessage $msg) {

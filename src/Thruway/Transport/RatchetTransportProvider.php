@@ -3,6 +3,7 @@
 namespace Thruway\Transport;
 
 use Ratchet\WebSocket\Version\RFC6455\Frame;
+use Thruway\Exception\DeserializationException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
@@ -177,8 +178,10 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
         try {
             $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
-        } catch (\Exception $e) {
+        } catch (DeserializationException $e) {
             $this->manager->warning("Deserialization exception occurred.");
+        } catch (\Exception $e) {
+            $this->manager->warning("Exception occurred during onMessage: " . $e->getMessage());
         }
     }
 

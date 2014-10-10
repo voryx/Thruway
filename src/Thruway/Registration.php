@@ -45,6 +45,52 @@ class Registration
      */
     private $calls;
 
+    /**
+     * This holds the count of total invocations
+     *
+     * @var int
+     */
+    private $invocationCount;
+
+    /**
+     * @var \DateTime
+     */
+    private $registeredAt;
+
+    /**
+     * @var int
+     */
+    private $busyTime;
+
+    /**
+     * @var int
+     */
+    private $maxSimultaneousCalls;
+
+    /**
+     * @var int
+     */
+    private $invocationAverageTime;
+
+    /**
+     * @var null|\DateTime
+     */
+    private $lastCallStartedAt;
+
+    /**
+     * @var null|\DateTime
+     */
+    private $lastIdledAt;
+
+    /**
+     * @var string|null
+     */
+    private $busyStart;
+
+    /**
+     * @var float
+     */
+    private $completedCallTimeTotal;
 
     /**
      * Constructor
@@ -60,6 +106,15 @@ class Registration
         $this->allowMultipleRegistrations = false;
         $this->discloseCaller = false;
         $this->calls         = [];
+        $this->registeredAt  = new \DateTime();
+        $this->invocationCount = 0;
+        $this->busyTime      = 0;
+        $this->invocationAverageTime = 0;
+        $this->maxSimultaneousCalls  = 0;
+        $this->lastCallStartedAt     = null;
+        $this->lastIdledAt           = $this->registeredAt;
+        $this->busyStart             = null;
+        $this->completedCallTimeTotal = 0;
     }
 
     /**
@@ -143,6 +198,15 @@ class Registration
 
         $this->calls[] = $call;
 
+        $callCount = count($this->calls);
+        if ($callCount == 1) {
+            // we just became busy
+            $this->busyStart = microtime();
+        }
+        if ($callCount > $this->maxSimultaneousCalls) $this->maxSimultaneousCalls = $callCount;
+        $this->invocationCount++;
+        $this->lastCallStartedAt = new \DateTime();
+
         $this->getSession()->sendMessage($invocationMessage);
     }
 
@@ -162,6 +226,23 @@ class Registration
         foreach ($this->calls as $i => $call) {
             if ($call === $this->calls[$i]) {
                 array_splice($this->calls, $i, 1);
+                $callEnd = microtime();
+
+                // average call time
+                $callsInAverage = $this->invocationCount - count($this->calls) - 1;
+
+                // add this call time into the total
+                $this->completedCallTimeTotal += $callEnd - $call->getCallStart();
+                $callsInAverage++;
+                $this->invocationAverageTime = ((float)$this->completedCallTimeTotal) / $callsInAverage;
+
+                if (count($this->calls) == 0) {
+                    $this->lastIdledAt = new \DateTime();
+                    if ($this->busyStart !== null) {
+                        $this->busyTime = $this->busyTime + ($callEnd - $this->busyStart);
+                        $this->busyStart = null;
+                    }
+                }
             }
         }
     }
@@ -206,4 +287,7 @@ class Registration
         $this->discloseCaller = $discloseCaller;
     }
 
+    public function getCurrentCallCount() {
+        return count($this->calls);
+    }
 }

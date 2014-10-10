@@ -163,7 +163,6 @@ class Dealer extends AbstractRole
     private function processYield(Session $session, YieldMessage $msg)
     {
         /** @var Procedure $procedure */
-        $call = null;
         foreach ($this->procedures as $procedure) {
             $call = $procedure->getCallByRequestId($msg->getRequestId());
             if ($call) {

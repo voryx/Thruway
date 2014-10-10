@@ -60,7 +60,14 @@ class Procedure {
         if (count($this->registrations) > 0) {
             // we already have something registered
             if ($this->getAllowMultipleRegistrations()) {
-                $this->addRegistration($registration);
+                try {
+                    $this->addRegistration($registration);
+                    $session->sendMessage(
+                        new RegisteredMessage($msg->getRequestId(), $registration->getId())
+                    );
+                } catch (\Exception $e) {
+                    $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+                }
             } else {
                 // we are not allowed multiple registrations, but we may want
                 // to replace an orphaned session
@@ -194,11 +201,21 @@ class Procedure {
             return;
         }
 
-        // lets just use the first one right now
+        // find the best candidate
+        /** @var Registration $bestRegistration */
+        $bestRegistration = $this->registrations[0];
         /** @var Registration $registration */
-        $registration = $this->registrations[0];
+        foreach($this->registrations as $registration) {
+            if ($registration->getCurrentCallCount() == 0) {
+                $bestRegistration = $registration;
+                break;
+            }
+            if ($registration->getCurrentCallCount() < $bestRegistration) {
+                $bestRegistration = $registration;
+            }
+        }
 
-        $registration->processCall($session, $msg);
+        $bestRegistration->processCall($session, $msg);
     }
 
     public function getCallByRequestId($requestId) {
