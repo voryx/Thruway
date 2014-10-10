@@ -142,7 +142,11 @@ class Connection
             $mapping->getAnnotation()->getName(),
             function ($args) use ($mapping) {
 
-
+                $object = $this->container->get($mapping->getServiceId());
+                call_user_func_array(
+                    [$object, $mapping->getMethod()->getName()],
+                    $this->deserialize($args, $mapping)
+                );
             }
         );
     }
