@@ -203,6 +203,7 @@ class Registration
 
         $this->calls[] = $call;
 
+        $this->session->incPendingCallCount();
         $callCount = count($this->calls);
         if ($callCount == 1) {
             // we just became busy
@@ -244,6 +245,7 @@ class Registration
         foreach ($this->calls as $i => $call) {
             if ($callToRemove === $this->calls[$i]) {
                 array_splice($this->calls, $i, 1);
+                $this->session->decPendingCallCount();
                 $callEnd = microtime();
 
                 // average call time

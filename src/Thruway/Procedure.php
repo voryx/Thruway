@@ -231,11 +231,12 @@ class Procedure {
         $bestRegistration = $this->registrations[0];
         /* @var $registration \Thruway\Registration */
         foreach($this->registrations as $registration) {
-            if ($registration->getCurrentCallCount() == 0) {
+            if ($registration->getSession()->getPendingCallCount() == 0) {
                 $bestRegistration = $registration;
                 break;
             }
-            if ($registration->getCurrentCallCount() < $bestRegistration->getCurrentCallCount()) {
+            if ($registration->getSession()->getPendingCallCount() <
+                $bestRegistration->getSession()->getPendingCallCount()) {
                 $bestRegistration = $registration;
             }
         }
