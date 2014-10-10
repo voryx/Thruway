@@ -97,9 +97,11 @@ class ErrorMessage extends Message
      * @param string $errorUri
      * @return \Thruway\Message\ErrorMessage
      */
-    static public function createErrorMessageFromMessage(Message $msg, $errorUri = null)
+    public static function createErrorMessageFromMessage(Message $msg, $errorUri = null)
     {
-        if ($errorUri === null) $errorUri = "wamp.error.unknown";
+        if ($errorUri === null) {
+            $errorUri = "wamp.error.unknown";
+        }
         return new ErrorMessage($msg->getMsgCode(), $msg->getRequestId(), new \stdClass, $errorUri);
     }
 

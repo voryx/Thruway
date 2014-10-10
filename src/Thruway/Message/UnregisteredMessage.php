@@ -29,7 +29,14 @@ class UnregisteredMessage extends Message
         $this->requestId = $requestId;
     }
 
-    static function createFromUnregisterMessage(UnregisterMessage $msg) {
+    /**
+     * Create Unregisterd message from unregister message
+     * 
+     * @param \Thruway\Message\UnregisterMessage $msg
+     * @return \Thruway\Message\UnregisteredMessage
+     */
+    public static function createFromUnregisterMessage(UnregisterMessage $msg) 
+    {
         return new UnregisteredMessage($msg->getRequestId());
     }
 

@@ -52,6 +52,8 @@ class Call
     private $callStart;
 
     /**
+     * Constructor
+     * 
      * @param \Thruway\Message\CallMessage $callMessage
      * @param \Thruway\Session $callerSession
      * @param \Thruway\Message\InvocationMessage $invocationMessage
@@ -83,7 +85,14 @@ class Call
         return $this->callStart;
     }
 
-    public function processYield(Session $session, YieldMessage $msg) {
+    /**
+     * Process Yield message
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\YieldMessage $msg
+     */
+    public function processYield(Session $session, YieldMessage $msg) 
+    {
         $details = new \stdClass();
 
         $yieldOptions = $msg->getOptions();
@@ -219,6 +228,8 @@ class Call
     }
 
     /**
+     * Get registration
+     * 
      * @return Registration
      */
     public function getRegistration()
@@ -227,6 +238,8 @@ class Call
     }
 
     /**
+     * Set registration
+     * 
      * @param Registration $registration
      */
     private function setRegistration($registration)

@@ -59,7 +59,14 @@ class Subscriber extends AbstractRole
         endif;
     }
 
-    protected function processError(AbstractSession $session, ErrorMessage $msg) {
+    /**
+     * Process error
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
+     */
+    protected function processError(AbstractSession $session, ErrorMessage $msg) 
+    {
         switch ($msg->getErrorMsgCode()) {
             case Message::MSG_SUBSCRIBE:
                 $this->processSubscribeError($session, $msg);
@@ -72,6 +79,12 @@ class Subscriber extends AbstractRole
         }
     }
 
+    /**
+     * Process subscribe error
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
+     */
     protected function processSubscribeError(AbstractSession $session, ErrorMessage $msg) {
         foreach ($this->subscriptions as $key => $subscription) {
             if ($subscription["request_id"] === $msg->getErrorRequestId()) {
@@ -174,10 +187,9 @@ class Subscriber extends AbstractRole
      *
      * @param \Thruway\ClientSession $session
      * @param string $topicName
-     * @param \Closure $callback
+     * @param callable $callback
      *
      * @return Promise
-     * @param callable $callback
      */
     public function subscribe(ClientSession $session, $topicName, $callback)
     {

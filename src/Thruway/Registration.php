@@ -118,11 +118,13 @@ class Registration
     }
 
     /**
-     * @param Session $session
-     * @param RegisterMessage $msg
-     * @return Registration
+     * Create Registration from RegisterMessage
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\RegisterMessage $msg
+     * @return \Thruway\Registration
      */
-    static function createRegistrationFromRegisterMessage(Session $session, RegisterMessage $msg) {
+    public static function createRegistrationFromRegisterMessage(Session $session, RegisterMessage $msg) {
         $registration = new Registration($session, $msg->getProcedureName());
 
         $options = (array)$msg->getOptions();
@@ -162,10 +164,13 @@ class Registration
     }
 
     /**
+     * Process call
+     * 
      * @param Session $session
      * @param CallMessage $msg
      */
-    public function processCall(Session $session, CallMessage $msg) {
+    public function processCall(Session $session, CallMessage $msg) 
+    {
         $invocationMessage = InvocationMessage::createMessageFrom($msg, $this);
 
         $details = [];
@@ -210,7 +215,14 @@ class Registration
         $this->getSession()->sendMessage($invocationMessage);
     }
 
-    public function getCallByRequestId($requestId) {
+    /**
+     * Get call by request ID
+     * 
+     * @param int $requestId
+     * @return boolean
+     */
+    public function getCallByRequestId($requestId) 
+    {
         /** @var Call $call */
         foreach ($this->calls as $call) {
             if ($call->getInvocationMessage()->getRequestId()) {
@@ -221,8 +233,14 @@ class Registration
         return false;
     }
 
-    public function removeCall($call) {
-        /** @var Call $call */
+    /**
+     * Remove call
+     * 
+     * @param \Thruway\Call $call
+     */
+    public function removeCall($call) 
+    {
+        /* @var $call \Thruway\Call */
         foreach ($this->calls as $i => $call) {
             if ($call === $this->calls[$i]) {
                 array_splice($this->calls, $i, 1);
@@ -297,7 +315,13 @@ class Registration
         $this->discloseCaller = $discloseCaller;
     }
 
-    public function getCurrentCallCount() {
+    /**
+     * Get current call count
+     * 
+     * @return int
+     */
+    public function getCurrentCallCount() 
+    {
         return count($this->calls);
     }
 }

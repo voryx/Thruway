@@ -148,7 +148,7 @@ class Dealer extends AbstractRole
             return;
         }
 
-        /** @var Procedure $procedure */
+        /* @var $procedure \Thruway\Procedure */
         $procedure = $this->procedures[$msg->getProcedureName()];
 
         $procedure->processCall($session, $msg);
@@ -162,7 +162,7 @@ class Dealer extends AbstractRole
      */
     private function processYield(Session $session, YieldMessage $msg)
     {
-        /** @var Procedure $procedure */
+        /* @var $procedure \Thruway\Procedure */
         foreach ($this->procedures as $procedure) {
             $call = $procedure->getCallByRequestId($msg->getRequestId());
             if ($call) {
@@ -274,7 +274,7 @@ class Dealer extends AbstractRole
      */
     public function leave(Session $session)
     {
-        /** @var Procedure $procedure */
+        /* @var $procedure \Thruway\Procedure */
         foreach($this->procedures as $procedure) {
             $procedure->leave($session);
         }
@@ -311,7 +311,7 @@ class Dealer extends AbstractRole
     {
         $theRegistrations = [];
 
-        /** @var Procedure $procedure */
+        /* @var $procedure \Thruway\Procedure */
         foreach ($this->procedures as $procedure) {
             /* @var $registration \Thruway\Registration */
             foreach ($procedure->getRegistrations() as $registration) {

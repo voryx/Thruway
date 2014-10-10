@@ -40,7 +40,12 @@ class Procedure {
      */
     private $discloseCaller;
 
-    function __construct($procedureName)
+    /**
+     * Constructor
+     * 
+     * @param string $procedureName
+     */
+    public function __construct($procedureName)
     {
         $this->setProcedureName($procedureName);
 
@@ -50,11 +55,14 @@ class Procedure {
     }
 
     /**
+     * Process register
+     * 
      * @param Session $session
-     * @param RegisterMessage $msg
+     * @param \Thruway\Message\RegisterMessage $msg
      * @throws \Exception
      */
-    public function processRegister(Session $session, RegisterMessage $msg) {
+    public function processRegister(Session $session, RegisterMessage $msg) 
+    {
         $registration = Registration::createRegistrationFromRegisterMessage($session, $msg);
 
         if (count($this->registrations) > 0) {
@@ -122,10 +130,13 @@ class Procedure {
     }
 
     /**
-     * @param Registration $registration
+     * Add registration
+     * 
+     * @param \Thruway\Registration $registration
      * @throws \Exception
      */
-    private function addRegistration(Registration $registration) {
+    private function addRegistration(Registration $registration) 
+    {
         // make sure it isn't already in here
         for ($i = 0; $i < count($this->registrations); $i++) {
             if ($registration === $this->registrations[$i]) {
@@ -150,10 +161,13 @@ class Procedure {
     }
 
     /**
+     * Get registration by ID
+     * 
      * @param $registrationId
      * @return bool|Registration
      */
-    public function getRegistrationById($registrationId) {
+    public function getRegistrationById($registrationId) 
+    {
         /** @var Registration $registration */
         foreach ($this->registrations as $registration) {
             if ($registration->getId() == $registrationId) {
@@ -165,10 +179,13 @@ class Procedure {
     }
 
     /**
-     * @param Session $session
-     * @param UnregisterMessage $msg
+     * process unregister
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\UnregisterMessage $msg
      */
-    public function processUnregister(Session $session, UnregisterMessage $msg) {
+    public function processUnregister(Session $session, UnregisterMessage $msg) 
+    {
         for ($i = 0; $i < count($this->registrations); $i++) {
             /** @var Registration $registration */
             $registration = $this->registrations[$i];
@@ -194,7 +211,15 @@ class Procedure {
         $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_procedure'));
     }
 
-    public function processCall(Session $session, CallMessage $msg) {
+    /**
+     * Process call
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\CallMessage $msg
+     * @return void
+     */
+    public function processCall(Session $session, CallMessage $msg) 
+    {
         // find a registration to call
         if (count($this->registrations) == 0) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_procedure'));
@@ -202,15 +227,15 @@ class Procedure {
         }
 
         // find the best candidate
-        /** @var Registration $bestRegistration */
+        /* @var $bestRegistration \Thruway\Registration */
         $bestRegistration = $this->registrations[0];
-        /** @var Registration $registration */
+        /* @var $registration \Thruway\Registration */
         foreach($this->registrations as $registration) {
             if ($registration->getCurrentCallCount() == 0) {
                 $bestRegistration = $registration;
                 break;
             }
-            if ($registration->getCurrentCallCount() < $bestRegistration) {
+            if ($registration->getCurrentCallCount() < $bestRegistration->getCurrentCallCount()) {
                 $bestRegistration = $registration;
             }
         }
@@ -218,11 +243,20 @@ class Procedure {
         $bestRegistration->processCall($session, $msg);
     }
 
-    public function getCallByRequestId($requestId) {
-        /** @var Registration $registration */
+    /**
+     * Get call by request ID
+     * 
+     * @param int $requestId
+     * @return \Thruway\Call|boolean
+     */
+    public function getCallByRequestId($requestId) 
+    {
+        /* @var $registration \Thruway\Registration */
         foreach ($this->registrations as $registration) {
             $call = $registration->getCallByRequestId($requestId);
-            if ($call) return $call;
+            if ($call) {
+                return $call;
+            }
         }
 
         return false;
@@ -300,9 +334,15 @@ class Procedure {
         return $this->registrations;
     }
 
-    public function leave(Session $session) {
+    /**
+     * process session leave
+     * 
+     * @param \Thruway\Session $session
+     */
+    public function leave(Session $session) 
+    {
         // remove all registrations that belong to this session
-        /** @var Registration $registration */
+        /* @var $registration \Thruway\Registration */
         foreach($this->registrations as $i => $registration) {
             if ($registration->getSession() === $session) {
                 array_splice($this->registrations, $i, 1);
