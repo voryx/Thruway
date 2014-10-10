@@ -13,28 +13,30 @@ class RegisteredMessage extends Message
 {
 
     /**
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
-     * @var mixed
+     * @var int
      */
     private $registrationId;
 
     /**
      * Constructor
      *
-     * @param mixed $registrationId
-     * @param mixed $requestId
+     * @param int $requestId
+     * @param int $registrationId
      */
-    function __construct($requestId, $registrationId)
+    public function __construct($requestId, $registrationId)
     {
         $this->registrationId = $registrationId;
         $this->requestId      = $requestId;
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -54,7 +56,9 @@ class RegisteredMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get registration ID
+     * 
+     * @return int
      */
     public function getRegistrationId()
     {
@@ -62,7 +66,9 @@ class RegisteredMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

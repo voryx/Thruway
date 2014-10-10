@@ -13,7 +13,7 @@ class HelloMessage extends Message
 {
 
     /**
-     * @var mixed
+     * @var string
      */
     private $realm;
 
@@ -33,11 +33,12 @@ class HelloMessage extends Message
     private $authMethods;
 
     /**
-     * @param $realm
-     * @param $details
-     * @param $authMethods
+     * Constructor
+     * 
+     * @param string $realm
+     * @param mixed $details
      */
-    function __construct($realm, $details)
+    public function __construct($realm, $details)
     {
         $this->setDetails($details);
         $this->realm       = $realm;
@@ -45,6 +46,8 @@ class HelloMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -56,7 +59,7 @@ class HelloMessage extends Message
      * This is used by get message parts to get the parts of the message beyond
      * the message code
      *
-     * @return mixed
+     * @return array
      */
     public function getAdditionalMsgFields()
     {
@@ -64,6 +67,8 @@ class HelloMessage extends Message
     }
 
     /**
+     * Set details
+     * 
      * @param mixed $details
      */
     public function setDetails($details)
@@ -76,6 +81,8 @@ class HelloMessage extends Message
     }
 
     /**
+     * Get details
+     * 
      * @return mixed
      */
     public function getDetails()
@@ -84,7 +91,9 @@ class HelloMessage extends Message
     }
 
     /**
-     * @param mixed $realm
+     * Set realm
+     * 
+     * @param string $realm
      */
     public function setRealm($realm)
     {
@@ -92,7 +101,9 @@ class HelloMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get realm
+     * 
+     * @return string
      */
     public function getRealm()
     {
@@ -100,7 +111,9 @@ class HelloMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get list authenticate methods
+     * 
+     * @return array
      */
     public function getAuthMethods()
     {

@@ -38,7 +38,7 @@ class Registration
      * @param \Thruway\Session $session
      * @param string $procedureName
      */
-    function __construct(Session $session, $procedureName)
+    public function __construct(Session $session, $procedureName)
     {
         $this->id            = Session::getUniqueId();
         $this->session       = $session;
@@ -46,6 +46,8 @@ class Registration
     }
 
     /**
+     * Get registration ID
+     * 
      * @return mixed
      */
     public function getId()
@@ -54,6 +56,8 @@ class Registration
     }
 
     /**
+     * Get procedure name
+     * 
      * @return string
      */
     public function getProcedureName()
@@ -62,6 +66,8 @@ class Registration
     }
 
     /**
+     * Get seesion
+     * 
      * @return \Thruway\Session
      */
     public function getSession()
@@ -70,6 +76,8 @@ class Registration
     }
 
     /**
+     * Get disclose caller
+     * 
      * @return mixed
      */
     public function getDiscloseCaller()
@@ -78,6 +86,8 @@ class Registration
     }
 
     /**
+     * Set disclose caller
+     * 
      * @param mixed $discloseCaller
      */
     public function setDiscloseCaller($discloseCaller)

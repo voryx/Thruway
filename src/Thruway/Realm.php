@@ -61,7 +61,7 @@ class Realm
     /**
      * The metaSession is used as a dummy session to send meta events from
      *
-     * @var Session
+     * @var \Thruway\Session
      */
     private $metaSession;
 
@@ -70,7 +70,7 @@ class Realm
      *
      * @param string $realmName
      */
-    function __construct($realmName)
+    public function __construct($realmName)
     {
         $this->realmName             = $realmName;
         $this->sessions              = new \SplObjectStorage();
@@ -188,8 +188,8 @@ class Realm
     /**
      * Process AuthenticateMessage
      *
-     * @param Session $session
-     * @param AuthenticateMessage $msg
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\AuthenticateMessage $msg
      */
     private function processAuthenticate(Session $session, AuthenticateMessage $msg)
     {
@@ -207,6 +207,8 @@ class Realm
     }
 
     /**
+     * Get list sessions
+     * 
      * @return array
      */
     public function managerGetSessions()
@@ -246,6 +248,8 @@ class Realm
     }
 
     /**
+     * Set realm name
+     * 
      * @param string $realmName
      */
     public function setRealmName($realmName)
@@ -254,6 +258,8 @@ class Realm
     }
 
     /**
+     * Get realm name
+     * 
      * @return mixed
      */
     public function getRealmName()
@@ -262,6 +268,8 @@ class Realm
     }
 
     /**
+     * Process on session leave
+     * 
      * @param \Thruway\Session $session
      */
     public function leave(Session $session)
@@ -280,6 +288,8 @@ class Realm
     }
 
     /**
+     * Set manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
@@ -297,6 +307,8 @@ class Realm
     }
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -305,6 +317,8 @@ class Realm
     }
 
     /**
+     * Set authentication manager
+     * 
      * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager)
@@ -313,6 +327,8 @@ class Realm
     }
 
     /**
+     * Get authentication manager
+     * 
      * @return \Thruway\Authentication\AuthenticationManagerInterface
      */
     public function getAuthenticationManager()
@@ -321,6 +337,8 @@ class Realm
     }
 
     /**
+     * Get list session
+     * 
      * @return \SplObjectStorage
      */
     public function getSessions()
@@ -329,6 +347,8 @@ class Realm
     }
 
     /**
+     * Get broker
+     * 
      * @return \Thruway\Role\Broker
      */
     public function getBroker()
@@ -337,6 +357,8 @@ class Realm
     }
 
     /**
+     * Get dealer
+     * 
      * @return \Thruway\Role\Dealer
      */
     public function getDealer()
@@ -344,6 +366,14 @@ class Realm
         return $this->dealer;
     }
 
+    /**
+     * Publish meta
+     * 
+     * @param string $topicName
+     * @param mixed $arguments
+     * @param mixed $argumentsKw
+     * @param mixed $options
+     */
     public function publishMeta($topicName, $arguments, $argumentsKw = null, $options = null)
     {
         if ($this->metaSession === null) {

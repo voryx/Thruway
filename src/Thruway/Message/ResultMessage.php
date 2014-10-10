@@ -21,23 +21,24 @@ class ResultMessage extends Message
     use ArgumentsTrait;
 
     /**
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
-     * @var mixed
+     * @var array
      */
     private $details;
 
     /**
      * Constructor
-     * @param mixed $requestId
-     * @param mixed $details
-     * @param mixed $arguments
-     * @param mixed $argumentsKw
+     * 
+     * @param int $requestId
+     * @param array $details
+     * @param array $arguments
+     * @param array $argumentsKw
      */
-    function __construct($requestId, $details, $arguments = null, $argumentsKw = null)
+    public function __construct($requestId, $details, $arguments = null, $argumentsKw = null)
     {
         $this->requestId = $requestId;
         $this->details   = $details;
@@ -46,6 +47,8 @@ class ResultMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -75,7 +78,9 @@ class ResultMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get result details
+     * 
+     * @return array
      */
     public function getDetails()
     {
@@ -83,7 +88,9 @@ class ResultMessage extends Message
     }
 
     /**
-     * @param mixed $details
+     * Set result details
+     * 
+     * @param array $details
      */
     public function setDetails($details)
     {
@@ -91,7 +98,9 @@ class ResultMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {
@@ -99,7 +108,9 @@ class ResultMessage extends Message
     }
 
     /**
-     * @param mixed $requestId
+     * Set request ID
+     * 
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {

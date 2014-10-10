@@ -26,7 +26,7 @@ class RatchetTransport implements TransportInterface
     private $serializer;
 
     /**
-     * @var
+     * @var mixed
      */
     private $pingSeq;
 

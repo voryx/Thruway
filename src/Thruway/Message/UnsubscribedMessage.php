@@ -15,16 +15,16 @@ class UnsubscribedMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
      * Constructor
      *
-     * @param mixed $requestId
+     * @param int $requestId
      */
-    function __construct($requestId)
+    public function __construct($requestId)
     {
         parent::__construct();
 
@@ -32,6 +32,8 @@ class UnsubscribedMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -51,7 +53,9 @@ class UnsubscribedMessage extends Message
     }
 
     /**
-     * @param mixed $requestId
+     * Set request ID
+     * 
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {
@@ -59,7 +63,9 @@ class UnsubscribedMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

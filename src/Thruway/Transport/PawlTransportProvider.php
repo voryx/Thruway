@@ -122,6 +122,8 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
     }
 
     /**
+     * Get peer
+     * 
      * @return \Thruway\Peer\AbstractPeer
      */
     public function getPeer()
@@ -130,6 +132,8 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
     }
 
     /**
+     * Set peer
+     * 
      * @param \Thruway\Peer\AbstractPeer $peer
      */
     public function setPeer(AbstractPeer $peer)
@@ -138,6 +142,8 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
     }
 
     /**
+     * Set manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
@@ -148,6 +154,8 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
     }
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()

@@ -29,7 +29,7 @@ class Subscriber extends AbstractRole
     /**
      * Constructor
      */
-    function __construct()
+    public function __construct()
     {
 
         $this->subscriptions = [];
@@ -138,7 +138,7 @@ class Subscriber extends AbstractRole
      *
      * @param \Thruway\ClientSession $session
      * @param string $topicName
-     * @param \Closure $callback
+     * @param callable $callback
      */
     public function subscribe(ClientSession $session, $topicName, $callback)
     {

@@ -2,7 +2,6 @@
 
 namespace Thruway\Transport;
 
-
 use React\EventLoop\LoopInterface;
 use React\Socket\Connection;
 use React\Stream\Stream;
@@ -11,19 +10,29 @@ use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\SerializerInterface;
 
-class RawSocketTransport implements TransportInterface {
+/**
+ * Class RawSocketTransport
+ * 
+ * Implement transport on raw socket
+ * 
+ * @package Thruway\Transport
+ */
+
+class RawSocketTransport implements TransportInterface
+{
+
     /**
-     * @var Stream
+     * @var \React\Stream\Stream
      */
     private $conn;
 
     /**
-     * @var LoopInterface
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
 
     /**
-     * @var SerializerInterface
+     * @var \Thruway\Serializer\SerializerInterface
      */
     private $serializer;
 
@@ -47,11 +56,18 @@ class RawSocketTransport implements TransportInterface {
     private $handshakeByte;
 
     /**
-     * @var AbstractPeer
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
 
-    function __construct(Stream $conn, LoopInterface $loop, AbstractPeer $peer)
+    /**
+     * Constructor
+     * 
+     * @param \React\Stream\Stream $conn
+     * @param \React\EventLoop\LoopInterface $loop
+     * @param \Thruway\Peer\AbstractPeer $peer
+     */
+    public function __construct(Stream $conn, LoopInterface $loop, AbstractPeer $peer)
     {
         $this->conn = $conn;
         $this->loop = $loop;
@@ -63,7 +79,14 @@ class RawSocketTransport implements TransportInterface {
         $this->handshakeByte = 0;
     }
 
-    public function handleData($data) {
+    /**
+     * Handle process reveived data
+     * 
+     * @param mixed $data
+     * @return void
+     */
+    public function handleData($data)
+    {
 //        if ($this->handshakeByte == 0) {
 //            $this->handshakeByte = $data[0];
 //            $data = substr($data, 1);
@@ -82,14 +105,13 @@ class RawSocketTransport implements TransportInterface {
                         $this->close();
                     }
                     // shift off the first 4 bytes
-                    $bufferLen = $bufferLen - 4;
+                    $bufferLen    = $bufferLen - 4;
                     $this->buffer = substr($this->buffer, 4, $bufferLen);
                 } else {
                     // we don't have enough to get the message length
                     return;
                 }
             }
-
 
             if ($bufferLen >= $this->msgLen) {
                 $msg = $this->getSerializer()->deserialize(substr($this->buffer, 0, $this->msgLen));
@@ -99,9 +121,9 @@ class RawSocketTransport implements TransportInterface {
                 if ($bufferLen == $this->msgLen) {
                     $this->buffer = "";
                     $this->msgLen = 0;
-                    $bufferLen = 0;
+                    $bufferLen    = 0;
                 } else {
-                    $bufferLen = $bufferLen - $this->msgLen;
+                    $bufferLen    = $bufferLen - $this->msgLen;
                     $this->buffer = substr($this->buffer, $this->msgLen, $bufferLen);
                     $this->msgLen = 0;
                 }
@@ -110,7 +132,9 @@ class RawSocketTransport implements TransportInterface {
     }
 
     /**
-     * @return SerializerInterface
+     * Get serializer
+     * 
+     * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()
     {
@@ -118,7 +142,9 @@ class RawSocketTransport implements TransportInterface {
     }
 
     /**
-     * @param SerializerInterface $serializer
+     * Set serializer
+     * 
+     * @param \Thruway\Serializer\SerializerInterface $serializer
      */
     public function setSerializer(SerializerInterface $serializer)
     {
@@ -126,7 +152,9 @@ class RawSocketTransport implements TransportInterface {
     }
 
     /**
-     * @return Connection
+     * Get connection
+     * 
+     * @return \React\Stream\Stream
      */
     public function getConn()
     {
@@ -134,17 +162,19 @@ class RawSocketTransport implements TransportInterface {
     }
 
     /**
-     * @return LoopInterface
+     * Get loop
+     * 
+     * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
     {
         return $this->loop;
     }
 
-    /////// TransportInterface
-
     /**
-     * @return mixed
+     * Get transport details
+     * 
+     * @return array
      */
     public function getTransportDetails()
     {
@@ -155,6 +185,8 @@ class RawSocketTransport implements TransportInterface {
     }
 
     /**
+     * Send message
+     * 
      * @param \Thruway\Message\Message $msg
      */
     public function sendMessage(Message $msg)
@@ -180,6 +212,8 @@ class RawSocketTransport implements TransportInterface {
 
     /**
      * Ping
+     * 
+     * @throws \Thruway\Exception\PingNotSupportedException
      */
     public function ping()
     {

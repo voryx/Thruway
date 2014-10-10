@@ -15,7 +15,7 @@ use Thruway\Transport\TransportProviderInterface;
 abstract class AbstractPeer
 {
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Peer\ManagerInterface
      */
     protected $manager;
 

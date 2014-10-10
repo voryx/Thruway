@@ -33,6 +33,8 @@ class ChallengeMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()

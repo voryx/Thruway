@@ -32,12 +32,16 @@ interface TransportInterface
     public function ping();
 
     /**
+     * Set serializer
+     * 
      * @param \Thruway\Serializer\SerializerInterface $serializer
      * @return \Thruway\Transport\TransportInterface
      */
     public function setSerializer(SerializerInterface $serializer);
 
     /**
+     * Get serializer
+     * 
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer();

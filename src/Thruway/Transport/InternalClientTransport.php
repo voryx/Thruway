@@ -37,13 +37,15 @@ class InternalClientTransport implements TransportInterface
      * @param \Thruway\Peer\AbstractPeer $farPeer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    function __construct(AbstractPeer $farPeer, LoopInterface $loop)
+    public function __construct(AbstractPeer $farPeer, LoopInterface $loop)
     {
         $this->farPeer = $farPeer;
         $this->loop    = $loop;
     }
 
     /**
+     * Set FarPeerTransport
+     * 
      * @param \Thruway\Transport\TransportInterface $farPeerTransport
      */
     public function setFarPeerTransport($farPeerTransport)

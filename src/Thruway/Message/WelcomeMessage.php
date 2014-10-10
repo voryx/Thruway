@@ -18,7 +18,7 @@ class WelcomeMessage extends Message
     private $sessionId;
 
     /**
-     * @var mixed
+     * @var array
      */
     private $details;
 
@@ -26,9 +26,9 @@ class WelcomeMessage extends Message
      * Constructor
      *
      * @param int $sessionId
-     * @param mixed $details
+     * @param array $details
      */
-    function __construct($sessionId, $details)
+    public function __construct($sessionId, $details)
     {
         $this->details   = $details;
         $this->sessionId = $sessionId;
@@ -57,6 +57,8 @@ class WelcomeMessage extends Message
     }
 
     /**
+     * Get details
+     * 
      * @return mixed
      */
     public function getDetails()
@@ -65,6 +67,8 @@ class WelcomeMessage extends Message
     }
 
     /**
+     * Get session ID
+     * 
      * @return int
      */
     public function getSessionId()

@@ -48,7 +48,7 @@ class Dealer extends AbstractRole
      *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
-    function __construct(ManagerInterface $manager = null)
+    public function __construct(ManagerInterface $manager = null)
     {
         $this->registrations = new \SplObjectStorage();
         $this->calls         = new \SplObjectStorage();
@@ -60,7 +60,7 @@ class Dealer extends AbstractRole
     /**
      * process message
      *
-     * @param AbstractSession|Session $session
+     * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
      * @return mixed|void
      */
@@ -371,7 +371,7 @@ class Dealer extends AbstractRole
     /**
      * Get Call by requestID
      *
-     * @param $requestId
+     * @param int $requestId
      * @return \Thruway\Call|boolean
      */
     public function getCallByRequestId($requestId)
@@ -431,6 +431,8 @@ class Dealer extends AbstractRole
     }
 
     /**
+     * Set manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
@@ -445,6 +447,8 @@ class Dealer extends AbstractRole
 //    }
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()

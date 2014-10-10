@@ -33,10 +33,11 @@ class InternalClientTransportProvider implements TransportProviderInterface
     private $manager;
 
     /**
-     *
+     * Constructor
+     * 
      * @param \Thruway\Peer\AbstractPeer $internalClient
      */
-    function __construct(AbstractPeer $internalClient)
+    public function __construct(AbstractPeer $internalClient)
     {
         $this->internalClient = $internalClient;
 
@@ -46,7 +47,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
     }
 
     /**
-     * Start transport
+     * Start transport provider
      *
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
@@ -80,6 +81,8 @@ class InternalClientTransportProvider implements TransportProviderInterface
     }
 
     /**
+     * Set manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
@@ -94,6 +97,8 @@ class InternalClientTransportProvider implements TransportProviderInterface
     }
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()

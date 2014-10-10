@@ -55,7 +55,7 @@ class ErrorMessage extends Message
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
-    function __construct($errorMsgCode, $errorRequestId, $details, $errorURI, $arguments = null, $argumentsKw = null)
+    public function __construct($errorMsgCode, $errorRequestId, $details, $errorURI, $arguments = null, $argumentsKw = null)
     {
         $this->errorRequestId = $errorRequestId;
         $this->errorMsgCode   = $errorMsgCode;
@@ -67,7 +67,9 @@ class ErrorMessage extends Message
     }
 
     /**
-     * @param mixed $errorURI
+     * Set error URI
+     * 
+     * @param string $errorURI
      * @return \Thruway\Message\ErrorMessage
      */
     public function setErrorURI($errorURI)
@@ -78,6 +80,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Get error URI
+     * 
      * @return string
      */
     public function getErrorURI()
@@ -92,12 +96,14 @@ class ErrorMessage extends Message
      * @param \Thruway\Message\Message $msg
      * @return \Thruway\Message\ErrorMessage
      */
-    static public function createErrorMessageFromMessage(Message $msg)
+    public static function createErrorMessageFromMessage(Message $msg)
     {
         return new ErrorMessage($msg->getMsgCode(), $msg->getRequestId(), new \stdClass, "wamp.error.unknown");
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -121,6 +127,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Set error details
+     * 
      * @param mixed $details
      * @return \Thruway\Message\ErrorMessage
      */
@@ -132,6 +140,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Get error details
+     * 
      * @return mixed
      */
     public function getDetails()
@@ -140,6 +150,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Set error message code
+     * 
      * @param int $errorMsgCode
      * @return \Thruway\Message\ErrorMessage
      */
@@ -151,6 +163,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Get error message code
+     * 
      * @return mixed
      */
     public function getErrorMsgCode()
@@ -159,6 +173,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Set request ID
+     * 
      * @param mixed $requestId
      * @return \Thruway\Message\ErrorMessage
      */
@@ -170,6 +186,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Get request ID
+     * 
      * @return mixed
      */
     public function getRequestId()
@@ -178,6 +196,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Set error request ID
+     * 
      * @param mixed $errorRequestId
      * @return \Thruway\Message\ErrorMessage
      */
@@ -189,6 +209,8 @@ class ErrorMessage extends Message
     }
 
     /**
+     * Get error request ID
+     * 
      * @return mixed
      */
     public function getErrorRequestId()
@@ -201,7 +223,7 @@ class ErrorMessage extends Message
      *
      * @return string
      */
-    function __toString()
+    public function __toString()
     {
         return $this->getErrorURI();
     }

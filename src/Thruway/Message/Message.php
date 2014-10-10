@@ -44,11 +44,13 @@ abstract class Message implements \JsonSerializable
     /**
      * Constructor
      */
-    function __construct()
+    public function __construct()
     {
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     abstract public function getMsgCode();
@@ -150,7 +152,7 @@ abstract class Message implements \JsonSerializable
      *
      * @return string
      */
-    function __toString()
+    public function __toString()
     {
         return "[" . get_class($this) . "]";
     }
@@ -184,9 +186,10 @@ abstract class Message implements \JsonSerializable
 
     /**
      * Get the args from the message data
-     * @param $data
-     * @param $position
-     * @return null
+     * 
+     * @param array $data
+     * @param int $position
+     * @return mixed|null
      */
     protected static function getArgs($data, $position)
     {

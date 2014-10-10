@@ -34,20 +34,20 @@ class PublishMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
      * Constructor
      *
-     * @param mixed $requestId
+     * @param int $requestId
      * @param mixed $options
      * @param string $topicName
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
-    function __construct($requestId, $options, $topicName, $arguments = null, $argumentsKw = null)
+    public function __construct($requestId, $options, $topicName, $arguments = null, $argumentsKw = null)
     {
         parent::__construct();
 
@@ -60,6 +60,8 @@ class PublishMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -89,6 +91,8 @@ class PublishMessage extends Message
     }
 
     /**
+     * Set options
+     * 
      * @param mixed $options
      */
     public function setOptions($options)
@@ -97,6 +101,8 @@ class PublishMessage extends Message
     }
 
     /**
+     * Get options
+     * 
      * @return mixed
      */
     public function getOptions()
@@ -105,6 +111,8 @@ class PublishMessage extends Message
     }
 
     /**
+     * Set topic name
+     * 
      * @param string $topicName
      */
     public function setTopicName($topicName)
@@ -113,6 +121,8 @@ class PublishMessage extends Message
     }
 
     /**
+     * Get topic name
+     * 
      * @return string
      */
     public function getTopicName()
@@ -121,7 +131,9 @@ class PublishMessage extends Message
     }
 
     /**
-     * @param mixed $requestId
+     * Set request ID
+     * 
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {
@@ -129,7 +141,9 @@ class PublishMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

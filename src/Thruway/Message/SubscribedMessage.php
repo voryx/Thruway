@@ -14,23 +14,23 @@ class SubscribedMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $subscriptionId;
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
      * Constructor
      *
-     * @param mixed $requestId
-     * @param mixed $subscriptionId
+     * @param int $requestId
+     * @param int $subscriptionId
      */
-    function __construct($requestId, $subscriptionId)
+    public function __construct($requestId, $subscriptionId)
     {
         parent::__construct();
 
@@ -39,7 +39,9 @@ class SubscribedMessage extends Message
     }
 
     /**
-     * @param mixed $subscriptionId
+     * Set subcription ID
+     * 
+     * @param int $subscriptionId
      */
     public function setSubscriptionId($subscriptionId)
     {
@@ -47,7 +49,9 @@ class SubscribedMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get Subscription ID
+     * 
+     * @return int
      */
     public function getSubscriptionId()
     {
@@ -55,6 +59,8 @@ class SubscribedMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -74,7 +80,9 @@ class SubscribedMessage extends Message
     }
 
     /**
-     * @param mixed $requestId
+     * Set request ID
+     * 
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {
@@ -82,7 +90,9 @@ class SubscribedMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

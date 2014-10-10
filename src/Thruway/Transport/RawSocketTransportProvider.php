@@ -10,7 +10,16 @@ use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\JsonSerializer;
 
-class RawSocketTransportProvider implements TransportProviderInterface {
+/**
+ * Class RawSocketTransportProvider
+ * 
+ * Implements a transport provider on raw socket (for router)
+ * 
+ * @package Thruway\Transport
+ */
+class RawSocketTransportProvider implements TransportProviderInterface
+{
+
     /**
      * @var string
      */
@@ -22,7 +31,7 @@ class RawSocketTransportProvider implements TransportProviderInterface {
     private $port;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
@@ -32,23 +41,25 @@ class RawSocketTransportProvider implements TransportProviderInterface {
     private $transports;
 
     /**
-     * @var AbstractPeer
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
 
     /**
-     * @var LoopInterface
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
 
     /**
+     * Constructor
+     * 
      * @param string $address
      * @param int $port
      */
     function __construct($address = "127.0.0.1", $port = 8181)
     {
         $this->address = $address;
-        $this->port = $port;
+        $this->port    = $port;
 
         $this->setManager(new ManagerDummy());
 
@@ -56,8 +67,10 @@ class RawSocketTransportProvider implements TransportProviderInterface {
     }
 
     /**
-     * @param AbstractPeer $peer
-     * @param LoopInterface $loop
+     * Start transport provider
+     * 
+     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \React\EventLoop\LoopInterface $loop
      */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
@@ -69,7 +82,13 @@ class RawSocketTransportProvider implements TransportProviderInterface {
         $socket->listen($this->port, $this->address);
     }
 
-    public function handleConnection(Connection $conn) {
+    /**
+     * Handle process on open new connection
+     * 
+     * @param \React\Socket\Connection $conn
+     */
+    public function handleConnection(Connection $conn)
+    {
         $this->getManager()->debug("Raw socket opened " . $conn->getRemoteAddress());
 
         $transport = new RawSocketTransport($conn, $this->loop, $this->peer);
@@ -84,13 +103,26 @@ class RawSocketTransportProvider implements TransportProviderInterface {
         $conn->on('close', [$this, "handleClose"]);
     }
 
-    public function handleData($data, Connection $conn) {
+    /**
+     * Handle process reveiced data
+     * 
+     * @param mixed $data
+     * @param \React\Socket\Connection $conn
+     */
+    public function handleData($data, Connection $conn)
+    {
         $transport = $this->transports[$conn];
 
         $transport->handleData($data);
     }
 
-    public function handleClose(Connection $conn) {
+    /**
+     * Handle process on close transport
+     * 
+     * @param \React\Socket\Connection $conn
+     */
+    public function handleClose(Connection $conn)
+    {
         $this->getManager()->debug("Raw socket closed " . $conn->getRemoteAddress());
         $transport = $this->transports[$conn];
         $this->transports->detach($conn);
@@ -99,7 +131,9 @@ class RawSocketTransportProvider implements TransportProviderInterface {
     }
 
     /**
-     * @return ManagerInterface
+     * Get manager
+     * 
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {
@@ -107,11 +141,13 @@ class RawSocketTransportProvider implements TransportProviderInterface {
     }
 
     /**
-     * @param ManagerInterface $managerInterface
+     * Set manager
+     * 
+     * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
     public function setManager(ManagerInterface $managerInterface)
     {
         $this->manager = $managerInterface;
     }
 
-} 
+}

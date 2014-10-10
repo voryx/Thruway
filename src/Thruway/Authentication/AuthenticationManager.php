@@ -36,7 +36,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
     /**
      * Constructor
      */
-    function __construct()
+    public function __construct()
     {
         parent::__construct('thruway.auth');
 
@@ -400,6 +400,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
     }
 
     /**
+     * Set ready flag
+     * 
      * @param boolean $ready
      */
     public function setReady($ready)
@@ -408,6 +410,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
     }
 
     /**
+     * Get ready flag
+     * 
      * @return boolean
      */
     public function getReady()
@@ -416,6 +420,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
     }
 
     /**
+     * Check ready to authenticate
+     * 
      * @return boolean
      */
     public function readyToAuthenticate()
@@ -425,6 +431,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Checks to see if a realm has a registered auth provider
+     * 
      * @param string $realmName
      * @return boolean
      */

@@ -24,12 +24,12 @@ class InvocationMessage extends Message
     use ArgumentsTrait;
 
     /**
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
-     * @var mixed
+     * @var int
      */
     private $registrationId;
 
@@ -41,13 +41,13 @@ class InvocationMessage extends Message
     /**
      * Constructor
      *
-     * @param mixed $requestId
-     * @param mixed $registrationId
+     * @param int $requestId
+     * @param int $registrationId
      * @param mixed $details
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
-    function __construct($requestId, $registrationId, $details, $arguments = null, $argumentsKw = null)
+    public function __construct($requestId, $registrationId, $details, $arguments = null, $argumentsKw = null)
     {
         $this->requestId      = $requestId;
         $this->registrationId = $registrationId;
@@ -57,6 +57,8 @@ class InvocationMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -86,11 +88,13 @@ class InvocationMessage extends Message
     }
 
     /**
-     * @param CallMessage $msg
-     * @param Registration $registration
-     * @return static
+     * Create Invocation message from Call message and registration
+     * 
+     * @param \Thruway\Message\CallMessage $msg
+     * @param \Thruway\Registration $registration
+     * @return \Thruway\Message\InvocationMessage
      */
-    static function createMessageFrom(CallMessage $msg, Registration $registration)
+    public static function createMessageFrom(CallMessage $msg, Registration $registration)
     {
         $requestId = Session::getUniqueId();
         $details   = new \stdClass();
@@ -99,7 +103,9 @@ class InvocationMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {
@@ -107,7 +113,9 @@ class InvocationMessage extends Message
     }
 
     /**
-     * @param mixed $requestId
+     * Set request ID
+     * 
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {
@@ -115,6 +123,8 @@ class InvocationMessage extends Message
     }
 
     /**
+     * Get details
+     * 
      * @return mixed
      */
     public function getDetails()
@@ -123,6 +133,8 @@ class InvocationMessage extends Message
     }
 
     /**
+     * Set details
+     * 
      * @param mixed $details
      */
     public function setDetails($details)
@@ -131,7 +143,9 @@ class InvocationMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get Registration ID
+     * 
+     * @return int
      */
     public function getRegistrationId()
     {
@@ -139,7 +153,9 @@ class InvocationMessage extends Message
     }
 
     /**
-     * @param mixed $registrationId
+     * Set Registration ID
+     * 
+     * @param int $registrationId
      */
     public function setRegistrationId($registrationId)
     {

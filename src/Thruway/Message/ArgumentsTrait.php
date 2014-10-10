@@ -48,6 +48,8 @@ trait ArgumentsTrait
     }
 
     /**
+     * Get arguments
+     * 
      * @return mixed
      */
     public function getArguments()
@@ -56,6 +58,8 @@ trait ArgumentsTrait
     }
 
     /**
+     * Set arguments
+     * 
      * @param mixed $arguments
      */
     public function setArguments($arguments)
@@ -64,6 +68,8 @@ trait ArgumentsTrait
     }
 
     /**
+     * Get arguments kw
+     * 
      * @return mixed
      */
     public function getArgumentsKw()
@@ -72,6 +78,8 @@ trait ArgumentsTrait
     }
 
     /**
+     * Set arguments
+     * 
      * @param mixed $argumentsKw
      */
     public function setArgumentsKw($argumentsKw)
@@ -80,7 +88,9 @@ trait ArgumentsTrait
     }
 
     /**
-     * @param Result $result
+     * Set arguments from result
+     * 
+     * @param \Thruway\Result $result
      */
     public function setArgumentsFromResult(Result $result)
     {

@@ -13,12 +13,12 @@ class RegisterMessage extends Message
 {
 
     /**
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
-     * @var mixed
+     * @var array
      */
     private $options;
 
@@ -28,11 +28,11 @@ class RegisterMessage extends Message
     private $procedureName;
 
     /**
-     * @param $requestId
-     * @param $options
-     * @param $procedureName
+     * @param int $requestId
+     * @param array $options
+     * @param string $procedureName
      */
-    function __construct($requestId, $options, $procedureName)
+    public function __construct($requestId, $options, $procedureName)
     {
         $this->options       = $options;
         $this->procedureName = $procedureName;
@@ -40,6 +40,8 @@ class RegisterMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -59,7 +61,9 @@ class RegisterMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get options
+     * 
+     * @return array
      */
     public function getOptions()
     {
@@ -67,7 +71,9 @@ class RegisterMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get procedure name
+     * 
+     * @return string
      */
     public function getProcedureName()
     {
@@ -75,7 +81,9 @@ class RegisterMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

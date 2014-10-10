@@ -15,21 +15,23 @@ class UnregisteredMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
      * Constructor
      *
-     * @param mixed $requestId
+     * @param int $requestId
      */
-    function __construct($requestId)
+    public function __construct($requestId)
     {
         $this->requestId = $requestId;
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -49,7 +51,9 @@ class UnregisteredMessage extends Message
     }
 
     /**
-     * @param mixed $requestId
+     * Set request ID
+     * 
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {
@@ -57,7 +61,9 @@ class UnregisteredMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

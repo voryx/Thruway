@@ -14,29 +14,31 @@ class UnregisterMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $registrationId;
 
     /**
      * Constructor
      *
-     * @param mixed $requestId
-     * @param mixed $registrationId
+     * @param int $requestId
+     * @param int $registrationId
      */
-    function __construct($requestId, $registrationId)
+    public function __construct($requestId, $registrationId)
     {
         $this->registrationId = $registrationId;
         $this->requestId      = $requestId;
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -56,7 +58,9 @@ class UnregisterMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get registration ID
+     * 
+     * @return int
      */
     public function getRegistrationId()
     {
@@ -64,7 +68,9 @@ class UnregisterMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

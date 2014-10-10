@@ -51,7 +51,7 @@ class Connection implements EventEmitterInterface
      * @param \Psr\Log\LoggerInterface $logger
      * @throws \Exception
      */
-    function __construct(Array $options, LoopInterface $loop = null, LoggerInterface $logger = null)
+    public function __construct(Array $options, LoopInterface $loop = null, LoggerInterface $logger = null)
     {
 
         $this->options = $options;

@@ -33,7 +33,7 @@ class AbortMessage extends Message
      * @param array $details
      * @param mixed $responseURI
      */
-    function __construct($details, $responseURI)
+    public function __construct($details, $responseURI)
     {
         parent::__construct();
 
@@ -62,6 +62,8 @@ class AbortMessage extends Message
     }
 
     /**
+     * Set response URI
+     * 
      * @param mixed $responseURI
      */
     public function setResponseURI($responseURI)
@@ -70,6 +72,8 @@ class AbortMessage extends Message
     }
 
     /**
+     * get response URL
+     * 
      * @return mixed
      */
     public function getResponseURI()
@@ -78,6 +82,8 @@ class AbortMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()

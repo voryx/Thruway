@@ -9,7 +9,16 @@ use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\JsonSerializer;
 
-class RawSocketClientTransportProvider implements TransportProviderInterface {
+/**
+ * Class RawSocketClientTransportProvider
+ * 
+ * Implements transport provider on raw socket for client
+ * 
+ * @package Thruway\Transport
+ */
+class RawSocketClientTransportProvider implements TransportProviderInterface
+{
+
     /**
      * @var string
      */
@@ -21,40 +30,44 @@ class RawSocketClientTransportProvider implements TransportProviderInterface {
     private $port;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
     /**
-     * @var AbstractPeer
+     * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
 
     /**
-     * @var LoopInterface
+     * @var \React\EventLoop\LoopInterface
      */
     private $loop;
 
     /**
-     * @var RawSocketTransport
+     * @var \Thruway\Transport\RawSocketTransport
      */
     private $transport;
 
     /**
+     * Constructor
+     * 
      * @param string $address
      * @param int $port
      */
     function __construct($address = "127.0.0.1", $port = 8181)
     {
         $this->address = $address;
-        $this->port = $port;
+        $this->port    = $port;
 
         $this->transport = null;
     }
 
     /**
-     * @param AbstractPeer $peer
-     * @param LoopInterface $loop
+     * Start transport provider
+     * 
+     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \React\EventLoop\LoopInterface $loop
      */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
@@ -62,18 +75,24 @@ class RawSocketClientTransportProvider implements TransportProviderInterface {
         $this->loop = $loop;
 
         $dnsResolverFactory = new \React\Dns\Resolver\Factory();
-        $dns = $dnsResolverFactory->createCached('8.8.8.8', $loop);
+        $dns                = $dnsResolverFactory->createCached('8.8.8.8', $loop);
 
         $connector = new Connector($loop, $dns);
 
         $connector->create($this->address, $this->port)->then(function (Stream $stream) {
-                $stream->on('data', [$this, "handleData"]);
-                $stream->on('close', [$this, "handleClose"]);
-                $this->handleConnection($stream);
-            });
+            $stream->on('data', [$this, "handleData"]);
+            $stream->on('close', [$this, "handleClose"]);
+            $this->handleConnection($stream);
+        });
     }
 
-    public function handleConnection(Stream $conn) {
+    /**
+     * Handle process on open new connection
+     * 
+     * @param \React\Stream\Stream $conn
+     */
+    public function handleConnection(Stream $conn)
+    {
         //$this->getManager()->debug("Raw socket opened");
 
         $this->transport = new RawSocketTransport($conn, $this->loop, $this->peer);
@@ -83,19 +102,33 @@ class RawSocketClientTransportProvider implements TransportProviderInterface {
         $this->peer->onOpen($this->transport);
     }
 
-    public function handleData($data, Stream $conn) {
-
+    /**
+     * Handle process reveiced data
+     * 
+     * @param mixed $data
+     * @param \React\Stream\Stream $conn
+     */
+    public function handleData($data, Stream $conn)
+    {
         $this->transport->handleData($data);
     }
 
-    public function handleClose(Stream $conn) {
+    /**
+     * Handle process on close connection
+     * 
+     * @param \React\Stream\Stream $conn
+     */
+    public function handleClose(Stream $conn)
+    {
         //$this->getManager()->debug("Raw socket closed " . $conn->getRemoteAddress());
 
         $this->peer->onClose($this->transport);
     }
 
     /**
-     * @return ManagerInterface
+     * Get manager
+     * 
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {
@@ -103,11 +136,13 @@ class RawSocketClientTransportProvider implements TransportProviderInterface {
     }
 
     /**
-     * @param ManagerInterface $managerInterface
+     * Set manager
+     * 
+     * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
     public function setManager(ManagerInterface $managerInterface)
     {
         $this->manager = $managerInterface;
     }
 
-} 
+}

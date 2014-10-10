@@ -38,7 +38,7 @@ class YieldMessage extends Message
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
-    function __construct($requestId, $options, $arguments = null, $argumentsKw = null)
+    public function __construct($requestId, $options, $arguments = null, $argumentsKw = null)
     {
         $this->requestId = $requestId;
         $this->options   = $options;
@@ -47,6 +47,8 @@ class YieldMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
