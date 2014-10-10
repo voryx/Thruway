@@ -2,6 +2,7 @@
 
 namespace Thruway\Transport;
 
+use Thruway\Exception\DeserializationException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
@@ -92,8 +93,10 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
                         $this->manager->info("Received: {$msg}\n");
                         try {
                             $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
-                        } catch (\Exception $e) {
+                        } catch (DeserializationException $e) {
                             $this->manager->warning("Deserialization exception occurred.");
+                        } catch (\Exception $e) {
+                            $this->manager->warning("Exception occurred during onMessage: " . $e->getMessage());
                         }
                     }
                 );

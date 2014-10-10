@@ -260,4 +260,108 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
         $this->assertEquals('testing123', $this->_testResult[0]);
     }
+
+    public function testNotGettingPublishedEvent() {
+        $this->_error = null;
+        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
+            $session->subscribe('com.example.topic', function ($args) {
+                    $this->_error = "got message";
+                })->then(
+                function () use ($session) {
+                    // successfully subscribed
+                    // try publishing
+                    $session->publish('com.example.topic', ["test"]);
+
+                    $session->getLoop()->addTimer(1, function () use ($session) {
+                            $session->close();
+                        });
+                },
+                function () use ($session) {
+                    $this->_error = "Subscribe failed";
+                    $session->close();
+                }
+            );
+        });
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error, "Error " . $this->_error);
+    }
+
+    public function testGettingPublishedEvent() {
+        $this->_error = null;
+        $this->_testResult = null;
+        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
+                $session->subscribe('com.example.topic', function ($args) {
+                        $this->_testResult = "got message";
+                    })->then(
+                    function () use ($session) {
+                        // successfully subscribed
+                        // try publishing
+                        $session->publish('com.example.topic', ["test"], null, ["exclude_me" => false]);
+
+                        $session->getLoop()->addTimer(1, function () use ($session) {
+                                $session->close();
+                            });
+                    },
+                    function () use ($session) {
+                        $this->_error = "Subscribe failed";
+                        $session->close();
+                    }
+                );
+            });
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error, "Error " . $this->_error);
+        $this->assertEquals("got message", $this->_testResult);
+    }
+
+    public function testSubscribeFailure() {
+        $this->_error = null;
+        $this->_testResult = null;
+
+        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
+                $session->subscribe('!?/&', function () {})->then(
+                    function () use ($session) {
+                        $this->_error = "Able to subscribe to bad Uri";
+                        $session->close();
+                    },
+                    function () use ($session) {
+                        $this->_testResult = "subscribe failed";
+                        $session->close();
+                    }
+                );
+            }
+        );
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error, "Error " . $this->_error);
+        $this->assertEquals("subscribe failed", $this->_testResult);
+    }
+
+//    public function testUnSubscribeFailure() {
+//        $this->_error = null;
+//        $this->_testResult = null;
+//
+//        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
+//                $session->unsubscribe('!?/&')->then(
+//                    function () use ($session) {
+//                        $this->_error = "Able to unsubscribe to bad Uri";
+//                        $session->close();
+//                    },
+//                    function () use ($session) {
+//                        $this->_testResult = "unsubscribe failed";
+//                        $session->close();
+//                    }
+//                );
+//            }
+//        );
+//
+//        $this->_conn->open();
+//
+//        $this->assertNull($this->_error, "Error " . $this->_error);
+//        $this->assertEquals("unsubscribe failed", $this->_testResult);
+//    }
 }

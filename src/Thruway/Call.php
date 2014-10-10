@@ -5,6 +5,8 @@ namespace Thruway;
 
 use Thruway\Message\CallMessage;
 use Thruway\Message\InvocationMessage;
+use Thruway\Message\ResultMessage;
+use Thruway\Message\YieldMessage;
 
 /**
  * Class Call
@@ -40,24 +42,70 @@ class Call
     private $isProgressive;
 
     /**
-     * Constructor
-     * 
+     * @var Registration
+     */
+    private $registration;
+
+    /**
+     * @var string
+     */
+    private $callStart;
+
+    /**
      * @param \Thruway\Message\CallMessage $callMessage
      * @param \Thruway\Session $callerSession
      * @param \Thruway\Message\InvocationMessage $invocationMessage
      * @param \Thruway\Session $calleeSession
+     * @param Registration $registration
      */
     public function __construct(
         CallMessage $callMessage,
         Session $callerSession,
         InvocationMessage $invocationMessage,
-        Session $calleeSession
+        Session $calleeSession,
+        Registration $registration
     ) {
         $this->callMessage       = $callMessage;
         $this->callerSession     = $callerSession;
         $this->invocationMessage = $invocationMessage;
         $this->calleeSession     = $calleeSession;
         $this->isProgressive     = false;
+        $this->setRegistration($registration);
+
+        $this->callStart = microtime();
+    }
+
+    /**
+     * @return string
+     */
+    public function getCallStart()
+    {
+        return $this->callStart;
+    }
+
+    public function processYield(Session $session, YieldMessage $msg) {
+        $details = new \stdClass();
+
+        $yieldOptions = $msg->getOptions();
+        if (is_array($yieldOptions) && isset($yieldOptions['progress']) && $yieldOptions['progress']) {
+            if ($this->isProgressive()) {
+                $details = ["progress" => true];
+            } else {
+                // not sure what to do here - just going to drop progress
+                // if we are getting progress messages that the caller didn't ask for
+            }
+        } else {
+            $this->getRegistration()->removeCall($this);
+        }
+
+        $resultMessage = new ResultMessage(
+            $this->getCallMessage()->getRequestId(),
+            $details,
+            $msg->getArguments(),
+            $msg->getArgumentsKw()
+        );
+
+        $this->getCallerSession()->sendMessage($resultMessage);
     }
 
     /**
@@ -170,4 +218,19 @@ class Call
         return $this->isProgressive;
     }
 
-} 
+    /**
+     * @return Registration
+     */
+    public function getRegistration()
+    {
+        return $this->registration;
+    }
+
+    /**
+     * @param Registration $registration
+     */
+    private function setRegistration($registration)
+    {
+        $this->registration = $registration;
+    }
+}

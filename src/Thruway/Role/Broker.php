@@ -90,20 +90,26 @@ class Broker extends AbstractRole
     {
         $this->getManager()->debug("processing publish message");
 
-        // see if they wanted confirmation
+        $includePublisher = false;
+
         $options = $msg->getOptions();
         if (is_array($options)) {
+            // see if they wanted confirmation
             if (isset($options['acknowledge']) && $options['acknowledge'] == true) {
                 $publicationId = Session::getUniqueId();
                 $session->sendMessage(
                     new PublishedMessage($msg->getRequestId(), $publicationId)
                 );
             }
+            if (isset($options['exclude_me']) && !$options['exclude_me']) {
+                $includePublisher = true;
+            }
         }
-        
+
         /* @var $subscription \Thruway\Subscription */
         foreach ($this->subscriptions as $subscription) {
-            if ($msg->getTopicName() == $subscription->getTopic() && $subscription->getSession() != $session) {
+            if ($msg->getTopicName() == $subscription->getTopic() &&
+                ($includePublisher || $subscription->getSession() != $session)) {
                 $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
                 $subscription->getSession()->sendMessage($eventMsg);
             }
@@ -120,7 +126,7 @@ class Broker extends AbstractRole
     protected function processSubscribe(Session $session, SubscribeMessage $msg)
     {
 
-        if (!$this->uriIsValid($msg->getTopicName())) {
+        if (!static::uriIsValid($msg->getTopicName())) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
 
