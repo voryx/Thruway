@@ -32,9 +32,14 @@ class InternalClientTransportProvider implements TransportProviderInterface
      */
     private $manager;
 
+    /*
+     * @var boolean
+     */
+    private $trusted;
+
     /**
      * Constructor
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $internalClient
      */
     public function __construct(AbstractPeer $internalClient)
@@ -44,6 +49,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
         $this->internalClient->addTransportProvider(new DummyTransportProvider());
 
         $this->manager = new ManagerDummy();
+        $this->trusted = true;
     }
 
     /**
@@ -59,6 +65,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
 
         // create a new transport for the router side to use
         $transport = new InternalClientTransport($this->internalClient, $loop);
+        $transport->setTrusted($this->trusted);
 
         // create a new transport for the client side to use
         $clientTransport = new InternalClientTransport($this->peer, $loop);
@@ -82,7 +89,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
@@ -98,7 +105,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -106,4 +113,12 @@ class InternalClientTransportProvider implements TransportProviderInterface
         return $this->manager;
     }
 
-} 
+    /**
+     * @param $trusted
+     * @return boolean
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
+    }
+}

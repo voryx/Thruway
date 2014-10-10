@@ -60,6 +60,11 @@ class RawSocketTransport implements TransportInterface
      */
     private $peer;
 
+    /*
+     * @var boolean
+     */
+    private $trusted;
+
     /**
      * Constructor
      * 
@@ -218,6 +223,25 @@ class RawSocketTransport implements TransportInterface
     public function ping()
     {
         throw new PingNotSupportedException();
+    }
+
+    /**
+     * Checks to see if a transport is trusted
+     *
+     * @return boolean
+     */
+    public function isTrusted()
+    {
+        return (boolean)$this->trusted;
+    }
+
+    /**
+     * @param $trusted
+     * @return boolean
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
     }
 
 

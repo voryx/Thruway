@@ -92,8 +92,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             throw new \Exception("Message sent to authentication manager for already authenticated session.");
         }
 
-        // internal transport does not need any authentication
-        if ($session->getTransport() instanceof InternalClientTransport) {
+        // trusted transports do not need any authentication
+        if ($session->getTransport()->isTrusted()) {
             $authDetails = new AuthenticationDetails();
             $authDetails->setAuthMethod('internalClient');
             $authDetails->setAuthId('internal');

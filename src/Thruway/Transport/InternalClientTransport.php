@@ -31,6 +31,11 @@ class InternalClientTransport implements TransportInterface
      */
     private $loop;
 
+    /*
+     * @var boolean
+     */
+    private $trusted;
+
     /**
      * Constructor
      *
@@ -45,7 +50,7 @@ class InternalClientTransport implements TransportInterface
 
     /**
      * Set FarPeerTransport
-     * 
+     *
      * @param \Thruway\Transport\TransportInterface $farPeerTransport
      */
     public function setFarPeerTransport($farPeerTransport)
@@ -133,6 +138,25 @@ class InternalClientTransport implements TransportInterface
     public function getSerializer()
     {
 
+    }
+
+    /**
+     * Checks to see if a transport is trusted
+     *
+     * @return boolean
+     */
+    public function isTrusted()
+    {
+        return (boolean)$this->trusted;
+    }
+
+    /**
+     * @param $trusted
+     * @return boolean
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
     }
 
 } 

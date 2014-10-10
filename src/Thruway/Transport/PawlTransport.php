@@ -43,6 +43,11 @@ class PawlTransport implements TransportInterface
      */
     private $loop;
 
+    /*
+     * @var boolean
+     */
+    private $trusted;
+
     /**
      * Constructor
      *
@@ -164,6 +169,25 @@ class PawlTransport implements TransportInterface
     public function getSerializer()
     {
         return $this->serializer;
+    }
+
+    /**
+     * Checks to see if a transport is trusted
+     *
+     * @return boolean
+     */
+    public function isTrusted()
+    {
+        return (boolean)$this->trusted;
+    }
+
+    /**
+     * @param $trusted
+     * @return boolean
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
     }
 
 } 

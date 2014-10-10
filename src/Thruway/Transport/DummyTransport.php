@@ -8,7 +8,7 @@ use Thruway\Serializer\SerializerInterface;
 
 /**
  * Class DummyTransport
- * 
+ *
  * @package Thruway\Transport
  */
 class DummyTransport implements TransportInterface
@@ -18,6 +18,11 @@ class DummyTransport implements TransportInterface
      * @var SerializerInterface
      */
     private $serializer;
+
+    /*
+     * @var boolean
+     */
+    private $trusted;
 
     /**
      * Constructor
@@ -29,7 +34,7 @@ class DummyTransport implements TransportInterface
 
     /**
      * Get transport details
-     * 
+     *
      * @return mixed
      */
     public function getTransportDetails()
@@ -42,12 +47,12 @@ class DummyTransport implements TransportInterface
 
     /**
      * Send message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      */
     public function sendMessage(Message $msg)
     {
-        
+
     }
 
     /**
@@ -55,7 +60,7 @@ class DummyTransport implements TransportInterface
      */
     public function close()
     {
-        
+
     }
 
     /**
@@ -63,12 +68,12 @@ class DummyTransport implements TransportInterface
      */
     public function ping()
     {
-        
+
     }
 
     /**
      * Set serializer
-     * 
+     *
      * @param \Thruway\Serializer\SerializerInterface $serializer
      * @return \Thruway\Transport\TransportInterface
      */
@@ -79,7 +84,7 @@ class DummyTransport implements TransportInterface
 
     /**
      * Set serializer
-     * 
+     *
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()
@@ -87,4 +92,20 @@ class DummyTransport implements TransportInterface
         return $this->serializer;
     }
 
+    /**
+     * Checks to see if a transport is trusted
+     *
+     * @return boolean
+     */
+    public function isTrusted()
+    {
+    }
+
+    /**
+     * @param $trusted
+     * @return boolean
+     */
+    public function setTrusted($trusted)
+    {
+    }
 }

@@ -60,6 +60,11 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
      */
     private $manager;
 
+    /*
+     * @var boolean
+     */
+    private $trusted;
+
     /**
      * Constructor
      *
@@ -126,6 +131,8 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
         // this will need to be a little more dynamic at some point
         $transport->setSerializer(new JsonSerializer());
+
+        $transport->setTrusted($this->trusted);
 
         $this->transports->attach($conn, $transport);
 
@@ -229,4 +236,12 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
         return $this->manager;
     }
 
-} 
+    /**
+     * @param $trusted
+     * @return boolean
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
+    }
+}

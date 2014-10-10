@@ -51,6 +51,11 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
      */
     private $manager;
 
+    /*
+     * @var boolean
+     */
+    private $trusted;
+
     /**
      * Constructor
      *
@@ -84,6 +89,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
                 $transport = new PawlTransport($conn, $this->loop);
                 $transport->setSerializer(new JsonSerializer());
+                $transport->setTrusted($this->trusted);
 
                 $this->peer->onOpen($transport);
 
@@ -166,4 +172,42 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
         return $this->manager;
     }
 
+    public function on($event, callable $listener)
+    {
+        // TODO: Implement on() method.
+    }
+
+    public function once($event, callable $listener)
+    {
+        // TODO: Implement once() method.
+    }
+
+    public function removeListener($event, callable $listener)
+    {
+        // TODO: Implement removeListener() method.
+    }
+
+    public function removeAllListeners($event = null)
+    {
+        // TODO: Implement removeAllListeners() method.
+    }
+
+    public function listeners($event)
+    {
+        // TODO: Implement listeners() method.
+    }
+
+    public function emit($event, array $arguments = [])
+    {
+        // TODO: Implement emit() method.
+    }
+
+    /**
+     * @param $trusted
+     * @return boolean
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
+    }
 }

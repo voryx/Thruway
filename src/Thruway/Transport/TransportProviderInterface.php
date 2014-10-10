@@ -36,4 +36,10 @@ interface TransportProviderInterface
      */
     public function setManager(ManagerInterface $managerInterface);
 
+    /**
+     * @param $trusted
+     * @return boolean
+     */
+    public function setTrusted($trusted);
+
 }
