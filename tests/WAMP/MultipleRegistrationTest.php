@@ -1,7 +1,7 @@
 <?php
 
 
-class RegistrationTest extends PHPUnit_Framework_TestCase {
+class MultipleRegistrationTest extends PHPUnit_Framework_TestCase {
     /**
      * @var \Thruway\Connection
      */

@@ -236,13 +236,13 @@ class Registration
     /**
      * Remove call
      * 
-     * @param \Thruway\Call $call
+     * @param \Thruway\Call $callToRemove
      */
-    public function removeCall($call) 
+    public function removeCall($callToRemove)
     {
         /* @var $call \Thruway\Call */
         foreach ($this->calls as $i => $call) {
-            if ($call === $this->calls[$i]) {
+            if ($callToRemove === $this->calls[$i]) {
                 array_splice($this->calls, $i, 1);
                 $callEnd = microtime();
 
