@@ -16,8 +16,10 @@ class SimpleAuthProviderClient extends \Thruway\Authentication\AbstractAuthProvi
     }
 
     /**
+     * Process Authenticate message
+     * 
      * @param mixed $signature
-     * @param null $extra
+     * @param mixed $extra
      * @return array
      */
     public function processAuthenticate($signature, $extra = null)

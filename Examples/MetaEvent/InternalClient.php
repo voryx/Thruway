@@ -21,7 +21,7 @@ class InternalClient extends Thruway\Peer\Client
     protected $_sessions = [];
     
     /**
-     * 
+     * Contructor
      */
     public function __construct()
     {

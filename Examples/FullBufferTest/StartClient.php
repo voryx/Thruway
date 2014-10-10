@@ -3,7 +3,7 @@ require "../bootstrap.php";
 require __DIR__ . '/FullBufferClient.php';
 require __DIR__ . '/BufferFillerClient.php';
 
-$loop = \React\EventLoop\Factory::create();
+//$loop = \React\EventLoop\Factory::create();
 
 $client = new FullBufferClient('myrealm');
 

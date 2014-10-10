@@ -16,11 +16,13 @@ class RelayClient extends \Thruway\Peer\Client
     private $registeredDeferred;
 
     /**
+     * Constructor
+     * 
      * @param string $realm
      * @param \React\EventLoop\LoopInterface $loop
-     * @param $number
+     * @param int $number
      */
-    function __construct($realm, $loop, $number)
+    public function __construct($realm, $loop, $number)
     {
         parent::__construct($realm, $loop);
 
@@ -30,6 +32,8 @@ class RelayClient extends \Thruway\Peer\Client
     }
 
     /**
+     * Handle for RPC 'com.example.thefunction{$number}'
+     * 
      * @return \React\Promise\Promise
      */
     public function theFunction()
@@ -46,6 +50,8 @@ class RelayClient extends \Thruway\Peer\Client
     }
 
     /**
+     * Handle on session start
+     * 
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */
@@ -58,6 +64,8 @@ class RelayClient extends \Thruway\Peer\Client
     }
 
     /**
+     * Get registered promise
+     * 
      * @return \React\Promise\Deferred
      */
     public function getRegisteredPromise()

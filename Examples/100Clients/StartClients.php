@@ -10,7 +10,8 @@ $theClients = [];
 
 $promises = [];
 
-$url = "ws://demo.thruway.ws:9090/";
+// Using demo.thruway.ws server if your test is without server
+//$url = "ws://demo.thruway.ws:9090/";
 $url = "ws://127.0.0.1:9090/";
 
 for ($i = 0; $i < 100; $i++) {

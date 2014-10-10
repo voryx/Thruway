@@ -5,33 +5,39 @@ use Thruway\Authentication\AbstractAuthProviderClient;
 
 /**
  * Class GithubCallbackAuthProvider
- * requires  https://github.com/reactphp/http
+ * 
+ * this example require  https://github.com/reactphp/http
+ * 
  * @see https://developer.github.com/v3/oauth/
+ * @see https://github.com/reactphp/http
  */
 class GithubCallbackAuthProvider extends AbstractAuthProviderClient
 {
 
     /**
-     * @var
+     * @var string
      */
     private $clientId;
+    
     /**
-     * @var
+     * @var string
      */
     private $clientSecret;
+    
     /**
      * @var array
      */
     private $promises = [];
 
-
     /**
+     * Constructor
+     * 
      * @param array $authRealms
-     * @param \React\EventLoop\LoopInterface $http
-     * @param $clientId
-     * @param $clientSecret
+     * @param \React\Http\Server $http
+     * @param string $clientId
+     * @param string $clientSecret
      */
-    function __construct($authRealms, $http, $clientId, $clientSecret)
+    public function __construct($authRealms, $http, $clientId, $clientSecret)
     {
 
         $this->clientId     = $clientId;
@@ -46,6 +52,8 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
 
 
     /**
+     * Get authentication method name
+     * 
      * @return string
      */
     public function getMethodName()
@@ -54,8 +62,10 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
     }
 
     /**
-     * @param $state
-     * @param null $extra
+     * Process authenticate
+     * 
+     * @param mixed $state
+     * @param mixed $extra
      * @return array
      */
     public function processAuthenticate($state, $extra = null)
@@ -76,6 +86,8 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
     }
 
     /**
+     * Get http loop
+     * 
      * @return \React\Http\Server
      */
     public function getHttp()
@@ -85,8 +97,10 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
 
 
     /**
+     * Handle process on http request
+     * 
      * @param \React\Http\Request $request
-     * @param $response
+     * @param \React\Http\Request $response
      */
     public function onHttpRequest(\React\Http\Request $request, $response)
     {
@@ -125,8 +139,10 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
     }
 
     /**
-     * @param $code
-     * @return boolean
+     * Get access token from code
+     * 
+     * @param string $code
+     * @return string|boolean
      */
     private function getAccessToken($code)
     {
@@ -163,7 +179,9 @@ class GithubCallbackAuthProvider extends AbstractAuthProviderClient
     }
 
     /**
-     * @param $accessToken
+     * Get list email from accesstokens
+     * 
+     * @param string $accessToken
      * @return mixed
      */
     private function getEmails($accessToken)
