@@ -13,11 +13,39 @@ class CancelMessage extends Message
 {
 
     /**
+     *
+     * @var int
+     */
+    public $requestId;
+
+    /**
+     *
+     * @var array
+     */
+    public $options;
+
+    /**
+     * Constructor
+     * 
+     * @param int $requestId
+     * @param array $options
+     */
+    public function __construct($requestId, $options)
+    {
+        parent::__construct();
+
+        $this->requestId = $requestId;
+        $this->options   = $options;
+    }
+
+    /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
     {
-        // TODO: Implement getMsgCode() method.
+        return static::MSG_CANCEL;
     }
 
     /**
@@ -28,7 +56,47 @@ class CancelMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        // TODO: Implement getAdditionalMsgFields() method.
+        return [$this->getRequestId(), $this->getOptions()];
+    }
+
+    /**
+     * Set request ID
+     * 
+     * @param int $requestId
+     */
+    public function setRequestId($requestId)
+    {
+        $this->requestId = $requestId;
+    }
+
+    /**
+     * Get request ID
+     * 
+     * @return int
+     */
+    public function getRequestId()
+    {
+        return $this->requestId;
+    }
+
+    /**
+     * Set options
+     * 
+     * @param array $options
+     */
+    public function setOptions($options)
+    {
+        $this->options = $options;   
+    }
+
+    /**
+     * Get options
+     * 
+     * @return array
+     */
+    public function getOptions()
+    {
+        return $this->options;
     }
 
 }
