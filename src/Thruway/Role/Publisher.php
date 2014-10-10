@@ -28,7 +28,7 @@ class Publisher extends AbstractRole
     /**
      * Constructor
      */
-    function __construct()
+    public function __construct()
     {
         $this->publishRequests = [];
     }

@@ -11,7 +11,7 @@ $client->on(
         $session->subscribe(
             "com.myapp.hello",
             function ($msg) {
-                $msg[0];
+                echo $msg[0];
             }
         );
     }

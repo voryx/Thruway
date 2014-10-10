@@ -52,13 +52,15 @@ class Call
     private $callStart;
 
     /**
+     * Constructor
+     * 
      * @param \Thruway\Message\CallMessage $callMessage
      * @param \Thruway\Session $callerSession
      * @param \Thruway\Message\InvocationMessage $invocationMessage
      * @param \Thruway\Session $calleeSession
      * @param Registration $registration
      */
-    function __construct(
+    public function __construct(
         CallMessage $callMessage,
         Session $callerSession,
         InvocationMessage $invocationMessage,
@@ -83,7 +85,14 @@ class Call
         return $this->callStart;
     }
 
-    public function processYield(Session $session, YieldMessage $msg) {
+    /**
+     * Process Yield message
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\YieldMessage $msg
+     */
+    public function processYield(Session $session, YieldMessage $msg) 
+    {
         $details = new \stdClass();
 
         $yieldOptions = $msg->getOptions();
@@ -109,6 +118,8 @@ class Call
     }
 
     /**
+     * Get call message
+     * 
      * @return \Thruway\Message\CallMessage
      */
     public function getCallMessage()
@@ -117,6 +128,8 @@ class Call
     }
 
     /**
+     * Set call message
+     * 
      * @param \Thruway\Message\CallMessage $callMessage
      */
     public function setCallMessage($callMessage)
@@ -125,6 +138,8 @@ class Call
     }
 
     /**
+     * Get callee session
+     * 
      * @return \Thruway\Session
      */
     public function getCalleeSession()
@@ -133,6 +148,8 @@ class Call
     }
 
     /**
+     * Set callee session
+     * 
      * @param \Thruway\Session $calleeSession
      */
     public function setCalleeSession($calleeSession)
@@ -141,6 +158,8 @@ class Call
     }
 
     /**
+     * Get caller session
+     * 
      * @return \Thruway\Session
      */
     public function getCallerSession()
@@ -149,6 +168,8 @@ class Call
     }
 
     /**
+     * Set caller session
+     * 
      * @param \Thruway\Session $callerSession
      */
     public function setCallerSession($callerSession)
@@ -157,6 +178,8 @@ class Call
     }
 
     /**
+     * Get InvocationMessage
+     * 
      * @return \Thruway\Message\InvocationMessage
      */
     public function getInvocationMessage()
@@ -165,6 +188,8 @@ class Call
     }
 
     /**
+     * Set Invocation message
+     * 
      * @param \Thruway\Message\InvocationMessage $invocationMessage
      */
     public function setInvocationMessage($invocationMessage)
@@ -173,6 +198,8 @@ class Call
     }
 
     /**
+     * update state is progressive
+     * 
      * @param boolean $isProgressive
      */
     public function setIsProgressive($isProgressive)
@@ -181,6 +208,8 @@ class Call
     }
 
     /**
+     * Get state is progressive
+     * 
      * @return boolean
      */
     public function getIsProgressive()
@@ -189,6 +218,8 @@ class Call
     }
 
     /**
+     * Check is progressive
+     * 
      * @return boolean
      */
     public function isProgressive()
@@ -197,6 +228,8 @@ class Call
     }
 
     /**
+     * Get registration
+     * 
      * @return Registration
      */
     public function getRegistration()
@@ -205,6 +238,8 @@ class Call
     }
 
     /**
+     * Set registration
+     * 
      * @param Registration $registration
      */
     private function setRegistration($registration)

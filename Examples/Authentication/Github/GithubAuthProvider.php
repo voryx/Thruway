@@ -3,26 +3,30 @@
 
 /**
  * Class GithubAuthProvider
+ * 
  * @see https://developer.github.com/v3/oauth/
  */
 class GithubAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient
 {
 
     /**
-     * @var \React\EventLoop\LoopInterface
+     * @var string
      */
     private $clientId;
+    
     /**
-     * @var
+     * @var string
      */
     private $clientSecret;
 
     /**
+     * Constructor
+     * 
      * @param array $authRealms
      * @param \React\EventLoop\LoopInterface $clientId
      * @param $clientSecret
      */
-    function __construct(Array $authRealms, $clientId, $clientSecret)
+    public function __construct(Array $authRealms, $clientId, $clientSecret)
     {
         $this->clientId     = $clientId;
         $this->clientSecret = $clientSecret;
@@ -32,6 +36,8 @@ class GithubAuthProvider extends \Thruway\Authentication\AbstractAuthProviderCli
 
 
     /**
+     * Get authentication method name
+     * 
      * @return string
      */
     public function getMethodName()
@@ -40,8 +46,10 @@ class GithubAuthProvider extends \Thruway\Authentication\AbstractAuthProviderCli
     }
 
     /**
+     * Process authenticate
+     * 
      * @param mixed $code
-     * @param null $extra
+     * @param mixed $extra
      * @return array
      */
     public function processAuthenticate($code, $extra = null)
@@ -85,14 +93,6 @@ class GithubAuthProvider extends \Thruway\Authentication\AbstractAuthProviderCli
             return ["FAILURE"];
         }
 
-    }
-
-    /**
-     * @return \React\Http\Server
-     */
-    public function getHttp()
-    {
-        return $this->http;
     }
 
 }

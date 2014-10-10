@@ -13,7 +13,7 @@ class AuthenticateMessage extends Message
 {
 
     /**
-     * @var string
+     * @var mixed
      */
     private $signature;
 
@@ -28,6 +28,7 @@ class AuthenticateMessage extends Message
      */
     public function __construct($signature, $extra = null)
     {
+        parent::__construct();
         $this->signature = $signature;
 
         if ($extra === null) {
@@ -38,6 +39,8 @@ class AuthenticateMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -57,7 +60,9 @@ class AuthenticateMessage extends Message
     }
 
     /**
-     * @return string
+     * Get authentication signature
+     * 
+     * @return mixed
      */
     public function getSignature()
     {
@@ -65,6 +70,8 @@ class AuthenticateMessage extends Message
     }
 
     /**
+     * Get authentication extra
+     * 
      * @return array
      */
     public function getExtra()

@@ -14,7 +14,7 @@ class SubscribeMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var array
      */
     private $options;
 
@@ -26,18 +26,18 @@ class SubscribeMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
      * Constructor
      *
-     * @param mixed $requestId
-     * @param mixed $options
+     * @param int $requestId
+     * @param array $options
      * @param string $topicName
      */
-    function __construct($requestId, $options, $topicName)
+    public function __construct($requestId, $options, $topicName)
     {
         parent::__construct();
 
@@ -47,6 +47,8 @@ class SubscribeMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -66,7 +68,9 @@ class SubscribeMessage extends Message
     }
 
     /**
-     * @param mixed $options
+     * Set options
+     * 
+     * @param array $options
      */
     public function setOptions($options)
     {
@@ -74,7 +78,9 @@ class SubscribeMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get options
+     * 
+     * @return array
      */
     public function getOptions()
     {
@@ -82,7 +88,9 @@ class SubscribeMessage extends Message
     }
 
     /**
-     * @param mixed $topicName
+     * Set topic name
+     * 
+     * @param string $topicName
      */
     public function setTopicName($topicName)
     {
@@ -90,7 +98,9 @@ class SubscribeMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get topic name
+     * 
+     * @return string
      */
     public function getTopicName()
     {
@@ -98,6 +108,8 @@ class SubscribeMessage extends Message
     }
 
     /**
+     * Set request ID
+     * 
      * @param int $requestId
      */
     public function setRequestId($requestId)
@@ -106,6 +118,8 @@ class SubscribeMessage extends Message
     }
 
     /**
+     * Get request ID
+     * 
      * @return int
      */
     public function getRequestId()

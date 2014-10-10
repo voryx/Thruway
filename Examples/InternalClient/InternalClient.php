@@ -13,8 +13,11 @@ require "../bootstrap.php";
  */
 class InternalClient extends Thruway\Peer\Client
 {
-
-    function __construct()
+    
+    /**
+     * Contructor
+     */
+    public function __construct()
     {
         parent::__construct("realm1");
     }
@@ -26,20 +29,25 @@ class InternalClient extends Thruway\Peer\Client
     public function onSessionStart($session, $transport)
     {
         // TODO: now that the session has started, setup the stuff
-        echo "--------------- Hello from InternalClient ------------";
+        echo "--------------- Hello from InternalClient ------------\n";
         $this->getCallee()->register($this->session, 'com.example.getphpversion', [$this, 'getPhpVersion']);
     }
 
-
-    function start()
+    /**
+     * Override to make sure we do nothing
+     */
+    public function start()
     {
     }
 
     /**
+     * Handle get PHP version
+     * 
      * @return array
      */
-    function getPhpVersion()
+    public function getPhpVersion()
     {
         return [phpversion()];
     }
+    
 }

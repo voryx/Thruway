@@ -45,7 +45,7 @@ class Session extends AbstractSession
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Manager\ManagerInterface $manager
      */
-    function __construct(TransportInterface $transport, ManagerInterface $manager = null)
+    public function __construct(TransportInterface $transport, ManagerInterface $manager = null)
     {
         $this->transport             = $transport;
         $this->state                 = static::STATE_PRE_HELLO;
@@ -96,7 +96,7 @@ class Session extends AbstractSession
      * Generate a unique id for sessions and requests
      * @return mixed
      */
-    static public function getUniqueId()
+    public static function getUniqueId()
     {
         $filter = 0x1fffffffffffff; // 53 bits
         $randomBytes = openssl_random_pseudo_bytes(8);
@@ -105,6 +105,8 @@ class Session extends AbstractSession
     }
     
     /**
+     * Set manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $manager
      * @throws \InvalidArgumentException
      */
@@ -114,6 +116,8 @@ class Session extends AbstractSession
     }
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -122,6 +126,8 @@ class Session extends AbstractSession
     }
 
     /**
+     * Get number sent messages
+     * 
      * @return int
      */
     public function getMessagesSent()
@@ -130,6 +136,8 @@ class Session extends AbstractSession
     }
 
     /**
+     * Get time session start at
+     * 
      * @return \DateTime
      */
     public function getSessionStart()
@@ -138,6 +146,8 @@ class Session extends AbstractSession
     }
 
     /**
+     * Set authentication details
+     * 
      * @param \Thruway\Authentication\AuthenticationDetails $authenticationDetails
      */
     public function setAuthenticationDetails($authenticationDetails)
@@ -146,6 +156,8 @@ class Session extends AbstractSession
     }
 
     /**
+     * Get authentication details
+     * 
      * @return \Thruway\Authentication\AuthenticationDetails
      */
     public function getAuthenticationDetails()
@@ -154,6 +166,8 @@ class Session extends AbstractSession
     }
 
     /**
+     * Set authenticated state
+     * 
      * @param boolean $authenticated
      */
     public function setAuthenticated($authenticated)
@@ -177,9 +191,12 @@ class Session extends AbstractSession
     }
 
     /**
+     * Get meta info
+     * 
      * @return array
      */
-    public function getMetaInfo() {
+    public function getMetaInfo() 
+    {
         if ($this->getAuthenticationDetails() instanceof AuthenticationDetails) {
             $authId = $this->getAuthenticationDetails()->getAuthId();
             $authMethod = $this->getAuthenticationDetails()->getAuthMethod();

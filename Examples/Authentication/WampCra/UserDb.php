@@ -12,15 +12,20 @@ class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
      */
     private $users;
 
-    function __construct()
+    /**
+     * Constructor
+     */
+    public function __construct()
     {
         $this->users = [];
     }
 
     /**
-     * @param $userName
-     * @param $password
-     * @param null $salt
+     * Add new user
+     * 
+     * @param string $userName
+     * @param string $password
+     * @param string $salt
      */
     function add($userName, $password, $salt = null)
     {
@@ -34,7 +39,9 @@ class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
     }
 
     /**
-     * @param string $authId
+     * Get user by username
+     * 
+     * @param string $authId Username
      * @return boolean
      */
     function get($authId)

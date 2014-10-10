@@ -15,17 +15,23 @@ interface TransportProviderInterface
 {
 
     /**
+     * Start transport provider
+     * 
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop);
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager();
 
     /**
+     * Get manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
     public function setManager(ManagerInterface $managerInterface);

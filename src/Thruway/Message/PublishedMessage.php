@@ -31,13 +31,15 @@ class PublishedMessage extends Message
      * @param int $requestId
      * @param int $publicationId
      */
-    function __construct($requestId, $publicationId)
+    public function __construct($requestId, $publicationId)
     {
         $this->requestId     = $requestId;
         $this->publicationId = $publicationId;
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -46,6 +48,8 @@ class PublishedMessage extends Message
     }
 
     /**
+     * Set publication ID
+     * 
      * @param int $publicationId
      */
     public function setPublicationId($publicationId)
@@ -54,6 +58,8 @@ class PublishedMessage extends Message
     }
 
     /**
+     * Get publication ID
+     * 
      * @return int
      */
     public function getPublicationId()
@@ -62,6 +68,8 @@ class PublishedMessage extends Message
     }
 
     /**
+     * Get request ID
+     * 
      * @return int
      */
     public function getRequestId()
@@ -70,6 +78,8 @@ class PublishedMessage extends Message
     }
 
     /**
+     * Set request ID
+     * 
      * @param int $requestId
      */
     public function setRequestId($requestId)

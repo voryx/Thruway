@@ -56,7 +56,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     private $transports;
 
     /**
-     * @var ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
 
@@ -66,7 +66,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
      * @param string $address
      * @param string|int $port
      */
-    function __construct($address = "127.0.0.1", $port = 8080)
+    public function __construct($address = "127.0.0.1", $port = 8080)
     {
         $this->peer       = null;
         $this->port       = $port;
@@ -78,7 +78,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     /**
      * Start transportprovider
      *
-     * @param AbstractPeer $peer
+     * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
@@ -102,10 +102,11 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
     /**
      * If any component in a stack supports a WebSocket sub-protocol return each supported in an array
+     * 
      * @return array
      * @temporary This method may be removed in future version (note that will not break code, just make some code obsolete)
      */
-    function getSubProtocols()
+    public function getSubProtocols()
     {
         return ['wamp.2.json'];
     }
@@ -113,10 +114,11 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
     /**
      * When a new connection is opened it will be passed to this method
+     * 
      * @param  \Ratchet\ConnectionInterface $conn The socket/connection that just connected to your application
      * @throws \Exception
      */
-    function onOpen(ConnectionInterface $conn)
+    public function onOpen(ConnectionInterface $conn)
     {
         $this->manager->debug("RatchetTransportProvider::onOpen");
 
@@ -135,11 +137,13 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     }
 
     /**
-     * This is called before or after a socket is closed (depends on how it's closed).  SendMessage to $conn will not result in an error if it has already been closed.
+     * This is called before or after a socket is closed (depends on how it's closed).  
+     * SendMessage to $conn will not result in an error if it has already been closed.
+     * 
      * @param  \Ratchet\ConnectionInterface $conn The socket/connection that is closing/closed
      * @throws \Exception
      */
-    function onClose(ConnectionInterface $conn)
+    public function onClose(ConnectionInterface $conn)
     {
         /* @var $transport RatchetTransport */
         $transport = $this->transports[$conn];
@@ -152,13 +156,15 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     }
 
     /**
-     * If there is an error with one of the sockets, or somewhere in the application where an Exception is thrown,
-     * the Exception is sent back down the stack, handled by the Server and bubbled back up the application through this method
+     * If there is an error with one of the sockets, or somewhere in the application 
+     * where an Exception is thrown, the Exception is sent back down the stack, 
+     * handled by the Server and bubbled back up the application through this method
+     * 
      * @param  \Ratchet\ConnectionInterface $conn
      * @param  \Exception $e
      * @throws \Exception
      */
-    function onError(ConnectionInterface $conn, \Exception $e)
+    public function onError(ConnectionInterface $conn, \Exception $e)
     {
         $this->manager->error("onError...");
         // TODO: Implement onError() method.
@@ -166,11 +172,12 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
     /**
      * Triggered when a client sends data through the socket
+     * 
      * @param  \Ratchet\ConnectionInterface $from The socket/connection that sent the message to your application
      * @param  string $msg The message received
      * @throws \Exception
      */
-    function onMessage(ConnectionInterface $from, $msg)
+    public function onMessage(ConnectionInterface $from, $msg)
     {
         $this->manager->debug("onMessage...({$msg})");
         /** @var TransportInterface $transport */
@@ -191,7 +198,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
      * @param \Ratchet\ConnectionInterface $from
      * @param \Ratchet\WebSocket\Version\RFC6455\Frame $frame
      */
-    function onPong(ConnectionInterface $from, Frame $frame)
+    public function onPong(ConnectionInterface $from, Frame $frame)
     {
         $transport = $this->transports[$from];
 
@@ -201,6 +208,8 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     }
 
     /**
+     * Set manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
@@ -211,6 +220,8 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     }
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()

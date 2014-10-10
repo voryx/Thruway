@@ -14,23 +14,23 @@ class UnsubscribeMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $subscriptionId;
 
     /**
      * Constructor
      *
-     * @param mixed $requestId
-     * @param mixed $subscriptionId
+     * @param int $requestId
+     * @param int $subscriptionId
      */
-    function __construct($requestId, $subscriptionId)
+    public function __construct($requestId, $subscriptionId)
     {
         parent::__construct();
 
@@ -40,7 +40,9 @@ class UnsubscribeMessage extends Message
     }
 
     /**
-     * @param mixed $subscriptionId
+     * Set subcription ID
+     * 
+     * @param int $subscriptionId
      */
     public function setSubscriptionId($subscriptionId)
     {
@@ -48,7 +50,9 @@ class UnsubscribeMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get subcription ID
+     * 
+     * @return int
      */
     public function getSubscriptionId()
     {
@@ -56,6 +60,8 @@ class UnsubscribeMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -71,12 +77,13 @@ class UnsubscribeMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        // TODO: Implement getAdditionalMsgFields() method.
         return [$this->getRequestId(), $this->getSubscriptionId()];
     }
 
     /**
-     * @param mixed $requestId
+     * Set request ID
+     * 
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {
@@ -84,7 +91,9 @@ class UnsubscribeMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

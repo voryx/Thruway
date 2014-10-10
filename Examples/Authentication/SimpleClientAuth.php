@@ -8,12 +8,19 @@ use Thruway\Message\ChallengeMessage;
 class SimpleClientAuth implements \Thruway\ClientAuthenticationInterface
 {
 
+    /**
+     * Get authentication ID
+     * 
+     * @return mixed
+     */
     public function getAuthId()
     {
         // TODO: Implement getAuthId() method.
     }
 
     /**
+     * Set authentication
+     * 
      * @param mixed $authid
      */
     public function setAuthId($authid)
@@ -22,6 +29,8 @@ class SimpleClientAuth implements \Thruway\ClientAuthenticationInterface
     }
 
     /**
+     * Get list support authentication methods
+     * 
      * @return array
      */
     public function getAuthMethods()
@@ -31,7 +40,9 @@ class SimpleClientAuth implements \Thruway\ClientAuthenticationInterface
     }
 
     /**
-     * @param ChallengeMessage $msg
+     * Make Authenticate message from challenge message
+     * 
+     * @param \Thruway\Message\ChallengeMessage $msg
      * @return \Thruway\Message\AuthenticateMessage
      */
     public function getAuthenticateFromChallenge(ChallengeMessage $msg)

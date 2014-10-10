@@ -35,13 +35,15 @@ class EventMessage extends Message
     private $details;
 
     /**
+     * Constructor
+     * 
      * @param int $subscriptionId
      * @param int $publicationId
      * @param mixed $details
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
-    function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null)
+    public function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null)
     {
         parent::__construct();
 
@@ -53,6 +55,8 @@ class EventMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -87,9 +91,11 @@ class EventMessage extends Message
     }
 
     /**
-     * @param PublishMessage $msg
+     * Create event message from publish message
+     * 
+     * @param \Thruway\Message\PublishMessage $msg
      * @param int $subscriptionId
-     * @return static
+     * @return \Thruway\Message\EventMessage
      */
     public static function createFromPublishMessage(PublishMessage $msg, $subscriptionId)
     {
@@ -103,6 +109,8 @@ class EventMessage extends Message
     }
 
     /**
+     * set event details
+     * 
      * @param mixed $details
      */
     public function setDetails($details)
@@ -111,6 +119,8 @@ class EventMessage extends Message
     }
 
     /**
+     * get event details
+     * 
      * @return mixed
      */
     public function getDetails()
@@ -119,6 +129,8 @@ class EventMessage extends Message
     }
 
     /**
+     * Set publication ID
+     * 
      * @param int $publicationId
      */
     public function setPublicationId($publicationId)
@@ -127,6 +139,8 @@ class EventMessage extends Message
     }
 
     /**
+     * Get publication ID
+     * 
      * @return int
      */
     public function getPublicationId()
@@ -135,6 +149,8 @@ class EventMessage extends Message
     }
 
     /**
+     * Set subscription ID
+     * 
      * @param int $subscriptionId
      */
     public function setSubscriptionId($subscriptionId)
@@ -143,6 +159,8 @@ class EventMessage extends Message
     }
 
     /**
+     * Get subscription ID
+     * 
      * @return int
      */
     public function getSubscriptionId()

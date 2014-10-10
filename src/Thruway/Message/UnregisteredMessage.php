@@ -15,25 +15,34 @@ class UnregisteredMessage extends Message
 
     /**
      *
-     * @var mixed
+     * @var int
      */
     private $requestId;
 
     /**
      * Constructor
      *
-     * @param mixed $requestId
+     * @param int $requestId
      */
-    function __construct($requestId)
+    public function __construct($requestId)
     {
         $this->requestId = $requestId;
     }
 
-    static function createFromUnregisterMessage(UnregisterMessage $msg) {
+    /**
+     * Create Unregisterd message from unregister message
+     * 
+     * @param \Thruway\Message\UnregisterMessage $msg
+     * @return \Thruway\Message\UnregisteredMessage
+     */
+    public static function createFromUnregisterMessage(UnregisterMessage $msg) 
+    {
         return new UnregisteredMessage($msg->getRequestId());
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()
@@ -53,7 +62,9 @@ class UnregisteredMessage extends Message
     }
 
     /**
-     * @param mixed $requestId
+     * Set request ID
+     * 
+     * @param int $requestId
      */
     public function setRequestId($requestId)
     {
@@ -61,7 +72,9 @@ class UnregisteredMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get request ID
+     * 
+     * @return int
      */
     public function getRequestId()
     {

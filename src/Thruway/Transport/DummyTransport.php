@@ -1,26 +1,35 @@
 <?php
 
-
 namespace Thruway\Transport;
-
 
 use Thruway\Message\Message;
 use Thruway\Serializer\JsonSerializer;
 use Thruway\Serializer\SerializerInterface;
 
-class DummyTransport implements TransportInterface {
+/**
+ * Class DummyTransport
+ * 
+ * @package Thruway\Transport
+ */
+class DummyTransport implements TransportInterface
+{
 
     /**
      * @var SerializerInterface
      */
     private $serializer;
 
-    function __construct()
+    /**
+     * Constructor
+     */
+    public function __construct()
     {
         $this->serializer = new JsonSerializer();
     }
 
     /**
+     * Get transport details
+     * 
      * @return mixed
      */
     public function getTransportDetails()
@@ -32,10 +41,13 @@ class DummyTransport implements TransportInterface {
     }
 
     /**
+     * Send message
+     * 
      * @param \Thruway\Message\Message $msg
      */
     public function sendMessage(Message $msg)
     {
+        
     }
 
     /**
@@ -43,6 +55,7 @@ class DummyTransport implements TransportInterface {
      */
     public function close()
     {
+        
     }
 
     /**
@@ -50,9 +63,12 @@ class DummyTransport implements TransportInterface {
      */
     public function ping()
     {
+        
     }
 
     /**
+     * Set serializer
+     * 
      * @param \Thruway\Serializer\SerializerInterface $serializer
      * @return \Thruway\Transport\TransportInterface
      */
@@ -62,6 +78,8 @@ class DummyTransport implements TransportInterface {
     }
 
     /**
+     * Set serializer
+     * 
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()
@@ -69,4 +87,4 @@ class DummyTransport implements TransportInterface {
         return $this->serializer;
     }
 
-} 
+}

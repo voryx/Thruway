@@ -3,24 +3,29 @@
 
 /**
  * Class FacebookAuthProvider
+ * 
+ * This example requires Facebook SDK v4
+ * @see https://github.com/facebook/facebook-php-sdk-v4
  */
 class FacebookAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient
 {
 
     /**
-     * @var \React\EventLoop\LoopInterface
+     * @var string
      */
     private $appId;
 
     /**
-     * @var
+     * @var string
      */
     private $appSecret;
 
     /**
+     * Constructor
+     * 
      * @param array $authRealms
-     * @param \React\EventLoop\LoopInterface $appId
-     * @param $appSecret
+     * @param string $appId
+     * @param string $appSecret
      */
     public function __construct(Array $authRealms, $appId, $appSecret)
     {
@@ -32,6 +37,8 @@ class FacebookAuthProvider extends \Thruway\Authentication\AbstractAuthProviderC
     }
 
     /**
+     * Get authentication method name
+     * 
      * @return string
      */
     public function getMethodName()
@@ -40,8 +47,10 @@ class FacebookAuthProvider extends \Thruway\Authentication\AbstractAuthProviderC
     }
 
     /**
+     * process authenticate
+     * 
      * @param mixed $signature
-     * @param null $extra
+     * @param mixed $extra
      * @return array
      */
     public function processAuthenticate($signature, $extra = null)

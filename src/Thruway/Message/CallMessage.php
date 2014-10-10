@@ -45,8 +45,9 @@ class CallMessage extends Message
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
-    function __construct($requestId, $options, $procedureName, $arguments = null, $argumentsKw = null)
+    public function __construct($requestId, $options, $procedureName, $arguments = null, $argumentsKw = null)
     {
+        parent::__construct();
         $this->setRequestId($requestId);
         $this->setOptions($options);
         $this->setProcedureName($procedureName);
@@ -55,6 +56,8 @@ class CallMessage extends Message
     }
 
     /**
+     * Get message code
+     * 
      * @return int
      */
     public function getMsgCode()

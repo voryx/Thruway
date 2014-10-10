@@ -8,7 +8,7 @@ class FullBufferClient extends \Thruway\Peer\Client
 {
 
     /**
-     * @param $args
+     * @param array $args
      */
     public function onBufferFill($args)
     {
@@ -16,6 +16,8 @@ class FullBufferClient extends \Thruway\Peer\Client
     }
 
     /**
+     * Handle on session start
+     * 
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */

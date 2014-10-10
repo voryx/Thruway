@@ -13,7 +13,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
 {
 
     /**
-     * @var  WampCraUserDbInterface
+     * @var \Thruway\Authentication\WampCraUserDbInterface
      */
     private $userDb;
 
@@ -162,7 +162,9 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
     }
 
     /**
-     * @param WampCraUserDbInterface $userDb
+     * Set userDB
+     * 
+     * @param \Thruway\Authentication\WampCraUserDbInterface $userDb
      */
     public function setUserDb($userDb)
     {
@@ -170,7 +172,9 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
     }
 
     /**
-     * @return WampCraUserDbInterface
+     * Get UserDB
+     * 
+     * @return \Thruway\Authentication\WampCraUserDbInterface
      */
     public function getUserDb()
     {

@@ -42,7 +42,7 @@ class Dealer extends AbstractRole
      *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
-    function __construct(ManagerInterface $manager = null)
+    public function __construct(ManagerInterface $manager = null)
     {
         $this->procedures    = [];
         $manager             = $manager === null ? $manager : new ManagerDummy();
@@ -53,7 +53,7 @@ class Dealer extends AbstractRole
     /**
      * process message
      *
-     * @param AbstractSession|Session $session
+     * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
      * @return mixed|void
      */
@@ -148,7 +148,7 @@ class Dealer extends AbstractRole
             return;
         }
 
-        /** @var Procedure $procedure */
+        /* @var $procedure \Thruway\Procedure */
         $procedure = $this->procedures[$msg->getProcedureName()];
 
         $procedure->processCall($session, $msg);
@@ -162,7 +162,7 @@ class Dealer extends AbstractRole
      */
     private function processYield(Session $session, YieldMessage $msg)
     {
-        /** @var Procedure $procedure */
+        /* @var $procedure \Thruway\Procedure */
         foreach ($this->procedures as $procedure) {
             $call = $procedure->getCallByRequestId($msg->getRequestId());
             if ($call) {
@@ -228,7 +228,7 @@ class Dealer extends AbstractRole
     /**
      * Get Call by requestID
      *
-     * @param $requestId
+     * @param int $requestId
      * @return \Thruway\Call|boolean
      */
     public function getCallByRequestId($requestId)
@@ -274,13 +274,15 @@ class Dealer extends AbstractRole
      */
     public function leave(Session $session)
     {
-        /** @var Procedure $procedure */
+        /* @var $procedure \Thruway\Procedure */
         foreach($this->procedures as $procedure) {
             $procedure->leave($session);
         }
     }
 
     /**
+     * Set manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
@@ -291,6 +293,8 @@ class Dealer extends AbstractRole
     }
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -307,7 +311,7 @@ class Dealer extends AbstractRole
     {
         $theRegistrations = [];
 
-        /** @var Procedure $procedure */
+        /* @var $procedure \Thruway\Procedure */
         foreach ($this->procedures as $procedure) {
             /* @var $registration \Thruway\Registration */
             foreach ($procedure->getRegistrations() as $registration) {

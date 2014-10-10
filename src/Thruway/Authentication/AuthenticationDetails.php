@@ -8,10 +8,6 @@ namespace Thruway\Authentication;
  * @package Thruway\Authentication
  */
 
-/**
- * Class AuthenticationDetails
- * @package Thruway\Authentication
- */
 class AuthenticationDetails
 {
 

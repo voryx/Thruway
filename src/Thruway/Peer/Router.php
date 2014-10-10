@@ -56,7 +56,7 @@ class Router extends AbstractPeer
      * @param \React\EventLoop\LoopInterface $loop
      * @param \Thruway\Manager\ManagerInterface $manager
      */
-    function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
+    public function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
     {
         $this->loop               = $loop ? $loop : Factory::create();
         $this->manager            = $manager ? $manager : new ManagerDummy();
@@ -131,6 +131,7 @@ class Router extends AbstractPeer
 
     /**
      * Add transport provider
+     * 
      * @param \Thruway\Transport\TransportProviderInterface $transportProvider
      */
     public function addTransportProvider(TransportProviderInterface $transportProvider)
@@ -184,7 +185,9 @@ class Router extends AbstractPeer
     }
 
     /**
-     * @param AuthenticationManagerInterface $authenticationManager
+     * Set authentication manager
+     * 
+     * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager)
     {
@@ -193,7 +196,9 @@ class Router extends AbstractPeer
     }
 
     /**
-     * @return AuthenticationManagerInterface
+     * Get authentication manager
+     * 
+     * @return \Thruway\Authentication\AuthenticationManagerInterface
      */
     public function getAuthenticationManager()
     {
@@ -202,7 +207,9 @@ class Router extends AbstractPeer
 
 
     /**
-     * @param ManagerInterface $manager
+     * Set manager
+     * 
+     * @param \Thruway\Manager\ManagerInterface $manager
      * @throws \Exception
      */
     public function setManager($manager)
@@ -224,6 +231,8 @@ class Router extends AbstractPeer
     }
 
     /**
+     * Get loop
+     * 
      * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
@@ -232,7 +241,9 @@ class Router extends AbstractPeer
     }
 
     /**
-     * @return ManagerInterface
+     * Get manager
+     * 
+     * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
     {
@@ -260,6 +271,8 @@ class Router extends AbstractPeer
     }
 
     /**
+     * Set realm manager
+     * 
      * @param \Thruway\RealmManager $realmManager
      */
     public function setRealmManager($realmManager)
@@ -268,6 +281,8 @@ class Router extends AbstractPeer
     }
 
     /**
+     * Get realm manager
+     * 
      * @return \Thruway\RealmManager
      */
     public function getRealmManager()

@@ -33,7 +33,7 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
      * @param string|int $authid
      * @param string $key
      */
-    function __construct($authid, $key = null)
+    public function __construct($authid, $key = null)
     {
         $this->authid     = $authid;
         $this->derivedKey = null;
@@ -104,6 +104,7 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
 
     /**
      * Get Derived Key
+     * 
      * @param string $key
      * @param string $salt
      * @param int $iterations
@@ -116,6 +117,8 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
     }
 
     /**
+     * Get authentication ID
+     * 
      * @return string
      */
     public function getAuthId()
@@ -124,6 +127,8 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
     }
 
     /**
+     * Set authentication ID
+     * 
      * @param string $authid
      */
     public function setAuthId($authid)
@@ -132,6 +137,8 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
     }
 
     /**
+     * Get list authenticate methods
+     * 
      * @return array
      */
     public function getAuthMethods()

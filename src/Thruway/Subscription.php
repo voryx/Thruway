@@ -35,7 +35,7 @@ class Subscription
      * @param \Thruway\Session $session
      * @param mixed $options
      */
-    function __construct($topic, Session $session, $options = null)
+    public function __construct($topic, Session $session, $options = null)
     {
 
         $this->topic   = $topic;
@@ -46,6 +46,8 @@ class Subscription
     }
 
     /**
+     * Get subscription ID
+     * 
      * @return mixed
      */
     public function getId()
@@ -54,6 +56,8 @@ class Subscription
     }
 
     /**
+     * Get subscription options
+     * 
      * @return \stdClass
      */
     public function getOptions()
@@ -62,6 +66,8 @@ class Subscription
     }
 
     /**
+     * Set subscription options
+     * 
      * @param \stdClass $options
      */
     public function setOptions($options)
@@ -70,6 +76,8 @@ class Subscription
     }
 
     /**
+     * Set topic name
+     * 
      * @param string $topic
      */
     public function setTopic($topic)
@@ -78,6 +86,8 @@ class Subscription
     }
 
     /**
+     * Get topic name
+     * 
      * @return string
      */
     public function getTopic()
@@ -86,6 +96,8 @@ class Subscription
     }
 
     /**
+     * Get session
+     * 
      * @return \Thruway\Session
      */
     public function getSession()
@@ -94,6 +106,8 @@ class Subscription
     }
 
     /**
+     * Set session
+     * 
      * @param \Thruway\Session $session
      */
     public function setSession($session)

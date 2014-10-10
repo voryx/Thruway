@@ -22,7 +22,7 @@ class CallResult extends \ArrayObject
      *
      * @param \Thruway\Message\ResultMessage $msg
      */
-    function __construct(ResultMessage $msg)
+    public function __construct(ResultMessage $msg)
     {
         $this->resultMessage = $msg;
 
@@ -30,9 +30,11 @@ class CallResult extends \ArrayObject
     }
 
     /**
-     * @return mixed
+     * Conver to string
+     * 
+     * @return string
      */
-    function __toString()
+    public function __toString()
     {
         return isset($this[0]) ? (string)$this[0] : "";
     }
@@ -56,7 +58,8 @@ class CallResult extends \ArrayObject
     }
 
     /**
-     *
+     * Get arguments
+     * 
      * @return mixed
      */
     public function getArguments()
@@ -65,7 +68,8 @@ class CallResult extends \ArrayObject
     }
 
     /**
-     *
+     * Get arguments kw
+     * 
      * @return mixed
      */
     public function getArgumentsKw()
@@ -74,7 +78,8 @@ class CallResult extends \ArrayObject
     }
 
     /**
-     *
+     * Get result detail
+     * 
      * @return mixed
      */
     public function getDetails()

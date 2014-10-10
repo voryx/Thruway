@@ -45,7 +45,7 @@ class Broker extends AbstractRole
      *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
-    function __construct(ManagerInterface $manager = null)
+    public function __construct(ManagerInterface $manager = null)
     {
 
         $this->subscriptions = new \SplObjectStorage();

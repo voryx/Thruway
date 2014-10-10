@@ -30,7 +30,7 @@ class Caller extends AbstractRole
      * Constructor
      *
      */
-    function __construct()
+    public function __construct()
     {
         $this->callRequests = [];
     }

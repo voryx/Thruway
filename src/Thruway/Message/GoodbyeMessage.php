@@ -18,21 +18,23 @@ class GoodbyeMessage extends Message
      */
     private $details;
     /**
-     * @var mixed
+     * @var string
      */
     private $reason;
 
     /**
      * @param mixed $details
-     * @param mixed $reason
+     * @param string $reason
      */
-    function __construct($details, $reason)
+    public function __construct($details, $reason)
     {
         $this->details = $details;
         $this->reason  = $reason;
     }
 
     /**
+     * Set details
+     * 
      * @param mixed $details
      */
     public function setDetails($details)
@@ -41,6 +43,8 @@ class GoodbyeMessage extends Message
     }
 
     /**
+     * Get details
+     * 
      * @return mixed
      */
     public function getDetails()
@@ -49,7 +53,9 @@ class GoodbyeMessage extends Message
     }
 
     /**
-     * @param mixed $reason
+     * Set reason
+     * 
+     * @param string $reason
      */
     public function setReason($reason)
     {
@@ -57,7 +63,9 @@ class GoodbyeMessage extends Message
     }
 
     /**
-     * @return mixed
+     * Get reason
+     * 
+     * @return string 
      */
     public function getReason()
     {

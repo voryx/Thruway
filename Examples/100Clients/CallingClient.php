@@ -6,16 +6,18 @@
 class CallingClient extends \Thruway\Peer\Client
 {
     /**
-     * @var
+     * @var \React\Promise\Promise
      */
     private $thePromise;
 
     /**
+     * Constructor
+     * 
      * @param string $realm
      * @param \React\EventLoop\LoopInterface $loop
-     * @param $thePromise
+     * @param \React\Promise\Promise $thePromise
      */
-    function __construct($realm, $loop, $thePromise)
+    public function __construct($realm, $loop, $thePromise)
     {
         parent::__construct($realm, $loop);
 
@@ -23,6 +25,8 @@ class CallingClient extends \Thruway\Peer\Client
     }
 
     /**
+     * Handle on session start
+     * 
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */

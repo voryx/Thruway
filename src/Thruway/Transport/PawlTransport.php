@@ -19,7 +19,7 @@ class PawlTransport implements TransportInterface
 {
 
     /**
-     * @var
+     * @var mixed
      */
     private $pingSeq;
 
@@ -147,8 +147,9 @@ class PawlTransport implements TransportInterface
     }
 
     /**
+     * Set serializer
+     * 
      * @param \Thruway\Serializer\SerializerInterface $serializer
-     * @return $this
      */
     public function setSerializer(SerializerInterface $serializer)
     {
@@ -156,6 +157,8 @@ class PawlTransport implements TransportInterface
     }
 
     /**
+     * Get serializer
+     * 
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()

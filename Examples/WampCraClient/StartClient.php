@@ -11,8 +11,8 @@ $client = new MyClient('realm1');
 
 $client->setAttemptRetry(false);
 
-$user   = "peter";
-$secret = "secret1";
+//$user   = "peter";
+//$secret = "secret1";
 
 $user     = "joe";
 $password = "secret2";

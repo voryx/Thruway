@@ -27,7 +27,7 @@ class ClientSession extends AbstractSession
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Peer\AbstractPeer $peer
      */
-    function __construct(TransportInterface $transport, AbstractPeer $peer)
+    public function __construct(TransportInterface $transport, AbstractPeer $peer)
     {
         $this->transport = $transport;
         $this->peer      = $peer;

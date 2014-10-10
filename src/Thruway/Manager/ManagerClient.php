@@ -36,7 +36,7 @@ class ManagerClient extends Client implements ManagerInterface
     /**
      * Constructor
      */
-    function __construct()
+    public function __construct()
     {
         parent::__construct("manager");
 
@@ -50,7 +50,7 @@ class ManagerClient extends Client implements ManagerInterface
      * (although we may want a loop later on if we want to setup
      * outgoing connections or timers or something)
      */
-    function start()
+    public function start()
     {
 
     }
@@ -113,7 +113,7 @@ class ManagerClient extends Client implements ManagerInterface
      * @param string $message
      * @param array $context
      * @return null|void
-     * @see \Psr\Log\LoggerInterface::log($level, $message, $context)
+     * @see Psr\Log\LoggerInterface::log($level, $message, $context)
      */
     public function log($level, $message, array $context = [])
     {
@@ -122,7 +122,7 @@ class ManagerClient extends Client implements ManagerInterface
 
     /**
      * Get logger
-     * @return \Psr\Log\LoggerInterface|NullLogger
+     * @return \Psr\Log\LoggerInterface
      */
     public function getLogger()
     {

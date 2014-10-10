@@ -42,7 +42,7 @@ class Callee extends AbstractRole
      *
      * @param \Psr\Log\LoggerInterface $logger
      */
-    function __construct(LoggerInterface $logger = null)
+    public function __construct(LoggerInterface $logger = null)
     {
         $this->logger        = $logger ? $logger : new NullLogger();
         $this->registrations = [];
@@ -50,7 +50,7 @@ class Callee extends AbstractRole
 
 
     /**
-     * handle process reveiced message
+     * Handle process reveiced message
      *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
@@ -98,7 +98,7 @@ class Callee extends AbstractRole
     /**
      * Process Unregistered
      *
-     * @param UnregisteredMessage $msg
+     * @param \Thruway\Message\UnregisteredMessage $msg
      */
     protected function processUnregistered(UnregisteredMessage $msg)
     {
@@ -168,10 +168,10 @@ class Callee extends AbstractRole
     /**
      *  Process a result as a promise
      *
-     * @param Promise $promise
-     * @param InvocationMessage $msg
-     * @param ClientSession $session
-     * @param $registration
+     * @param \React\Promise\Promise $promise
+     * @param \Thruway\Message\InvocationMessage $msg
+     * @param \Thruway\ClientSession $session
+     * @param array $registration
      */
     private function processResultAsPromise(Promise $promise, InvocationMessage $msg, ClientSession $session, $registration)
     {
@@ -217,9 +217,9 @@ class Callee extends AbstractRole
     /**
      * Process result as an array
      *
-     * @param $results
-     * @param InvocationMessage $msg
-     * @param ClientSession $session
+     * @param mixed $results
+     * @param \Thruway\Message\InvocationMessage $msg
+     * @param \Thruway\ClientSession $session
      */
     private function processResultAsArray($results, InvocationMessage $msg, ClientSession $session)
     {
@@ -256,7 +256,7 @@ class Callee extends AbstractRole
     }
 
     /**
-     * handle error when register
+     * Handle error when register
      *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
@@ -275,7 +275,7 @@ class Callee extends AbstractRole
     }
 
     /**
-     * handle error when unregister
+     * Handle error when unregister
      *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ErrorMessage $msg
@@ -334,7 +334,7 @@ class Callee extends AbstractRole
      *
      * @param \Thruway\ClientSession $session
      * @param string $procedureName
-     * @param \Closure $callback
+     * @param callable $callback
      * @param mixed $options
      * @return \React\Promise\Promise
      */
@@ -362,6 +362,8 @@ class Callee extends AbstractRole
     }
 
     /**
+     * process unregister
+     * 
      * @param \Thruway\ClientSession $session
      * @param string $Uri
      * @throws \Exception

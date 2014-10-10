@@ -37,7 +37,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * Implements EventEmitterInterface
      *
-     * @uses EventEmitterTrait
+     * @uses \Evenement\EventEmitterTrait
      */
     use EventEmitterTrait;
 
@@ -137,7 +137,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      * @param string $realm
      * @param \React\EventLoop\LoopInterface $loop
      */
-    function __construct($realm, LoopInterface $loop = null)
+    public function __construct($realm, LoopInterface $loop = null)
     {
         $this->realm                = $realm;
         $this->loop                 = $loop ? $loop : Factory::create();
@@ -353,6 +353,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Handle process challenge message
+     * 
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ChallengeMessage $msg
      */
@@ -375,6 +377,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Handle process goodbye message
+     * 
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\GoodbyeMessage $msg
      */
@@ -388,6 +392,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Handle process other Message
+     * 
      * @param \Thruway\ClientSession $session
      * @param Message $msg
      */
@@ -483,6 +489,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
 
     /**
+     * Get callee
+     * 
      * @return \Thruway\Role\Callee
      */
     public function getCallee()
@@ -492,6 +500,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
 
     /**
+     * Get caller
+     * 
      * @return \Thruway\Role\Caller
      */
     public function getCaller()
@@ -501,6 +511,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
 
     /**
+     * Get publisher
+     * 
      * @return \Thruway\Role\Publisher
      */
     public function getPublisher()
@@ -509,6 +521,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Get subscriber
+     * 
      * @return \Thruway\Role\Subscriber
      */
     public function getSubscriber()
@@ -517,6 +531,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Get list roles
+     * 
      * @return array
      */
     public function getRoles()
@@ -525,6 +541,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Set manager
+     * 
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
@@ -533,6 +551,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Get manager
+     * 
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -541,7 +561,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @return \React\EventLoop\ExtEventLoop|\React\EventLoop\LibEventLoop|\React\EventLoop\LibEvLoop|LoopInterface|\React\EventLoop\StreamSelectLoop
+     * Get loop
+     * 
+     * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
     {
@@ -549,6 +571,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Set authenticate ID
+     * 
      * @param string $authId
      */
     public function setAuthId($authId)
@@ -557,6 +581,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Get authenticate ID
+     * 
      * @return string
      */
     public function getAuthId()
@@ -565,6 +591,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Get list authenticate methods
+     * 
      * @return array
      */
     public function getAuthMethods()
@@ -573,6 +601,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Set list authenticate methods
+     * 
      * @param array $authMethods
      */
     public function setAuthMethods($authMethods)
@@ -581,6 +611,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Get logger
+     * 
      * @return \Psr\Log\LoggerInterface
      */
     public function getLogger()
@@ -589,6 +621,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Set logger
+     * 
      * @param \Psr\Log\LoggerInterface $logger
      */
     public function setLogger(LoggerInterface $logger)
@@ -597,7 +631,9 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * @return ClientSession
+     * Get client session
+     * 
+     * @return \Thruway\ClientSession
      */
     public function getSession()
     {
