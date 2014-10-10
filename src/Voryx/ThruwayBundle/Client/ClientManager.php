@@ -38,7 +38,7 @@ class ClientManager
      *
      * @param $topicName
      * @param $arguments
-     * @param null $argumentsKw
+     * @param array|null $argumentsKw
      * @param null $options
      * @return \React\Promise\Promise
      */

@@ -22,7 +22,7 @@ class VoryxThruwayExtension extends Extension
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = new Configuration();
-        $config = $this->processConfiguration($configuration, $configs);
+        $config        = $this->processConfiguration($configuration, $configs);
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
@@ -61,8 +61,8 @@ class VoryxThruwayExtension extends Extension
 
         //Create services for any of the resource classes
         foreach ($config['resources'] as $class) {
-            $class = new \ReflectionClass($class);
-            $serviceId = strtolower(str_replace("\\", "_", $class->getName()));
+            $class      = new \ReflectionClass($class);
+            $serviceId  = strtolower(str_replace("\\", "_", $class->getName()));
             $definition = new Definition($class->getName());
             $definition->addTag('thruway.resource');
 
@@ -110,8 +110,7 @@ class VoryxThruwayExtension extends Extension
                 ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.auth.manager.transport.provider')])
                 ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.wamp.cra.auth.transport.provider')]);
         }
+
         $container->addAliases(["in_memory_user_provider" => "security.user.provider.concrete.in_memory"]);
-
-
     }
 }

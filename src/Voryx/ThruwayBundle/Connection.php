@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daviddan
- * Date: 7/31/14
- * Time: 3:27 PM
- */
 
 namespace Voryx\ThruwayBundle;
 
@@ -50,15 +44,26 @@ class Connection
      */
     private $serializer;
 
+    /**
+     * @var ResourceMapper
+     */
+    private $resourceMapper;
+
+    /**
+     * @var null
+     */
+    private $workerName;
 
     /**
      * @param ContainerInterface $container
      * @param Serializer $serializer
+     * @param ResourceMapper $resourceMapper
      */
-    function __construct(ContainerInterface $container, Serializer $serializer)
+    function __construct(ContainerInterface $container, Serializer $serializer, ResourceMapper $resourceMapper)
     {
-        $this->container = $container;
-        $this->serializer = $serializer;
+        $this->container      = $container;
+        $this->serializer     = $serializer;
+        $this->resourceMapper = $resourceMapper;
     }
 
     /**
@@ -68,11 +73,10 @@ class Connection
     public function onOpen(ClientSession $session, TransportInterface $transport)
     {
 
-        $this->session = $session;
+        $this->session   = $session;
         $this->transport = $transport;
 
-        $mappings = $this->container->get('voryx.thruway.resource.mapper')->getMappings();
-
+        $mappings = $this->resourceMapper->getMappings($this->getWorkerName());
 
         /* @var $mapping MappingInterface */
         foreach ($mappings as $mapping) {
@@ -128,7 +132,7 @@ class Connection
                 return json_decode($this->serializer->serialize($data, "json", $context));
 
             },
-            ['discloseCaller' => true]
+            ['discloseCaller' => true, "thruway_mutliregister" => true]
         );
     }
 
@@ -165,7 +169,7 @@ class Connection
     public function setClient(Client $client)
     {
         $this->client = $client;
-        $this->client->on('open', array($this, 'onOpen'));
+        $this->client->on('open', [$this, 'onOpen']);
     }
 
 
@@ -186,6 +190,11 @@ class Connection
     }
 
 
+    /**
+     * @param $args
+     * @param MappingInterface $mapping
+     * @return array|bool
+     */
     private function deserialize($args, MappingInterface $mapping)
     {
         try {
@@ -222,7 +231,7 @@ class Connection
                         );
                     }
 
-                    $className = $param->getClass()->getName();
+                    $className          = $param->getClass()->getName();
                     $deserializedArgs[] = $this->serializer->deserialize(json_encode($args[$key]), $className, "json");
 
                 } else {
@@ -242,6 +251,9 @@ class Connection
         return false;
     }
 
+    /**
+     * @param $authid
+     */
     private function authenticateAuthId($authid)
     {
         if ($authid !== "anonymous") {
@@ -250,12 +262,39 @@ class Connection
         }
     }
 
+    /**
+     * @param UserInterface $user
+     */
     private function authenticateUser(UserInterface $user)
     {
 
         $providerKey = 'thruway';
-        $token = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
+        $token       = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
         $this->container->get('security.context')->setToken($token);
+    }
+
+    /**
+     * @return null
+     */
+    public function getWorkerName()
+    {
+        return $this->workerName;
+    }
+
+    /**
+     * @param null $workerName
+     */
+    public function setWorkerName($workerName)
+    {
+        $this->workerName = $workerName;
+    }
+
+    /**
+     * @return ResourceMapper
+     */
+    public function getResourceMapper()
+    {
+        return $this->resourceMapper;
     }
 
 }

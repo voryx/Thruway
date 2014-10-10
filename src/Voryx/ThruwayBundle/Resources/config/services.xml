@@ -20,6 +20,8 @@
         <parameter key="voryx.thruway.auth.manager.class">Thruway\Authentication\AuthenticationManager</parameter>
         <parameter key="voryx.thruway.wamp.cra.class">Thruway\Authentication\WampCraAuthProvider</parameter>
         <parameter key="voryx.thruway.client.manager.class">Voryx\ThruwayBundle\Client\ClientManager</parameter>
+        <parameter key="voryx.thruway.supervisor.class">SupervisorClient\SupervisorClient</parameter>
+
 
     </parameters>
 
@@ -38,8 +40,7 @@
         </service>
 
         <service id="voryx.thruway.client"
-                 class="%voryx_thruway.client.class%"
-                 public="false">
+                 class="%voryx_thruway.client.class%">
             <argument type="expression">parameter('voryx_thruway')['realm']</argument>
         </service>
 
@@ -95,9 +96,10 @@
                  class="%voryx_thruway.connection.class%">
             <argument type="service" id="service_container"/>
             <argument type="service" id="serializer"/>
-            <call method="setClient">
-                <argument type="service" id="voryx.thruway.client"/>
-            </call>
+            <argument type="service" id="voryx.thruway.resource.mapper"/>
+            <!--<call method="setClient">-->
+                <!--<argument type="service" id="voryx.thruway.client"/>-->
+            <!--</call>-->
         </service>
 
 
@@ -130,8 +132,7 @@
         </service>
 
         <service id="voryx.thruway.wamp.cra.auth.transport.provider"
-                 class="%voryx.thruway.internal.transport.class%"
-                 public="false">
+                 class="%voryx.thruway.internal.transport.class%">
             <argument type="service" id="voryx.thruway.wamp.cra.auth.client"/>
         </service>
 
@@ -141,6 +142,17 @@
                  class="%voryx.thruway.client.manager.class%">
             <argument type="service" id="service_container"/>
             <argument>%voryx_thruway%</argument>
+        </service>
+
+
+        <!--Supervisor Client-->
+        <service id="voryx.thruway.supervisor"
+                 class="%voryx.thruway.supervisor.class%">
+            <argument type="expression">parameter('voryx_thruway')['supervisor']['hostname']</argument>
+            <argument type="expression">parameter('voryx_thruway')['supervisor']['port']</argument>
+            <argument type="expression">parameter('voryx_thruway')['supervisor']['timeout']</argument>
+            <argument type="expression">parameter('voryx_thruway')['supervisor']['username']</argument>
+            <argument type="expression">parameter('voryx_thruway')['supervisor']['password']</argument>
         </service>
 
 

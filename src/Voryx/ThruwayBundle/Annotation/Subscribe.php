@@ -1,13 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daviddan
- * Date: 8/28/14
- * Time: 10:37 PM
- */
 
 namespace Voryx\ThruwayBundle\Annotation;
 
+use Doctrine\Common\Annotations\Annotation\Required;
 use Doctrine\ORM\Mapping\Annotation;
 
 
@@ -33,6 +28,8 @@ class Subscribe implements Annotation
     protected $serializerGroups;
 
     protected $serializerEnableMaxDepthChecks;
+
+    protected $worker;
 
     /**
      * @param $options
@@ -75,6 +72,12 @@ class Subscribe implements Annotation
         return $this->serializerGroups;
     }
 
-
+    /**
+     * @return mixed
+     */
+    public function getWorker()
+    {
+        return $this->worker;
+    }
 }
 

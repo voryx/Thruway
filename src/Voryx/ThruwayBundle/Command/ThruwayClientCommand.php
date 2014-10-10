@@ -33,12 +33,12 @@ class ThruwayClientCommand extends ContainerAwareCommand
             echo "Making a go at starting the Thruway client.\n";
             $server = $this->getContainer()->get('voryx.thruway.server');
 
-            $this->getContainer()->get('voryx.thruway.connection');
+            $this->getContainer()->get('voryx.thruway.connection')->setClient($this->getContainer()->get('voryx.thruway.client'));
 
             //Add internal clients that are defined in the config
             //@todo move this to the config
             foreach ($config['clients'] as $clientService) {
-                $c = $this->getContainer()->get($clientService);
+                $c   = $this->getContainer()->get($clientService);
                 $ctp = new InternalClientTransportProvider($c);
                 $server->addTransportProvider($ctp);
             }

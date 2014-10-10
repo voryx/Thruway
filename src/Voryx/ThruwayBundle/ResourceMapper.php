@@ -28,9 +28,12 @@ class ResourceMapper
     /**
      * @var array
      */
-    private $mappings = [];
+    protected $mappings = [];
 
 
+    /**
+     * @param Reader $reader
+     */
     function __construct(Reader $reader)
     {
 
@@ -38,37 +41,59 @@ class ResourceMapper
     }
 
 
+    /**
+     * @param $serviceId
+     * @param $class
+     * @param $method
+     */
     public function map($serviceId, $class, $method)
     {
 
-        $class = new \ReflectionClass($class);
+        $class  = new \ReflectionClass($class);
         $method = $class->getMethod($method);
 
-        $annotations = [];
+        $annotations   = [];
         $annotations[] = $this->reader->getMethodAnnotation($method, self::RPC_ANNOTATION_CLASS);
         $annotations[] = $this->reader->getMethodAnnotation($method, self::SUBSCRIBE_ANNOTATION_CLASS);
 
         foreach ($annotations as $annotation) {
             if ($annotation) {
+
+                $worker = $annotation->getWorker() ? $annotation->getWorker() : "default";
+
                 $mapping = new URIClassMapping($serviceId, $method, $annotation);
 
-                if (isset($this->mappings[$annotation->getName()])) {
-                    $uri = $annotation->getName();
-                    $className = $this->mappings[$annotation->getName()]->getMethod()->class;
+                if (isset($this->mappings[$worker][$annotation->getName()])) {
+                    $uri       = $annotation->getName();
+                    $className = $this->mappings[$worker][$annotation->getName()]->getMethod()->class;
 
-                    throw new Exception("The URI '{$uri}' has already been registered in {$className}");
+                    throw new Exception("The URI '{$uri}' has already been registered in '{$className}' for the worker '{$worker}'");
                 }
 
-                $this->mappings[$annotation->getName()] = $mapping;
+                $this->mappings[$worker][$annotation->getName()] = $mapping;
             }
         }
 
     }
 
     /**
+     * @param null|string $worker
      * @return mixed
      */
-    public function getMappings()
+    public function getMappings($worker = null)
+    {
+        if ($worker && isset($this->mappings[$worker])) {
+            return $this->mappings[$worker];
+        }
+
+        $mappings = [];
+        foreach ($this->mappings as $mapping) {
+            $mappings = array_merge($mappings, $mapping);
+        }
+        return $mappings;
+    }
+
+    public function getAllMappings()
     {
         return $this->mappings;
     }
@@ -79,6 +104,20 @@ class ResourceMapper
     public function setMappings($mappings)
     {
         $this->mappings = $mappings;
+    }
+
+    public function findWorker($uri)
+    {
+        $workerName = null;
+
+        /* @var $mapping URIClassMapping */
+        foreach ($this->getMappings() as $key => $mapping) {
+            if ($key == $uri) {
+                $workerName = $mapping->getAnnotation()->getWorker();
+            }
+        }
+
+        return $workerName;
     }
 
     /**

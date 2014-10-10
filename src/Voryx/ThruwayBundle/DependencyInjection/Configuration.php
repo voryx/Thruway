@@ -2,6 +2,7 @@
 
 namespace Voryx\ThruwayBundle\DependencyInjection;
 
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -18,17 +19,13 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('voryx_thruway');
+        $rootNode    = $treeBuilder->root('voryx_thruway');
 
 
         $rootNode
             ->children()
-            ->arrayNode('clients')
-            ->prototype('scalar')->end()
-            ->end()
-            ->arrayNode('resources')
-            ->prototype('scalar')->end()
-            ->end()
+            ->arrayNode('clients')->prototype('scalar')->end()->end()
+            ->arrayNode('resources')->prototype('scalar')->end()->end()
             ->scalarNode('server')->defaultValue('127.0.0.1')->end()
             ->scalarNode('port')->defaultValue('8080')->end()
             ->scalarNode('realm')->defaultValue('realm1')->end()
@@ -40,6 +37,28 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('authentication')->end()
             ->end();
 
+
+        $this->addSupervisorSection($rootNode);
+
         return $treeBuilder;
+    }
+
+    private function addSupervisorSection(ArrayNodeDefinition $rootNode)
+    {
+        $rootNode
+            ->children()
+                ->arrayNode('supervisor')
+                    ->addDefaultsIfNotSet()
+                    ->info('supervisor configuration')
+//                    ->canBeUnset()
+                    ->children()
+                        ->scalarNode('hostname')->defaultValue('unix:///tmp/supervisor.sock')->end()
+                        ->scalarNode('port')->defaultValue(-1)->end()
+                        ->scalarNode('timeout')->defaultNull()->end()
+                        ->scalarNode('username')->defaultNull()->end()
+                        ->scalarNode('password')->defaultNull()->end()
+                    ->end()
+                ->end()
+            ->end();
     }
 }

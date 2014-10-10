@@ -2,6 +2,7 @@
 
 namespace Voryx\ThruwayBundle\Annotation;
 
+use Doctrine\Common\Annotations\Annotation\Required;
 use Doctrine\ORM\Mapping\Annotation;
 
 /**
@@ -25,6 +26,8 @@ class RPC implements Annotation
     protected $serializerGroups;
 
     protected $serializerEnableMaxDepthChecks;
+
+    protected $worker;
 
     /**
      * @param $options
@@ -69,5 +72,11 @@ class RPC implements Annotation
         return $this->serializerGroups;
     }
 
-
+    /**
+     * @return mixed
+     */
+    public function getWorker()
+    {
+        return $this->worker;
+    }
 }
