@@ -133,6 +133,7 @@ class Connection
 
             },
             ['discloseCaller' => true, "thruway_mutliregister" => true]
+            ['disclose_caller' => true, "thruway_mutliregister" => true]
         );
     }
 
