@@ -43,7 +43,7 @@ class PawlTransport implements TransportInterface
      */
     private $loop;
 
-    /*
+    /**
      * @var boolean
      */
     private $trusted;
@@ -153,7 +153,7 @@ class PawlTransport implements TransportInterface
 
     /**
      * Set serializer
-     * 
+     *
      * @param \Thruway\Serializer\SerializerInterface $serializer
      */
     public function setSerializer(SerializerInterface $serializer)
@@ -163,7 +163,7 @@ class PawlTransport implements TransportInterface
 
     /**
      * Get serializer
-     * 
+     *
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()
@@ -182,8 +182,7 @@ class PawlTransport implements TransportInterface
     }
 
     /**
-     * @param $trusted
-     * @return boolean
+     * @param boolean $trusted\
      */
     public function setTrusted($trusted)
     {

@@ -6,8 +6,6 @@ use Thruway\Exception\DeserializationException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
-use Evenement\EventEmitterInterface;
-use Evenement\EventEmitterTrait;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
 use Thruway\Serializer\JsonSerializer;
@@ -17,14 +15,8 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class PawlTransportProvider implements TransportProviderInterface, EventEmitterInterface
+class PawlTransportProvider implements TransportProviderInterface
 {
-
-    /**
-     * Using EventEmitterTrait do implements EventEmitterInterface
-     * @see \Evenement\EventEmitterTrailt
-     */
-    use EventEmitterTrait;
 
     /**
      * @var \Thruway\Peer\AbstractPeer
@@ -51,7 +43,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
      */
     private $manager;
 
-    /*
+    /**
      * @var boolean
      */
     private $trusted;
@@ -132,7 +124,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
     /**
      * Get peer
-     * 
+     *
      * @return \Thruway\Peer\AbstractPeer
      */
     public function getPeer()
@@ -142,7 +134,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
     /**
      * Set peer
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $peer
      */
     public function setPeer(AbstractPeer $peer)
@@ -152,7 +144,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
@@ -164,7 +156,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -172,39 +164,8 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
         return $this->manager;
     }
 
-    public function on($event, callable $listener)
-    {
-        // TODO: Implement on() method.
-    }
-
-    public function once($event, callable $listener)
-    {
-        // TODO: Implement once() method.
-    }
-
-    public function removeListener($event, callable $listener)
-    {
-        // TODO: Implement removeListener() method.
-    }
-
-    public function removeAllListeners($event = null)
-    {
-        // TODO: Implement removeAllListeners() method.
-    }
-
-    public function listeners($event)
-    {
-        // TODO: Implement listeners() method.
-    }
-
-    public function emit($event, array $arguments = [])
-    {
-        // TODO: Implement emit() method.
-    }
-
     /**
-     * @param $trusted
-     * @return boolean
+     * @param boolean $trusted
      */
     public function setTrusted($trusted)
     {

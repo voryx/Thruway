@@ -40,7 +40,7 @@ class RatchetTransport implements TransportInterface
      */
     private $loop;
 
-    /*
+    /**
      * @var boolean
      */
     private $trusted;
@@ -183,8 +183,7 @@ class RatchetTransport implements TransportInterface
     }
 
     /**
-     * @param $trusted
-     * @return boolean
+     * @param boolean $trusted
      */
     public function setTrusted($trusted)
     {

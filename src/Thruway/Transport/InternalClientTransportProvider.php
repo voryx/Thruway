@@ -32,7 +32,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
      */
     private $manager;
 
-    /*
+    /**
      * @var boolean
      */
     private $trusted;
@@ -114,8 +114,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
     }
 
     /**
-     * @param $trusted
-     * @return boolean
+     * @param boolean $trusted
      */
     public function setTrusted($trusted)
     {

@@ -54,8 +54,7 @@ interface TransportInterface
     public function isTrusted();
 
     /**
-     * @param $trusted
-     * @return boolean
+     * @param boolean $trusted
      */
     public function setTrusted($trusted);
 

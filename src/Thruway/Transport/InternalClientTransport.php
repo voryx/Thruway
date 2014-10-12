@@ -31,7 +31,7 @@ class InternalClientTransport implements TransportInterface
      */
     private $loop;
 
-    /*
+    /**
      * @var boolean
      */
     private $trusted;
@@ -151,8 +151,7 @@ class InternalClientTransport implements TransportInterface
     }
 
     /**
-     * @param $trusted
-     * @return boolean
+     * @param boolean $trusted
      */
     public function setTrusted($trusted)
     {

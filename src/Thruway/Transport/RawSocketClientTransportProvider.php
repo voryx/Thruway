@@ -49,7 +49,7 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
      */
     private $transport;
 
-    /*
+    /**
      * @var boolean
      */
     private $trusted;
@@ -153,8 +153,7 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
     }
 
     /**
-     * @param $trusted
-     * @return boolean
+     * @param boolean $trusted
      */
     public function setTrusted($trusted)
     {
