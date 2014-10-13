@@ -6,8 +6,6 @@ use Thruway\Exception\DeserializationException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
-use Evenement\EventEmitterInterface;
-use Evenement\EventEmitterTrait;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
 use Thruway\Serializer\JsonSerializer;
@@ -17,14 +15,8 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class PawlTransportProvider implements TransportProviderInterface, EventEmitterInterface
+class PawlTransportProvider implements TransportProviderInterface
 {
-
-    /**
-     * Using EventEmitterTrait do implements EventEmitterInterface
-     * @see \Evenement\EventEmitterTrailt
-     */
-    use EventEmitterTrait;
 
     /**
      * @var \Thruway\Peer\AbstractPeer
@@ -50,6 +42,11 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
      * @var \Thruway\Manager\ManagerInterface
      */
     private $manager;
+
+    /**
+     * @var boolean
+     */
+    private $trusted;
 
     /**
      * Constructor
@@ -84,6 +81,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
                 $transport = new PawlTransport($conn, $this->loop);
                 $transport->setSerializer(new JsonSerializer());
+                $transport->setTrusted($this->trusted);
 
                 $this->peer->onOpen($transport);
 
@@ -126,7 +124,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
     /**
      * Get peer
-     * 
+     *
      * @return \Thruway\Peer\AbstractPeer
      */
     public function getPeer()
@@ -136,7 +134,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
     /**
      * Set peer
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $peer
      */
     public function setPeer(AbstractPeer $peer)
@@ -146,7 +144,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
@@ -158,7 +156,7 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -166,4 +164,11 @@ class PawlTransportProvider implements TransportProviderInterface, EventEmitterI
         return $this->manager;
     }
 
+    /**
+     * @param boolean $trusted
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
+    }
 }

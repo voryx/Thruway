@@ -12,12 +12,11 @@ use Thruway\Serializer\SerializerInterface;
 
 /**
  * Class RawSocketTransport
- * 
+ *
  * Implement transport on raw socket
- * 
+ *
  * @package Thruway\Transport
  */
-
 class RawSocketTransport implements TransportInterface
 {
 
@@ -61,8 +60,13 @@ class RawSocketTransport implements TransportInterface
     private $peer;
 
     /**
+     * @var boolean
+     */
+    private $trusted;
+
+    /**
      * Constructor
-     * 
+     *
      * @param \React\Stream\Stream $conn
      * @param \React\EventLoop\LoopInterface $loop
      * @param \Thruway\Peer\AbstractPeer $peer
@@ -81,7 +85,7 @@ class RawSocketTransport implements TransportInterface
 
     /**
      * Handle process reveived data
-     * 
+     *
      * @param mixed $data
      * @return void
      */
@@ -133,7 +137,7 @@ class RawSocketTransport implements TransportInterface
 
     /**
      * Get serializer
-     * 
+     *
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()
@@ -143,7 +147,7 @@ class RawSocketTransport implements TransportInterface
 
     /**
      * Set serializer
-     * 
+     *
      * @param \Thruway\Serializer\SerializerInterface $serializer
      */
     public function setSerializer(SerializerInterface $serializer)
@@ -153,7 +157,7 @@ class RawSocketTransport implements TransportInterface
 
     /**
      * Get connection
-     * 
+     *
      * @return \React\Stream\Stream
      */
     public function getConn()
@@ -163,7 +167,7 @@ class RawSocketTransport implements TransportInterface
 
     /**
      * Get loop
-     * 
+     *
      * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
@@ -173,7 +177,7 @@ class RawSocketTransport implements TransportInterface
 
     /**
      * Get transport details
-     * 
+     *
      * @return array
      */
     public function getTransportDetails()
@@ -186,7 +190,7 @@ class RawSocketTransport implements TransportInterface
 
     /**
      * Send message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      */
     public function sendMessage(Message $msg)
@@ -212,12 +216,30 @@ class RawSocketTransport implements TransportInterface
 
     /**
      * Ping
-     * 
+     *
      * @throws \Thruway\Exception\PingNotSupportedException
      */
     public function ping()
     {
         throw new PingNotSupportedException();
+    }
+
+    /**
+     * Checks to see if a transport is trusted
+     *
+     * @return boolean
+     */
+    public function isTrusted()
+    {
+        return (boolean)$this->trusted;
+    }
+
+    /**
+     * @param boolean $trusted
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
     }
 
 

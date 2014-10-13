@@ -61,6 +61,11 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     private $manager;
 
     /**
+     * @var boolean
+     */
+    private $trusted;
+
+    /**
      * Constructor
      *
      * @param string $address
@@ -102,7 +107,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
     /**
      * If any component in a stack supports a WebSocket sub-protocol return each supported in an array
-     * 
+     *
      * @return array
      * @temporary This method may be removed in future version (note that will not break code, just make some code obsolete)
      */
@@ -114,7 +119,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
     /**
      * When a new connection is opened it will be passed to this method
-     * 
+     *
      * @param  \Ratchet\ConnectionInterface $conn The socket/connection that just connected to your application
      * @throws \Exception
      */
@@ -127,6 +132,8 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
         // this will need to be a little more dynamic at some point
         $transport->setSerializer(new JsonSerializer());
 
+        $transport->setTrusted($this->trusted);
+
         $this->transports->attach($conn, $transport);
 
         $this->peer->onOpen($transport);
@@ -137,9 +144,9 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     }
 
     /**
-     * This is called before or after a socket is closed (depends on how it's closed).  
+     * This is called before or after a socket is closed (depends on how it's closed).
      * SendMessage to $conn will not result in an error if it has already been closed.
-     * 
+     *
      * @param  \Ratchet\ConnectionInterface $conn The socket/connection that is closing/closed
      * @throws \Exception
      */
@@ -156,10 +163,10 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     }
 
     /**
-     * If there is an error with one of the sockets, or somewhere in the application 
-     * where an Exception is thrown, the Exception is sent back down the stack, 
+     * If there is an error with one of the sockets, or somewhere in the application
+     * where an Exception is thrown, the Exception is sent back down the stack,
      * handled by the Server and bubbled back up the application through this method
-     * 
+     *
      * @param  \Ratchet\ConnectionInterface $conn
      * @param  \Exception $e
      * @throws \Exception
@@ -172,7 +179,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
     /**
      * Triggered when a client sends data through the socket
-     * 
+     *
      * @param  \Ratchet\ConnectionInterface $from The socket/connection that sent the message to your application
      * @param  string $msg The message received
      * @throws \Exception
@@ -209,7 +216,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager(ManagerInterface $manager)
@@ -221,7 +228,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -229,4 +236,11 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
         return $this->manager;
     }
 
-} 
+    /**
+     * @param boolean $trusted
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
+    }
+}

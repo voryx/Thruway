@@ -50,6 +50,11 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
     private $transport;
 
     /**
+     * @var boolean
+     */
+    private $trusted;
+
+    /**
      * Constructor
      * 
      * @param string $address
@@ -99,6 +104,8 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
 
         $this->transport->setSerializer(new JsonSerializer());
 
+        $this->transport->setTrusted($this->trusted);
+
         $this->peer->onOpen($this->transport);
     }
 
@@ -145,4 +152,11 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
         $this->manager = $managerInterface;
     }
 
+    /**
+     * @param boolean $trusted
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
+    }
 }

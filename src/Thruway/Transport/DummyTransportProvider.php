@@ -17,7 +17,7 @@ class DummyTransportProvider implements TransportProviderInterface
 
     /**
      * Start transport provider
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
@@ -27,7 +27,7 @@ class DummyTransportProvider implements TransportProviderInterface
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -37,11 +37,17 @@ class DummyTransportProvider implements TransportProviderInterface
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
     public function setManager(ManagerInterface $managerInterface)
     {
     }
 
-} 
+    /**
+     * @param boolean $trusted
+     */
+    public function setTrusted($trusted)
+    {
+    }
+}

@@ -41,6 +41,11 @@ class RatchetTransport implements TransportInterface
     private $loop;
 
     /**
+     * @var boolean
+     */
+    private $trusted;
+
+    /**
      * Constructor
      *
      * @param \Ratchet\ConnectionInterface $conn
@@ -165,6 +170,24 @@ class RatchetTransport implements TransportInterface
     public function getSerializer()
     {
         return $this->serializer;
+    }
+
+    /**
+     * Checks to see if a transport is trusted
+     *
+     * @return boolean
+     */
+    public function isTrusted()
+    {
+        return (boolean)$this->trusted;
+    }
+
+    /**
+     * @param boolean $trusted
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
     }
 
 } 

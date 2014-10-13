@@ -44,6 +44,11 @@ class PawlTransport implements TransportInterface
     private $loop;
 
     /**
+     * @var boolean
+     */
+    private $trusted;
+
+    /**
      * Constructor
      *
      * @param \Ratchet\Client\WebSocket $conn
@@ -148,7 +153,7 @@ class PawlTransport implements TransportInterface
 
     /**
      * Set serializer
-     * 
+     *
      * @param \Thruway\Serializer\SerializerInterface $serializer
      */
     public function setSerializer(SerializerInterface $serializer)
@@ -158,12 +163,30 @@ class PawlTransport implements TransportInterface
 
     /**
      * Get serializer
-     * 
+     *
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer()
     {
         return $this->serializer;
+    }
+
+    /**
+     * Checks to see if a transport is trusted
+     *
+     * @return boolean
+     */
+    public function isTrusted()
+    {
+        return (boolean)$this->trusted;
+    }
+
+    /**
+     * @param boolean $trusted\
+     */
+    public function setTrusted($trusted)
+    {
+        $this->trusted = $trusted;
     }
 
 } 

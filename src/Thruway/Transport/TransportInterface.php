@@ -33,7 +33,7 @@ interface TransportInterface
 
     /**
      * Set serializer
-     * 
+     *
      * @param \Thruway\Serializer\SerializerInterface $serializer
      * @return \Thruway\Transport\TransportInterface
      */
@@ -41,9 +41,21 @@ interface TransportInterface
 
     /**
      * Get serializer
-     * 
+     *
      * @return \Thruway\Serializer\SerializerInterface
      */
     public function getSerializer();
+
+    /**
+     * Checks to see if a transport is trusted
+     *
+     * @return boolean
+     */
+    public function isTrusted();
+
+    /**
+     * @param boolean $trusted
+     */
+    public function setTrusted($trusted);
 
 }
