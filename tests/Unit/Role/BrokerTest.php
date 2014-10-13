@@ -8,7 +8,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
 
         $transport->method("getTransportDetails")->will($this->returnValue(""));
 
-        $session = $this->getMockBuilder(\Thruway\Session::class)
+        $session = $this->getMockBuilder('\Thruway\Session')
             ->setMethods(["sendMessage"])
             ->setConstructorArgs([$transport])
             ->getMock();
@@ -17,7 +17,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
 
         $session->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\ErrorMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\ErrorMessage'));
 
         $unsubscribeMsg = new \Thruway\Message\UnsubscribeMessage(\Thruway\Session::getUniqueId(), 0);
 
@@ -30,14 +30,14 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
 
         $transport->expects($this->any())->method("getTransportDetails")->will($this->returnValue(""));
 
-        $session = $this->getMockBuilder(\Thruway\Session::class)
+        $session = $this->getMockBuilder('\Thruway\Session')
             ->setMethods(["sendMessage"])
             ->setConstructorArgs([$transport])
             ->getMock();
 
         $broker = new \Thruway\Role\Broker();
 
-        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Session::class, [], "test_subscription");
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage('\Thruway\Session', [], "test_subscription");
 
         /** @var \Thruway\Message\SubscribedMessage $subscribedMsg */
         $subscribedMsg = null;
@@ -46,12 +46,12 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
             ->method("sendMessage")
             ->withConsecutive(
                 [$this->callback(function ($msg) use (&$subscribedMsg) {
-                    $this->isInstanceOf(\Thruway\Message\SubscribedMessage::class);
+                    $this->isInstanceOf('\Thruway\Message\SubscribedMessage');
                     $subscribedMsg = $msg;
                     return true;
                 })],
-                [$this->isInstanceOf(\Thruway\Message\PublishedMessage::class)],
-                [$this->isInstanceOf(\Thruway\Message\EventMessage::class)]
+                [$this->isInstanceOf('\Thruway\Message\PublishedMessage')],
+                [$this->isInstanceOf('\Thruway\Message\EventMessage')]
             );
 
         $broker->onMessage($session, $subscribeMsg);
@@ -77,7 +77,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
 
         $transport->expects($this->any())->method("getTransportDetails")->will($this->returnValue(""));
 
-        $session = $this->getMockBuilder(\Thruway\Session::class)
+        $session = $this->getMockBuilder('\Thruway\Session')
             ->setMethods(["sendMessage"])
             ->setConstructorArgs([$transport])
             ->getMock();

@@ -24,7 +24,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
     public function testProcessRegisterWithNameMismatch()
     {
-        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+        $this->_session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -37,7 +37,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         $this->_session->expects($this->once())
             ->method("sendMessage")
             ->with($this->callback(function ($msg) use ($registerMsg) {
-                $this->assertInstanceOf(\Thruway\Message\ErrorMessage::class, $msg);
+                $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $msg);
                 $this->assertEquals($registerMsg->getRequestId(), $msg->getErrorRequestId());
                 $this->assertEquals($registerMsg->getMsgCode(), $msg->getErrorMsgCode());
                 return true;
@@ -50,7 +50,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
     public function testProcessRegister()
     {
-        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+        $this->_session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -62,7 +62,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $this->_session->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $this->_proc->processRegister($this->_session, $registerMsg);
 
@@ -71,17 +71,17 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
     public function testDuplicateRegistration()
     {
-        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+        $this->_session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $session2 = $this->getMockBuilder(\Thruway\Session::class)
+        $session2 = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->_session->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
             \Thruway\Session::getUniqueId(),
@@ -93,7 +93,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $session2->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\ErrorMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\ErrorMessage'));
 
         $this->_proc->processRegister($session2, $registerMsg);
 
@@ -102,17 +102,17 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
     public function testDuplicateRegistrationWithReplaceOrphanNoPingSupport()
     {
-        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+        $this->_session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $session2 = $this->getMockBuilder(\Thruway\Session::class)
+        $session2 = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->_session->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
             \Thruway\Session::getUniqueId(),
@@ -124,7 +124,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $session2->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\ErrorMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\ErrorMessage'));
 
         $this->_session->expects($this->any())
             ->method("ping")
@@ -137,17 +137,17 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
     public function testDuplicateRegistrationWithReplaceOrphanWithPingSupportNoTimeout()
     {
-        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+        $this->_session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $session2 = $this->getMockBuilder(\Thruway\Session::class)
+        $session2 = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->_session->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
             \Thruway\Session::getUniqueId(),
@@ -159,7 +159,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $session2->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\ErrorMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\ErrorMessage'));
 
         $this->_session->expects($this->any())
             ->method("ping")
@@ -172,17 +172,17 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
     public function testDuplicateRegistrationWithReplaceOrphanWithPingSupportTimeout()
     {
-        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+        $this->_session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $session2 = $this->getMockBuilder(\Thruway\Session::class)
+        $session2 = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $this->_session->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $this->_session->expects($this->once())
             ->method('shutdown');
@@ -198,7 +198,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $session2->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $this->_session->expects($this->once())
             ->method("ping")
@@ -211,7 +211,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
     public function testMultipleRegistrations()
     {
-        $realm = $this->getMockBuilder(\Thruway\Realm::class)
+        $realm = $this->getMockBuilder('\Thruway\Realm')
             ->setConstructorArgs(["realm1"])
             ->setMethods(["publishMeta"])
             ->getMock();
@@ -228,7 +228,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         $currentCallCounts = [];
         $invocationToYield = null;
         for ($i = 0; $i < 5; $i++) {
-            $s[$i] = $this->getMockBuilder(\Thruway\Session::class)
+            $s[$i] = $this->getMockBuilder('\Thruway\Session')
                 ->disableOriginalConstructor()
                 ->setMethods(['sendMessage', 'getRealm'])
                 ->getMock();
@@ -237,25 +237,25 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
                 $s[$i]->expects($this->exactly(3))
                     ->method("sendMessage")
                     ->withConsecutive(
-                        [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)],
-                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)],
-                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)]
+                        [$this->isInstanceOf('\Thruway\Message\RegisteredMessage')],
+                        [$this->isInstanceOf('\Thruway\Message\InvocationMessage')],
+                        [$this->isInstanceOf('\Thruway\Message\InvocationMessage')]
                     );
             } else if ($i == 2) {
                 $s[$i]->expects($this->exactly(4))
                     ->method("sendMessage")
                     ->withConsecutive(
-                        [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)],
-                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)],
-                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)],
-                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)]
+                        [$this->isInstanceOf('\Thruway\Message\RegisteredMessage')],
+                        [$this->isInstanceOf('\Thruway\Message\InvocationMessage')],
+                        [$this->isInstanceOf('\Thruway\Message\InvocationMessage')],
+                        [$this->isInstanceOf('\Thruway\Message\InvocationMessage')]
                     );
             } else {
                 $s[$i]->expects($this->exactly(2))
                     ->method("sendMessage")
                     ->withConsecutive(
-                        [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)],
-                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)]
+                        [$this->isInstanceOf('\Thruway\Message\RegisteredMessage')],
+                        [$this->isInstanceOf('\Thruway\Message\InvocationMessage')]
                     );
             }
 
@@ -301,23 +301,23 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
     }
 
     public function testMultiRegisterWithDisagreeOnDiscloseCaller() {
-        $s1 = $this->getMockBuilder(\Thruway\Session::class)
+        $s1 = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $s2 = $this->getMockBuilder(\Thruway\Session::class)
+        $s2 = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $s1->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $s2->expects($this->exactly(2))
             ->method("sendMessage")
             ->withConsecutive(
-                [$this->isInstanceOf(\Thruway\Message\ErrorMessage::class)],
-                [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)]
+                [$this->isInstanceOf('\Thruway\Message\ErrorMessage')],
+                [$this->isInstanceOf('\Thruway\Message\RegisteredMessage')]
                 );
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
@@ -342,23 +342,23 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
     }
 
     public function testMultiRegisterWithDisagreeOnMultiRegister() {
-        $s1 = $this->getMockBuilder(\Thruway\Session::class)
+        $s1 = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $s2 = $this->getMockBuilder(\Thruway\Session::class)
+        $s2 = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $s1->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $s2->expects($this->exactly(2))
             ->method("sendMessage")
             ->withConsecutive(
-                [$this->isInstanceOf(\Thruway\Message\ErrorMessage::class)],
-                [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)]
+                [$this->isInstanceOf('\Thruway\Message\ErrorMessage')],
+                [$this->isInstanceOf('\Thruway\Message\RegisteredMessage')]
             );
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
@@ -383,14 +383,14 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
     }
 
     public function testCallWithoutRegistration() {
-        $session = $this->getMockBuilder(\Thruway\Session::class)
+        $session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $session->expects($this->once())
             ->method("sendMessage")
             ->with($this->callback(function ($msg) {
-                $this->assertInstanceOf(\Thruway\Message\ErrorMessage::class, $msg);
+                $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $msg);
                 $this->assertEquals('wamp.error.no_such_procedure', $msg->getErrorUri());
                 return true;
             }));
@@ -405,19 +405,19 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
     }
 
     public function testGetCallWithRequestIDAndGetRegistrationById() {
-        $session = $this->getMockBuilder(\Thruway\Session::class)
+        $session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
-        $rogueSession = $this->getMockBuilder(\Thruway\Session::class)
+        $rogueSession = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $rogueSession->expects($this->exactly(1))
             ->method("sendMessage")
             ->withConsecutive(
-                //[$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)],
-                [$this->isInstanceOf(\Thruway\Message\ErrorMessage::class)]
+                //[$this->isInstanceOf('\Thruway\Message\RegisteredMessage'],
+                [$this->isInstanceOf('\Thruway\Message\ErrorMessage')]
             );
 
 //        $rregMsg = new \Thruway\Message\RegisterMessage(
@@ -438,7 +438,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             ->withConsecutive(
                 [
                     $this->callback(function ($msg) use (&$registeredMsg) { // registered call
-                        $this->assertInstanceOf(\Thruway\Message\RegisteredMessage::class, $msg);
+                        $this->assertInstanceOf('\Thruway\Message\RegisteredMessage', $msg);
                         $registeredMsg = $msg;
 
                         return true;
@@ -446,7 +446,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
                 ],
                 [
                     $this->callback(function ($msg) use (&$invocationMsg) {
-                        $this->assertInstanceOf(\Thruway\Message\InvocationMessage::class, $msg);
+                        $this->assertInstanceOf('\Thruway\Message\InvocationMessage', $msg);
                         $invocationMsg = $msg;
 
                         return true;
@@ -454,12 +454,12 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
                 ],
                 [
                     $this->callback(function ($msg) {
-                        $this->assertInstanceOf(\Thruway\Message\ErrorMessage::class, $msg);
+                        $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $msg);
                         $this->assertEquals('wamp.error.no_such_registration', $msg->getErrorUri());
                         return true;
                     })
                 ],
-                [$this->isInstanceOf(\Thruway\Message\UnregisteredMessage::class)]
+                [$this->isInstanceOf('\Thruway\Message\UnregisteredMessage')]
             );
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
@@ -470,7 +470,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $this->_proc->processRegister($session, $registerMsg);
 
-        $this->assertInstanceOf(\Thruway\Message\RegisteredMessage::class, $registeredMsg);
+        $this->assertInstanceOf('\Thruway\Message\RegisteredMessage', $registeredMsg);
 
         $callMsg = new \Thruway\Message\CallMessage(
             \Thruway\Session::getUniqueId(),
@@ -480,16 +480,16 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $this->_proc->processCall($session, $callMsg);
 
-        $this->assertInstanceOf(\Thruway\Message\InvocationMessage::class, $invocationMsg);
+        $this->assertInstanceOf('\Thruway\Message\InvocationMessage', $invocationMsg);
 
         $call = $this->_proc->getCallByRequestId($invocationMsg->getRequestId());
 
-        $this->assertInstanceOf(\Thruway\Call::class, $call);
+        $this->assertInstanceOf('\Thruway\Call', $call);
         $this->assertSame($session, $call->getCalleeSession());
 
         $registration = $this->_proc->getRegistrationById($registeredMsg->getRegistrationId());
 
-        $this->assertInstanceOf(\Thruway\Registration::class, $registration);
+        $this->assertInstanceOf('\Thruway\Registration', $registration);
         $this->assertEquals($registeredMsg->getRegistrationId(), $registration->getId());
 
         $unregisterMsg = new \Thruway\Message\UnregisterMessage(
@@ -534,13 +534,13 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
     }
 
     public function testLeave() {
-        $session = $this->getMockBuilder(\Thruway\Session::class)
+        $session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
             ->getMock();
 
         $session->expects($this->once())
             ->method("sendMessage")
-            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+            ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
             \Thruway\Session::getUniqueId(),

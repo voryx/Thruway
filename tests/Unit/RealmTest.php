@@ -50,7 +50,7 @@ class RealmTest extends PHPUnit_Framework_TestCase
 
         $realm->onMessage($session, new \Thruway\Message\HelloMessage('test_realm', []));
 
-        $this->assertInstanceOf(\Thruway\Message\WelcomeMessage::class, $session->getTransport()->getLastMessageSent());
+        $this->assertInstanceOf('\Thruway\Message\WelcomeMessage', $session->getTransport()->getLastMessageSent());
         $this->assertSame($session->getRealm(), $realm);
 
         return $session;
@@ -77,7 +77,7 @@ class RealmTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, count($registrations));
         $this->assertEquals("test_procedure", $registrations[0]['name']);
-        $this->assertInstanceOf(\Thruway\Message\RegisteredMessage::class,
+        $this->assertInstanceOf('\Thruway\Message\RegisteredMessage',
             $session->getTransport()->getLastMessageSent());
     }
 
@@ -98,7 +98,7 @@ class RealmTest extends PHPUnit_Framework_TestCase
 
         $realm->onMessage($session, new \Thruway\Message\GoodbyeMessage([], 'some_test_reason'));
 
-        $this->assertInstanceOf(\Thruway\Message\GoodbyeMessage::class, $session->getTransport()->getLastMessageSent());
+        $this->assertInstanceOf('\Thruway\Message\GoodbyeMessage', $session->getTransport()->getLastMessageSent());
 
         $sessions = $realm->managerGetSessions();
         $this->assertEquals(0, count($sessions));
