@@ -2,7 +2,9 @@
 
 namespace Thruway\Peer;
 
+use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthenticationManagerInterface;
+use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Manager\ManagerDummy;
@@ -46,6 +48,11 @@ class Router extends AbstractPeer
     private $authenticationManager;
 
     /**
+     * @var AuthorizationManagerInterface
+     */
+    private $authorizationManager;
+
+    /**
      * @var \React\EventLoop\LoopInterface
      */
     private $loop;
@@ -63,6 +70,8 @@ class Router extends AbstractPeer
         $this->realmManager       = new RealmManager($this->manager);
         $this->transportProviders = [];
         $this->sessions           = new \SplObjectStorage();
+
+        $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
 
         $this->manager->debug("New router created");
     }
@@ -205,6 +214,22 @@ class Router extends AbstractPeer
         return $this->authenticationManager;
     }
 
+    /**
+     * @return AuthorizationManagerInterface
+     */
+    public function getAuthorizationManager()
+    {
+        return $this->authorizationManager;
+    }
+
+    /**
+     * @param AuthorizationManagerInterface $authorizationManager
+     */
+    public function setAuthorizationManager($authorizationManager)
+    {
+        $this->authorizationManager = $authorizationManager;
+        $this->getRealmManager()->setDefaultAuthorizationManager($this->getAuthorizationManager());
+    }
 
     /**
      * Set manager

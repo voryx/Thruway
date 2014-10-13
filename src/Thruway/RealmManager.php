@@ -3,6 +3,8 @@
 namespace Thruway;
 
 
+use Thruway\Authentication\AllPermissiveAuthorizationManager;
+use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Manager\ManagerDummy;
@@ -37,6 +39,11 @@ class RealmManager
     private $defaultAuthenticationManager;
 
     /**
+     * @var AuthorizationManagerInterface
+     */
+    private $defaultAuthorizationManager;
+
+    /**
      * Constructor
      *
      * @param \Thruway\Manager\ManagerInterface $manager
@@ -44,9 +51,17 @@ class RealmManager
     public function __construct(ManagerInterface $manager = null)
     {
         $this->realms                       = [];
+
+        $this->setAllowRealmAutocreate(true);
+        $this->setDefaultAuthenticationManager(null);
+
+        if ($manager === null) {
+            $manager = new ManagerDummy();
+        }
+
         $this->manager                      = $manager;
-        $this->allowRealmAutocreate         = true;
-        $this->defaultAuthenticationManager = null;
+
+        $this->setDefaultAuthorizationManager(new AllPermissiveAuthorizationManager());
     }
 
     /**
@@ -60,10 +75,11 @@ class RealmManager
     public function getRealm($realmName)
     {
         if (!array_key_exists($realmName, $this->realms)) {
-            if ($this->allowRealmAutocreate) {
+            if ($this->getAllowRealmAutocreate()) {
                 $this->manager->debug("Creating new realm \"" . $realmName . "\"");
                 $realm = new Realm($realmName);
                 $realm->setAuthenticationManager($this->getDefaultAuthenticationManager());
+                $realm->setAuthorizationManager($this->getDefaultAuthorizationManager());
                 $realm->setManager($this->manager);
 
                 $this->addRealm($realm);
@@ -177,4 +193,19 @@ class RealmManager
         return $this->defaultAuthenticationManager;
     }
 
+    /**
+     * @return AuthorizationManagerInterface
+     */
+    public function getDefaultAuthorizationManager()
+    {
+        return $this->defaultAuthorizationManager;
+    }
+
+    /**
+     * @param AuthorizationManagerInterface $defaultAuthorizationManager
+     */
+    public function setDefaultAuthorizationManager($defaultAuthorizationManager)
+    {
+        $this->defaultAuthorizationManager = $defaultAuthorizationManager;
+    }
 }

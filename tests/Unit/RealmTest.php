@@ -104,14 +104,62 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0, count($sessions));
     }
 
-    /*
-     * @depends testJoin
-     *
-     * @param \Thruway\Session $session
-     */
-    public function xtestSomethingElse(\Thruway\Session $session) {
-        $realm = $session->getRealm();
+    public function testUnauthorizedActions() {
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->disableOriginalConstructor()
+            ->setMethods(["sendMessage"])
+            ->getMock();
 
-        $this->assertEquals(1, count($realm->getSessions()));
+        $authorizationManager = $this->getMockBuilder('\Thruway\Authentication\AuthorizationManagerInterface')
+            ->getMock();
+
+        $realm = new \Thruway\Realm("some_realm");
+        $realm->setAuthorizationManager($authorizationManager);
+
+        $authorizationManager->expects($this->exactly(4))
+            ->method("isAuthorizedTo")
+            ->withConsecutive(
+                [$this->equalTo("subscribe"), $this->equalTo("some_topic"),
+                $this->identicalTo($realm), $this->isInstanceOf('\Thruway\Authentication\AuthenticationDetails')],
+                [$this->equalTo("publish"), $this->equalTo("some_topic"),
+                    $this->identicalTo($realm), $this->isInstanceOf('\Thruway\Authentication\AuthenticationDetails')],
+                [$this->equalTo("register"), $this->equalTo("some_procedure"),
+                    $this->identicalTo($realm), $this->isInstanceOf('\Thruway\Authentication\AuthenticationDetails')],
+                [$this->equalTo("call"), $this->equalTo("some_procedure"),
+                    $this->identicalTo($realm), $this->isInstanceOf('\Thruway\Authentication\AuthenticationDetails')]
+            );
+
+        $errorCheck = function ($msg) {
+            $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $msg);
+            $this->assertEquals('wamp.error.not_authorized', $msg->getErrorUri());
+
+            return true;
+        };
+
+        $session->expects($this->exactly(5))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback($errorCheck)],
+                [$this->callback($errorCheck)],
+                [$this->callback($errorCheck)],
+                [$this->callback($errorCheck)]
+            );
+
+        $helloMsg = new \Thruway\Message\HelloMessage("some_realm", []);
+
+        $realm->onMessage($session, $helloMsg);
+
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Session::getUniqueId(), [], "some_topic");
+        $realm->onMessage($session, $subscribeMsg);
+
+        $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Session::getUniqueId(), [], "some_topic");
+        $realm->onMessage($session, $publishMsg);
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Session::getUniqueId(), [], 'some_procedure');
+        $realm->onMessage($session, $registerMsg);
+
+        $callMsg = new \Thruway\Message\CallMessage(\Thruway\Session::getUniqueId(), [], "some_procedure");
+        $realm->onMessage($session, $callMsg);
     }
 }

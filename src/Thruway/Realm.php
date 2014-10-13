@@ -2,15 +2,21 @@
 
 namespace Thruway;
 
+use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthenticationDetails;
+use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\AuthenticateMessage;
+use Thruway\Message\CallMessage;
+use Thruway\Message\ErrorMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishMessage;
+use Thruway\Message\RegisterMessage;
+use Thruway\Message\SubscribeMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
@@ -60,6 +66,11 @@ class Realm
     private $authenticationManager;
 
     /**
+     * @var AuthorizationManagerInterface
+     */
+    private $authorizationManager;
+
+    /**
      * The metaSession is used as a dummy session to send meta events from
      *
      * @var \Thruway\Session
@@ -79,6 +90,8 @@ class Realm
         $this->dealer                = new Dealer();
         $this->roles                 = [$this->broker, $this->dealer];
         $this->authenticationManager = null;
+
+        $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
 
         $this->setManager(new ManagerDummy());
 
@@ -130,6 +143,33 @@ class Realm
      */
     private function processAuthenticated(Session $session, Message $msg)
     {
+        // authorization
+        $action = "none";
+        $uri = "";
+        if ($msg instanceof SubscribeMessage) {
+            $action = "subscribe";
+            $uri = $msg->getTopicName();
+        } else if ($msg instanceof PublishMessage) {
+            $action = "publish";
+            $uri = $msg->getTopicName();
+        } else if ($msg instanceof RegisterMessage) {
+            $action = "register";
+            $uri = $msg->getProcedureName();
+        } else if ($msg instanceof CallMessage) {
+            $action = "call";
+            $uri = $msg->getProcedureName();
+        }
+
+        if ($action != "none") {
+            if (!$this->getAuthorizationManager()->isAuthorizedTo($action, $uri, $this,
+                $session->getAuthenticationDetails())) {
+                $this->manager->alert("Permission denied: " . $action . " " . $uri . " for " . $session->getAuthenticationDetails()->getAuthId());
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
+
+                return;
+            }
+        }
+
         $handled = false;
         foreach ($this->roles as $role) {
             if ($role->handlesMessage($msg)) {
@@ -338,6 +378,22 @@ class Realm
     public function getAuthenticationManager()
     {
         return $this->authenticationManager;
+    }
+
+    /**
+     * @return AuthorizationManagerInterface
+     */
+    public function getAuthorizationManager()
+    {
+        return $this->authorizationManager;
+    }
+
+    /**
+     * @param AuthorizationManagerInterface $authorizationManager
+     */
+    public function setAuthorizationManager($authorizationManager)
+    {
+        $this->authorizationManager = $authorizationManager;
     }
 
     /**
