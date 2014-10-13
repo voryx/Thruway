@@ -22,6 +22,6 @@ before_script:
 #    - sh tests/Crossbar/travis_install
 
 script:
-    - php tests/TestServer.php 10 & phpunit
+    - php tests/TestServer.php 15 & phpunit
 #    - sh tests/Crossbar/run_tests
 

@@ -53,7 +53,7 @@ class Session extends AbstractSession
     {
         $this->transport             = $transport;
         $this->state                 = static::STATE_PRE_HELLO;
-        $this->sessionId             = static::getUniqueId();
+        $this->sessionId             = Session::getUniqueId();
         $this->realm                 = null;
         $this->messagesSent          = 0;
         $this->sessionStart          = new \DateTime();

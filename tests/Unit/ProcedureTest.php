@@ -1,0 +1,565 @@
+<?php
+
+require_once __DIR__ . '/../bootstrap.php';
+
+
+class ProcedureTest extends PHPUnit_Framework_TestCase
+{
+    /**
+     * @var \Thruway\Procedure
+     */
+    private $_proc;
+
+    /**
+     * @var
+     */
+    private $_session;
+
+    public function setUp()
+    {
+        $this->_proc = new \Thruway\Procedure("test_procedure");
+        //$this->_session = new \Thruway\Session(new \Thruway\Transport\DummyTransport());
+
+    }
+
+    public function testProcessRegisterWithNameMismatch()
+    {
+        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            [],
+            'different_name'
+        );
+
+        $this->_session->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->callback(function ($msg) use ($registerMsg) {
+                $this->assertInstanceOf(\Thruway\Message\ErrorMessage::class, $msg);
+                $this->assertEquals($registerMsg->getRequestId(), $msg->getErrorRequestId());
+                $this->assertEquals($registerMsg->getMsgCode(), $msg->getErrorMsgCode());
+                return true;
+            }));
+
+        $this->_proc->processRegister($this->_session, $registerMsg);
+
+        $this->assertEquals(0, count($this->_proc->getRegistrations()));
+    }
+
+    public function testProcessRegister()
+    {
+        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            [],
+            'test_procedure'
+        );
+
+        $this->_session->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $this->_proc->processRegister($this->_session, $registerMsg);
+
+        $this->assertEquals(1, count($this->_proc->getRegistrations()));
+    }
+
+    public function testDuplicateRegistration()
+    {
+        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $session2 = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->_session->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            [],
+            'test_procedure'
+        );
+
+        $this->_proc->processRegister($this->_session, $registerMsg);
+
+        $session2->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\ErrorMessage::class));
+
+        $this->_proc->processRegister($session2, $registerMsg);
+
+        $this->assertEquals(1, count($this->_proc->getRegistrations()));
+    }
+
+    public function testDuplicateRegistrationWithReplaceOrphanNoPingSupport()
+    {
+        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $session2 = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->_session->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            ['replace_orphaned_session' => true],
+            'test_procedure'
+        );
+
+        $this->_proc->processRegister($this->_session, $registerMsg);
+
+        $session2->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\ErrorMessage::class));
+
+        $this->_session->expects($this->any())
+            ->method("ping")
+            ->will($this->throwException(new \Thruway\Exception\PingNotSupportedException()));
+
+        $this->_proc->processRegister($session2, $registerMsg);
+
+        $this->assertEquals(1, count($this->_proc->getRegistrations()));
+    }
+
+    public function testDuplicateRegistrationWithReplaceOrphanWithPingSupportNoTimeout()
+    {
+        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $session2 = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->_session->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            ['replace_orphaned_session' => true],
+            'test_procedure'
+        );
+
+        $this->_proc->processRegister($this->_session, $registerMsg);
+
+        $session2->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\ErrorMessage::class));
+
+        $this->_session->expects($this->any())
+            ->method("ping")
+            ->will($this->returnValue(new \React\Promise\FulfilledPromise()));
+
+        $this->_proc->processRegister($session2, $registerMsg);
+
+        $this->assertEquals(1, count($this->_proc->getRegistrations()));
+    }
+
+    public function testDuplicateRegistrationWithReplaceOrphanWithPingSupportTimeout()
+    {
+        $this->_session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $session2 = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->_session->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $this->_session->expects($this->once())
+            ->method('shutdown');
+
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            ['replace_orphaned_session' => true],
+            'test_procedure'
+        );
+
+        $this->_proc->processRegister($this->_session, $registerMsg);
+
+        $session2->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $this->_session->expects($this->once())
+            ->method("ping")
+            ->will($this->returnValue(new \React\Promise\RejectedPromise()));
+
+        $this->_proc->processRegister($session2, $registerMsg);
+
+        $this->assertEquals(2, count($this->_proc->getRegistrations()));
+    }
+
+    public function testMultipleRegistrations()
+    {
+        $realm = $this->getMockBuilder(\Thruway\Realm::class)
+            ->setConstructorArgs(["realm1"])
+            ->setMethods(["publishMeta"])
+            ->getMock();
+
+        $realm->expects($this->exactly(3))
+            ->method('publishMeta')
+            ->with(
+                $this->equalTo('thruway.metaevent.procedure.congestion'),
+                $this->equalTo([["name" => $this->_proc->getProcedureName()]])
+            );
+
+        // create 5 sessions
+        $s                 = [];
+        $currentCallCounts = [];
+        $invocationToYield = null;
+        for ($i = 0; $i < 5; $i++) {
+            $s[$i] = $this->getMockBuilder(\Thruway\Session::class)
+                ->disableOriginalConstructor()
+                ->setMethods(['sendMessage', 'getRealm'])
+                ->getMock();
+
+            if ($i < 2) {
+                $s[$i]->expects($this->exactly(3))
+                    ->method("sendMessage")
+                    ->withConsecutive(
+                        [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)],
+                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)],
+                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)]
+                    );
+            } else if ($i == 2) {
+                $s[$i]->expects($this->exactly(4))
+                    ->method("sendMessage")
+                    ->withConsecutive(
+                        [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)],
+                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)],
+                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)],
+                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)]
+                    );
+            } else {
+                $s[$i]->expects($this->exactly(2))
+                    ->method("sendMessage")
+                    ->withConsecutive(
+                        [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)],
+                        [$this->isInstanceOf(\Thruway\Message\InvocationMessage::class)]
+                    );
+            }
+
+
+            $s[$i]->method('getRealm')->will($this->returnValue($realm));
+
+            $currentCallCounts[$i] = 0;
+        }
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            ['thruway_mutliregister' => true],
+            'test_procedure'
+        );
+
+        foreach ($s as $i => $session) {
+            $this->_proc->processRegister($session, $registerMsg);
+        }
+
+        $callMsg = new \Thruway\Message\CallMessage(
+            \Thruway\Session::getUniqueId(),
+            [],
+            'test_procedure'
+        );
+
+        // call the proc enough to get a backlog
+        // should be 2,2,2,1,1 for call depth now
+        for ($i = 0; $i < 8; $i++) {
+            $this->_proc->processCall($s[0], $callMsg);
+        }
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->assertEquals($i < 3 ? 2 : 1, $s[$i]->getPendingCallCount());
+        }
+
+        // now reset session[2] down to zero and see if that is where the next call goes
+        $s[2]->decPendingCallCount();
+        $s[2]->decPendingCallCount();
+
+        $this->assertEquals(0, $s[2]->getPendingCallCount());
+
+        $this->_proc->processCall($s[0], $callMsg);
+    }
+
+    public function testMultiRegisterWithDisagreeOnDiscloseCaller() {
+        $s1 = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $s2 = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $s1->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $s2->expects($this->exactly(2))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf(\Thruway\Message\ErrorMessage::class)],
+                [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)]
+                );
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            [
+                'disclose_caller' => true,
+                'thruway_mutliregister' => true
+            ],
+            'test_procedure'
+        );
+
+        $this->_proc->processRegister($s1, $registerMsg);
+
+        $registerMsg->setOptions(['thruway_mutliregister' => true]);
+        $this->_proc->processRegister($s2, $registerMsg);
+
+        $registerMsg->setOptions([
+            'disclose_caller' => true,
+            'thruway_mutliregister' => true
+        ]);
+        $this->_proc->processRegister($s2, $registerMsg);
+    }
+
+    public function testMultiRegisterWithDisagreeOnMultiRegister() {
+        $s1 = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $s2 = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $s1->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $s2->expects($this->exactly(2))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf(\Thruway\Message\ErrorMessage::class)],
+                [$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)]
+            );
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            [
+                'disclose_caller' => true,
+                'thruway_mutliregister' => true
+            ],
+            'test_procedure'
+        );
+
+        $this->_proc->processRegister($s1, $registerMsg);
+
+        $registerMsg->setOptions(['disclose_caller' => true]);
+        $this->_proc->processRegister($s2, $registerMsg);
+
+        $registerMsg->setOptions([
+            'disclose_caller' => true,
+            'thruway_mutliregister' => true
+        ]);
+        $this->_proc->processRegister($s2, $registerMsg);
+    }
+
+    public function testCallWithoutRegistration() {
+        $session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $session->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->callback(function ($msg) {
+                $this->assertInstanceOf(\Thruway\Message\ErrorMessage::class, $msg);
+                $this->assertEquals('wamp.error.no_such_procedure', $msg->getErrorUri());
+                return true;
+            }));
+
+        $callMsg = new \Thruway\Message\CallMessage(
+            \Thruway\Session::getUniqueId(),
+            [],
+            'test_procedure'
+        );
+
+        $this->_proc->processCall($session, $callMsg);
+    }
+
+    public function testGetCallWithRequestIDAndGetRegistrationById() {
+        $session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $rogueSession = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $rogueSession->expects($this->exactly(1))
+            ->method("sendMessage")
+            ->withConsecutive(
+                //[$this->isInstanceOf(\Thruway\Message\RegisteredMessage::class)],
+                [$this->isInstanceOf(\Thruway\Message\ErrorMessage::class)]
+            );
+
+//        $rregMsg = new \Thruway\Message\RegisterMessage(
+//            \Thruway\Session::getUniqueId(),
+//            ['thruway_multiregister' => true],
+//            'test_procedure'
+//        );
+//
+//        $this->_proc->processRegister($rogueSession, $rregMsg);
+
+        /** @var \Thruway\Message\RegisteredMessage $registeredMsg */
+        $registeredMsg = null;
+        /** @var \Thruway\Message\InvocationMessage $invocationMsg */
+        $invocationMsg = null;
+
+        $session->expects($this->exactly(4))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [
+                    $this->callback(function ($msg) use (&$registeredMsg) { // registered call
+                        $this->assertInstanceOf(\Thruway\Message\RegisteredMessage::class, $msg);
+                        $registeredMsg = $msg;
+
+                        return true;
+                    })
+                ],
+                [
+                    $this->callback(function ($msg) use (&$invocationMsg) {
+                        $this->assertInstanceOf(\Thruway\Message\InvocationMessage::class, $msg);
+                        $invocationMsg = $msg;
+
+                        return true;
+                    })
+                ],
+                [
+                    $this->callback(function ($msg) {
+                        $this->assertInstanceOf(\Thruway\Message\ErrorMessage::class, $msg);
+                        $this->assertEquals('wamp.error.no_such_registration', $msg->getErrorUri());
+                        return true;
+                    })
+                ],
+                [$this->isInstanceOf(\Thruway\Message\UnregisteredMessage::class)]
+            );
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            [],
+            'test_procedure'
+        );
+
+        $this->_proc->processRegister($session, $registerMsg);
+
+        $this->assertInstanceOf(\Thruway\Message\RegisteredMessage::class, $registeredMsg);
+
+        $callMsg = new \Thruway\Message\CallMessage(
+            \Thruway\Session::getUniqueId(),
+            [],
+            "test_procedure"
+        );
+
+        $this->_proc->processCall($session, $callMsg);
+
+        $this->assertInstanceOf(\Thruway\Message\InvocationMessage::class, $invocationMsg);
+
+        $call = $this->_proc->getCallByRequestId($invocationMsg->getRequestId());
+
+        $this->assertInstanceOf(\Thruway\Call::class, $call);
+        $this->assertSame($session, $call->getCalleeSession());
+
+        $registration = $this->_proc->getRegistrationById($registeredMsg->getRegistrationId());
+
+        $this->assertInstanceOf(\Thruway\Registration::class, $registration);
+        $this->assertEquals($registeredMsg->getRegistrationId(), $registration->getId());
+
+        $unregisterMsg = new \Thruway\Message\UnregisterMessage(
+            \Thruway\Session::getUniqueId(), $registration->getId());
+
+        $this->assertEquals(1, count($this->_proc->getRegistrations()));
+
+        // this does not get called on a mock
+        $this->_proc->processUnregister($rogueSession, $unregisterMsg);
+
+        $this->assertEquals(1, count($this->_proc->getRegistrations()));
+
+        // try unregistering a non-existent registration
+        $badUnregisterMsg = new \Thruway\Message\UnregisterMessage(\Thruway\Session::getUniqueId(), 0);
+        $this->_proc->processUnregister($session, $badUnregisterMsg);
+
+        $this->assertEquals(1, count($this->_proc->getRegistrations()));
+
+        $this->_proc->processUnregister($session, $unregisterMsg);
+
+        $this->assertEquals(0, count($this->_proc->getRegistrations()));
+
+
+    }
+
+    public function testGetCallWithRequestIdFailure() {
+        $call = $this->_proc->getCallByRequestId(0);
+
+        $this->assertFalse($call);
+    }
+
+    public function testIsDiscloseCaller() {
+        $disclose = $this->_proc->isDiscloseCaller();
+
+        $this->assertFalse($disclose);
+    }
+
+    public function testIsAllowMultipleRegistrations() {
+        $allow = $this->_proc->isAllowMultipleRegistrations();
+
+        $this->assertFalse($allow);
+    }
+
+    public function testLeave() {
+        $session = $this->getMockBuilder(\Thruway\Session::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $session->expects($this->once())
+            ->method("sendMessage")
+            ->with($this->isInstanceOf(\Thruway\Message\RegisteredMessage::class));
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Session::getUniqueId(),
+            [],
+            'test_procedure'
+        );
+
+        $this->_proc->processRegister($session, $registerMsg);
+
+        $this->assertEquals(1, count($this->_proc->getRegistrations()));
+
+        $this->_proc->leave($session);
+
+        $this->assertEquals(0, count($this->_proc->getRegistrations()));
+    }
+
+    public function testGetRegistrationByIdFailure() {
+        $reg = $this->_proc->getRegistrationById(0);
+
+        $this->assertFalse($reg);
+    }
+} 

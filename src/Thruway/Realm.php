@@ -3,6 +3,7 @@
 namespace Thruway;
 
 use Thruway\Authentication\AuthenticationDetails;
+use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\AuthenticateMessage;
@@ -151,6 +152,9 @@ class Realm
      */
     private function processHello(Session $session, HelloMessage $msg)
     {
+        if ($this->getRealmName() != $msg->getRealm()) {
+            throw new InvalidRealmNameException();
+        }
         $this->manager->debug("got hello");
         // send welcome message
         if ($this->sessions->contains($session)) {

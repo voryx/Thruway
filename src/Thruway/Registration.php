@@ -128,7 +128,7 @@ class Registration
         $registration = new Registration($session, $msg->getProcedureName());
 
         $options = (array)$msg->getOptions();
-        if (isset($options['discloseCaller']) && $options['discloseCaller'] === true) {
+        if (isset($options['disclose_caller']) && $options['disclose_caller'] === true) {
             $registration->setDiscloseCaller(true);
         }
 
@@ -243,7 +243,7 @@ class Registration
     {
         /* @var $call \Thruway\Call */
         foreach ($this->calls as $i => $call) {
-            if ($callToRemove === $this->calls[$i]) {
+            if ($callToRemove === $call) {
                 array_splice($this->calls, $i, 1);
                 $this->session->decPendingCallCount();
                 $callEnd = microtime();

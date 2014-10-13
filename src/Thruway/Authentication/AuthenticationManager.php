@@ -56,7 +56,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             $session,
             'thruway.auth.registermethod',
             [$this, 'registerAuthMethod'],
-            ['discloseCaller' => true]
+            ['disclose_caller' => true]
         )
             ->then(
                 function () {

@@ -76,7 +76,7 @@ class Broker extends AbstractRole
         elseif ($msg instanceof UnsubscribeMessage):
             $this->processUnsubscribe($session, $msg);
         else:
-            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+            throw new \Exception("Unhandled message type sent to broker: " . get_class($msg));
         endif;
     }
 

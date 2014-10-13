@@ -42,4 +42,8 @@ abstract class AbstractRole
         return !!preg_match('/^([0-9a-z_]+\.)*([0-9a-z_]+)$/', $uri);
     }
 
+    public function getFeatures() {
+        return new \stdClass();
+    }
+
 } 

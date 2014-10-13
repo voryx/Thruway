@@ -55,7 +55,7 @@ class DiscloseCallerTest extends PHPUnit_Framework_TestCase
                     return $args[0] + $args[1];
                 };
 
-                $session->register('com.example.disclosecallertest', $add2, ['discloseCaller' => true])->then(
+                $session->register('com.example.disclosecallertest', $add2, ['disclose_caller' => true])->then(
                     function () use ($session) {
                         $session->call('com.example.disclosecallertest', [1, 2])->then(
                             function ($res) {

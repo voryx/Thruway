@@ -34,7 +34,7 @@ class RegisterMessage extends Message
      */
     public function __construct($requestId, $options, $procedureName)
     {
-        $this->options       = $options;
+        $this->setOptions($options);
         $this->procedureName = strtolower($procedureName);
         $this->requestId     = $requestId;
     }
@@ -68,6 +68,16 @@ class RegisterMessage extends Message
     public function getOptions()
     {
         return $this->options;
+    }
+
+    /**
+     * Set options
+     *
+     * @param array $options
+     */
+    public function setOptions($options)
+    {
+        $this->options = $options;
     }
 
     /**

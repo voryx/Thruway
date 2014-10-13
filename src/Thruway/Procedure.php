@@ -68,14 +68,7 @@ class Procedure {
         if (count($this->registrations) > 0) {
             // we already have something registered
             if ($this->getAllowMultipleRegistrations()) {
-                try {
-                    $this->addRegistration($registration);
-                    $session->sendMessage(
-                        new RegisteredMessage($msg->getRequestId(), $registration->getId())
-                    );
-                } catch (\Exception $e) {
-                    $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-                }
+                $this->addRegistration($registration, $msg);
             } else {
                 // we are not allowed multiple registrations, but we may want
                 // to replace an orphaned session
@@ -86,30 +79,27 @@ class Procedure {
                 /** @var Registration $oldRegistration */
                 $oldRegistration = $this->registrations[0];
                 if (isset($options['replace_orphaned_session']) && $options['replace_orphaned_session'] == "yes") {
-                    $oldRegistration->getSession()->ping(5)
-                        ->then(function ($res) use ($session, $errorMsg) {
-                                // the ping came back - send procedure_already_exists
-                                $session->sendMessage($errorMsg);
-                            },
-                            function ($r) use ($oldRegistration, $session, $registration, $msg) {
-                                // bring down the exiting session because the
-                                // ping timed out
-                                $deadSession = $oldRegistration->getSession();
+                    try {
+                        $oldRegistration->getSession()->ping(5)
+                            ->then(function ($res) use ($session, $errorMsg) {
+                                    // the ping came back - send procedure_already_exists
+                                    $session->sendMessage($errorMsg);
+                                },
+                                function ($r) use ($oldRegistration, $session, $registration, $msg) {
+                                    // bring down the exiting session because the
+                                    // ping timed out
+                                    $deadSession = $oldRegistration->getSession();
 
-                                // this should do all the cleanup needed and remove the
-                                // registration from this procedure also
-                                $deadSession->shutdown();
+                                    // this should do all the cleanup needed and remove the
+                                    // registration from this procedure also
+                                    $deadSession->shutdown();
 
-                                // complete this registration now
-                                try {
-                                    $this->addRegistration($registration);
-                                    $session->sendMessage(
-                                        new RegisteredMessage($msg->getRequestId(), $registration->getId())
-                                    );
-                                } catch (\Exception $e) {
-                                    $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-                                }
-                            });
+                                    // complete this registration now
+                                    $this->addRegistration($registration, $msg);
+                                });
+                    } catch (\Exception $e) {
+                        $session->sendMessage($errorMsg);
+                    }
                 } else {
                     $session->sendMessage($errorMsg);
                 }
@@ -120,12 +110,7 @@ class Procedure {
             $this->setDiscloseCaller($registration->getDiscloseCaller());
             $this->setAllowMultipleRegistrations($registration->getAllowMultipleRegistrations());
 
-            try {
-                $this->addRegistration($registration);
-                $session->sendMessage(new RegisteredMessage($msg->getRequestId(), $registration->getId()));
-            } catch (\Exception $e) {
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-            }
+            $this->addRegistration($registration, $msg);
         }
     }
 
@@ -135,29 +120,28 @@ class Procedure {
      * @param \Thruway\Registration $registration
      * @throws \Exception
      */
-    private function addRegistration(Registration $registration) 
+    private function addRegistration(Registration $registration, RegisterMessage $msg)
     {
-        // make sure it isn't already in here
-        for ($i = 0; $i < count($this->registrations); $i++) {
-            if ($registration === $this->registrations[$i]) {
-                throw new \Exception('Attempt to add registration to procedure it is already added to.');
+        try {
+            // make sure the uri is exactly the same
+            if ($registration->getProcedureName() != $this->getProcedureName()) {
+                throw new \Exception('Attempt to add registration to procedure with different procedure name.');
             }
-        }
 
-        // make sure the uri is exactly the same
-        if ($registration->getProcedureName() != $this->getProcedureName()) {
-            throw new \Exception('Attempt to add registration to procedure with different procedure name.');
-        }
+            // make sure options match
+            if ($registration->getAllowMultipleRegistrations() != $this->getAllowMultipleRegistrations()) {
+                throw new \Exception('Registration and procedure must agree on allowing multiple registrations');
+            }
+            if ($registration->getDiscloseCaller() != $this->getDiscloseCaller()) {
+                throw new \Exception('Registration and procedure must agree on disclose caller');
+            }
 
-        // make sure options match
-        if ($registration->getAllowMultipleRegistrations() != $this->getAllowMultipleRegistrations()) {
-            throw new \Exception('Registration and procedure must agree on allowing multiple registrations');
-        }
-        if ($registration->getDiscloseCaller() != $this->getDiscloseCaller()) {
-            throw new \Exception('Registration and procedure must agree on disclose caller');
-        }
+            $this->registrations[] = $registration;
 
-        $this->registrations[] = $registration;
+            $registration->getSession()->sendMessage(new RegisteredMessage($msg->getRequestId(), $registration->getId()));
+        } catch (\Exception $e) {
+            $registration->getSession()->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+        }
     }
 
     /**
@@ -208,7 +192,7 @@ class Procedure {
             }
         }
 
-        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_procedure'));
+        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_registration'));
     }
 
     /**
@@ -227,18 +211,28 @@ class Procedure {
         }
 
         // find the best candidate
+        $congestion = true;
         /* @var $bestRegistration \Thruway\Registration */
         $bestRegistration = $this->registrations[0];
         /* @var $registration \Thruway\Registration */
         foreach($this->registrations as $registration) {
             if ($registration->getSession()->getPendingCallCount() == 0) {
                 $bestRegistration = $registration;
+                $congestion = false;
                 break;
             }
             if ($registration->getSession()->getPendingCallCount() <
                 $bestRegistration->getSession()->getPendingCallCount()) {
                 $bestRegistration = $registration;
             }
+        }
+
+        if ($congestion) {
+            $bestRegistration->getSession()->getRealm()->publishMeta('thruway.metaevent.procedure.congestion',
+                [
+                    ["name" => $this->getProcedureName()]
+                ]
+            );
         }
 
         $bestRegistration->processCall($session, $msg);
