@@ -132,7 +132,7 @@ class Registration
             $registration->setDiscloseCaller(true);
         }
 
-        if (isset($options['thruway_mutliregister']) && $options['thruway_mutliregister'] === true) {
+        if (isset($options['thruway_multiregister']) && $options['thruway_multiregister'] === true) {
             $registration->setAllowMultipleRegistrations(true);
         }
 

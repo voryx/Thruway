@@ -267,7 +267,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
             \Thruway\Session::getUniqueId(),
-            ['thruway_mutliregister' => true],
+            ['thruway_multiregister' => true],
             'test_procedure'
         );
 
@@ -324,19 +324,19 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             \Thruway\Session::getUniqueId(),
             [
                 'disclose_caller' => true,
-                'thruway_mutliregister' => true
+                'thruway_multiregister' => true
             ],
             'test_procedure'
         );
 
         $this->_proc->processRegister($s1, $registerMsg);
 
-        $registerMsg->setOptions(['thruway_mutliregister' => true]);
+        $registerMsg->setOptions(['thruway_multiregister' => true]);
         $this->_proc->processRegister($s2, $registerMsg);
 
         $registerMsg->setOptions([
             'disclose_caller' => true,
-            'thruway_mutliregister' => true
+            'thruway_multiregister' => true
         ]);
         $this->_proc->processRegister($s2, $registerMsg);
     }
@@ -365,7 +365,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             \Thruway\Session::getUniqueId(),
             [
                 'disclose_caller' => true,
-                'thruway_mutliregister' => true
+                'thruway_multiregister' => true
             ],
             'test_procedure'
         );
@@ -377,7 +377,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $registerMsg->setOptions([
             'disclose_caller' => true,
-            'thruway_mutliregister' => true
+            'thruway_multiregister' => true
         ]);
         $this->_proc->processRegister($s2, $registerMsg);
     }

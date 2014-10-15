@@ -119,7 +119,7 @@ class MultipleRegistrationTest extends PHPUnit_Framework_TestCase
 
         $this->_conn->on('open', function (\Thruway\ClientSession $session) {
             $session->register('partitioned_rpc', [$this, "thePartitionedRPC1"],
-                ["thruway_mutliregister" => true])->then(
+                ["thruway_multiregister" => true])->then(
                 function ($ret) use ($session) {
 
                     // this should fail because we are registering an identical rpc from the same connection
@@ -133,14 +133,14 @@ class MultipleRegistrationTest extends PHPUnit_Framework_TestCase
                                 // this should fail without thruway_multiregister
                                 $s2->register('partitioned_rpc', [$this, "thePartitionedRPC2"])->then(
                                     function () use ($s2, $session) {
-                                        $this->_error = "Second registration without mutliregister option should have failed";
+                                        $this->_error = "Second registration without multiregister option should have failed";
                                         $s2->close();
                                         $session->close();
                                     },
                                     function () use ($s2, $session) {
                                         // this should be the 2nd RPC
                                         $s2->register('partitioned_rpc', [$this, "thePartitionedRPC2"],
-                                            ["thruway_mutliregister" => true])->then(
+                                            ["thruway_multiregister" => true])->then(
                                             function () use ($s2, $session) {
                                                 // good - we have 2 registrations - lets make some calls
                                                 $this->_result = "";
