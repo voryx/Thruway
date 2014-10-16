@@ -108,10 +108,14 @@ class Connection
 
                 $object = $this->container->get($mapping->getServiceId());
 
-                $data = call_user_func_array(
-                    [$object, $mapping->getMethod()->getName()],
-                    $this->deserialize($args, $mapping)
-                );
+                try {
+                    $data = call_user_func_array(
+                        [$object, $mapping->getMethod()->getName()],
+                        $this->deserialize($args, $mapping)
+                    );
+                } catch (\Exception $e) {
+                    $this->container->get('logger')->critical($e->getMessage());
+                }
 
                 $context = new SerializationContext();
                 if ($mapping->getAnnotation()->getSerializerEnableMaxDepthChecks()) {
@@ -129,6 +133,13 @@ class Connection
                  * https://github.com/schmittjoh/serializer/pull/20
                  *
                  */
+                if ($data instanceof Promise) {
+                    return $data->then(function ($d) use ($context) {
+                        return json_decode($this->serializer->serialize($d, "json", $context));
+                    });
+
+                }
+
 
                 return json_decode($this->serializer->serialize($data, "json", $context));
 
