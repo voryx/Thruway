@@ -56,6 +56,11 @@ class Connection
     private $workerName;
 
     /**
+     * @var
+     */
+    private $workerInstance;
+
+    /**
      * @param ContainerInterface $container
      * @param Serializer $serializer
      * @param ResourceMapper $resourceMapper
@@ -92,60 +97,71 @@ class Connection
         }
     }
 
-
     /**
      * @param MappingInterface $mapping
      */
     protected function createRPC(MappingInterface $mapping)
     {
-        $this->session->register(
-            $mapping->getAnnotation()->getName(),
-            function ($args, $kwargs, $details) use ($mapping) {
+        $annotation     = $mapping->getAnnotation();
+        $multiRegister  = $annotation->getMultiRegister() !== null ? $annotation->getMultiRegister() : true;
+        $discloseCaller = $annotation->getDiscloseCaller() !== null ? $annotation->getDiscloseCaller() : true;
 
+        /**
+         * If this isn't the first worker to be created, we can't register this RPC call again.
+         */
+        if ($this->getWorkerInstance() > 0 && !$multiRegister) {
+            return;
+        }
+
+        $this->session->register(
+            $annotation->getName(),
+            function ($args, $kwargs, $details) use ($mapping, $annotation) {
                 //@todo match up $kwargs to the method arguments
 
-                $this->authenticateAuthId($details["authid"]);
-
-                $object = $this->container->get($mapping->getServiceId());
-
                 try {
+
+                    // $this->authenticateAuthId($details["authid"]);
+
+                    $object = $this->container->get($mapping->getServiceId());
+
                     $data = call_user_func_array(
                         [$object, $mapping->getMethod()->getName()],
                         $this->deserialize($args, $mapping)
                     );
+
+
+                    $context = new SerializationContext();
+                    if ($mapping->getAnnotation()->getSerializerEnableMaxDepthChecks()) {
+                        $context->enableMaxDepthChecks();
+                    }
+
+                    if ($mapping->getAnnotation()->getSerializerGroups()) {
+                        $context->setGroups($mapping->getAnnotation()->getSerializerGroups());
+                    }
+
+                    /**
+                     *
+                     * Need to decode json so we can hand it off to the WAMP serialize.
+                     * Once JSM Serializer support serializing to array, we can get rid of this.
+                     * https://github.com/schmittjoh/serializer/pull/20
+                     *
+                     */
+                    if ($data instanceof Promise) {
+                        return $data->then(function ($d) use ($context) {
+                            return json_decode($this->serializer->serialize($d, "json", $context));
+                        });
+
+                    }
+
+                    return json_decode($this->serializer->serialize($data, "json", $context));
+
                 } catch (\Exception $e) {
                     $this->container->get('logger')->critical($e->getMessage());
+                    throw new \Exception("Unable to make the call: {$annotation->getName()}");
                 }
-
-                $context = new SerializationContext();
-                if ($mapping->getAnnotation()->getSerializerEnableMaxDepthChecks()) {
-                    $context->enableMaxDepthChecks();
-                }
-
-                if ($mapping->getAnnotation()->getSerializerGroups()) {
-                    $context->setGroups($mapping->getAnnotation()->getSerializerGroups());
-                }
-
-                /**
-                 *
-                 * Need to decode json so we can hand it off to the WAMP serialize.
-                 * Once JSM Serializer support serializing to array, we can get rid of this.
-                 * https://github.com/schmittjoh/serializer/pull/20
-                 *
-                 */
-                if ($data instanceof Promise) {
-                    return $data->then(function ($d) use ($context) {
-                        return json_decode($this->serializer->serialize($d, "json", $context));
-                    });
-
-                }
-
-
-                return json_decode($this->serializer->serialize($data, "json", $context));
 
             },
-            ['discloseCaller' => true, "thruway_mutliregister" => true]
-            ['disclose_caller' => true, "thruway_mutliregister" => true]
+            ['disclose_caller' => $discloseCaller, "thruway_multiregister" => $multiRegister]
         );
     }
 
@@ -270,7 +286,8 @@ class Connection
     private function authenticateAuthId($authid)
     {
         if ($authid !== "anonymous") {
-            $user = $this->container->get('in_memory_user_provider')->loadUserByUsername($authid);
+//            $user = $this->container->get('in_memory_user_provider')->loadUserByUsername($authid);
+            $user = $this->container->get('fos_user.user_manager')->findUserByUsernameOrEmail($authid);
             $this->authenticateUser($user);
         }
     }
@@ -309,5 +326,22 @@ class Connection
     {
         return $this->resourceMapper;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getWorkerInstance()
+    {
+        return $this->workerInstance;
+    }
+
+    /**
+     * @param mixed $workerInstance
+     */
+    public function setWorkerInstance($workerInstance)
+    {
+        $this->workerInstance = $workerInstance;
+    }
+
 
 }

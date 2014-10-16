@@ -5,6 +5,7 @@ namespace Voryx\ThruwayBundle\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Thruway\ClientWampCraAuthenticator;
+use Thruway\ConsoleLogger;
 use Thruway\Peer\Client;
 use Thruway\Transport\InternalClientTransportProvider;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -23,7 +24,8 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
             ->setName('thruway:worker:start')
             ->setDescription('Start Thruway WAMP worker')
             ->setHelp("The <info>%command.name%</info> starts the Thruway WAMP client.")
-            ->addArgument('name', InputArgument::REQUIRED, 'The name of the worker you\'re starting');
+            ->addArgument('name', InputArgument::REQUIRED, 'The name of the worker you\'re starting')
+            ->addArgument('instance', InputArgument::REQUIRED, 'Worker instance number');
     }
 
     /**
@@ -39,15 +41,16 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
             $config    = $this->getContainer()->getParameter('voryx_thruway');
             $loop      = $this->getContainer()->get('voryx.thruway.loop');
             $client    = new Client($config['realm'], $loop);
-            $transport = new PawlTransportProvider("ws://{$config['server']}:{$config['port']}");
+            $transport = new PawlTransportProvider("ws://127.0.0.1:9991");
 
             $client->addTransportProvider($transport);
-            $client->setAuthId('dave');
-            $client->addClientAuthenticator(new ClientWampCraAuthenticator('dave', 'david2009'));
+            $client->setAuthId('trusted_worker');
+            $client->setLogger(new ConsoleLogger());
 
             $worker = $this->getContainer()->get('voryx.thruway.connection');
             $worker->setWorkerName($name);
             $worker->setClient($client);
+            $worker->setWorkerInstance($input->getArgument('instance'));
 
             $client->start();
 

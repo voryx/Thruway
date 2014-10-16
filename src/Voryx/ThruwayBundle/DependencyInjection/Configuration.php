@@ -28,6 +28,7 @@ class Configuration implements ConfigurationInterface
             ->arrayNode('resources')->prototype('scalar')->end()->end()
             ->scalarNode('server')->defaultValue('127.0.0.1')->end()
             ->scalarNode('port')->defaultValue('8080')->end()
+            ->scalarNode('trusted_port')->defaultValue('8081')->end()
             ->scalarNode('realm')->defaultValue('realm1')->end()
             ->scalarNode('php_path')->defaultValue('/usr/bin/php')->end()
             ->booleanNode('local_server')->defaultTrue()->end()
