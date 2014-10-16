@@ -9,13 +9,13 @@ use Doctrine\ORM\Mapping\Annotation;
  * Register WAMP RPC call
  *
  * How to use:
- *   '@RPC("com.example.procedure1")'
+ *   '@Register("com.example.procedure1")'
  *
  * @Annotation
  * @Target({"METHOD"})
  *
  */
-class RPC implements Annotation
+class Register implements Annotation
 {
     /**
      * @Required
@@ -29,6 +29,10 @@ class RPC implements Annotation
 
     protected $worker;
 
+    protected $multiRegister;
+
+    protected $discloseCaller;
+
     /**
      * @param $options
      * @throws \InvalidArgumentException
@@ -39,7 +43,7 @@ class RPC implements Annotation
         foreach ($options as $key => $value) {
             if (!property_exists($this, $key)) {
                 throw new \InvalidArgumentException(
-                    sprintf('Property "%s" does not exist for the RPC annotation', $key)
+                    sprintf('Property "%s" does not exist for the Register annotation', $key)
                 );
             }
             $this->$key = $value;
@@ -79,4 +83,22 @@ class RPC implements Annotation
     {
         return $this->worker;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getMultiRegister()
+    {
+        return $this->multiRegister;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDiscloseCaller()
+    {
+        return $this->discloseCaller;
+    }
+
+
 }

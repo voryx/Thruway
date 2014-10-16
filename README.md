@@ -71,7 +71,7 @@ You can also tag services with `thruway.resource` and any annotation will get pi
     
     /**
      *
-     * @RPC("com.example.add")
+     * @Register("com.example.add")
      *
      */
     public function addAction($num1, $num2)
@@ -129,7 +129,7 @@ It uses JMS Serializer, so it can serialize and deserialize Entities
 
     /**
      *
-     * @RPC("com.example.addrpc", serializerEnableMaxDepthChecks=true)
+     * @Register("com.example.addrpc", serializerEnableMaxDepthChecks=true)
      *
      */
     public function addAction(Post $post)

@@ -83,7 +83,7 @@ class URIClassMapping implements MappingInterface
     public function setMethod(\ReflectionMethod $method)
     {
         if (!$method->isPublic()) {
-            throw new Exception("You can not use the RPC or Subscribe annotation on a non-public method");
+            throw new Exception("You can not use the Register or Subscribe annotation on a non-public method");
         }
         $this->method = $method;
     }

@@ -4,13 +4,14 @@ namespace Voryx\ThruwayBundle;
 
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
+use React\Promise\Promise;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Thruway\ClientSession;
 use Thruway\Peer\Client;
 use Thruway\Transport\TransportInterface;
-use Voryx\ThruwayBundle\Annotation\RPC;
+use Voryx\ThruwayBundle\Annotation\Register;
 use Voryx\ThruwayBundle\Annotation\Subscribe;
 use Voryx\ThruwayBundle\Mapping\MappingInterface;
 
@@ -80,7 +81,7 @@ class Connection
 
         /* @var $mapping MappingInterface */
         foreach ($mappings as $mapping) {
-            if ($mapping->getAnnotation() instanceof RPC) {
+            if ($mapping->getAnnotation() instanceof Register) {
 
                 $this->createRPC($mapping);
 

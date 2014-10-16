@@ -15,7 +15,7 @@ use Voryx\ThruwayBundle\Mapping\URIClassMapping;
 class ResourceMapper
 {
 
-    const RPC_ANNOTATION_CLASS = 'Voryx\\ThruwayBundle\\Annotation\\RPC';
+    const REGISTER_ANNOTATION_CLASS = 'Voryx\\ThruwayBundle\\Annotation\\Register';
 
     const SUBSCRIBE_ANNOTATION_CLASS = 'Voryx\\ThruwayBundle\\Annotation\\Subscribe';
 
@@ -53,7 +53,7 @@ class ResourceMapper
         $method = $class->getMethod($method);
 
         $annotations   = [];
-        $annotations[] = $this->reader->getMethodAnnotation($method, self::RPC_ANNOTATION_CLASS);
+        $annotations[] = $this->reader->getMethodAnnotation($method, self::REGISTER_ANNOTATION_CLASS);
         $annotations[] = $this->reader->getMethodAnnotation($method, self::SUBSCRIBE_ANNOTATION_CLASS);
 
         foreach ($annotations as $annotation) {
@@ -112,7 +112,7 @@ class ResourceMapper
 
         /* @var $mapping URIClassMapping */
         foreach ($this->getMappings() as $key => $mapping) {
-            if ($key == $uri) {
+            if (strtolower($key) == strtolower($uri)) {
                 $workerName = $mapping->getAnnotation()->getWorker();
             }
         }
