@@ -216,7 +216,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             ->setMethods(["publishMeta"])
             ->getMock();
 
-        $realm->expects($this->exactly(3))
+        $realm->expects($this->exactly(4))
             ->method('publishMeta')
             ->with(
                 $this->equalTo('thruway.metaevent.procedure.congestion'),
@@ -234,15 +234,19 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
                 ->getMock();
 
             if ($i < 2) {
-                $s[$i]->expects($this->exactly(3))
+                // TODO: without queuing
+                //$s[$i]->expects($this->exactly(3))
+                $s[$i]->expects($this->exactly(2))
                     ->method("sendMessage")
                     ->withConsecutive(
                         [$this->isInstanceOf('\Thruway\Message\RegisteredMessage')],
-                        [$this->isInstanceOf('\Thruway\Message\InvocationMessage')],
                         [$this->isInstanceOf('\Thruway\Message\InvocationMessage')]
+                        //,[$this->isInstanceOf('\Thruway\Message\InvocationMessage')]
                     );
             } else if ($i == 2) {
-                $s[$i]->expects($this->exactly(4))
+                // TODO: without queuing
+                //$s[$i]->expects($this->exactly(4))
+                $s[$i]->expects($this->exactly(3))
                     ->method("sendMessage")
                     ->withConsecutive(
                         [$this->isInstanceOf('\Thruway\Message\RegisteredMessage')],
@@ -282,18 +286,25 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         );
 
         // call the proc enough to get a backlog
-        // should be 2,2,2,1,1 for call depth now
+        // should be 2,2,2,1,1 for call depth now (only if not queuing)
         for ($i = 0; $i < 8; $i++) {
             $this->_proc->processCall($s[0], $callMsg);
         }
 
         for ($i = 0; $i < 5; $i++) {
-            $this->assertEquals($i < 3 ? 2 : 1, $s[$i]->getPendingCallCount());
+            // TODO: without queuing
+            //$this->assertEquals($i < 3 ? 2 : 1, $s[$i]->getPendingCallCount());
+            $this->assertEquals(1, $s[$i]->getPendingCallCount());
         }
 
         // now reset session[2] down to zero and see if that is where the next call goes
         $s[2]->decPendingCallCount();
-        $s[2]->decPendingCallCount();
+
+        // remove the call from the procedure
+
+
+        // TODO: without queuing
+        //$s[2]->decPendingCallCount();
 
         $this->assertEquals(0, $s[2]->getPendingCallCount());
 

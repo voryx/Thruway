@@ -248,7 +248,7 @@ class Session extends AbstractSession
     public function decPendingCallCount() {
         // if we are already at zero - something is wrong
         if ($this->pendingCallCount == 0) {
-            $this->getManager()->error('Session pending call count wants to go negative.');
+            $this->getManager()->alert('Session pending call count wants to go negative.');
             return 0;
         }
         return $this->pendingCallCount--;

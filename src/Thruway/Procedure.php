@@ -3,9 +3,10 @@
 
 namespace Thruway;
 
+use Thruway\Manager\ManagerDummy;
+use Thruway\Manager\ManagerInterface;
 use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
-use Thruway\Message\InvocationMessage;
 use Thruway\Message\RegisteredMessage;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\UnregisteredMessage;
@@ -41,6 +42,16 @@ class Procedure {
     private $discloseCaller;
 
     /**
+     * @var \SplQueue
+     */
+    private $callQueue;
+
+    /**
+     * @var ManagerInterface
+     */
+    private $manager;
+
+    /**
      * Constructor
      * 
      * @param string $procedureName
@@ -52,6 +63,9 @@ class Procedure {
         $this->registrations = [];
         $this->allowMultipleRegistrations = false;
         $this->discloseCaller = false;
+        $this->setManager(new ManagerDummy());
+
+        $this->callQueue = new \SplQueue();
     }
 
     /**
@@ -139,6 +153,11 @@ class Procedure {
             $this->registrations[] = $registration;
 
             $registration->getSession()->sendMessage(new RegisteredMessage($msg->getRequestId(), $registration->getId()));
+
+            // now that we have added a new registration, process the queue if we are using it
+            if ($this->getAllowMultipleRegistrations()) {
+                $this->processQueue();
+            }
         } catch (\Exception $e) {
             $registration->getSession()->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
         }
@@ -202,7 +221,7 @@ class Procedure {
      * @param \Thruway\Message\CallMessage $msg
      * @return void
      */
-    public function processCall(Session $session, CallMessage $msg) 
+    public function processCall(Session $session, CallMessage $msg)
     {
         // find a registration to call
         if (count($this->registrations) == 0) {
@@ -210,32 +229,59 @@ class Procedure {
             return;
         }
 
+        $call = new Call($session, $msg);
+
+        // just send it to the first one if we don't allow multiple registrations
+        if (!$this->getAllowMultipleRegistrations()) {
+            $this->registrations[0]->processCall($call);
+            return;
+        } else {
+            $this->callQueue->enqueue($call);
+
+            $this->processQueue();
+        }
+    }
+
+    public function processQueue() {
+        if (!$this->getAllowMultipleRegistrations()) {
+            throw new \Exception("queuing only allowed when there are multiple registrations");
+        }
+
         // find the best candidate
-        $congestion = true;
-        /* @var $bestRegistration \Thruway\Registration */
-        $bestRegistration = $this->registrations[0];
-        /* @var $registration \Thruway\Registration */
-        foreach($this->registrations as $registration) {
-            if ($registration->getSession()->getPendingCallCount() == 0) {
-                $bestRegistration = $registration;
-                $congestion = false;
-                break;
-            }
-            if ($registration->getSession()->getPendingCallCount() <
-                $bestRegistration->getSession()->getPendingCallCount()) {
-                $bestRegistration = $registration;
-            }
-        }
+        while ($this->callQueue->count() > 0) {
+            $congestion = true;
 
-        if ($congestion) {
-            $bestRegistration->getSession()->getRealm()->publishMeta('thruway.metaevent.procedure.congestion',
-                [
-                    ["name" => $this->getProcedureName()]
-                ]
-            );
-        }
+            /* @var $bestRegistration \Thruway\Registration */
+            $bestRegistration = $this->registrations[0];
+            /* @var $registration \Thruway\Registration */
+            foreach ($this->registrations as $registration) {
+                if ($registration->getSession()->getPendingCallCount() == 0) {
+                    $bestRegistration = $registration;
+                    $congestion       = false;
+                    break;
+                }
+                if ($registration->getSession()->getPendingCallCount() <
+                    $bestRegistration->getSession()->getPendingCallCount()
+                ) {
+                    $bestRegistration = $registration;
+                }
+            }
 
-        $bestRegistration->processCall($session, $msg);
+            if ($congestion) {
+                // there is congestion
+                $bestRegistration->getSession()->getRealm()->publishMeta('thruway.metaevent.procedure.congestion',
+                    [
+                        ["name" => $this->getProcedureName()]
+                    ]
+                );
+
+                return;
+            }
+
+            $call = $this->callQueue->dequeue();
+
+            $bestRegistration->processCall($call);
+        }
     }
 
     /**
@@ -342,6 +388,40 @@ class Procedure {
             if ($registration->getSession() === $session) {
                 array_splice($this->registrations, $i, 1);
             }
+        }
+    }
+
+    /**
+     * @return ManagerInterface
+     */
+    public function getManager()
+    {
+        return $this->manager;
+    }
+
+    /**
+     * @param ManagerInterface $manager
+     */
+    public function setManager($manager)
+    {
+        $this->manager = $manager;
+        $this->manager->addCallable("manager.procedure." . $this->getProcedureName() . "get_registrations", $this->getRegistrations());
+    }
+
+    public function managerGetRegistrations() {
+        $registrations = $this->getRegistrations();
+
+        $regInfo = [];
+        /** @var Registration $reg */
+        foreach ($registrations as $reg) {
+            $regInfo[] = [
+                'id' => $reg->getId(),
+                "thruway_multiregister" => $reg->getAllowMultipleRegistrations(),
+                "disclose_caller" => $reg->getDiscloseCaller(),
+                "session" => $reg->getSession()->getSessionId(),
+                "authid" => $reg->getSession()->getAuthenticationDetails()->getAuthId(),
+                "statistics" => $reg->getStatistics()
+            ];
         }
     }
 }

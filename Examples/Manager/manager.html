@@ -35,7 +35,7 @@
                 ng-mouseover="regMouseOver(registration)"
                 ng-mouseout="regMouseOut(registration)">
 
-                {{ registration.id }}: {{ registration.name }} -> session {{ registration.session }} {{ realm }}
+                {{ registration.id }}: {{ registration.name }} -> session {{ registration.session }} {{ realm }} {{ registration.statistics.invocationCount }}
             </li>
         </ul>
     </div>
@@ -98,6 +98,9 @@
         };
 
         $scope.getSessions = function () {
+            $scope.managerSessions = [];
+            $scope.managerRealms = [];
+            $scope.managerRegistrations = {};
 
             session.call('manager.sessions.get', []).then(
                     function (res) {

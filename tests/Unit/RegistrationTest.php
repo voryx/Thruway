@@ -37,7 +37,9 @@ class RegistrationTest extends PHPUnit_Framework_TestCase
             'test_procedure'
         );
 
-        $this->_registration->processCall($mockSession, $callMsg);
+        $call = new \Thruway\Call($mockSession, $callMsg);
+
+        $this->_registration->processCall($call);
 
         $this->assertEquals(1, $this->_registration->getCurrentCallCount());
 

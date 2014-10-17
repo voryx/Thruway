@@ -53,28 +53,24 @@ class Call
 
     /**
      * Constructor
-     * 
-     * @param \Thruway\Message\CallMessage $callMessage
+     *
      * @param \Thruway\Session $callerSession
-     * @param \Thruway\Message\InvocationMessage $invocationMessage
-     * @param \Thruway\Session $calleeSession
+     * @param \Thruway\Message\CallMessage $callMessage
      * @param Registration $registration
      */
     public function __construct(
-        CallMessage $callMessage,
         Session $callerSession,
-        InvocationMessage $invocationMessage,
-        Session $calleeSession,
-        Registration $registration
+        CallMessage $callMessage,
+        Registration $registration = null
     ) {
         $this->callMessage       = $callMessage;
         $this->callerSession     = $callerSession;
-        $this->invocationMessage = $invocationMessage;
-        $this->calleeSession     = $calleeSession;
+        $this->invocationMessage = null;
+        $this->calleeSession     = null;
         $this->isProgressive     = false;
         $this->setRegistration($registration);
 
-        $this->callStart = microtime();
+        $this->callStart = microtime(true);
     }
 
     /**
@@ -184,6 +180,47 @@ class Call
      */
     public function getInvocationMessage()
     {
+        if ($this->invocationMessage === null) {
+            // try to create one
+            if ($this->registration === null) {
+                throw new \Exception("You must set the registration prior to calling getInvocationMessage");
+            }
+
+            if ($this->callMessage === null) {
+                throw new \Exception("You must set the CallMessage prior to calling getInvocationMessage");
+            }
+
+            $invocationMessage = InvocationMessage::createMessageFrom($this->getCallMessage(), $this->getRegistration());
+
+            $details = [];
+            if ($this->getRegistration()->getDiscloseCaller() === true && $this->getCallerSession()->getAuthenticationDetails()) {
+                $details = [
+                    "caller"     => $this->getCallerSession()->getSessionId(),
+                    "authid"     => $this->getCallerSession()->getAuthenticationDetails()->getAuthId(),
+                    //"authrole" => $this->getCallerSession()->getAuthenticationDetails()->getAuthRole(),
+                    "authmethod" => $this->getCallerSession()->getAuthenticationDetails()->getAuthMethod(),
+                ];
+            }
+
+            // TODO: check to see if callee supports progressive call
+            $callOptions   = $this->getCallMessage()->getOptions();
+            $isProgressive = false;
+            if (is_array($callOptions) && isset($callOptions['receive_progress']) && $callOptions['receive_progress']) {
+                $details       = array_merge($details, ["receive_progress" => true]);
+                $isProgressive = true;
+            }
+
+            // if nothing was added to details - change ot stdClass so it will serialize correctly
+            if (count($details) == 0) {
+                $details = new \stdClass();
+            }
+            $invocationMessage->setDetails($details);
+
+            $this->setIsProgressive($isProgressive);
+
+            $this->setInvocationMessage($invocationMessage);
+        }
+
         return $this->invocationMessage;
     }
 
@@ -238,12 +275,17 @@ class Call
     }
 
     /**
-     * Set registration
-     * 
      * @param Registration $registration
      */
-    private function setRegistration($registration)
+    public function setRegistration($registration)
     {
+        $this->invocationMessage = null;
+        if ($registration === null) {
+            $this->setCalleeSession(null);
+        } else {
+            $this->setCalleeSession($registration->getSession());
+        }
+
         $this->registration = $registration;
     }
 }

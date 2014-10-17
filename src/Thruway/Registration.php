@@ -165,41 +165,16 @@ class Registration
 
     /**
      * Process call
-     * 
-     * @param Session $session
-     * @param CallMessage $msg
+     *
+     * @param Call $call
+     * @throws \Exception
      */
-    public function processCall(Session $session, CallMessage $msg) 
+    public function processCall(Call $call)
     {
-        $invocationMessage = InvocationMessage::createMessageFrom($msg, $this);
-
-        $details = [];
-        if ($this->getDiscloseCaller() === true && $session->getAuthenticationDetails()) {
-            $details = [
-                "caller"     => $session->getSessionId(),
-                "authid"     => $session->getAuthenticationDetails()->getAuthId(),
-                //"authrole" => $session->getAuthenticationDetails()->getAuthRole(),
-                "authmethod" => $session->getAuthenticationDetails()->getAuthMethod(),
-            ];
+        if ($call->getRegistration() !== null) {
+            throw new \Exception("Registration already set when asked to process call");
         }
-
-        // TODO: check to see if callee supports progressive call
-        $callOptions   = $msg->getOptions();
-        $isProgressive = false;
-        if (is_array($callOptions) && isset($callOptions['receive_progress']) && $callOptions['receive_progress']) {
-            $details       = array_merge($details, ["receive_progress" => true]);
-            $isProgressive = true;
-        }
-
-        // if nothing was added to details - change ot stdClass so it will serialize correctly
-        if (count($details) == 0) {
-            $details = new \stdClass();
-        }
-        $invocationMessage->setDetails($details);
-
-        $call = new Call($msg, $session, $invocationMessage, $this->getSession(), $this);
-
-        $call->setIsProgressive($isProgressive);
+        $call->setRegistration($this);
 
         $this->calls[] = $call;
 
@@ -207,13 +182,13 @@ class Registration
         $callCount = count($this->calls);
         if ($callCount == 1) {
             // we just became busy
-            $this->busyStart = microtime();
+            $this->busyStart = microtime(true);
         }
         if ($callCount > $this->maxSimultaneousCalls) $this->maxSimultaneousCalls = $callCount;
         $this->invocationCount++;
         $this->lastCallStartedAt = new \DateTime();
 
-        $this->getSession()->sendMessage($invocationMessage);
+        $this->getSession()->sendMessage($call->getInvocationMessage());
     }
 
     /**
@@ -226,7 +201,7 @@ class Registration
     {
         /** @var Call $call */
         foreach ($this->calls as $call) {
-            if ($call->getInvocationMessage()->getRequestId()) {
+            if ($call->getInvocationMessage()->getRequestId() == $requestId) {
                 return $call;
             }
         }
@@ -246,7 +221,7 @@ class Registration
             if ($callToRemove === $call) {
                 array_splice($this->calls, $i, 1);
                 $this->session->decPendingCallCount();
-                $callEnd = microtime();
+                $callEnd = microtime(true);
 
                 // average call time
                 $callsInAverage = $this->invocationCount - count($this->calls) - 1;
@@ -325,5 +300,25 @@ class Registration
     public function getCurrentCallCount() 
     {
         return count($this->calls);
+    }
+
+    /**
+     * Get registration statistics
+     *
+     * @return array
+     */
+    public function getStatistics() {
+        return [
+            'currentCallCount' => count($this->calls),
+            'registeredAt' => $this->registeredAt,
+            'invocationCount' => $this->invocationCount,
+            'invocationAverageTime' => $this->invocationAverageTime,
+            'busyTime' => $this->busyTime,
+            'busyStart' => $this->busyStart,
+            'lastIdledAt' => $this->lastIdledAt,
+            'lastCallStartedAt' => $this->lastCallStartedAt,
+            'completedCallTimeTotal' => $this->completedCallTimeTotal
+
+        ];
     }
 }

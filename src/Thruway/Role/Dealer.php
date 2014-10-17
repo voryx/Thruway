@@ -168,6 +168,10 @@ class Dealer extends AbstractRole
             if ($call) {
                 $call->processYield($session, $msg);
 
+                if ($procedure->getAllowMultipleRegistrations()) {
+                    $procedure->processQueue();
+                }
+
                 return;
             }
         }
@@ -318,7 +322,8 @@ class Dealer extends AbstractRole
                 $theRegistrations[] = [
                     "id" => $registration->getId(),
                     "name" => $registration->getProcedureName(),
-                    "session" => $registration->getSession()->getSessionId()
+                    "session" => $registration->getSession()->getSessionId(),
+                    "statistics" => $registration->getStatistics()
                 ];
             }
         }

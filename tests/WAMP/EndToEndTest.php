@@ -126,27 +126,32 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                 $session->subscribe(
                     'com.example.publish',
                     function ($args, $kwargs = null, $details = null, $publicationId = null) {
-                        $this->_conn->close();
+                        //$this->_conn->close();
                         $this->_testArgs = $args;
                         $this->_testKWArgs = $kwargs;
                         $this->_publicationId = $publicationId;
 
                     }
-                );
+                )->then(function () use ($session) {
+                        /**
+                         * Tell the server to publish
+                         */
+                        $session->call('com.example.publish', ['test publish'])->then(
+                            function ($res) {
+                                $this->_testResult = $res;
 
-                /**
-                 * Tell the server to publish
-                 */
-                $session->call('com.example.publish', ['test publish'])->then(
-                    function ($res) {
-                        $this->_testResult = $res;
-
+                            },
+                            function ($error) {
+                                $this->_conn->close();
+                                $this->_error = $error;
+                            })->then(function () use ($session) {
+                                $session->close();
+                            });
                     },
-                    function ($error) {
-                        $this->_conn->close();
-                        $this->_error = $error;
-                    }
-                );
+                    function () use ($session) {
+                        $session->close();
+                        throw new Exception("subscribe failed.");
+                    });
             }
         );
 
