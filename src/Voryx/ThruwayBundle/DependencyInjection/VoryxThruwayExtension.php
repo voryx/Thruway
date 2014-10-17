@@ -111,6 +111,8 @@ class VoryxThruwayExtension extends Extension
                 ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.wamp.cra.auth.transport.provider')]);
         }
 
-        $container->addAliases(["in_memory_user_provider" => "security.user.provider.concrete.in_memory"]);
+        if ($container->hasDefinition('security.user.provider.concrete.in_memory')) {
+            $container->addAliases(['in_memory_user_provider' => 'security.user.provider.concrete.in_memory']);
+        }
     }
 }
