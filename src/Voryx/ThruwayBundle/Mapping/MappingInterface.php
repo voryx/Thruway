@@ -1,7 +1,8 @@
 <?php
+
 namespace Voryx\ThruwayBundle\Mapping;
 
-use Doctrine\ORM\Mapping\Annotation;
+use Voryx\ThruwayBundle\Annotation\Annotation;
 
 /**
  * Interface MappingInterface
@@ -9,7 +10,6 @@ use Doctrine\ORM\Mapping\Annotation;
  */
 interface MappingInterface
 {
-
     /**
      * @return mixed
      */
@@ -41,4 +41,4 @@ interface MappingInterface
      * @param mixed $serviceId
      */
     public function setServiceId($serviceId);
-} 
+}

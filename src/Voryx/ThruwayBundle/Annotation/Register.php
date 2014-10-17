@@ -3,7 +3,6 @@
 namespace Voryx\ThruwayBundle\Annotation;
 
 use Doctrine\Common\Annotations\Annotation\Required;
-use Doctrine\ORM\Mapping\Annotation;
 
 /**
  * Register WAMP RPC call
@@ -50,7 +49,6 @@ class Register implements Annotation
         }
 
     }
-
 
     /**
      * @return mixed
@@ -99,6 +97,4 @@ class Register implements Annotation
     {
         return $this->discloseCaller;
     }
-
-
 }

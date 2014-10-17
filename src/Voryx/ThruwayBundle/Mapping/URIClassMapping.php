@@ -1,10 +1,8 @@
 <?php
 
-
 namespace Voryx\ThruwayBundle\Mapping;
 
-
-use Doctrine\ORM\Mapping\Annotation;
+use Voryx\ThruwayBundle\Annotation\Annotation;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
@@ -13,18 +11,15 @@ use Symfony\Component\Config\Definition\Exception\Exception;
  */
 class URIClassMapping implements MappingInterface
 {
-
     /**
      * @var Annotation
      */
     protected $annotation;
 
-
     /**
      * @var \ReflectionMethod
      */
     protected $method;
-
 
     /**
      * @var
@@ -35,7 +30,6 @@ class URIClassMapping implements MappingInterface
      * @var bool
      */
     protected $active = false;
-
 
     /**
      * @param null $serviceId
@@ -48,7 +42,6 @@ class URIClassMapping implements MappingInterface
         $this->setMethod($method);
         $this->setAnnotation($annotation);
     }
-
 
     /**
      * @return mixed
@@ -66,7 +59,6 @@ class URIClassMapping implements MappingInterface
     {
         $this->annotation = $annotation;
     }
-
 
     /**
      * @return mixed
@@ -119,5 +111,4 @@ class URIClassMapping implements MappingInterface
     {
         $this->serviceId = $serviceId;
     }
-
 }

@@ -3,8 +3,6 @@
 namespace Voryx\ThruwayBundle\Annotation;
 
 use Doctrine\Common\Annotations\Annotation\Required;
-use Doctrine\ORM\Mapping\Annotation;
-
 
 /**
  * WAMP Subscribe
@@ -18,7 +16,6 @@ use Doctrine\ORM\Mapping\Annotation;
  */
 class Subscribe implements Annotation
 {
-
     /**
      * @Required
      * @var string
@@ -46,7 +43,6 @@ class Subscribe implements Annotation
         }
 
     }
-
 
     /**
      * @return mixed
@@ -80,4 +76,3 @@ class Subscribe implements Annotation
         return $this->worker;
     }
 }
-
