@@ -216,9 +216,14 @@ class Client extends AbstractPeer implements EventEmitterInterface
      * Start the transport
      *
      * @param boolean $startLoop
+     * @throws \Exception
      */
     public function start($startLoop = true)
     {
+        if ($this->transportProvider === null) {
+            throw new \Exception("You must add exactly one transport provider prior to starting");
+        }
+
         $this->transportProvider->startTransportProvider($this, $this->loop);
 
         if ($startLoop) {
