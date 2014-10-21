@@ -89,7 +89,7 @@ class Subscriber extends AbstractRole
         foreach ($this->subscriptions as $key => $subscription) {
             if ($subscription["request_id"] === $msg->getErrorRequestId()) {
                 // reject the promise
-                $this->subscriptions[$key]['deferred']->reject();
+                $this->subscriptions[$key]['deferred']->reject($msg);
 
                 unset($this->subscriptions[$key]);
                 break;
