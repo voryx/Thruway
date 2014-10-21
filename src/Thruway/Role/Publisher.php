@@ -77,7 +77,7 @@ class Publisher extends AbstractRole
         if (isset($this->publishRequests[$msg->getRequestId()])) {
             /* @var $futureResult Deferred */
             $futureResult = $this->publishRequests[$msg->getRequestId()]["future_result"];
-            $futureResult->reject($msg->getErrorMsgCode());
+            $futureResult->reject($msg);
             unset($this->publishRequests[$msg->getRequestId()]);
         }
     }
