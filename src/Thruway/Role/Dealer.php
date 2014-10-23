@@ -172,7 +172,15 @@ class Dealer extends AbstractRole
                     $procedure->processQueue();
                 }
 
-                return;
+            }
+        }
+
+        /** @var Registration $registration */
+        foreach ($procedure->getRegistrations() as $registration) {
+            if ($procedure->getAllowMultipleRegistrations() && $registration->getSession() === $session) {
+                $procedure->processQueue();
+                // we only need to process once per process
+                break;
             }
         }
 
