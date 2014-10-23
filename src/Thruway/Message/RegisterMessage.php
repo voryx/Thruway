@@ -67,7 +67,7 @@ class RegisterMessage extends Message implements ActionMessageInterface
      */
     public function getOptions()
     {
-        return $this->options;
+        return (array)$this->options;
     }
 
     /**
