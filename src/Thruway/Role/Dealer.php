@@ -4,16 +4,12 @@ namespace Thruway\Role;
 
 
 use Thruway\AbstractSession;
-use Thruway\Call;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
-use Thruway\Message\InvocationMessage;
 use Thruway\Message\Message;
 use Thruway\Message\RegisterMessage;
-use Thruway\Message\ResultMessage;
-use Thruway\Message\UnregisteredMessage;
 use Thruway\Message\UnregisterMessage;
 use Thruway\Message\YieldMessage;
 use Thruway\Procedure;
@@ -44,8 +40,8 @@ class Dealer extends AbstractRole
      */
     public function __construct(ManagerInterface $manager = null)
     {
-        $this->procedures    = [];
-        $manager             = $manager === null ? $manager : new ManagerDummy();
+        $this->procedures = [];
+        $manager          = $manager === null ? $manager : new ManagerDummy();
 
         $this->setManager($manager);
     }
@@ -97,7 +93,7 @@ class Dealer extends AbstractRole
         if (isset($this->procedures[$msg->getProcedureName()])) {
             $procedure = $this->procedures[$msg->getProcedureName()];
         } else {
-            $procedure =  new Procedure($msg->getProcedureName());
+            $procedure                                  = new Procedure($msg->getProcedureName());
             $this->procedures[$msg->getProcedureName()] = $procedure;
         }
 
@@ -248,7 +244,9 @@ class Dealer extends AbstractRole
         /** @var Procedure $procedure */
         foreach ($this->procedures as $procedure) {
             $call = $procedure->getCallByRequestId($requestId);
-            if ($call) return $call;
+            if ($call) {
+                return $call;
+            }
         }
 
         return false;
@@ -287,14 +285,14 @@ class Dealer extends AbstractRole
     public function leave(Session $session)
     {
         /* @var $procedure \Thruway\Procedure */
-        foreach($this->procedures as $procedure) {
+        foreach ($this->procedures as $procedure) {
             $procedure->leave($session);
         }
     }
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
@@ -306,7 +304,7 @@ class Dealer extends AbstractRole
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -328,9 +326,9 @@ class Dealer extends AbstractRole
             /* @var $registration \Thruway\Registration */
             foreach ($procedure->getRegistrations() as $registration) {
                 $theRegistrations[] = [
-                    "id" => $registration->getId(),
-                    "name" => $registration->getProcedureName(),
-                    "session" => $registration->getSession()->getSessionId(),
+                    "id"         => $registration->getId(),
+                    "name"       => $registration->getProcedureName(),
+                    "session"    => $registration->getSession()->getSessionId(),
                     "statistics" => $registration->getStatistics()
                 ];
             }
