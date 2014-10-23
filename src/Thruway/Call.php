@@ -197,7 +197,8 @@ class Call
                 $details = [
                     "caller"     => $this->getCallerSession()->getSessionId(),
                     "authid"     => $this->getCallerSession()->getAuthenticationDetails()->getAuthId(),
-                    //"authrole" => $this->getCallerSession()->getAuthenticationDetails()->getAuthRole(),
+                    "authrole" => $this->getCallerSession()->getAuthenticationDetails()->getAuthRole(),
+                    "authroles" => $this->getCallerSession()->getAuthenticationDetails()->getAuthRoles(),
                     "authmethod" => $this->getCallerSession()->getAuthenticationDetails()->getAuthMethod(),
                 ];
             }

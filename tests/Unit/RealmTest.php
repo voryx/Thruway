@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../bootstrap.php';
 
 class RealmTest extends PHPUnit_Framework_TestCase
 {
@@ -104,6 +105,7 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0, count($sessions));
     }
 
+
     public function testUnauthorizedActions() {
         $session = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
@@ -116,18 +118,20 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $realm = new \Thruway\Realm("some_realm");
         $realm->setAuthorizationManager($authorizationManager);
 
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Session::getUniqueId(), [], "some_topic");
+        $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Session::getUniqueId(), [], "some_topic");
+        $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Session::getUniqueId(), [], 'some_procedure');
+        $callMsg = new \Thruway\Message\CallMessage(\Thruway\Session::getUniqueId(), [], "some_procedure");
+
         $authorizationManager->expects($this->exactly(4))
             ->method("isAuthorizedTo")
             ->withConsecutive(
-                [$this->equalTo("subscribe"), $this->equalTo("some_topic"),
-                $this->identicalTo($realm), $this->isInstanceOf('\Thruway\Authentication\AuthenticationDetails')],
-                [$this->equalTo("publish"), $this->equalTo("some_topic"),
-                    $this->identicalTo($realm), $this->isInstanceOf('\Thruway\Authentication\AuthenticationDetails')],
-                [$this->equalTo("register"), $this->equalTo("some_procedure"),
-                    $this->identicalTo($realm), $this->isInstanceOf('\Thruway\Authentication\AuthenticationDetails')],
-                [$this->equalTo("call"), $this->equalTo("some_procedure"),
-                    $this->identicalTo($realm), $this->isInstanceOf('\Thruway\Authentication\AuthenticationDetails')]
-            );
+                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\SubscribeMessage')],
+                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\PublishMessage')],
+                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\RegisterMessage')],
+                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\CallMessage')]
+            )
+            ->willReturn(false);;
 
         $errorCheck = function ($msg) {
             $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $msg);
@@ -150,16 +154,75 @@ class RealmTest extends PHPUnit_Framework_TestCase
 
         $realm->onMessage($session, $helloMsg);
 
-        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Session::getUniqueId(), [], "some_topic");
         $realm->onMessage($session, $subscribeMsg);
-
-        $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Session::getUniqueId(), [], "some_topic");
         $realm->onMessage($session, $publishMsg);
-
-        $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Session::getUniqueId(), [], 'some_procedure');
         $realm->onMessage($session, $registerMsg);
-
-        $callMsg = new \Thruway\Message\CallMessage(\Thruway\Session::getUniqueId(), [], "some_procedure");
         $realm->onMessage($session, $callMsg);
+    }
+
+    public function testImmediateAbort() {
+        $realm = new \Thruway\Realm("realm1");
+
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->disableOriginalConstructor()
+            ->setMethods(["sendMessage", "shutdown"])
+            ->getMock();
+
+        $session->expects($this->once())
+            ->method("shutdown");
+
+        $realm->onMessage($session, new \Thruway\Message\AbortMessage([], "some.abort.reason"));
+    }
+
+    public function testCallBeforeWelcome() {
+        $realm = new \Thruway\Realm("realm1");
+
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->disableOriginalConstructor()
+            ->setMethods(["sendMessage", "shutdown", "abort"])
+            ->getMock();
+
+        $session->expects($this->once())
+            ->method("abort")
+            ->with($this->isInstanceOf("stdClass"), $this->equalTo("wamp.error.not_authorized"));
+
+        $realm->onMessage($session, new \Thruway\Message\CallMessage(\Thruway\Session::getUniqueId(), [], 'some_procedure'));
+    }
+
+    /**
+     * This can only happen in an instance where Welcome is not sent immediately after Hello
+     * (when a challenge has been sent)
+     */
+    public function testJoinSessionTwice() {
+        $realm = new \Thruway\Realm("realm1");
+
+        $authMgr = $this->getMockBuilder('\Thruway\Authentication\AuthenticationManagerInterface')
+            ->getMock();
+
+        $authMgr->expects($this->once())
+            ->method("onAuthenticationMessage")
+            ->with($this->isInstanceOf('\Thruway\Realm'),
+                $this->isInstanceOf('\Thruway\Session'),
+                $this->isInstanceOf('\Thruway\Message\HelloMessage')
+            );
+
+        $realm->setAuthenticationManager($authMgr);
+
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->disableOriginalConstructor()
+            ->setMethods(["sendMessage", "shutdown", "abort"])
+            ->getMock();
+
+        $session->expects($this->once())
+            ->method("shutdown");
+
+        $realm->onMessage($session, new \Thruway\Message\HelloMessage('realm1', ["roles" => []]));
+        $realm->onMessage($session, new \Thruway\Message\HelloMessage('realm1', ["roles" => []]));
+
+        $authMgr->expects($this->once())
+            ->method("onSessionClose")
+            ->with($this->isInstanceOf('\Thruway\Session'));
+
+        $realm->leave($session);
     }
 }

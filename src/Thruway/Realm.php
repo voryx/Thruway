@@ -8,12 +8,14 @@ use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
+use Thruway\Message\ActionMessageInterface;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
+use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\SubscribeMessage;
@@ -143,27 +145,10 @@ class Realm
      */
     private function processAuthenticated(Session $session, Message $msg)
     {
-        // authorization
-        $action = "none";
-        $uri = "";
-        if ($msg instanceof SubscribeMessage) {
-            $action = "subscribe";
-            $uri = $msg->getTopicName();
-        } else if ($msg instanceof PublishMessage) {
-            $action = "publish";
-            $uri = $msg->getTopicName();
-        } else if ($msg instanceof RegisterMessage) {
-            $action = "register";
-            $uri = $msg->getProcedureName();
-        } else if ($msg instanceof CallMessage) {
-            $action = "call";
-            $uri = $msg->getProcedureName();
-        }
-
-        if ($action != "none") {
-            if (!$this->getAuthorizationManager()->isAuthorizedTo($action, $uri, $this,
-                $session->getAuthenticationDetails())) {
-                $this->manager->alert("Permission denied: " . $action . " " . $uri . " for " . $session->getAuthenticationDetails()->getAuthId());
+        // authorization stuff here
+        if ($msg instanceof ActionMessageInterface) {
+            if (!$this->getAuthorizationManager()->isAuthorizedTo($session, $msg)) {
+                $this->manager->alert("Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
 
                 return;
@@ -189,6 +174,7 @@ class Realm
      *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\HelloMessage $msg
+     * @throws InvalidRealmNameException
      */
     private function processHello(Session $session, HelloMessage $msg)
     {
@@ -218,7 +204,12 @@ class Realm
             } else {
                 $session->setAuthenticated(true);
 
-                $session->setAuthenticationDetails(AuthenticationDetails::createAnonymous());
+                // still set admin on trusted transports
+                $authDetails = AuthenticationDetails::createAnonymous();
+                if ($session->getTransport() !== null && $session->getTransport()->isTrusted()) {
+                    $authDetails->addAuthRole('admin');
+                }
+                $session->setAuthenticationDetails($authDetails);
 
                 // the broker and dealer should give us this information
                 $roles = ["broker" => new \stdClass, "dealer" => new \stdClass];
@@ -289,16 +280,6 @@ class Realm
         }
 
         return $theSessions;
-    }
-
-    /**
-     * Set realm name
-     * 
-     * @param string $realmName
-     */
-    public function setRealmName($realmName)
-    {
-        $this->realmName = $realmName;
     }
 
     /**

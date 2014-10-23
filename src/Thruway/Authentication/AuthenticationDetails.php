@@ -27,6 +27,15 @@ class AuthenticationDetails
      * @var mixed
      */
     private $challengeDetails;
+    /**
+     * @var array
+     */
+    private $authRoles;
+
+    function __construct()
+    {
+        $this->authRoles = [];
+    }
 
     /**
      * Set challenge details
@@ -122,4 +131,55 @@ class AuthenticationDetails
         return $authDetails;
     }
 
+    /**
+     * @return array
+     */
+    public function getAuthRoles()
+    {
+        return $this->authRoles;
+    }
+
+    /**
+     * @param array $authRoles
+     */
+    public function setAuthRoles($authRoles)
+    {
+        $this->authRoles = $authRoles;
+    }
+
+    /**
+     * @param $authRole
+     */
+    public function addAuthRole($authRole) {
+        if (is_array($authRole)) {
+            $this->authRoles = array_merge($authRole, $this->authRoles);
+        } else {
+            // this is done this way so that most recent addition will be the
+            // singular role for compatibility
+            array_unshift($this->authRoles, $authRole);
+        }
+    }
+
+    /**
+     * @param $authRole
+     * @return bool
+     */
+    public function hasAuthRole($authRole) {
+        if (in_array($authRole, $this->authRoles)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAuthRole() {
+        if (count($this->authRoles) > 0) {
+            return $this->authRoles[0];
+        } else {
+            return FALSE;
+        }
+    }
 }

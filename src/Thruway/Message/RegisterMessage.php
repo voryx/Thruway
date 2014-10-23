@@ -9,7 +9,7 @@ namespace Thruway\Message;
  *
  * @package Thruway\Message
  */
-class RegisterMessage extends Message
+class RegisterMessage extends Message implements ActionMessageInterface
 {
 
     /**
@@ -99,5 +99,27 @@ class RegisterMessage extends Message
     {
         return $this->requestId;
     }
+
+    /**
+     * This returns the Uri so that the authorization manager doesn't have to know
+     * exactly the type of object to get the Uri
+     *
+     * @return mixed
+     */
+    public function getUri()
+    {
+        return $this->getProcedureName();
+    }
+
+    /**
+     * This returns the action name "publish", "subscribe", "register", "call"
+     *
+     * @return mixed
+     */
+    public function getActionName()
+    {
+        return "register";
+    }
+
 
 }

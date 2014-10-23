@@ -3,21 +3,28 @@
 
 namespace Thruway\Authentication;
 
-use Thruway\Realm;
+use Thruway\Message\ActionMessageInterface;
+use Thruway\Session;
 
 interface AuthorizationManagerInterface {
     /**
      * Check to see if an action is authorized on a specific uri given the
-     * context of the Realm and AuthenticationDetails of the session
-     * attempting the action
+     * context of the session attempting the action
      *
-     * action should be one of: ['register', 'call', 'subscribe', 'publish']
+     * actionMsg should be an instance of: register, call, subscribe, or publish messages
      *
-     * @param $action
-     * @param $uri
-     * @param Realm $realm
-     * @param AuthenticationDetails $authenticationDetails
+     * @param Session $session
+     * @param ActionMessageInterface $actionMsg
      * @return boolean
      */
-    public function isAuthorizedTo($action, $uri, Realm $realm, AuthenticationDetails $authenticationDetails);
+    public function isAuthorizedTo(Session $session, ActionMessageInterface $actionMsg);
+
+    /**
+     * Used as a factory to create new authorization managers
+     *
+     * @param $realmName
+     * @param $loop
+     * @return mixed
+     */
+    static public function create($realmName, $loop = null);
 }

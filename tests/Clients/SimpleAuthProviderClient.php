@@ -33,7 +33,20 @@ class SimpleAuthProviderClient extends \Thruway\Authentication\AbstractAuthProvi
         if ($signature == "letMeIn") {
             return [
                 "SUCCESS",
-                ["authid" => $authid]
+                [
+                    "authid"    => $authid,
+                    "authrole"  => "user",
+                    "authroles" => ["sales"]
+                ]
+            ];
+        } else if ($signature == "ozTheGreatAndPowerful") {
+            return [
+                "SUCCESS",
+                [
+                    "authid"    => $authid,
+                    "authrole"  => "admin",
+                    "authroles" => []
+                ]
             ];
         } else {
             return array("FAILURE");

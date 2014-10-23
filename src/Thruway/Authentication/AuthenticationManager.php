@@ -108,6 +108,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 }
             }
 
+            $authDetails->addAuthRole("authenticated_user");
+            $authDetails->addAuthRole("admin");
+
             $session->setAuthenticationDetails($authDetails);
 
             $session->setAuthenticated(true);
@@ -116,7 +119,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 new WelcomeMessage(
                     $session->getSessionId(), [
                         'authid'     => $authDetails->getAuthId(),
-                        'authmethod' => $authDetails->getAuthMethod()
+                        'authmethod' => $authDetails->getAuthMethod(),
+                        'authrole'   => $authDetails->getAuthRole(),
+                        'authroles'  => $authDetails->getAuthRoles()
                     ]
                 )
             );
@@ -140,8 +145,6 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
         } else {
             if ($msg instanceof AuthenticateMessage) {
                 $this->handleAuthenticateMessage($realm, $session, $msg);
-
-                //$session->sendMessage(new WelcomeMessage($session->getSessionId(), new \stdClass()));
             } else {
                 throw new \Exception("Invalid message type sent to AuthenticationManager.");
             }
@@ -311,14 +314,31 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         if ($res[0] == "SUCCESS") {
                             $welcomeDetails = ["roles" => []];
 
+                            if (isset($res[1]) && isset($res[1]['authid'])) {
+                                $session->getAuthenticationDetails()->setAuthId($res[1]['authid']);
+                            } else {
+                                $session->getAuthenticationDetails()->setAuthId('authenticated_user');
+                                $res[1]['authid'] = $session->getAuthenticationDetails()->getAuthId();
+                            }
+
+                            $authRole = 'authenticated_user';
+                            $session->getAuthenticationDetails()->addAuthRole($authRole);
+                            if (isset($res[1]) && isset($res[1]['authroles'])) {
+                                $session->getAuthenticationDetails()->addAuthRole($res[1]['authroles']);
+                                $authRole = $session->getAuthenticationDetails()->getAuthRole();
+                            }
+
+                            if (isset($res[1]) && isset($res[1]['authrole'])) {
+                                $session->getAuthenticationDetails()->addAuthRole($res[1]['authrole']);
+                            }
+
                             if (isset($res[1])) {
+                                $res[1]['authrole'] = $session->getAuthenticationDetails()->getAuthRole();
+                                $res[1]['authroles'] = $session->getAuthenticationDetails()->getAuthRoles();
+                                $res[1]['authid'] = $session->getAuthenticationDetails()->getAuthId();
                                 if (is_array($res[1])) {
                                     $welcomeDetails = array_merge($welcomeDetails, $res[1]);
                                 }
-                            }
-
-                            if (isset($res[1]) && isset($res[1]['authid'])) {
-                                $session->getAuthenticationDetails()->setAuthId($res[1]['authid']);
                             }
 
                             $session->setAuthenticated(true);
