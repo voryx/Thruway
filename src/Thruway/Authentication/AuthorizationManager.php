@@ -83,13 +83,13 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
     }
 
     private function isAuthorizedByRolesActionAndUri($rolesToCheck, $action, $uri) {
-        if (!in_array("default", $rolesToCheck)) array_merge(["default", $rolesToCheck]);
+        if (!in_array("default", $rolesToCheck)) $rolesToCheck = array_merge(["default"], $rolesToCheck);
 
         $ruleUri = $action . "." . $uri;
 
         $uriParts = explode(".", $ruleUri);
 
-        $matchable = [];
+        $matchable = ["."];
         $building  = "";
         foreach ($uriParts as $part) {
             $building .= $part . ".";
@@ -136,11 +136,6 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         return $allow;
     }
 
-    static public function create($realmName, $loop = null)
-    {
-        return new AuthorizationManager($realmName, $loop = null);
-    }
-
     public function onSessionStart($session, $transport)
     {
         $promises   = [];
@@ -166,6 +161,17 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         );
     }
 
+    static public function isValidRuleUri($uri) {
+        if ($uri == "") return true;
+
+        $uriToCheck = $uri;
+        if (substr($uriToCheck, strlen($uriToCheck) - 1, 1) == ".") {
+            $uriToCheck = substr($uriToCheck, 0, strlen($uriToCheck) - 1);
+        }
+
+        return AbstractRole::uriIsValid($uriToCheck);
+    }
+
     private function getRuleFromArgs($args)
     {
         if (!is_array($args)) {
@@ -183,7 +189,7 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
             isset($rule['allow'])
         ) {
             if (in_array($rule['action'], ["publish", "subscribe", "register", "call"]) &&
-                AbstractRole::uriIsValid($rule['uri']) && AbstractRole::uriIsValid($rule['role'])
+                static::isValidRuleUri($rule['uri']) && AbstractRole::uriIsValid($rule['role'])
             ) {
                 if ($rule['allow'] === true || $rule['allow'] === false) {
                     return [
@@ -244,19 +250,27 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         throw new Exception("remove_authorization_rule is not implemented yet");
     }
 
-    public function flushAuthorizationRules()
+    public function flushAuthorizationRules($allowByDefault = false)
     {
+        // $allowByDefault will be an array if it comes from a WAMP call
+        if (is_array($allowByDefault) && isset($allowByDefault[0])) {
+            $allowByDefault = $allowByDefault[0];
+        }
+
+        if ($allowByDefault !== true && $allowByDefault !== false) {
+            return "ERROR";
+        }
+
         $this->rules = [];
         // default startup rules
 
         // indexes in the rules match the role we are checking for
         // we give the longest uri precedence
         $this->rules['default'] = [
-            "publish."   => false,
-            "subscribe." => false,
-            "register."  => false,
-            "call."      => false
+            "."   => $allowByDefault
         ];
+
+        return "OK";
     }
 
     public function getAuthorizationRules()

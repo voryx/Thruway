@@ -5,7 +5,6 @@ namespace Thruway\Authentication;
 
 
 use Thruway\Message\ActionMessageInterface;
-use Thruway\Realm;
 use Thruway\Session;
 
 /**
@@ -26,17 +25,5 @@ class AllPermissiveAuthorizationManager  implements AuthorizationManagerInterfac
     public function isAuthorizedTo(Session $session, ActionMessageInterface $actionMsg)
     {
         return true;
-    }
-
-    /**
-     * Used as a factory to create new authorization managers
-     *
-     * @param $realmName
-     * @param $loop
-     * @return mixed
-     */
-    static public function create($realmName, $loop = null)
-    {
-        return new AllPermissiveAuthorizationManager();
     }
 }

@@ -18,13 +18,4 @@ interface AuthorizationManagerInterface {
      * @return boolean
      */
     public function isAuthorizedTo(Session $session, ActionMessageInterface $actionMsg);
-
-    /**
-     * Used as a factory to create new authorization managers
-     *
-     * @param $realmName
-     * @param $loop
-     * @return mixed
-     */
-    static public function create($realmName, $loop = null);
 }

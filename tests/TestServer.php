@@ -1,10 +1,9 @@
 <?php
 
-require 'bootstrap.php';
-require 'Clients/InternalClient.php';
-require 'Clients/SimpleAuthProviderClient.php';
-require 'Clients/AbortAfterHelloAuthProviderClient.php';
-
+require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/Clients/InternalClient.php';
+require_once __DIR__ . '/Clients/SimpleAuthProviderClient.php';
+require_once __DIR__ . '/Clients/AbortAfterHelloAuthProviderClient.php';
 
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
