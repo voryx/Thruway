@@ -167,21 +167,20 @@ class Dealer extends AbstractRole
                 if ($procedure->getAllowMultipleRegistrations()) {
                     $procedure->processQueue();
                 }
-
             }
-        }
 
-        /** @var Registration $registration */
-        foreach ($procedure->getRegistrations() as $registration) {
-            if ($procedure->getAllowMultipleRegistrations() && $registration->getSession() === $session) {
-                $procedure->processQueue();
-                // we only need to process once per process
-                break;
+            //Process all queues @todo This will need to be optimized at some point
+            /** @var Registration $registration */
+            foreach ($procedure->getRegistrations() as $registration) {
+                if ($procedure->getAllowMultipleRegistrations() && $registration->getSession() === $session) {
+                    $procedure->processQueue();
+                    // we only need to process once per process
+                    break;
+                }
             }
         }
 
         // TODO: This is an error - can I return a yield error?
-
 
     }
 
