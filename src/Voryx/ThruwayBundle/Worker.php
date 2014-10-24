@@ -8,6 +8,7 @@ use React\Promise\Promise;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Thruway\CallResult;
 use Thruway\ClientSession;
 use Thruway\Peer\Client;
 use Thruway\Transport\TransportInterface;
@@ -16,10 +17,11 @@ use Voryx\ThruwayBundle\Annotation\Subscribe;
 use Voryx\ThruwayBundle\Mapping\MappingInterface;
 
 /**
- * Class Connection
+ * Class Worker
+ *
  * @package Voryx\ThruwayBundle
  */
-class Connection
+class Worker
 {
 
     /* @var $session ClientSession */
@@ -102,9 +104,12 @@ class Connection
      */
     protected function createRPC(MappingInterface $mapping)
     {
-        $annotation     = $mapping->getAnnotation();
-        $multiRegister  = $annotation->getMultiRegister() !== null ? $annotation->getMultiRegister() : true;
-        $discloseCaller = $annotation->getDiscloseCaller() !== null ? $annotation->getDiscloseCaller() : true;
+        /* @var $annotation Register */
+        $annotation       = $mapping->getAnnotation();
+        $multiRegister    = $annotation->getMultiRegister() !== null ? $annotation->getMultiRegister() : true;
+        $discloseCaller   = $annotation->getDiscloseCaller() !== null ? $annotation->getDiscloseCaller() : true;
+        $object           = $this->container->get($mapping->getServiceId());
+        $registerCallback = $annotation->getRegisterCallback() ? [$object, $annotation->getRegisterCallback()] : null;
 
         /**
          * If this isn't the first worker to be created, we can't register this RPC call again.
@@ -113,16 +118,14 @@ class Connection
             return;
         }
 
-        $this->session->register(
-            $annotation->getName(),
-            function ($args, $kwargs, $details) use ($mapping, $annotation) {
+
+        $this->session->register($annotation->getName(),
+            function ($args, $kwargs, $details) use ($mapping, $annotation, $object) {
                 //@todo match up $kwargs to the method arguments
 
                 try {
 
-                    // $this->authenticateAuthId($details["authid"]);
-
-                    $object = $this->container->get($mapping->getServiceId());
+                    $this->authenticateAuthId($details["authid"]);
 
                     $data = call_user_func_array(
                         [$object, $mapping->getMethod()->getName()],
@@ -148,6 +151,8 @@ class Connection
                      */
                     if ($data instanceof Promise) {
                         return $data->then(function ($d) use ($context) {
+                            //If the data is a CallResult, we only want to serialize the first argument
+                            $d = $d instanceof CallResult ? [$d[0]] : $d;
                             return json_decode($this->serializer->serialize($d, "json", $context));
                         });
 
@@ -161,8 +166,12 @@ class Connection
                 }
 
             },
-            ['disclose_caller' => $discloseCaller, "thruway_multiregister" => $multiRegister]
-        );
+            [
+                'disclose_caller'          => $discloseCaller,
+                "thruway_multiregister"    => $multiRegister,
+                "replace_orphaned_session" => $annotation->getReplaceOrphanedSession()
+            ]
+        )->then($registerCallback);
     }
 
 
@@ -171,17 +180,14 @@ class Connection
      */
     protected function createSubscribe(MappingInterface $mapping)
     {
-        $this->session->subscribe(
-            $mapping->getAnnotation()->getName(),
-            function ($args) use ($mapping) {
+        $this->session->subscribe($mapping->getAnnotation()->getName(), function ($args) use ($mapping) {
 
-                $object = $this->container->get($mapping->getServiceId());
-                call_user_func_array(
-                    [$object, $mapping->getMethod()->getName()],
-                    $this->deserialize($args, $mapping)
-                );
-            }
-        );
+            $object = $this->container->get($mapping->getServiceId());
+            call_user_func_array(
+                [$object, $mapping->getMethod()->getName()],
+                $this->deserialize($args, $mapping)
+            );
+        });
     }
 
     /**
@@ -228,14 +234,12 @@ class Connection
     {
         try {
             $args = (array)$args;
-            if (empty($args)) {
-                return [];
+
+            if ($this->isAssoc($args)) {
+                $args = [$args];
             }
 
             $deserializedArgs = [];
-            if (!is_array($args)) {
-                $args = [$args];
-            }
 
             if ($mapping->getMethod()->getNumberOfRequiredParameters() > count($args)) {
                 throw new \Exception(
@@ -277,7 +281,7 @@ class Connection
             );
         }
 
-        return false;
+        return [];
     }
 
     /**
@@ -286,9 +290,12 @@ class Connection
     private function authenticateAuthId($authid)
     {
         if ($authid !== "anonymous") {
-//            $user = $this->container->get('in_memory_user_provider')->loadUserByUsername($authid);
-            $user = $this->container->get('fos_user.user_manager')->findUserByUsernameOrEmail($authid);
-            $this->authenticateUser($user);
+            $config = $this->container->getParameter('voryx_thruway');
+
+            if ($this->container->has($config['user_provider'])) {
+                $user = $this->container->get($config['user_provider'])->findUserByUsernameOrEmail($authid);
+                $this->authenticateUser($user);
+            }
         }
     }
 
@@ -297,7 +304,6 @@ class Connection
      */
     private function authenticateUser(UserInterface $user)
     {
-
         $providerKey = 'thruway';
         $token       = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
         $this->container->get('security.context')->setToken($token);
@@ -343,5 +349,14 @@ class Connection
         $this->workerInstance = $workerInstance;
     }
 
+
+    /**
+     * @param $arr
+     * @return bool
+     */
+    private function isAssoc($arr)
+    {
+        return array_keys($arr) !== range(0, count($arr) - 1);
+    }
 
 }

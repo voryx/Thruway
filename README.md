@@ -32,15 +32,18 @@ $bundles = array(
 #app/config/config.yml
 
 voryx_thruway:
-    realm: 'myrealm1'
-    enable_manager: false
+    realm: 'myrealm'
     enable_logging: true
-    php_path: '/usr/local/bin/php'
-    authentication: 'in_memory'
+    #user_provider: 'in_memory_user_provider' 
+    router:
+        ip: '127.0.0.1'  # the ip that the router should start on
+        port: '8080'  # public facing port
+        #authentication: 'in_memory'
     resources:
-      - "Acme\\DemoBundle\\Controller\\DemoController"
+        - "Acme\\DemoBundle\\Controller\\DemoController"
+      
 ```
-If you enable ```authentication: 'in_memory'```, you'll need to add a ```thruway``` to the security firewall.
+If you enable ```authentication: 'in_memory'```, you'll need to add a ```thruway``` to the security firewall and set the ``in_memory_user_provider``.
 
 ```yml
 #app/config/security.yml
@@ -144,7 +147,7 @@ Start up the the WAMP server
 
     $ php app/console thruway:client:start
 
-By default, the server starts on http://127.0.0.1:8080
+By default, the server starts on ws://127.0.0.1:8080
 
 ### Javascript Client
 

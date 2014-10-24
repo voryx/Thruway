@@ -33,9 +33,9 @@ class VoryxThruwayExtension extends Extension
             );
         }
 
-        if (!isset($config['server'])) {
+        if (!isset($config['uri'])) {
             throw new \InvalidArgumentException(
-                'The "server" option must be set within voryx_thruway'
+                'The "uri" option must be set within voryx_thruway'
             );
         }
 
@@ -45,17 +45,8 @@ class VoryxThruwayExtension extends Extension
             );
         }
 
-        if (!isset($config['local_server'])) {
-            throw new \InvalidArgumentException(
-                'The "local_server" option must be set within voryx_thruway'
-            );
-        }
+        //@todo add more config validation
 
-        if (!isset($config['php_path'])) {
-            throw new \InvalidArgumentException(
-                'The "php_path" option must be set within voryx_thruway'
-            );
-        }
 
         $container->setParameter('voryx_thruway', $config);
 
@@ -75,12 +66,12 @@ class VoryxThruwayExtension extends Extension
         }
 
         //Add optional Manager
-        if ($config['enable_manager'] === true) {
+        if ($config['router'] && $config['router']['enable_manager'] === true) {
 
             //Replace the dummy manager with the client manager
             $container
                 ->getDefinition('voryx.thruway.manager.client')
-                ->setClass("%voryx_thruway.manager.client.class%");
+                ->setClass('Thruway\Manager\ManagerClient');
 
             //Inject the manager into the router
             $container
@@ -88,12 +79,6 @@ class VoryxThruwayExtension extends Extension
                 ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.internal.manager')]);
         }
 
-        if ($config['enable_web_push'] === true) {
-            //Inject the web push client into the router
-            $container
-                ->getDefinition('voryx.thruway.server')
-                ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.internal.web.push')]);
-        }
 
         if ($config['enable_logging'] === true) {
             $container
@@ -101,7 +86,7 @@ class VoryxThruwayExtension extends Extension
                 ->addMethodCall('setLogger', [new Reference('logger')]);
         }
 
-        if (isset($config['authentication']) && $config['authentication'] == "in_memory") {
+        if ($config['router'] && isset($config['router']['authentication']) && $config['router']['authentication'] == "in_memory") {
 
             //Inject the authentication manager into the router
             $container

@@ -6,21 +6,29 @@ namespace Voryx\ThruwayBundle\DependencyInjection\Compiler;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 
+/**
+ * Class ThruwayServicesPass
+ * @package Voryx\ThruwayBundle\DependencyInjection\Compiler
+ */
 class ThruwayServicesPass implements CompilerPassInterface
 {
+    /**
+     * @param ContainerBuilder $container
+     */
     public function process(ContainerBuilder $container)
     {
 
         foreach ($container->findTaggedServiceIds('thruway.resource') as $id => $attr) {
-            $class = $container->getDefinition($id)->getClass();
+            $className = $container->getDefinition($id)->getClass();
 
-            $class = new \ReflectionClass($class);
-            $methods = $class->getMethods();
+            $class          = new \ReflectionClass($className);
+            $methods        = $class->getMethods();
+            $resourceMapper = $container->getDefinition('voryx.thruway.resource.mapper');
+
+            $resourceMapper->addMethodCall('setWorkerAnnotation', [$class->getName()]);
 
             foreach ($methods as $method) {
-                $container
-                    ->getDefinition('voryx.thruway.resource.mapper')
-                    ->addMethodCall('map', [$id, $class->getName(), $method->getName()]);
+                $resourceMapper->addMethodCall('map', [$id, $class->getName(), $method->getName()]);
             }
         }
     }

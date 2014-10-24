@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: daviddan
- * Date: 8/31/14
- * Time: 3:04 PM
- */
 
 namespace Voryx\ThruwayBundle\Client;
 
@@ -16,21 +10,36 @@ use Thruway\ClientSession;
 use Thruway\Peer\Client;
 use Thruway\Transport\TransportInterface;
 
+/**
+ * Class ClientManager
+ * @package Voryx\ThruwayBundle\Client
+ */
 class ClientManager
 {
 
     /* @var Container */
     private $container;
 
+    /**
+     * @var
+     */
     private $config;
 
 
+    /**
+     * @var
+     */
+    private $serializer;
+
+    /**
+     * @param Container $container
+     * @param $config
+     */
     function __construct(Container $container, $config)
     {
-        $this->container = $container;
-
-        $this->config = $config;
-
+        $this->container  = $container;
+        $this->config     = $config;
+        $this->serializer = $container->get('serializer');
     }
 
     /**
@@ -44,19 +53,23 @@ class ClientManager
      */
     public function publish($topicName, $arguments, $argumentsKw = [], $options = null)
     {
+        //Use the serializer to serialize and than deserialize.  This is a hack because the serializer doesn't support the array format and we need to be able to handle Entities
+        $arguments   = json_decode($this->serializer->serialize($arguments, "json"));
+        $argumentsKw = json_decode($this->serializer->serialize($argumentsKw, "json"));
+
         //If we already have a client open that we can use, use that
-        if ($this->container->initialized('voryx.thruway.connection')
-            && $client = $this->container->get('voryx.thruway.connection')->getClient()
+        if ($this->container->initialized('voryx.thruway.worker')
+            && $client = $this->container->get('voryx.thruway.worker')->getClient()
         ) {
-            $session = $this->container->get('voryx.thruway.connection')->getSession();
+            $session = $this->container->get('voryx.thruway.worker')->getSession();
 
             return $session->publish($topicName, $arguments, $argumentsKw, $options);
         }
 
         //If we don't already have a long running client, get a short lived one.
-        $client = $this->getShortClient();
+        $client                 = $this->getShortClient();
         $options['acknowledge'] = true;
-        $deferrer = new Deferred();
+        $deferrer               = new Deferred();
 
         $client->on(
             "open",
@@ -99,19 +112,22 @@ class ClientManager
      */
     public function call($procedureName, $arguments)
     {
+        //Use the serializer to serialize and than deserialize.  This is a hack because the serializer doesn't support the array format and we need to be able to handle Entities
+        $arguments = json_decode($this->serializer->serialize($arguments, "json"));
+
         //If we already have a client open that we can use, use that
-        if ($this->container->initialized('voryx.thruway.connection')
-            && $client = $this->container->get('voryx.thruway.connection')->getClient()
+        if ($this->container->initialized('voryx.thruway.worker')
+            && $client = $this->container->get('voryx.thruway.worker')->getClient()
         ) {
-            $session = $this->container->get('voryx.thruway.connection')->getSession();
+            $session = $this->container->get('voryx.thruway.worker')->getSession();
 
             return $session->call($procedureName, $arguments);
         }
 
         //If we don't already have a long running client, get a short lived one.
-        $client = $this->getShortClient();
+        $client                 = $this->getShortClient();
         $options['acknowledge'] = true;
-        $deferrer = new Deferred();
+        $deferrer               = new Deferred();
 
         $client->on(
             "open",
@@ -145,11 +161,15 @@ class ClientManager
     }
 
 
+    /**
+     * @return Client
+     * @throws \Exception
+     */
     private function getShortClient()
     {
 
         /* @var $user \Symfony\Component\Security\Core\User\User */
-        $user = $this->container->get('security.context')->getToken()->getUser();
+        $user   = $this->container->get('security.context')->getToken()->getUser();
         $client = new Client($this->config['realm']);
         $client->setAttemptRetry(false);
         $client->addTransportProvider(

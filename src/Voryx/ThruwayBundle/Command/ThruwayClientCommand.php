@@ -3,11 +3,19 @@
 
 namespace Voryx\ThruwayBundle\Command;
 
-use Thruway\Transport\InternalClientTransportProvider;
+
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Thruway\ConsoleLogger;
+use Thruway\Peer\Client;
+use Thruway\Transport\InternalClientTransport;
+use Thruway\Transport\InternalClientTransportProvider;
 
+/**
+ * Class ThruwayClientCommand
+ * @package Voryx\ThruwayBundle\Command
+ */
 class ThruwayClientCommand extends ContainerAwareCommand
 {
     /**
@@ -18,7 +26,7 @@ class ThruwayClientCommand extends ContainerAwareCommand
         $this
             ->setName('thruway:client:start')
             ->setDescription('Start Thruway WAMP client')
-            ->setHelp("The <info>%command.name%</info> starts the Thruway WAMP client.");
+            ->setHelp("The <info>%command.name%</info> starts the Thruway WAMP client and router within one process.");
     }
 
     /**
@@ -29,25 +37,28 @@ class ThruwayClientCommand extends ContainerAwareCommand
 
         try {
 
+            $output->writeln("Making a go at starting the Thruway Client and Server running within a single process.");
+
             $config = $this->getContainer()->getParameter('voryx_thruway');
-            echo "Making a go at starting the Thruway client.\n";
             $server = $this->getContainer()->get('voryx.thruway.server');
+            $loop   = $this->getContainer()->get('voryx.thruway.loop');
+            $worker = $this->getContainer()->get('voryx.thruway.worker');
+            $client = new Client($config['realm'], $loop);
 
-            $this->getContainer()->get('voryx.thruway.connection')->setClient($this->getContainer()->get('voryx.thruway.client'));
+            $worker->setClient($client);
 
-            //Add internal clients that are defined in the config
-            //@todo move this to the config
-            foreach ($config['clients'] as $clientService) {
-                $c   = $this->getContainer()->get($clientService);
-                $ctp = new InternalClientTransportProvider($c);
-                $server->addTransportProvider($ctp);
-            }
+            $internalTransportProvider = new InternalClientTransportProvider($client);
+            $server->addTransportProvider($internalTransportProvider);
+
+            $client->setLogger(new ConsoleLogger());
+
+            $output->writeln("You can connect to this server on 'ws://{$config['router']['ip']}:{$config['router']['port']}' with the realm '{$config['realm']}'");
 
             $server->start();
 
         } catch (\Exception $e) {
             $logger = $this->getContainer()->get('logger');
-            $logger->addCritical("WAMP EXCEPTION:" . $e->getMessage());
+            $logger->addCritical("EXCEPTION:" . $e->getMessage());
             $output->writeln("Error... see log for more info");
         }
     }

@@ -29,6 +29,9 @@
         "ratchet/pawl": "dev-master",
         "voryx/thruway": "dev-master",
         "jms/serializer-bundle": "0.13.0"
+    },
+    "suggest": {
+        "mondalaci/supervisor-client": "Allows you to startup multiple workers in separate processes"
     }
 
 }

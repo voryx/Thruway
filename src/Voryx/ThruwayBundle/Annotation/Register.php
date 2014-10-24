@@ -32,6 +32,10 @@ class Register implements Annotation
 
     protected $discloseCaller;
 
+    protected $replaceOrphanedSession;
+
+    protected $registerCallback;
+
     /**
      * @param $options
      * @throws \InvalidArgumentException
@@ -97,4 +101,21 @@ class Register implements Annotation
     {
         return $this->discloseCaller;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getReplaceOrphanedSession()
+    {
+        return $this->replaceOrphanedSession;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRegisterCallback()
+    {
+        return $this->registerCallback;
+    }
+
 }

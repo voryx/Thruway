@@ -19,6 +19,7 @@ class ResourceMapper
 
     const SUBSCRIBE_ANNOTATION_CLASS = 'Voryx\\ThruwayBundle\\Annotation\\Subscribe';
 
+    const WORKER_ANNOTATION_CLASS = 'Voryx\\ThruwayBundle\\Annotation\\Worker';
 
     /**
      * @var Reader
@@ -30,13 +31,22 @@ class ResourceMapper
      */
     protected $mappings = [];
 
+    /**
+     * @var array
+     */
+    protected $workerAnnotations = [];
+
+    /**
+     * @var array
+     */
+    protected $workerAnnotationsClasses = [];
+
 
     /**
      * @param Reader $reader
      */
     function __construct(Reader $reader)
     {
-
         $this->reader = $reader;
     }
 
@@ -49,9 +59,8 @@ class ResourceMapper
     public function map($serviceId, $class, $method)
     {
 
-        $class  = new \ReflectionClass($class);
-        $method = $class->getMethod($method);
-
+        $class         = new \ReflectionClass($class);
+        $method        = $class->getMethod($method);
         $annotations   = [];
         $annotations[] = $this->reader->getMethodAnnotation($method, self::REGISTER_ANNOTATION_CLASS);
         $annotations[] = $this->reader->getMethodAnnotation($method, self::SUBSCRIBE_ANNOTATION_CLASS);
@@ -59,7 +68,13 @@ class ResourceMapper
         foreach ($annotations as $annotation) {
             if ($annotation) {
 
-                $worker = $annotation->getWorker() ? $annotation->getWorker() : "default";
+                $workerAnnotation = isset($this->workerAnnotationsClasses[$class->getName()]) ? $this->workerAnnotationsClasses[$class->getName()] : null;
+
+                if ($workerAnnotation) {
+                    $worker = $workerAnnotation->getName();
+                } else {
+                    $worker = $annotation->getWorker() ?: "default";
+                }
 
                 $mapping = new URIClassMapping($serviceId, $method, $annotation);
 
@@ -72,6 +87,30 @@ class ResourceMapper
 
                 $this->mappings[$worker][$annotation->getName()] = $mapping;
             }
+        }
+
+    }
+
+
+    /**
+     * @param $class
+     */
+    public function setWorkerAnnotation($class)
+    {
+
+        $class      = new \ReflectionClass($class);
+        $annotation = $this->reader->getClassAnnotation($class, self::WORKER_ANNOTATION_CLASS);
+
+        if ($annotation) {
+
+            $worker = $annotation->getWorker() ? $annotation->getWorker() : "default";
+
+            if (isset($this->workerAnnotations[$worker])) {
+                throw new Exception("The Worker '{$worker}' has already been registered in '{$class->getName()}'.  Workers can only be defined once on the Class level");
+            }
+
+            $this->workerAnnotations[$worker]                  = $annotation;
+            $this->workerAnnotationsClasses[$class->getName()] = $annotation;
         }
 
     }
@@ -93,7 +132,11 @@ class ResourceMapper
         return $mappings;
     }
 
-    public function getAllMappings()
+    /**
+     * @return array
+     */
+    public
+    function getAllMappings()
     {
         return $this->mappings;
     }
@@ -106,15 +149,22 @@ class ResourceMapper
         $this->mappings = $mappings;
     }
 
+    /**
+     * @param $uri
+     * @return int|null|string
+     */
     public function findWorker($uri)
     {
         $workerName = null;
 
         /* @var $mapping URIClassMapping */
-        foreach ($this->getMappings() as $key => $mapping) {
-            if (strtolower($key) == strtolower($uri)) {
-                $workerName = $mapping->getAnnotation()->getWorker();
+        foreach ($this->getAllMappings() as $wn => $mappings) {
+            foreach ($mappings as $key => $mapping) {
+                if (strtolower($key) == strtolower($uri)) {
+                    $workerName = $wn;
+                }
             }
+
         }
 
         return $workerName;
@@ -143,6 +193,15 @@ class ResourceMapper
     public function setReader($reader)
     {
         $this->reader = $reader;
+    }
+
+    /**
+     * @param $workerName
+     * @return \Voryx\ThruwayBundle\Annotation\Worker
+     */
+    public function getWorkerAnnotation($workerName)
+    {
+        return isset($this->workerAnnotations[$workerName]) ? $this->workerAnnotations[$workerName] : false;
     }
 
 } 

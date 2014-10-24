@@ -4,126 +4,102 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <parameters>
-        <parameter key="voryx_thruway.resource.mapper.class">Voryx\ThruwayBundle\ResourceMapper</parameter>
-        <parameter key="voryx_thruway.connection.class">Voryx\ThruwayBundle\Connection</parameter>
-        <parameter key="voryx_thruway.client.class">Thruway\Peer\Client</parameter>
-        <parameter key="voryx_thruway.web.push.client.class">Voryx\ThruwayBundle\Client\WebPushClient</parameter>
-        <parameter key="voryx_thruway.manager.dummy.client.class">Thruway\Manager\ManagerDummy</parameter>
-        <parameter key="voryx_thruway.manager.client.class">Thruway\Manager\ManagerClient</parameter>
-        <parameter key="voryx.thruway.loop.factory.class">React\EventLoop\Factory</parameter>
-        <parameter key="voryx.thruway.loop.class">React\EventLoop\Timer\TimerInterface\LoopInterface</parameter>
-        <parameter key="voryx.thruway.router.class">Thruway\Peer\Router</parameter>
-        <parameter key="voryx.thruway.ratchet.transport.class">Thruway\Transport\RatchetTransportProvider</parameter>
-        <parameter key="voryx.thruway.internal.transport.class">Thruway\Transport\InternalClientTransportProvider</parameter>
-        <parameter key="voryx.thruway.user.db.class">Voryx\ThruwayBundle\Authentication\UserDB</parameter>
-        <parameter key="voryx.thruway.auth.manager.class">Thruway\Authentication\AuthenticationManager</parameter>
-        <parameter key="voryx.thruway.wamp.cra.class">Thruway\Authentication\WampCraAuthProvider</parameter>
-        <parameter key="voryx.thruway.client.manager.class">Voryx\ThruwayBundle\Client\ClientManager</parameter>
-        <parameter key="voryx.thruway.supervisor.class">SupervisorClient\SupervisorClient</parameter>
-
-
-    </parameters>
 
     <services>
 
         <service id="voryx.thruway.loop"
-                 class="%voryx.thruway.loop.class%"
-                 factory-class="%voryx.thruway.loop.factory.class%"
+                 class="React\EventLoop\LoopInterface"
+                 factory-class="React\EventLoop\Factory"
                  factory-method="create"/>
 
         <service id="voryx.thruway.ratchet.transport"
-                 class="%voryx.thruway.ratchet.transport.class%"
+                 class="Thruway\Transport\RatchetTransportProvider"
                  public="false">
-            <argument type="expression">parameter('voryx_thruway')['server']</argument>
-            <argument type="expression">parameter('voryx_thruway')['port']</argument>
+            <argument type="expression">parameter('voryx_thruway')['router']['ip']</argument>
+            <argument type="expression">parameter('voryx_thruway')['router']['port']</argument>
         </service>
 
         <service id="voryx.thruway.client"
-                 class="%voryx_thruway.client.class%">
+                 class="Thruway\Peer\Client">
             <argument type="expression">parameter('voryx_thruway')['realm']</argument>
         </service>
 
         <service id="voryx.thruway.manager.client"
-                 class="%voryx_thruway.manager.dummy.client.class%"
+                 class="Thruway\Manager\ManagerDummy"
                  public="false">
         </service>
 
         <service id="voryx.thruway.web.push.client"
-                 class="%voryx_thruway.web.push.client.class%"
+                 class="Voryx\ThruwayBundle\Client\WebPushClient"
                  public="false">
             <argument type="expression">parameter('voryx_thruway')['realm']</argument>
         </service>
 
         <service id="voryx.thruway.internal.transport"
-                 class="%voryx.thruway.internal.transport.class%"
+                 class="Thruway\Transport\InternalClientTransportProvider"
                  public="false">
             <argument type="service" id="voryx.thruway.client"/>
         </service>
 
         <service id="voryx.thruway.internal.manager"
-                 class="%voryx.thruway.internal.transport.class%"
+                 class="Thruway\Transport\InternalClientTransportProvider"
                  public="false">
             <argument type="service" id="voryx.thruway.manager.client"/>
         </service>
 
         <service id="voryx.thruway.internal.web.push"
-                 class="%voryx.thruway.internal.transport.class%"
+                 class="Thruway\Transport\InternalClientTransportProvider"
                  public="false">
             <argument type="service" id="voryx.thruway.web.push.client"/>
         </service>
 
-        <service id="voryx.thruway.server"
-                 class="%voryx.thruway.router.class%">
+        <service id="voryx.thruway.server" class="Thruway\Peer\Router">
             <argument type="service" id="voryx.thruway.loop"/>
             <argument type="service" id="voryx.thruway.manager.client"/>
             <call method="addTransportProvider">
                 <argument type="service" id="voryx.thruway.ratchet.transport"/>
             </call>
-            <call method="addTransportProvider">
-                <argument type="service" id="voryx.thruway.internal.transport"/>
-            </call>
+            <!--<call method="addTransportProvider">-->
+                <!--<argument type="service" id="voryx.thruway.internal.transport"/>-->
+            <!--</call>-->
         </service>
 
 
         <service id="voryx.thruway.resource.mapper"
-                 class="%voryx_thruway.resource.mapper.class%">
+                 class="Voryx\ThruwayBundle\ResourceMapper">
             <argument type="service" id="annotation_reader"/>
         </service>
 
 
-        <service id="voryx.thruway.connection"
-                 class="%voryx_thruway.connection.class%">
+        <service id="voryx.thruway.worker"
+                 class="Voryx\ThruwayBundle\Worker">
             <argument type="service" id="service_container"/>
             <argument type="service" id="serializer"/>
             <argument type="service" id="voryx.thruway.resource.mapper"/>
-            <!--<call method="setClient">-->
-                <!--<argument type="service" id="voryx.thruway.client"/>-->
-            <!--</call>-->
         </service>
 
 
         <!--Authentication-->
         <service id="voryx.thruway.authentication.manager"
-                 class="%voryx.thruway.auth.manager.class%"
+                 class="Thruway\Authentication\AuthenticationManager"
                  public="false">
             <argument type="service" id="voryx.thruway.client"/>
         </service>
 
         <service id="voryx.thruway.auth.manager.transport.provider"
-                 class="%voryx.thruway.internal.transport.class%"
+                 class="Thruway\Transport\InternalClientTransportProvider"
                  public="false">
             <argument type="service" id="voryx.thruway.authentication.manager"/>
         </service>
 
         <service id="voryx.thruway.user.db"
-                 class="%voryx.thruway.user.db.class%"
+                 class="Voryx\ThruwayBundle\Authentication\UserDB"
                  public="false">
             <argument type="service" id="service_container"/>
         </service>
 
         <service id="voryx.thruway.wamp.cra.auth.client"
-                 class="%voryx.thruway.wamp.cra.class%"
+                 class="Thruway\Authentication\WampCraAuthProvider"
                  public="false">
             <argument type="expression">[parameter('voryx_thruway')['realm']]</argument>
             <call method="setUserDb">
@@ -132,14 +108,14 @@
         </service>
 
         <service id="voryx.thruway.wamp.cra.auth.transport.provider"
-                 class="%voryx.thruway.internal.transport.class%">
+                 class="Thruway\Transport\InternalClientTransportProvider">
             <argument type="service" id="voryx.thruway.wamp.cra.auth.client"/>
         </service>
 
 
         <!--Main Thruway Client-->
         <service id="thruway.client"
-                 class="%voryx.thruway.client.manager.class%">
+                 class="Voryx\ThruwayBundle\Client\ClientManager">
             <argument type="service" id="service_container"/>
             <argument>%voryx_thruway%</argument>
         </service>
@@ -147,12 +123,16 @@
 
         <!--Supervisor Client-->
         <service id="voryx.thruway.supervisor"
-                 class="%voryx.thruway.supervisor.class%">
+                 class="SupervisorClient\SupervisorClient">
             <argument type="expression">parameter('voryx_thruway')['supervisor']['hostname']</argument>
             <argument type="expression">parameter('voryx_thruway')['supervisor']['port']</argument>
-            <argument type="expression">parameter('voryx_thruway')['supervisor']['timeout']</argument>
-            <argument type="expression">parameter('voryx_thruway')['supervisor']['username']</argument>
-            <argument type="expression">parameter('voryx_thruway')['supervisor']['password']</argument>
+            <call method="setAuth">
+                <argument type="expression">parameter('voryx_thruway')['supervisor']['username']</argument>
+                <argument type="expression">parameter('voryx_thruway')['supervisor']['password']</argument>
+            </call>
+            <call method="setTimeout">
+                <argument type="expression">parameter('voryx_thruway')['supervisor']['timeout']</argument>
+            </call>
         </service>
 
 
