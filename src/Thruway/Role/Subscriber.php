@@ -108,7 +108,7 @@ class Subscriber extends AbstractRole
         foreach ($this->subscriptions as $key => $subscription) {
             if ($subscription["request_id"] === $msg->getRequestId()) {
                 $this->subscriptions[$key]['subscription_id'] = $msg->getSubscriptionId();
-                $this->subscriptions[$key]['deferred']->resolve();
+                $this->subscriptions[$key]['deferred']->resolve($msg);
                 break;
             }
         }

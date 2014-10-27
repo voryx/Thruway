@@ -92,6 +92,8 @@ class Broker extends AbstractRole
 
         $includePublisher = false;
 
+        $excludedSessions = [];
+
         $options = $msg->getOptions();
         if (is_array($options)) {
             // see if they wanted confirmation
@@ -104,14 +106,25 @@ class Broker extends AbstractRole
             if (isset($options['exclude_me']) && !$options['exclude_me']) {
                 $includePublisher = true;
             }
+            if (isset($options['exclude']) && is_array($options['exclude'])) {
+                // fixup exclude array - make sure it is legit
+                foreach($options['exclude'] as $excludedSession) {
+                    if (is_numeric($excludedSession)) {
+                        array_push($excludedSessions, $excludedSession);
+                    }
+                }
+            }
         }
 
         /* @var $subscription \Thruway\Subscription */
         foreach ($this->subscriptions as $subscription) {
             if ($msg->getTopicName() == $subscription->getTopic() &&
-                ($includePublisher || $subscription->getSession() != $session)) {
-                $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
-                $subscription->getSession()->sendMessage($eventMsg);
+                ($includePublisher || $subscription->getSession() != $session)
+            ) {
+                if (!in_array($subscription->getSession()->getSessionId(), $excludedSessions)) {
+                    $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
+                    $subscription->getSession()->sendMessage($eventMsg);
+                }
             }
         }
         

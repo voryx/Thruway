@@ -7,6 +7,10 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
      * @var \Thruway\Connection
      */
     protected $_conn;
+    /**
+     * @var \Thruway\Connection
+     */
+    protected $_conn2;
     protected $_error;
     protected $_testArgs;
     protected $_testKWArgs;
@@ -14,6 +18,13 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
     protected $_details;
     protected $_testResult;
     protected $_echoResult;
+    /**
+     * @var \React\EventLoop\LoopInterface
+     */
+    protected $_loop;
+
+    /** @var  \React\Promise\Deferred */
+    protected $_deferred;
 
     public function setUp()
     {
@@ -21,12 +32,25 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->_testResult = null;
         $this->_error = null;
 
+
         $this->_conn = new \Thruway\Connection(
-            array(
+            [
                 "realm" => 'testRealm',
                 "url" => 'ws://127.0.0.1:8090',
                 "max_retries" => 0,
-            )
+            ]
+        );
+
+        $this->_loop = $this->_conn->getClient()->getLoop();
+
+        $this->_conn2 = new \Thruway\Connection(
+            [
+                "realm" => 'testRealm',
+                "url" => 'ws://127.0.0.1:8090',
+                "max_retries" => 0,
+                "loop" => $this->_loop
+            ],
+            $this->_loop
         );
     }
 
@@ -217,11 +241,11 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->_testResult = "nothing";
 
         $conn = new \Thruway\Connection(
-            array(
+            [
                 "realm" => 'not_allowed',
                 "url" => 'ws://127.0.0.1:8090',
                 "max_retries" => 0,
-            )
+            ]
         );
 
         $conn->on(
@@ -344,6 +368,54 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
         $this->assertNull($this->_error, "Error " . $this->_error);
         $this->assertEquals("subscribe failed", $this->_testResult);
+    }
+
+    public function testPublishExclude() {
+        $this->_testResult = null;
+        $this->_deferred = new \React\Promise\Deferred();
+
+        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
+            $session->subscribe("some.topic", function ($args) {
+                $this->_testResult .= $args[0];
+                if ($args[0] == 3) {
+                    $this->_deferred->resolve();
+                }
+            })->then(function ($subscribedMsg) use ($session) {
+                $this->assertInstanceOf('\Thruway\Message\SubscribedMessage', $subscribedMsg);
+
+                $this->_conn2->on('open', function (\Thruway\ClientSession $s2) use ($session, $subscribedMsg) {
+                    $promises = [];
+
+                    $promises[] = $s2->publish("some.topic", [1], null, ['acknowledge' => true]);
+                    $promises[] = $s2->publish("some.topic", [2], null, ['acknowledge' => true, 'exclude' => [$session->getSessionId()]]);
+                    $promises[] = $s2->publish("some.topic", [3], null, ['acknowledge' => true]);
+
+                    // add the subscription deferred so we can wait until we get the
+                    // published events before exiting
+                    $promises[] = $this->_deferred->promise();
+
+                    $pAll = \React\Promise\all($promises);
+
+                    $pAll->then(function () use ($session, $s2) {
+                        $session->close();
+                        $s2->close();
+                    }, function () use ($session, $s2) {
+                        $this->fail("Publish failed");
+                        $session->close();
+                        $s2->close();
+                    });
+                });
+
+                $this->_conn2->open();
+            }, function () use ($session) {
+                $session->close();
+                $this->fail("Subscribe failed");
+            });
+        });
+
+        $this->_conn->open();
+
+        $this->assertEquals("13", $this->_testResult);
     }
 
 //    public function testUnSubscribeFailure() {
