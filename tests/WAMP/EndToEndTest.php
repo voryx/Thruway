@@ -26,32 +26,25 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
     /** @var  \React\Promise\Deferred */
     protected $_deferred;
 
+    protected $_connOptions;
+
     public function setUp()
     {
         $this->_testArgs = null;
         $this->_testResult = null;
         $this->_error = null;
 
+        $this->_connOptions = [
+            "realm" => 'testRealm',
+            "url" => 'ws://127.0.0.1:8090',
+            "max_retries" => 0,
+        ];
 
-        $this->_conn = new \Thruway\Connection(
-            [
-                "realm" => 'testRealm',
-                "url" => 'ws://127.0.0.1:8090',
-                "max_retries" => 0,
-            ]
-        );
+        $this->_conn = new \Thruway\Connection($this->_connOptions);
 
         $this->_loop = $this->_conn->getClient()->getLoop();
 
-        $this->_conn2 = new \Thruway\Connection(
-            [
-                "realm" => 'testRealm',
-                "url" => 'ws://127.0.0.1:8090',
-                "max_retries" => 0,
-                "loop" => $this->_loop
-            ],
-            $this->_loop
-        );
+        $this->_conn2 = new \Thruway\Connection($this->_connOptions, $this->_loop);
     }
 
 
@@ -418,27 +411,77 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("13", $this->_testResult);
     }
 
-//    public function testUnSubscribeFailure() {
-//        $this->_error = null;
-//        $this->_testResult = null;
-//
-//        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
-//                $session->unsubscribe('!?/&')->then(
-//                    function () use ($session) {
-//                        $this->_error = "Able to unsubscribe to bad Uri";
-//                        $session->close();
-//                    },
-//                    function () use ($session) {
-//                        $this->_testResult = "unsubscribe failed";
-//                        $session->close();
-//                    }
-//                );
-//            }
-//        );
-//
-//        $this->_conn->open();
-//
-//        $this->assertNull($this->_error, "Error " . $this->_error);
-//        $this->assertEquals("unsubscribe failed", $this->_testResult);
-//    }
+    public function testWhiteList() {
+
+        $conns = [];
+        $sessionIds = [];
+
+        $loop = $this->_loop;
+
+        $subscribePromises = [];
+
+        $deferredShutdown = new \React\Promise\Deferred();
+
+        $deferredShutdown->promise()->then(function () use (&$conns) {
+            for ($i = 0; $i < 5; $i++) $conns[$i]->close();
+        });
+
+        for ($i = 0; $i < 5; $i++) {
+            $conns[$i] = $conn = new \Thruway\Connection($this->_connOptions, $loop);
+            $conn->on('open', function (\Thruway\ClientSession $session) use ($i, &$sessionIds, &$subscribePromises, $deferredShutdown) {
+                $sessionIds[$i] = $session->getSessionId();
+                $subscribePromises[] = $session->subscribe('test.whitelist', function ($args) use ($i, $deferredShutdown) {
+                    $this->_testResult .= "-" . $args[0] . "." . $i . "-";
+                    if ($args[0] == "F") {
+                        $deferredShutdown->resolve();
+                    }
+                });
+            });
+
+            $conn->open(false);
+        }
+
+        $this->_conn->on('open', function (\Thruway\ClientSession $session) use ($subscribePromises, &$sessionIds) {
+            \React\Promise\all($subscribePromises)->then(function () use ($session, &$sessionIds) {
+                $session->publish('test.whitelist', ["A"], null,
+                    ['acknowledge' => true]
+                )->then(function () use ($session, &$sessionIds) {
+                    $session->publish('test.whitelist', ["B"], null, [
+                        'acknowledge' => true,
+                        'eligible'    => $sessionIds
+                    ])->then(function () use ($session, &$sessionIds) {
+                        $session->publish('test.whitelist', ["C"], null, [
+                            'acknowledge' => true,
+                            'exclude'     => [$sessionIds[1]],
+                            'eligible'    => $sessionIds
+                        ])->then(function () use ($session, &$sessionIds) {
+                            $session->publish('test.whitelist', ["D"], null, [
+                                'acknowledge' => true,
+                                'exclude'     => [$sessionIds[1]],
+                                'eligible'    => [$sessionIds[2]]
+                            ])->then(function () use ($session, &$sessionIds) {
+                                $session->publish('test.whitelist', ["E"], null, [
+                                    'acknowledge' => true,
+                                    'exclude'     => [$sessionIds[1]],
+                                    'eligible'    => []
+                                ])->then(function () use ($session, &$sessionIds) {
+                                    $session->publish('test.whitelist', ["F"], null, [
+                                        'acknowledge' => true,
+                                        'exclude'     => [],
+                                        'eligible'    => [$sessionIds[0]]
+                                    ])->then(function () use ($session) {
+                                        $session->close();
+                                    });;
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
+
+        $this->_conn->open();
+
+        $this->assertEquals("-A.0--A.1--A.2--A.3--A.4--B.0--B.1--B.2--B.3--B.4--C.0--C.2--C.3--C.4--D.2--F.0-", $this->_testResult);
+    }
 }

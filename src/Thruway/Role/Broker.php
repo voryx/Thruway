@@ -94,6 +94,8 @@ class Broker extends AbstractRole
 
         $excludedSessions = [];
 
+        $whiteList = null;
+
         $options = $msg->getOptions();
         if (is_array($options)) {
             // see if they wanted confirmation
@@ -114,6 +116,14 @@ class Broker extends AbstractRole
                     }
                 }
             }
+            if (isset($options['eligible']) && is_array($options['eligible'])) {
+                $whiteList = [];
+                foreach($options['eligible'] as $sessionId) {
+                    if (is_numeric($sessionId)) {
+                        array_push($whiteList, $sessionId);
+                    }
+                }
+            }
         }
 
         /* @var $subscription \Thruway\Subscription */
@@ -122,8 +132,10 @@ class Broker extends AbstractRole
                 ($includePublisher || $subscription->getSession() != $session)
             ) {
                 if (!in_array($subscription->getSession()->getSessionId(), $excludedSessions)) {
-                    $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
-                    $subscription->getSession()->sendMessage($eventMsg);
+                    if ($whiteList === null || in_array($subscription->getSession()->getSessionId(), $whiteList)) {
+                        $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
+                        $subscription->getSession()->sendMessage($eventMsg);
+                    }
                 }
             }
         }
