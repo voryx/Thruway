@@ -415,25 +415,21 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
         $conns = [];
         $sessionIds = [];
+        $results = [];
 
         $loop = $this->_loop;
 
         $subscribePromises = [];
 
-        $deferredShutdown = new \React\Promise\Deferred();
-
-        $deferredShutdown->promise()->then(function () use (&$conns) {
-            for ($i = 0; $i < 5; $i++) $conns[$i]->close();
-        });
-
         for ($i = 0; $i < 5; $i++) {
+            $results[$i] = "";
             $conns[$i] = $conn = new \Thruway\Connection($this->_connOptions, $loop);
-            $conn->on('open', function (\Thruway\ClientSession $session) use ($i, &$sessionIds, &$subscribePromises, $deferredShutdown) {
+            $conn->on('open', function (\Thruway\ClientSession $session) use ($i, &$sessionIds, &$subscribePromises, &$results) {
                 $sessionIds[$i] = $session->getSessionId();
-                $subscribePromises[] = $session->subscribe('test.whitelist', function ($args) use ($i, $deferredShutdown) {
-                    $this->_testResult .= "-" . $args[0] . "." . $i . "-";
-                    if ($args[0] == "F") {
-                        $deferredShutdown->resolve();
+                $subscribePromises[] = $session->subscribe('test.whitelist', function ($args) use ($i, $session, &$results) {
+                    $results[$i] .= "-" . $args[0] . "." . $i . "-";
+                    if ($args[0] == "X") {
+                        $session->close();
                     }
                 });
             });
@@ -469,9 +465,14 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                                         'acknowledge' => true,
                                         'exclude'     => [],
                                         'eligible'    => [$sessionIds[0]]
-                                    ])->then(function () use ($session) {
-                                        $session->close();
-                                    });;
+                                    ])->then(function () use ($session, &$sessionIds) {
+                                        // shutdown the sessions
+                                        $session->publish('test.whitelist', ["X"], null, [
+                                            'acknowledge' => true
+                                        ])->then(function () use ($session) {
+                                            $session->close();
+                                        });;
+                                    });
                                 });
                             });
                         });
@@ -482,6 +483,10 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
         $this->_conn->open();
 
-        $this->assertEquals("-A.0--A.1--A.2--A.3--A.4--B.0--B.1--B.2--B.3--B.4--C.0--C.2--C.3--C.4--D.2--F.0-", $this->_testResult);
+        $this->assertEquals("-A.0--B.0--C.0--F.0--X.0-", $results[0]);
+        $this->assertEquals("-A.1--B.1--X.1-", $results[1]);
+        $this->assertEquals("-A.2--B.2--C.2--D.2--X.2-", $results[2]);
+        $this->assertEquals("-A.3--B.3--C.3--X.3-", $results[3]);
+        $this->assertEquals("-A.4--B.4--C.4--X.4-", $results[4]);
     }
 }
