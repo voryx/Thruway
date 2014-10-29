@@ -4,6 +4,7 @@ namespace Thruway\Role;
 
 
 use Thruway\AbstractSession;
+use Thruway\Call;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\CallMessage;
@@ -33,6 +34,12 @@ class Dealer extends AbstractRole
      */
     private $manager;
 
+
+    /**
+     * @var array
+     */
+    private $callIndex;
+
     /**
      * Constructor
      *
@@ -41,6 +48,7 @@ class Dealer extends AbstractRole
     public function __construct(ManagerInterface $manager = null)
     {
         $this->procedures = [];
+        $this->callIndex  = [];
         $manager          = $manager === null ? $manager : new ManagerDummy();
 
         $this->setManager($manager);
@@ -147,7 +155,15 @@ class Dealer extends AbstractRole
         /* @var $procedure \Thruway\Procedure */
         $procedure = $this->procedures[$msg->getProcedureName()];
 
-        $procedure->processCall($session, $msg);
+        $call = new Call($session, $msg);
+
+        $this->callIndex[$call->getInvocationRequestId()] = $call;
+
+        $keepIndex = $procedure->processCall($session, $call);
+
+        if (!$keepIndex) {
+            unset($this->callIndex[$call->getInvocationRequestId()]);
+        }
     }
 
     /**
@@ -158,15 +174,21 @@ class Dealer extends AbstractRole
      */
     private function processYield(Session $session, YieldMessage $msg)
     {
-        /* @var $procedure \Thruway\Procedure */
-        foreach ($this->procedures as $procedure) {
-            $call = $procedure->getCallByRequestId($msg->getRequestId());
-            if ($call) {
-                $call->processYield($session, $msg);
 
-                if ($procedure->getAllowMultipleRegistrations()) {
-                    $procedure->processQueue();
-                }
+        /* @var $call Call */
+        $call = isset($this->callIndex[$msg->getRequestId()]) ? $this->callIndex[$msg->getRequestId()] : null;
+
+        if ($call) {
+            $keepIndex = $call->processYield($session, $msg);
+
+            if (!$keepIndex) {
+                unset($this->callIndex[$msg->getRequestId()]);
+            }
+
+            /* @var $procedure \Thruway\Procedure */
+            $procedure = isset($this->procedures[$call->getCallMessage()->getUri()]) ? $this->procedures[$call->getCallMessage()->getUri()] : null;
+            if ($procedure && $procedure->getAllowMultipleRegistrations()) {
+                $procedure->processQueue();
             }
 
             //Process all queues @todo This will need to be optimized at some point

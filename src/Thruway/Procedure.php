@@ -20,7 +20,8 @@ use Thruway\Message\UnregisterMessage;
  *
  * @package Thruway
  */
-class Procedure {
+class Procedure
+{
     /**
      * @var string
      */
@@ -53,16 +54,16 @@ class Procedure {
 
     /**
      * Constructor
-     * 
+     *
      * @param string $procedureName
      */
     public function __construct($procedureName)
     {
         $this->setProcedureName($procedureName);
 
-        $this->registrations = [];
+        $this->registrations              = [];
         $this->allowMultipleRegistrations = false;
-        $this->discloseCaller = false;
+        $this->discloseCaller             = false;
         $this->setManager(new ManagerDummy());
 
         $this->callQueue = new \SplQueue();
@@ -70,12 +71,12 @@ class Procedure {
 
     /**
      * Process register
-     * 
+     *
      * @param Session $session
      * @param \Thruway\Message\RegisterMessage $msg
      * @throws \Exception
      */
-    public function processRegister(Session $session, RegisterMessage $msg) 
+    public function processRegister(Session $session, RegisterMessage $msg)
     {
         $registration = Registration::createRegistrationFromRegisterMessage($session, $msg);
 
@@ -130,7 +131,7 @@ class Procedure {
 
     /**
      * Add registration
-     * 
+     *
      * @param \Thruway\Registration $registration
      * @throws \Exception
      */
@@ -165,11 +166,11 @@ class Procedure {
 
     /**
      * Get registration by ID
-     * 
+     *
      * @param $registrationId
      * @return bool|Registration
      */
-    public function getRegistrationById($registrationId) 
+    public function getRegistrationById($registrationId)
     {
         /** @var Registration $registration */
         foreach ($this->registrations as $registration) {
@@ -183,11 +184,11 @@ class Procedure {
 
     /**
      * process unregister
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\UnregisterMessage $msg
      */
-    public function processUnregister(Session $session, UnregisterMessage $msg) 
+    public function processUnregister(Session $session, UnregisterMessage $msg)
     {
         for ($i = 0; $i < count($this->registrations); $i++) {
             /** @var Registration $registration */
@@ -216,33 +217,38 @@ class Procedure {
 
     /**
      * Process call
-     * 
+     *
      * @param \Thruway\Session $session
-     * @param \Thruway\Message\CallMessage $msg
-     * @return void
+     * @param Call $call
+     * @throws \Exception
+     * @return bool | Call
      */
-    public function processCall(Session $session, CallMessage $msg)
+    public function processCall(Session $session, Call $call)
     {
         // find a registration to call
         if (count($this->registrations) == 0) {
-            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_procedure'));
-            return;
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($call->getCallMessage(), 'wamp.error.no_such_procedure'));
+            return false;
         }
-
-        $call = new Call($session, $msg);
 
         // just send it to the first one if we don't allow multiple registrations
         if (!$this->getAllowMultipleRegistrations()) {
             $this->registrations[0]->processCall($call);
-            return;
         } else {
             $this->callQueue->enqueue($call);
-
             $this->processQueue();
         }
+
+        return true;
     }
 
-    public function processQueue() {
+    /**
+     * Process the Queue
+     *
+     * @throws \Exception
+     */
+    public function processQueue()
+    {
         if (!$this->getAllowMultipleRegistrations()) {
             throw new \Exception("queuing only allowed when there are multiple registrations");
         }
@@ -286,11 +292,11 @@ class Procedure {
 
     /**
      * Get call by request ID
-     * 
+     *
      * @param int $requestId
      * @return \Thruway\Call|boolean
      */
-    public function getCallByRequestId($requestId) 
+    public function getCallByRequestId($requestId)
     {
         /* @var $registration \Thruway\Registration */
         foreach ($this->registrations as $registration) {
@@ -377,14 +383,14 @@ class Procedure {
 
     /**
      * process session leave
-     * 
+     *
      * @param \Thruway\Session $session
      */
-    public function leave(Session $session) 
+    public function leave(Session $session)
     {
         // remove all registrations that belong to this session
         /* @var $registration \Thruway\Registration */
-        foreach($this->registrations as $i => $registration) {
+        foreach ($this->registrations as $i => $registration) {
             if ($registration->getSession() === $session) {
                 array_splice($this->registrations, $i, 1);
             }
@@ -405,22 +411,24 @@ class Procedure {
     public function setManager($manager)
     {
         $this->manager = $manager;
-        $this->manager->addCallable("manager.procedure." . $this->getProcedureName() . "get_registrations", $this->getRegistrations());
+        $this->manager->addCallable("manager.procedure." . $this->getProcedureName() . "get_registrations",
+            $this->getRegistrations());
     }
 
-    public function managerGetRegistrations() {
+    public function managerGetRegistrations()
+    {
         $registrations = $this->getRegistrations();
 
         $regInfo = [];
         /** @var Registration $reg */
         foreach ($registrations as $reg) {
             $regInfo[] = [
-                'id' => $reg->getId(),
+                'id'                    => $reg->getId(),
                 "thruway_multiregister" => $reg->getAllowMultipleRegistrations(),
-                "disclose_caller" => $reg->getDiscloseCaller(),
-                "session" => $reg->getSession()->getSessionId(),
-                "authid" => $reg->getSession()->getAuthenticationDetails()->getAuthId(),
-                "statistics" => $reg->getStatistics()
+                "disclose_caller"       => $reg->getDiscloseCaller(),
+                "session"               => $reg->getSession()->getSessionId(),
+                "authid"                => $reg->getSession()->getAuthenticationDetails()->getAuthId(),
+                "statistics"            => $reg->getStatistics()
             ];
         }
     }

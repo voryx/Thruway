@@ -7,6 +7,7 @@ use Thruway\Message\CallMessage;
 use Thruway\Message\InvocationMessage;
 use Thruway\Message\ResultMessage;
 use Thruway\Message\YieldMessage;
+use Thruway\Role\AbstractRole;
 
 /**
  * Class Call
@@ -51,6 +52,9 @@ class Call
      */
     private $callStart;
 
+
+    private $invocationRequestId;
+
     /**
      * Constructor
      *
@@ -71,6 +75,7 @@ class Call
         $this->setRegistration($registration);
 
         $this->callStart = microtime(true);
+        $this->invocationRequestId = Session::getUniqueId();
     }
 
     /**
@@ -83,13 +88,16 @@ class Call
 
     /**
      * Process Yield message
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\YieldMessage $msg
+     * @return bool if we need to keep the call indexed
      */
-    public function processYield(Session $session, YieldMessage $msg) 
+    public function processYield(Session $session, YieldMessage $msg)
     {
-        $details = new \stdClass();
+
+        $keepIndex = true;
+        $details   = new \stdClass();
 
         $yieldOptions = $msg->getOptions();
         if (is_array($yieldOptions) && isset($yieldOptions['progress']) && $yieldOptions['progress']) {
@@ -98,9 +106,11 @@ class Call
             } else {
                 // not sure what to do here - just going to drop progress
                 // if we are getting progress messages that the caller didn't ask for
+                return $keepIndex;
             }
         } else {
             $this->getRegistration()->removeCall($this);
+            $keepIndex = false;
         }
 
         $resultMessage = new ResultMessage(
@@ -111,11 +121,13 @@ class Call
         );
 
         $this->getCallerSession()->sendMessage($resultMessage);
+
+        return $keepIndex;
     }
 
     /**
      * Get call message
-     * 
+     *
      * @return \Thruway\Message\CallMessage
      */
     public function getCallMessage()
@@ -125,7 +137,7 @@ class Call
 
     /**
      * Set call message
-     * 
+     *
      * @param \Thruway\Message\CallMessage $callMessage
      */
     public function setCallMessage($callMessage)
@@ -135,7 +147,7 @@ class Call
 
     /**
      * Get callee session
-     * 
+     *
      * @return \Thruway\Session
      */
     public function getCalleeSession()
@@ -145,7 +157,7 @@ class Call
 
     /**
      * Set callee session
-     * 
+     *
      * @param \Thruway\Session $calleeSession
      */
     public function setCalleeSession($calleeSession)
@@ -155,7 +167,7 @@ class Call
 
     /**
      * Get caller session
-     * 
+     *
      * @return \Thruway\Session
      */
     public function getCallerSession()
@@ -165,7 +177,7 @@ class Call
 
     /**
      * Set caller session
-     * 
+     *
      * @param \Thruway\Session $callerSession
      */
     public function setCallerSession($callerSession)
@@ -175,7 +187,8 @@ class Call
 
     /**
      * Get InvocationMessage
-     * 
+     *
+     * @throws \Exception
      * @return \Thruway\Message\InvocationMessage
      */
     public function getInvocationMessage()
@@ -192,13 +205,15 @@ class Call
 
             $invocationMessage = InvocationMessage::createMessageFrom($this->getCallMessage(), $this->getRegistration());
 
+            $invocationMessage->setRequestId($this->getInvocationRequestId());
+
             $details = [];
             if ($this->getRegistration()->getDiscloseCaller() === true && $this->getCallerSession()->getAuthenticationDetails()) {
                 $details = [
                     "caller"     => $this->getCallerSession()->getSessionId(),
                     "authid"     => $this->getCallerSession()->getAuthenticationDetails()->getAuthId(),
-                    "authrole" => $this->getCallerSession()->getAuthenticationDetails()->getAuthRole(),
-                    "authroles" => $this->getCallerSession()->getAuthenticationDetails()->getAuthRoles(),
+                    "authrole"   => $this->getCallerSession()->getAuthenticationDetails()->getAuthRole(),
+                    "authroles"  => $this->getCallerSession()->getAuthenticationDetails()->getAuthRoles(),
                     "authmethod" => $this->getCallerSession()->getAuthenticationDetails()->getAuthMethod(),
                 ];
             }
@@ -227,7 +242,7 @@ class Call
 
     /**
      * Set Invocation message
-     * 
+     *
      * @param \Thruway\Message\InvocationMessage $invocationMessage
      */
     public function setInvocationMessage($invocationMessage)
@@ -237,7 +252,7 @@ class Call
 
     /**
      * update state is progressive
-     * 
+     *
      * @param boolean $isProgressive
      */
     public function setIsProgressive($isProgressive)
@@ -247,7 +262,7 @@ class Call
 
     /**
      * Get state is progressive
-     * 
+     *
      * @return boolean
      */
     public function getIsProgressive()
@@ -257,7 +272,7 @@ class Call
 
     /**
      * Check is progressive
-     * 
+     *
      * @return boolean
      */
     public function isProgressive()
@@ -267,7 +282,7 @@ class Call
 
     /**
      * Get registration
-     * 
+     *
      * @return Registration
      */
     public function getRegistration()
@@ -289,4 +304,14 @@ class Call
 
         $this->registration = $registration;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getInvocationRequestId()
+    {
+        return $this->invocationRequestId;
+    }
+
+
 }
