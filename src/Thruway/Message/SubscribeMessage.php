@@ -41,7 +41,7 @@ class SubscribeMessage extends Message implements ActionMessageInterface
     {
         parent::__construct();
 
-        $this->options   = $options;
+        $this->setOptions($options);
         $this->topicName = $topicName;
         $this->setRequestId($requestId);
     }
@@ -64,7 +64,7 @@ class SubscribeMessage extends Message implements ActionMessageInterface
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->getRequestId(), $this->getOptions(), $this->getTopicName()];
+        return [$this->getRequestId(), (object)$this->getOptions(), $this->getTopicName()];
     }
 
     /**
@@ -74,7 +74,7 @@ class SubscribeMessage extends Message implements ActionMessageInterface
      */
     public function setOptions($options)
     {
-        $this->options = $options;
+        $this->options = (array)$options;
     }
 
     /**

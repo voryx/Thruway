@@ -41,7 +41,7 @@ class RegisterMessage extends Message implements ActionMessageInterface
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -57,17 +57,17 @@ class RegisterMessage extends Message implements ActionMessageInterface
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->requestId, $this->getOptions(), $this->getProcedureName()];
+        return [$this->requestId, (object)$this->getOptions(), $this->getProcedureName()];
     }
 
     /**
      * Get options
-     * 
+     *
      * @return array
      */
     public function getOptions()
     {
-        return (array)$this->options;
+        return $this->options;
     }
 
     /**
@@ -77,12 +77,12 @@ class RegisterMessage extends Message implements ActionMessageInterface
      */
     public function setOptions($options)
     {
-        $this->options = $options;
+        $this->options = (array)$options;
     }
 
     /**
      * Get procedure name
-     * 
+     *
      * @return string
      */
     public function getProcedureName()
@@ -92,7 +92,7 @@ class RegisterMessage extends Message implements ActionMessageInterface
 
     /**
      * Get request ID
-     * 
+     *
      * @return int
      */
     public function getRequestId()

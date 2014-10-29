@@ -52,16 +52,15 @@ class PublishMessage extends Message implements ActionMessageInterface
         parent::__construct();
 
         $this->setRequestId($requestId);
-
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
-        $this->options   = $options;
+        $this->setOptions($options);
         $this->topicName = $topicName;
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -92,17 +91,17 @@ class PublishMessage extends Message implements ActionMessageInterface
 
     /**
      * Set options
-     * 
+     *
      * @param mixed $options
      */
     public function setOptions($options)
     {
-        $this->options = $options;
+        $this->options = (array)$options;
     }
 
     /**
      * Get options
-     * 
+     *
      * @return mixed
      */
     public function getOptions()
@@ -112,7 +111,7 @@ class PublishMessage extends Message implements ActionMessageInterface
 
     /**
      * Set topic name
-     * 
+     *
      * @param string $topicName
      */
     public function setTopicName($topicName)
@@ -122,7 +121,7 @@ class PublishMessage extends Message implements ActionMessageInterface
 
     /**
      * Get topic name
-     * 
+     *
      * @return string
      */
     public function getTopicName()
@@ -132,7 +131,7 @@ class PublishMessage extends Message implements ActionMessageInterface
 
     /**
      * Set request ID
-     * 
+     *
      * @param int $requestId
      */
     public function setRequestId($requestId)
@@ -142,7 +141,7 @@ class PublishMessage extends Message implements ActionMessageInterface
 
     /**
      * Get request ID
-     * 
+     *
      * @return int
      */
     public function getRequestId()
