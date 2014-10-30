@@ -142,6 +142,10 @@ class Worker
                         $context->setGroups($mapping->getAnnotation()->getSerializerGroups());
                     }
 
+                    if ($mapping->getAnnotation()-getSerializerSerializeNull()) {
+                        $context->setSerializeNull(true);
+                    }
+
                     /**
                      *
                      * Need to decode json so we can hand it off to the WAMP serialize.

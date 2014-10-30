@@ -26,6 +26,8 @@ class Register implements Annotation
 
     protected $serializerEnableMaxDepthChecks;
 
+    protected $serializerSerializeNull;
+
     protected $worker;
 
     protected $multiRegister;
@@ -118,4 +120,11 @@ class Register implements Annotation
         return $this->registerCallback;
     }
 
+    /**
+     * @return bool
+     */
+    function getSerializerSerializeNull()
+    {
+        return $this->serializerSerializeNull;
+    }
 }
