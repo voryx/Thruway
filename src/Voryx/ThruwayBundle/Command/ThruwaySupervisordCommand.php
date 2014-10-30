@@ -74,7 +74,7 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
             }
 
             //Create the log file if it doesn't already exist
-            $logfile    = $this->getContainer()->get('kernel')->getRootDir() . "/logs/" . $config['supervisor']['logfile'];
+            $logfile    = $this->getContainer()->get('kernel')->getLogDir() . $config['supervisor']['logfile'];
             $pidfile    = $config['supervisor']['pidfile'];
             $configPath = $this->getContainer()->get('kernel')->locateResource($config['supervisor']['config']);
 
