@@ -27,6 +27,24 @@ class VoryxThruwayExtension extends Extension
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
 
+        $this->validate($config);
+
+        $container->setParameter('voryx_thruway', $config);
+
+        $this->createResourceServices($config, $container);
+
+        $this->configureOptions($config, $container);
+    }
+
+    /**
+     * Validation for config
+     * @param $config
+     */
+    protected function validate($config)
+    {
+
+        //@todo add more config validation
+
         if (isset($config['resources']) && !is_array($config['resources'])) {
             throw new \InvalidArgumentException(
                 'The "resources" option must be an array'
@@ -44,12 +62,17 @@ class VoryxThruwayExtension extends Extension
                 'The "realm" option must be set within voryx_thruway'
             );
         }
+    }
 
-        //@todo add more config validation
 
-
-        $container->setParameter('voryx_thruway', $config);
-
+    /**
+     * Create a service for each resource that's configured
+     *
+     * @param $config
+     * @param ContainerBuilder $container
+     */
+    protected function createResourceServices(&$config, ContainerBuilder $container)
+    {
         //Create services for any of the resource classes
         foreach ($config['resources'] as $class) {
             $class      = new \ReflectionClass($class);
@@ -57,14 +80,23 @@ class VoryxThruwayExtension extends Extension
             $definition = new Definition($class->getName());
             $definition->addTag('thruway.resource');
 
-            if ($class->hasMethod('setContainer')) {
+            if ($class->implementsInterface('Symfony\Component\DependencyInjection\ContainerAwareInterface')) {
                 $container->setDefinition($serviceId, $definition)
                     ->addMethodCall('setContainer', [new Reference('service_container')]);
             } else {
                 $container->setDefinition($serviceId, $definition);
             }
         }
+    }
 
+    /**
+     * Configure optional settings
+     *
+     * @param $config
+     * @param ContainerBuilder $container
+     */
+    protected function configureOptions(&$config, ContainerBuilder $container)
+    {
         //Add optional Manager
         if ($config['router'] && $config['router']['enable_manager'] === true) {
 
@@ -78,7 +110,6 @@ class VoryxThruwayExtension extends Extension
                 ->getDefinition('voryx.thruway.server')
                 ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.internal.manager')]);
         }
-
 
         if ($config['enable_logging'] === true) {
             $container

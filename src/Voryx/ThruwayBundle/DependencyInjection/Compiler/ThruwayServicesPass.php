@@ -19,8 +19,11 @@ class ThruwayServicesPass implements CompilerPassInterface
     {
 
         foreach ($container->findTaggedServiceIds('thruway.resource') as $id => $attr) {
-            $className = $container->getDefinition($id)->getClass();
 
+            $def = $container->getDefinition($id);
+            $def->setScope('prototype');
+
+            $className      = $def->getClass();
             $class          = new \ReflectionClass($className);
             $methods        = $class->getMethods();
             $resourceMapper = $container->getDefinition('voryx.thruway.resource.mapper');

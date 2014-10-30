@@ -58,10 +58,10 @@ class ClientManager
         $argumentsKw = json_decode($this->serializer->serialize($argumentsKw, "json"));
 
         //If we already have a client open that we can use, use that
-        if ($this->container->initialized('voryx.thruway.worker')
-            && $client = $this->container->get('voryx.thruway.worker')->getClient()
+        if ($this->container->initialized('wamp_kernel')
+            && $client = $this->container->get('wamp_kernel')->getClient()
         ) {
-            $session = $this->container->get('voryx.thruway.worker')->getSession();
+            $session = $this->container->get('wamp_kernel')->getSession();
 
             return $session->publish($topicName, $arguments, $argumentsKw, $options);
         }
@@ -116,10 +116,10 @@ class ClientManager
         $arguments = json_decode($this->serializer->serialize($arguments, "json"));
 
         //If we already have a client open that we can use, use that
-        if ($this->container->initialized('voryx.thruway.worker')
-            && $client = $this->container->get('voryx.thruway.worker')->getClient()
+        if ($this->container->initialized('wamp_kernel')
+            && $client = $this->container->get('wamp_kernel')->getClient()
         ) {
-            $session = $this->container->get('voryx.thruway.worker')->getSession();
+            $session = $this->container->get('wamp_kernel')->getSession();
 
             return $session->call($procedureName, $arguments);
         }

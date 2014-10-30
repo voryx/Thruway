@@ -60,7 +60,7 @@
                 <argument type="service" id="voryx.thruway.ratchet.transport"/>
             </call>
             <!--<call method="addTransportProvider">-->
-                <!--<argument type="service" id="voryx.thruway.internal.transport"/>-->
+            <!--<argument type="service" id="voryx.thruway.internal.transport"/>-->
             <!--</call>-->
         </service>
 
@@ -71,8 +71,7 @@
         </service>
 
 
-        <service id="voryx.thruway.worker"
-                 class="Voryx\ThruwayBundle\Worker">
+        <service id="wamp_kernel" class="Voryx\ThruwayBundle\WampKernel">
             <argument type="service" id="service_container"/>
             <argument type="service" id="serializer"/>
             <argument type="service" id="voryx.thruway.resource.mapper"/>

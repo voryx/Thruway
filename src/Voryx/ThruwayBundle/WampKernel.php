@@ -17,11 +17,11 @@ use Voryx\ThruwayBundle\Annotation\Subscribe;
 use Voryx\ThruwayBundle\Mapping\MappingInterface;
 
 /**
- * Class Worker
+ * Class WampKernel
  *
  * @package Voryx\ThruwayBundle
  */
-class Worker
+class WampKernel
 {
 
     /* @var $session ClientSession */
@@ -55,12 +55,12 @@ class Worker
     /**
      * @var null
      */
-    private $workerName;
+    private $processName;
 
     /**
      * @var
      */
-    private $workerInstance;
+    private $processInstance;
 
     /**
      * @param ContainerInterface $container
@@ -80,11 +80,19 @@ class Worker
      */
     public function onOpen(ClientSession $session, TransportInterface $transport)
     {
-
         $this->session   = $session;
         $this->transport = $transport;
 
-        $mappings = $this->resourceMapper->getMappings($this->getWorkerName());
+        $this->mapResources();
+
+    }
+
+    /**
+     * Go through all of the resource mappings for this worker process and create the corresponding WAMP URIs
+     */
+    protected function mapResources()
+    {
+        $mappings = $this->resourceMapper->getMappings($this->getProcessName());
 
         /* @var $mapping MappingInterface */
         foreach ($mappings as $mapping) {
@@ -100,6 +108,8 @@ class Worker
     }
 
     /**
+     * Register an RPC
+     *
      * @param MappingInterface $mapping
      */
     protected function createRPC(MappingInterface $mapping)
@@ -112,86 +122,137 @@ class Worker
         $registerCallback = $annotation->getRegisterCallback() ? [$object, $annotation->getRegisterCallback()] : null;
 
         /**
-         * If this isn't the first worker to be created, we can't register this RPC call again.
+         * If this isn't the first worker process to be created, we can't register this RPC call again.
          */
-        if ($this->getWorkerInstance() > 0 && !$multiRegister) {
+        if ($this->getProcessInstance() > 0 && !$multiRegister) {
             return;
         }
 
+        //RPC Options
+        $callOptions = [
+            'disclose_caller'          => $discloseCaller,
+            "thruway_multiregister"    => $multiRegister,
+            "replace_orphaned_session" => $annotation->getReplaceOrphanedSession()
+        ];
 
-        $this->session->register($annotation->getName(),
-            function ($args, $kwargs, $details) use ($mapping, $annotation, $object) {
-                //@todo match up $kwargs to the method arguments
+        //RPC Callback
+        $rpcCallback = function ($args, $kwargs, $details) use ($mapping) {
+            return $this->handleRPC($args, $kwargs, $details, $mapping);
+        };
 
-                try {
-
-                    $this->authenticateAuthId($details["authid"]);
-
-                    $data = call_user_func_array(
-                        [$object, $mapping->getMethod()->getName()],
-                        $this->deserialize($args, $mapping)
-                    );
-
-
-                    $context = new SerializationContext();
-                    if ($mapping->getAnnotation()->getSerializerEnableMaxDepthChecks()) {
-                        $context->enableMaxDepthChecks();
-                    }
-
-                    if ($mapping->getAnnotation()->getSerializerGroups()) {
-                        $context->setGroups($mapping->getAnnotation()->getSerializerGroups());
-                    }
-
-                    if ($mapping->getAnnotation()-getSerializerSerializeNull()) {
-                        $context->setSerializeNull(true);
-                    }
-
-                    /**
-                     *
-                     * Need to decode json so we can hand it off to the WAMP serialize.
-                     * Once JSM Serializer support serializing to array, we can get rid of this.
-                     * https://github.com/schmittjoh/serializer/pull/20
-                     *
-                     */
-                    if ($data instanceof Promise) {
-                        return $data->then(function ($d) use ($context) {
-                            //If the data is a CallResult, we only want to serialize the first argument
-                            $d = $d instanceof CallResult ? [$d[0]] : $d;
-                            return json_decode($this->serializer->serialize($d, "json", $context));
-                        });
-
-                    }
-
-                    return json_decode($this->serializer->serialize($data, "json", $context));
-
-                } catch (\Exception $e) {
-                    $this->container->get('logger')->critical($e->getMessage());
-                    throw new \Exception("Unable to make the call: {$annotation->getName()}");
-                }
-
-            },
-            [
-                'disclose_caller'          => $discloseCaller,
-                "thruway_multiregister"    => $multiRegister,
-                "replace_orphaned_session" => $annotation->getReplaceOrphanedSession()
-            ]
-        )->then($registerCallback);
+        //Register the RPC Call
+        $this->session->register($annotation->getName(), $rpcCallback, $callOptions)->then($registerCallback);
     }
 
 
     /**
+     * Handle the RPC
+     *
+     * @param $args
+     * @param $kwargs
+     * @param $details
+     * @param MappingInterface $mapping
+     * @return mixed|static
+     * @throws \Exception
+     */
+    protected function handleRPC($args, $kwargs, $details, MappingInterface $mapping)
+    {
+        //@todo match up $kwargs to the method arguments
+
+        try {
+            $controller     = $this->container->get($mapping->getServiceId());
+            $controllerArgs = $this->deserializeArgs($args, $mapping);
+
+            $traits = class_uses($controller);
+
+            //Inject the User object if the UserAware trait in in use
+            if (isset($traits['Voryx\ThruwayBundle\DependencyInjection\UserAwareTrait'])) {
+                $user = $this->authenticateAuthId($details["authid"]);
+                $controller->setUser($user);
+            }
+
+            //Call Controller
+            $rawResult = call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
+
+            //Create a serialization context
+            $context = $this->createSerializationContext($mapping);
+
+            //Do clean on the controller
+            $this->cleanup($controller);
+
+            if ($rawResult instanceof Promise) {
+                return $rawResult->then(function ($d) use ($context) {
+                    //If the data is a CallResult, we only want to serialize the first argument
+                    $d = $d instanceof CallResult ? [$d[0]] : $d;
+                    return json_decode($this->serializer->serialize($d, "json", $context));
+                });
+            } else {
+                return json_decode($this->serializer->serialize($rawResult, "json", $context));
+            }
+
+        } catch (\Exception $e) {
+            $this->container->get('logger')->critical($e->getMessage());
+            throw new \Exception("Unable to make the call: {$mapping->getAnnotation()->getName()}");
+        }
+    }
+
+    /**
+     * Subscribe to a topic
+     *
      * @param MappingInterface $mapping
      */
     protected function createSubscribe(MappingInterface $mapping)
     {
-        $this->session->subscribe($mapping->getAnnotation()->getName(), function ($args) use ($mapping) {
+        $topic = $mapping->getAnnotation()->getName();
 
-            $object = $this->container->get($mapping->getServiceId());
-            call_user_func_array(
-                [$object, $mapping->getMethod()->getName()],
-                $this->deserialize($args, $mapping)
-            );
-        });
+        $subscribeCallback = function ($args) use ($mapping) {
+            $this->handleEvent($args, $mapping);
+        };
+
+        //Subscribe to a topic
+        $this->session->subscribe($topic, $subscribeCallback);
+    }
+
+    /**
+     * Handle an subscription Event
+     *
+     * @param $args
+     * @param MappingInterface $mapping
+     */
+    protected function handleEvent($args, MappingInterface $mapping)
+    {
+        $controller     = $this->container->get($mapping->getServiceId());
+        $controllerArgs = $this->deserializeArgs($args, $mapping);
+
+        //Call Controller
+        call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
+
+        $this->cleanup($controller);
+    }
+
+    /**
+     * Create serialization context with settings taken from the controller's annotation
+     *
+     * @param MappingInterface $mapping
+     * @return SerializationContext
+     */
+    protected function createSerializationContext(MappingInterface $mapping)
+    {
+        $context = new SerializationContext();
+
+        if ($mapping->getAnnotation()->getSerializerEnableMaxDepthChecks()) {
+            $context->enableMaxDepthChecks();
+        }
+
+        if ($mapping->getAnnotation()->getSerializerGroups()) {
+            $context->setGroups($mapping->getAnnotation()->getSerializerGroups());
+        }
+
+        if ($mapping->getAnnotation()->getSerializerSerializeNull()) {
+            $context->setSerializeNull(true);
+        }
+
+        return $context;
     }
 
     /**
@@ -228,13 +289,16 @@ class Worker
         return $this->transport;
     }
 
-
     /**
+     * Deserialize Controller arguments
+     *
+     * //@todo add ability to configure the deserialization context
+     *
      * @param $args
      * @param MappingInterface $mapping
      * @return array|bool
      */
-    private function deserialize($args, MappingInterface $mapping)
+    private function deserializeArgs($args, MappingInterface $mapping)
     {
         try {
             $args = (array)$args;
@@ -280,9 +344,7 @@ class Worker
             return $deserializedArgs;
 
         } catch (\Exception $e) {
-            $this->container->get('monolog.logger.emergency')->error(
-                $e->getMessage()
-            );
+            $this->container->get('monolog.logger.emergency')->error($e->getMessage());
         }
 
         return [];
@@ -290,6 +352,7 @@ class Worker
 
     /**
      * @param $authid
+     * @return bool | UserInterface
      */
     private function authenticateAuthId($authid)
     {
@@ -299,8 +362,11 @@ class Worker
             if ($this->container->has($config['user_provider'])) {
                 $user = $this->container->get($config['user_provider'])->findUserByUsernameOrEmail($authid);
                 $this->authenticateUser($user);
+                return $user;
             }
         }
+
+        return false;
     }
 
     /**
@@ -316,17 +382,17 @@ class Worker
     /**
      * @return null
      */
-    public function getWorkerName()
+    public function getProcessName()
     {
-        return $this->workerName;
+        return $this->processName;
     }
 
     /**
-     * @param null $workerName
+     * @param null $processName
      */
-    public function setWorkerName($workerName)
+    public function setProcessName($processName)
     {
-        $this->workerName = $workerName;
+        $this->processName = $processName;
     }
 
     /**
@@ -340,17 +406,17 @@ class Worker
     /**
      * @return mixed
      */
-    public function getWorkerInstance()
+    public function getProcessInstance()
     {
-        return $this->workerInstance;
+        return $this->processInstance;
     }
 
     /**
-     * @param mixed $workerInstance
+     * @param mixed $processInstance
      */
-    public function setWorkerInstance($workerInstance)
+    public function setProcessInstance($processInstance)
     {
-        $this->workerInstance = $workerInstance;
+        $this->processInstance = $processInstance;
     }
 
 
@@ -361,6 +427,21 @@ class Worker
     private function isAssoc($arr)
     {
         return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+
+
+    /**
+     *  Cleanup
+     * @param $controller
+     */
+    private function cleanup($controller)
+    {
+        unset ($controller);
+
+        //Clear out any stuff that doctrine has cached
+        if ($this->container->has('doctrine')) {
+            $this->container->get('doctrine')->getManager()->clear();
+        }
     }
 
 }

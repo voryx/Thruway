@@ -38,8 +38,8 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
             $name             = $input->getArgument('name');
             $config           = $this->getContainer()->getParameter('voryx_thruway');
             $loop             = $this->getContainer()->get('voryx.thruway.loop');
-            $worker           = $this->getContainer()->get('voryx.thruway.worker');
-            $workerAnnotation = $worker->getResourceMapper()->getWorkerAnnotation($name);
+            $kernel           = $this->getContainer()->get('wamp_kernel');
+            $workerAnnotation = $kernel->getResourceMapper()->getWorkerAnnotation($name);
 
             if ($workerAnnotation) {
                 $realm = $workerAnnotation->getRealm() ?: $config['realm'];
@@ -53,12 +53,11 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
             $client    = new Client($realm, $loop);
 
             $client->addTransportProvider($transport);
-            $client->setAuthId('trusted_worker');
             $client->setLogger(new ConsoleLogger());
 
-            $worker->setWorkerName($name);
-            $worker->setClient($client);
-            $worker->setWorkerInstance($input->getArgument('instance'));
+            $kernel->setProcessName($name);
+            $kernel->setClient($client);
+            $kernel->setProcessInstance($input->getArgument('instance'));
 
             $client->start();
 

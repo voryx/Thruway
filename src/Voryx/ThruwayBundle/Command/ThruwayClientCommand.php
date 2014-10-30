@@ -42,10 +42,10 @@ class ThruwayClientCommand extends ContainerAwareCommand
             $config = $this->getContainer()->getParameter('voryx_thruway');
             $server = $this->getContainer()->get('voryx.thruway.server');
             $loop   = $this->getContainer()->get('voryx.thruway.loop');
-            $worker = $this->getContainer()->get('voryx.thruway.worker');
+            $kernel = $this->getContainer()->get('wamp_kernel');
             $client = new Client($config['realm'], $loop);
 
-            $worker->setClient($client);
+            $kernel->setClient($client);
 
             $internalTransportProvider = new InternalClientTransportProvider($client);
             $server->addTransportProvider($internalTransportProvider);
