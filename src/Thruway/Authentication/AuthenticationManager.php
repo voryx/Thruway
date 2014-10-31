@@ -333,9 +333,9 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                             }
 
                             if (isset($res[1])) {
-                                $res[1]['authrole'] = $session->getAuthenticationDetails()->getAuthRole();
+                                $res[1]['authrole']  = $session->getAuthenticationDetails()->getAuthRole();
                                 $res[1]['authroles'] = $session->getAuthenticationDetails()->getAuthRoles();
-                                $res[1]['authid'] = $session->getAuthenticationDetails()->getAuthId();
+                                $res[1]['authid']    = $session->getAuthenticationDetails()->getAuthId();
                                 if (is_array($res[1])) {
                                     $welcomeDetails = array_merge($welcomeDetails, $res[1]);
                                 }
@@ -421,7 +421,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Set ready flag
-     * 
+     *
      * @param boolean $ready
      */
     public function setReady($ready)
@@ -431,7 +431,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Get ready flag
-     * 
+     *
      * @return boolean
      */
     public function getReady()
@@ -441,7 +441,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Check ready to authenticate
-     * 
+     *
      * @return boolean
      */
     public function readyToAuthenticate()
@@ -451,7 +451,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
     /**
      * Checks to see if a realm has a registered auth provider
-     * 
+     *
      * @param string $realmName
      * @return boolean
      */

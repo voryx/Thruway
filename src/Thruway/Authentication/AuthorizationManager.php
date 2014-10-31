@@ -5,22 +5,18 @@ namespace Thruway\Authentication;
 
 
 use Ratchet\Wamp\Exception;
-use React\Promise\Promise;
-use Thruway\CallResult;
 use Thruway\ClientSession;
 use Thruway\Message\ActionMessageInterface;
-use Thruway\Message\CallMessage;
-use Thruway\Message\Message;
-use Thruway\Message\PublishedMessage;
-use Thruway\Message\RegisterMessage;
-use Thruway\Message\SubscribeMessage;
 use Thruway\Peer\Client;
-use Thruway\Realm;
 use Thruway\Result;
 use Thruway\Role\AbstractRole;
 use Thruway\Session;
-use Thruway\Transport\TransportInterface;
 
+
+/**
+ * Class AuthorizationManager
+ * @package Thruway\Authentication
+ */
 class AuthorizationManager extends Client implements AuthorizationManagerInterface
 {
     /**
@@ -33,6 +29,10 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
      */
     private $rules;
 
+    /**
+     * @param string $realm
+     * @param null $loop
+     */
     function __construct($realm, $loop = null)
     {
         parent::__construct($realm, $loop);
@@ -52,7 +52,7 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
      * actionMsg should be an instance of: register, call, subscribe, or publish messages
      *
      * @param Session $session
-     * @param Message $actionMsg
+     * @param ActionMessageInterface $actionMsg
      * @throws \Exception
      * @return boolean
      */
@@ -82,8 +82,17 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         return $this->isAuthorizedByRolesActionAndUri($rolesToCheck, $action, $uri);
     }
 
-    private function isAuthorizedByRolesActionAndUri($rolesToCheck, $action, $uri) {
-        if (!in_array("default", $rolesToCheck)) $rolesToCheck = array_merge(["default"], $rolesToCheck);
+    /**
+     * @param $rolesToCheck
+     * @param $action
+     * @param $uri
+     * @return bool|mixed
+     */
+    private function isAuthorizedByRolesActionAndUri($rolesToCheck, $action, $uri)
+    {
+        if (!in_array("default", $rolesToCheck)) {
+            $rolesToCheck = array_merge(["default"], $rolesToCheck);
+        }
 
         $ruleUri = $action . "." . $uri;
 
@@ -109,16 +118,16 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
                 // if there are identical matches - we use the
                 // most restrictive one - we have to set this before the merge, otherwise
                 // it will default the value to the first value
-                $m = array_intersect_key($this->rules[$role], $matchable);
+                $m       = array_intersect_key($this->rules[$role], $matchable);
                 $overlap = array_intersect_key($matches, $m);
                 foreach ($overlap as $k => $v) {
                     // if either is false - set both to false
                     if (!$matches[$k] || !$m[$k]) {
                         $matches[$k] = false;
-                        $m[$k] = false;
+                        $m[$k]       = false;
                     }
                 }
-                $matches = array_merge($matches,$m);
+                $matches = array_merge($matches, $m);
             }
         }
 
@@ -136,7 +145,11 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         return $allow;
     }
 
-    public function onSessionStart($session, $transport)
+    /**
+     * @param \Thruway\ClientSession $session
+     * @param \Thruway\Transport\TransportInterface $transport
+     */
+    public function onSessionStart(ClientSession $session, $transport)
     {
         $promises   = [];
         $promises[] = $this->getCallee()->register($session, 'add_authorization_rule', [$this, "addAuthorizationRule"]);
@@ -161,8 +174,15 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         );
     }
 
-    static public function isValidRuleUri($uri) {
-        if ($uri == "") return true;
+    /**
+     * @param $uri
+     * @return bool
+     */
+    static public function isValidRuleUri($uri)
+    {
+        if ($uri == "") {
+            return true;
+        }
 
         $uriToCheck = $uri;
         if (substr($uriToCheck, strlen($uriToCheck) - 1, 1) == ".") {
@@ -172,6 +192,10 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         return AbstractRole::uriIsValid($uriToCheck);
     }
 
+    /**
+     * @param $args
+     * @return array|bool
+     */
     private function getRuleFromArgs($args)
     {
         if (!is_array($args)) {
@@ -245,11 +269,19 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         return "ADDED";
     }
 
+    /**
+     * @param $args
+     * @throws Exception
+     */
     public function removeAuthorizationRule($args)
     {
         throw new Exception("remove_authorization_rule is not implemented yet");
     }
 
+    /**
+     * @param bool $allowByDefault
+     * @return string
+     */
     public function flushAuthorizationRules($allowByDefault = false)
     {
         // $allowByDefault will be an array if it comes from a WAMP call
@@ -267,12 +299,15 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         // indexes in the rules match the role we are checking for
         // we give the longest uri precedence
         $this->rules['default'] = [
-            "."   => $allowByDefault
+            "." => $allowByDefault
         ];
 
         return "OK";
     }
 
+    /**
+     * @return Result
+     */
     public function getAuthorizationRules()
     {
         $result = new Result([(array)$this->rules]);
@@ -284,22 +319,37 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
      * Arguments need to be [["role1", "role2"], "publish|subscribe|register|call", "my.uri"]
      *
      * @param $args
+     * @return bool|mixed
      */
-    public function testAuthorization($args) {
-        if (is_array($args) && count($args) < 3) return false;
+    public function testAuthorization($args)
+    {
+        if (is_array($args) && count($args) < 3) {
+            return false;
+        }
         $roles = $args[0];
-        if (is_string($roles)) $roles = [$roles];
+        if (is_string($roles)) {
+            $roles = [$roles];
+        }
 
         $action = $args[1];
-        if (!static::isValidAction($action)) return false;
+        if (!static::isValidAction($action)) {
+            return false;
+        }
 
         $uriToCheck = $args[2];
-        if (!AbstractRole::uriIsValid($uriToCheck)) return false;
+        if (!AbstractRole::uriIsValid($uriToCheck)) {
+            return false;
+        }
 
         return $this->isAuthorizedByRolesActionAndUri($roles, $action, $uriToCheck);
     }
 
-    static public function isValidAction($action) {
+    /**
+     * @param $action
+     * @return bool
+     */
+    static public function isValidAction($action)
+    {
         return in_array($action, ['publish', 'subscribe', 'register', 'call']);
     }
 

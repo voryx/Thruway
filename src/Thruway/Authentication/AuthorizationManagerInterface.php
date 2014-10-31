@@ -6,7 +6,12 @@ namespace Thruway\Authentication;
 use Thruway\Message\ActionMessageInterface;
 use Thruway\Session;
 
-interface AuthorizationManagerInterface {
+/**
+ * Interface AuthorizationManagerInterface
+ * @package Thruway\Authentication
+ */
+interface AuthorizationManagerInterface
+{
     /**
      * Check to see if an action is authorized on a specific uri given the
      * context of the session attempting the action
