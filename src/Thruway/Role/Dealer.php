@@ -41,6 +41,11 @@ class Dealer extends AbstractRole
     private $callIndex;
 
     /**
+     * @var \SplObjectStorage
+     */
+    private $registrationsBySession;
+
+    /**
      * Constructor
      *
      * @param \Thruway\Manager\ManagerInterface $manager
@@ -52,6 +57,8 @@ class Dealer extends AbstractRole
         $manager          = $manager === null ? $manager : new ManagerDummy();
 
         $this->setManager($manager);
+
+        $this->registrationsBySession = new \SplObjectStorage();
     }
 
     /**
@@ -105,7 +112,20 @@ class Dealer extends AbstractRole
             $this->procedures[$msg->getProcedureName()] = $procedure;
         }
 
-        $procedure->processRegister($session, $msg);
+        if ($procedure->processRegister($session, $msg)) {
+            // registration succeeded
+            // make sure we have the registration in the collection
+            // of registrations for this session
+            if (!$this->registrationsBySession->contains($session)) {
+                $this->registrationsBySession->attach($session, []);
+            }
+            $registrationsForThisSession = $this->registrationsBySession[$session];
+
+            if (!in_array($procedure, $registrationsForThisSession)) {
+                array_push($registrationsForThisSession, $procedure);
+                $this->registrationsBySession[$session] = $registrationsForThisSession;
+            }
+        }
     }
 
     /**
@@ -124,7 +144,15 @@ class Dealer extends AbstractRole
             $registration = $procedure->getRegistrationById($msg->getRegistrationId());
 
             if ($registration) {
-                $procedure->processUnregister($session, $msg);
+                if ($procedure->processUnregister($session, $msg)) {
+                    // Unregistration was successful - remove from this sessions
+                    // list of registrations
+                    if ($this->registrationsBySession->contains($session) &&
+                        in_array($procedure, $this->registrationsBySession[$session])) {
+                        $registrationsInSession = $this->registrationsBySession[$session];
+                        array_splice($registrationsInSession, array_search($procedure, $registrationsInSession), 1);
+                    }
+                }
                 return;
             }
         }
@@ -191,13 +219,16 @@ class Dealer extends AbstractRole
                 $procedure->processQueue();
             }
 
-            //Process all queues @todo This will need to be optimized at some point
-            /** @var Registration $registration */
-            foreach ($procedure->getRegistrations() as $registration) {
-                if ($procedure->getAllowMultipleRegistrations() && $registration->getSession() === $session) {
-                    $procedure->processQueue();
-                    // we only need to process once per process
-                    break;
+            //Process queues on other registrations if we can take more requests
+            if ($session->getPendingCallCount() == 0 && $this->registrationsBySession->contains($session)) {
+                $registrationsForThisSession = $this->registrationsBySession[$session];
+                /** @var Registration $registration */
+                foreach ($registrationsForThisSession as $registration) {
+                    if ($registration->getAllowMultipleRegistrations()) {
+                        // find the procedure for this registration
+                        $procedure = $this->procedures[$registration->getProcedureName()];
+                        $procedure->processQueue();
+                    }
                 }
             }
         }
@@ -308,6 +339,11 @@ class Dealer extends AbstractRole
         /* @var $procedure \Thruway\Procedure */
         foreach ($this->procedures as $procedure) {
             $procedure->leave($session);
+        }
+
+        // remove the list of registrations
+        if ($this->registrationsBySession->contains($session)) {
+            $this->registrationsBySession->detach($session);
         }
     }
 

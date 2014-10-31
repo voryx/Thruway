@@ -83,7 +83,7 @@ class Procedure
         if (count($this->registrations) > 0) {
             // we already have something registered
             if ($this->getAllowMultipleRegistrations()) {
-                $this->addRegistration($registration, $msg);
+                return $this->addRegistration($registration, $msg);
             } else {
                 // we are not allowed multiple registrations, but we may want
                 // to replace an orphaned session
@@ -110,7 +110,7 @@ class Procedure
                                     $deadSession->shutdown();
 
                                     // complete this registration now
-                                    $this->addRegistration($registration, $msg);
+                                    return $this->addRegistration($registration, $msg);
                                 });
                     } catch (\Exception $e) {
                         $session->sendMessage($errorMsg);
@@ -125,7 +125,7 @@ class Procedure
             $this->setDiscloseCaller($registration->getDiscloseCaller());
             $this->setAllowMultipleRegistrations($registration->getAllowMultipleRegistrations());
 
-            $this->addRegistration($registration, $msg);
+            return $this->addRegistration($registration, $msg);
         }
     }
 
@@ -133,6 +133,7 @@ class Procedure
      * Add registration
      *
      * @param \Thruway\Registration $registration
+     * @return bool
      * @throws \Exception
      */
     private function addRegistration(Registration $registration, RegisterMessage $msg)
@@ -159,8 +160,12 @@ class Procedure
             if ($this->getAllowMultipleRegistrations()) {
                 $this->processQueue();
             }
+
+            return true;
         } catch (\Exception $e) {
             $registration->getSession()->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+
+            return false;
         }
     }
 
@@ -187,6 +192,7 @@ class Procedure
      *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\UnregisterMessage $msg
+     * @return bool
      */
     public function processUnregister(Session $session, UnregisterMessage $msg)
     {
@@ -199,7 +205,7 @@ class Procedure
                 if ($registration->getSession() !== $session) {
                     $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.no_such_registration"));
                     //$this->manager->warning("Tried to unregister a procedure that belongs to a different session.");
-                    return;
+                    return false;
                 }
 
                 array_splice($this->registrations, $i, 1);
@@ -208,11 +214,13 @@ class Procedure
                 // from this registration
 
                 $session->sendMessage(UnregisteredMessage::createFromUnregisterMessage($msg));
-                return;
+                return true;
             }
         }
 
         $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_registration'));
+
+        return false;
     }
 
     /**
