@@ -77,47 +77,81 @@ abstract class Message implements \JsonSerializable
         }
 
         switch ($data[0]) {
-            case Message::MSG_ABORT:
+            case Message::MSG_ABORT: // [ABORT, Details|dict, Reason|uri]
                 return new AbortMessage($data[1], $data[2]);
-            case Message::MSG_HELLO:
+            case Message::MSG_HELLO: // [HELLO, Realm|uri, Details|dict]
                 return new HelloMessage($data[1], $data[2]);
-            case Message::MSG_SUBSCRIBE:
+            case Message::MSG_SUBSCRIBE: // [SUBSCRIBE, Request|id, Options|dict, Topic|uri]
                 return new SubscribeMessage($data[1], $data[2], $data[3]);
-            case Message::MSG_UNSUBSCRIBE:
+            case Message::MSG_UNSUBSCRIBE: // [UNSUBSCRIBE, Request|id, SUBSCRIBED.Subscription|id]
                 return new UnsubscribeMessage($data[1], $data[2]);
             case Message::MSG_PUBLISH:
+                // [PUBLISH, Request|id, Options|dict, Topic|uri]
+                // [PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list]
+                // [PUBLISH, Request|id, Options|dict, Topic|uri, Arguments|list, ArgumentsKw|dict]
                 return new PublishMessage($data[1], $data[2], $data[3], static::getArgs($data, 4), static::getArgs($data, 5));
-            case Message::MSG_GOODBYE:
+            case Message::MSG_GOODBYE: // [GOODBYE, Details|dict, Reason|uri]
                 return new GoodbyeMessage($data[1], $data[2]);
-            case Message::MSG_AUTHENTICATE:
-                return new AuthenticateMessage($data[1]);
-            case Message::MSG_REGISTER:
+            case Message::MSG_AUTHENTICATE: // [AUTHENTICATE, Signature|string, Extra|dict]
+                return new AuthenticateMessage($data[1], $data[2]);
+            case Message::MSG_REGISTER: // [REGISTER, Request|id, Options|dict, Procedure|uri]
                 return new RegisterMessage($data[1], $data[2], $data[3]);
-            case Message::MSG_UNREGISTER:
+            case Message::MSG_UNREGISTER: // [UNREGISTER, Request|id, REGISTERED.Registration|id]
                 return new UnregisterMessage($data[1], $data[2]);
-            case Message::MSG_UNREGISTERED:
+            case Message::MSG_UNREGISTERED: // [UNREGISTERED, UNREGISTER.Request|id]
                 return new UnregisteredMessage($data[1]);
             case Message::MSG_CALL:
+                // [CALL, Request|id, Options|dict, Procedure|uri]
+                // [CALL, Request|id, Options|dict, Procedure|uri, Arguments|list]
+                // [CALL, Request|id, Options|dict, Procedure|uri, Arguments|list, ArgumentsKw|dict]
                 return new CallMessage($data[1], $data[2], $data[3], static::getArgs($data, 4), static::getArgs($data, 5));
             case Message::MSG_YIELD:
+                // [YIELD, INVOCATION.Request|id, Options|dict]
+                // [YIELD, INVOCATION.Request|id, Options|dict, Arguments|list]
+                // [YIELD, INVOCATION.Request|id, Options|dict, Arguments|list, ArgumentsKw|dict]
                 return new YieldMessage($data[1], $data[2], static::getArgs($data, 3), static::getArgs($data, 4));
-            case Message::MSG_WELCOME:
+            case Message::MSG_WELCOME: // [WELCOME, Session|id, Details|dict]
                 return new WelcomeMessage($data[1], $data[2]);
-            case Message::MSG_SUBSCRIBED:
+            case Message::MSG_SUBSCRIBED: // [SUBSCRIBED, SUBSCRIBE.Request|id, Subscription|id]
                 return new SubscribedMessage($data[1], $data[2]);
+            case Message::MSG_UNSUBSCRIBED: // [UNSUBSCRIBED, UNSUBSCRIBE.Request|id]
+                return new UnsubscribedMessage($data[1]);
             case Message::MSG_EVENT:
+                // [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict]
+                // [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list]
+                // [EVENT, SUBSCRIBED.Subscription|id, PUBLISHED.Publication|id, Details|dict, PUBLISH.Arguments|list, PUBLISH.ArgumentsKw|dict]
                 return new EventMessage($data[1], $data[2], $data[3], static::getArgs($data, 4), static::getArgs($data, 5));
-            case Message::MSG_REGISTERED:
+            case Message::MSG_REGISTERED: // [REGISTERED, REGISTER.Request|id, Registration|id]
                 return new RegisteredMessage($data[1], $data[2]);
             case Message::MSG_INVOCATION:
+                // [INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict]
+                // [INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict, CALL.Arguments|list]
+                // [INVOCATION, Request|id, REGISTERED.Registration|id, Details|dict, CALL.Arguments|list, CALL.ArgumentsKw|dict]
                 return new InvocationMessage($data[1], $data[2], $data[3], static::getArgs($data, 4), static::getArgs($data, 5));
             case Message::MSG_RESULT:
+                // [RESULT, CALL.Request|id, Details|dict]
+                // [RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list]
+                // [RESULT, CALL.Request|id, Details|dict, YIELD.Arguments|list, YIELD.ArgumentsKw|dict]
                 return new ResultMessage($data[1], $data[2], static::getArgs($data, 3), static::getArgs($data, 4));
-            case Message::MSG_PUBLISHED:
+            case Message::MSG_PUBLISHED: // [PUBLISHED, PUBLISH.Request|id, Publication|id]
                 return new PublishedMessage($data[1], $data[2]);
-            case Message::MSG_CHALLENGE:
+            case Message::MSG_CHALLENGE: // [CHALLENGE, AuthMethod|string, Extra|dict]
                 return new ChallengeMessage($data[1], $data[2]);
+            case Message::MSG_HEARTBEAT:
+                // [HEARTBEAT, IncomingSeq|integer, OutgoingSeq|integer
+                // [HEARTBEAT, IncomingSeq|integer, OutgoingSeq|integer, Discard|string]
+                $discard = null;
+                if (isset($data[3])) $discard = $data[3];
+
+                return new HeartbeatMessage($data[1], $data[2], $discard);
+            case Message::MSG_CANCEL: // [CANCEL, CALL.Request|id, Options|dict]
+                return new CancelMessage($data[1], $data[2]);
+            case Message::MSG_INTERRUPT: // [INTERRUPT, INVOCATION.Request|id, Options|dict]
+                return new InterruptMessage($data[1], $data[2]);
             case Message::MSG_ERROR:
+                // [ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri]
+                // [ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri, Arguments|list]
+                // [ERROR, REQUEST.Type|int, REQUEST.Request|id, Details|dict, Error|uri, Arguments|list, ArgumentsKw|dict]
                 return new ErrorMessage($data[1], $data[2], $data[3], $data[4], static::getArgs($data, 5),
                     static::getArgs($data, 6));
             default:

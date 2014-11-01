@@ -28,14 +28,8 @@ class AuthenticateMessage extends Message
      */
     public function __construct($signature, $extra = null)
     {
-        parent::__construct();
-        $this->signature = $signature;
-
-        if ($extra === null) {
-            $extra = new \stdClass();
-        }
-
-        $this->extra = Message::shouldBeDictionary($extra);
+        $this->setSignature($signature);
+        $this->setExtra($extra);
     }
 
     /**
@@ -56,7 +50,7 @@ class AuthenticateMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->getSignature(), $this->getExtra()];
+        return [$this->getSignature(), (object)$this->getExtra()];
     }
 
     /**
@@ -79,4 +73,23 @@ class AuthenticateMessage extends Message
         return $this->extra;
     }
 
+    /**
+     * @param array $extra
+     */
+    public function setExtra($extra)
+    {
+        if ($extra === null) {
+            $extra = new \stdClass();
+        }
+
+        $this->extra = $extra;
+    }
+
+    /**
+     * @param mixed $signature
+     */
+    public function setSignature($signature)
+    {
+        $this->signature = $signature;
+    }
 }

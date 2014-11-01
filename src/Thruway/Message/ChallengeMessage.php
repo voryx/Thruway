@@ -28,8 +28,8 @@ class ChallengeMessage extends Message
      */
     public function __construct($authMethod, $details = null)
     {
-        $this->authMethod = $authMethod;
-        $this->details    = $details;
+        $this->setAuthMethod($authMethod);
+        $this->setDetails($details);
     }
 
     /**
@@ -50,7 +50,7 @@ class ChallengeMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->getAuthMethod(), $this->getDetails()];
+        return [$this->getAuthMethod(), (object)$this->getDetails()];
     }
 
     /**
@@ -69,4 +69,19 @@ class ChallengeMessage extends Message
         return $this->details;
     }
 
+    /**
+     * @param mixed $authMethod
+     */
+    public function setAuthMethod($authMethod)
+    {
+        $this->authMethod = $authMethod;
+    }
+
+    /**
+     * @param mixed $details
+     */
+    public function setDetails($details)
+    {
+        $this->details = $details;
+    }
 }

@@ -63,7 +63,7 @@ class HelloMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->getRealm(), $this->getDetails()];
+        return [$this->getRealm(), (object)$this->getDetails()];
     }
 
     /**

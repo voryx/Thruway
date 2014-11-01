@@ -37,8 +37,8 @@ class AbortMessage extends Message
     {
         parent::__construct();
 
-        $this->details     = $details;
-        $this->responseURI = $responseURI;
+        $this->setDetails($details);
+        $this->setResponseURI($responseURI);
     }
 
     /**
@@ -46,7 +46,7 @@ class AbortMessage extends Message
      *
      * @param array $details
      */
-    public function setDetails(array $details)
+    public function setDetails($details)
     {
         $this->details = $details;
     }
@@ -99,7 +99,7 @@ class AbortMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->getDetails(), $this->getResponseURI()];
+        return [(object)$this->getDetails(), $this->getResponseURI()];
     }
 
 }

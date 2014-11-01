@@ -34,8 +34,8 @@ class CancelMessage extends Message
     {
         parent::__construct();
 
-        $this->requestId = $requestId;
-        $this->options   = $options;
+        $this->setRequestId($requestId);
+        $this->setOptions($options);
     }
 
     /**
@@ -56,7 +56,7 @@ class CancelMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->getRequestId(), $this->getOptions()];
+        return [$this->getRequestId(), (object)$this->getOptions()];
     }
 
     /**

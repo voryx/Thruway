@@ -90,7 +90,7 @@ class GoodbyeMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->getDetails(), $this->getReason()];
+        return [(object)$this->getDetails(), $this->getReason()];
     }
 
 } 

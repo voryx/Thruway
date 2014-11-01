@@ -149,7 +149,7 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */
-    public function onSessionStart(ClientSession $session, $transport)
+    public function onSessionStart($session, $transport)
     {
         $promises   = [];
         $promises[] = $this->getCallee()->register($session, 'add_authorization_rule', [$this, "addAuthorizationRule"]);
