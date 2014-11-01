@@ -99,7 +99,7 @@ class RawSocketTransport implements TransportInterface
 
         $bufferLen = strlen($this->buffer);
 
-        while ($bufferLen > 0) {
+        while ($bufferLen > 0 && $bufferLen >= $this->msgLen) {
             if ($this->msgLen == 0) {
                 // the next 4 bytes are going to be the msglen
                 if ($bufferLen >= 4) {
