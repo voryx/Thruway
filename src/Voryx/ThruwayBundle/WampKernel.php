@@ -6,7 +6,13 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
 use React\Promise\Promise;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\Authorization\ExpressionLanguage;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Thruway\CallResult;
 use Thruway\ClientSession;
@@ -15,13 +21,14 @@ use Thruway\Transport\TransportInterface;
 use Voryx\ThruwayBundle\Annotation\Register;
 use Voryx\ThruwayBundle\Annotation\Subscribe;
 use Voryx\ThruwayBundle\Mapping\MappingInterface;
+use Voryx\ThruwayBundle\Mapping\URIClassMapping;
 
 /**
  * Class WampKernel
  *
  * @package Voryx\ThruwayBundle
  */
-class WampKernel
+class WampKernel implements HttpKernelInterface
 {
 
     /* @var $session ClientSession */
@@ -83,6 +90,7 @@ class WampKernel
         $this->session   = $session;
         $this->transport = $transport;
 
+        //Map RPC calls and subscriptions to their controllers
         $this->mapResources();
 
     }
@@ -94,15 +102,19 @@ class WampKernel
     {
         $mappings = $this->resourceMapper->getMappings($this->getProcessName());
 
-        /* @var $mapping MappingInterface */
+        /* @var $mapping URIClassMapping */
         foreach ($mappings as $mapping) {
             if ($mapping->getAnnotation() instanceof Register) {
 
                 $this->createRPC($mapping);
 
+                $this->sendAuthorization($mapping, 'call');
+
             } elseif ($mapping->getAnnotation() instanceof Subscribe) {
 
                 $this->createSubscribe($mapping);
+
+                $this->sendAuthorization($mapping, 'subscribe');
             }
         }
     }
@@ -170,6 +182,9 @@ class WampKernel
                 $user = $this->authenticateAuthId($details["authid"]);
                 $controller->setUser($user);
             }
+
+            //Dispatch Controller Events
+            $this->dispatchControllerEvents($controller, $mapping);
 
             //Call Controller
             $rawResult = call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
@@ -380,6 +395,19 @@ class WampKernel
     }
 
     /**
+     * @param $controller
+     * @param URIClassMapping $mapping
+     */
+    private function dispatchControllerEvents($controller, URIClassMapping $mapping)
+    {
+        $dispatcher = $this->container->get('event_dispatcher');
+        $request    = new Request();
+        $callable   = [$controller, $mapping->getMethod()->getName()];
+        $event      = new FilterControllerEvent($this, $callable, $request, self::MASTER_REQUEST);
+        $dispatcher->dispatch(KernelEvents::CONTROLLER, $event);
+    }
+
+    /**
      * @return null
      */
     public function getProcessName()
@@ -444,4 +472,62 @@ class WampKernel
         }
     }
 
+    /**
+     * //Not tested
+     *
+     * @param URIClassMapping $mapping
+     * @param $action
+     */
+    public function sendAuthorization(URIClassMapping $mapping, $action)
+    {
+        $uri   = $mapping->getAnnotation()->getName();
+        $roles = $this->extractRoles($mapping);
+
+        foreach ($roles as $role) {
+
+            $this->session->call("add_authorization_rule", [
+                [
+                    "role"   => $role,
+                    "action" => $action,
+                    "uri"    => $uri,
+                    "allow"  => true
+                ]
+            ])->then(
+                function ($r) {
+                    echo "Sent authorization\n";
+                },
+                function ($msg) {
+                    echo "Failed to send authorization\n";
+                }
+            );
+        }
+    }
+
+    /**
+     * @param URIClassMapping $mapping
+     * @return array
+     */
+    protected function extractRoles(URIClassMapping $mapping)
+    {
+        $roles = [];
+
+        $securityAnnotation = $mapping->getSecurityAnnotation();
+
+        if ($securityAnnotation) {
+
+            $expression = $securityAnnotation->getExpression();
+
+            preg_match_all("/'(.*?)'/", $expression, $matches);
+            $roles = $matches[1];
+        }
+
+        return $roles;
+
+    }
+
+
+    public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = true)
+    {
+        // TODO: Implement handle() method.
+    }
 }

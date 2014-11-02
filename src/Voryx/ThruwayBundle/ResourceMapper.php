@@ -6,6 +6,8 @@ namespace Voryx\ThruwayBundle;
 
 use Doctrine\Common\Annotations\Reader;
 use Symfony\Component\Config\Definition\Exception\Exception;
+use Voryx\ThruwayBundle\Annotation\Register;
+use Voryx\ThruwayBundle\Annotation\Subscribe;
 use Voryx\ThruwayBundle\Mapping\URIClassMapping;
 
 /**
@@ -16,10 +18,9 @@ class ResourceMapper
 {
 
     const REGISTER_ANNOTATION_CLASS = 'Voryx\\ThruwayBundle\\Annotation\\Register';
-
     const SUBSCRIBE_ANNOTATION_CLASS = 'Voryx\\ThruwayBundle\\Annotation\\Subscribe';
-
     const WORKER_ANNOTATION_CLASS = 'Voryx\\ThruwayBundle\\Annotation\\Worker';
+    const SECURITY_ANNOTATION_CLASS = 'Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Security';
 
     /**
      * @var Reader
@@ -59,15 +60,19 @@ class ResourceMapper
     public function map($serviceId, $class, $method)
     {
 
-        $class         = new \ReflectionClass($class);
-        $method        = $class->getMethod($method);
-        $annotations   = [];
-        $annotations[] = $this->reader->getMethodAnnotation($method, self::REGISTER_ANNOTATION_CLASS);
-        $annotations[] = $this->reader->getMethodAnnotation($method, self::SUBSCRIBE_ANNOTATION_CLASS);
+        $class  = new \ReflectionClass($class);
+        $method = $class->getMethod($method);
 
+        $annotations        = [];
+        $annotations[]      = $this->reader->getMethodAnnotation($method, self::REGISTER_ANNOTATION_CLASS);
+        $annotations[]      = $this->reader->getMethodAnnotation($method, self::SUBSCRIBE_ANNOTATION_CLASS);
+        $securityAnnotation = $this->reader->getMethodAnnotation($method, self::SECURITY_ANNOTATION_CLASS);
+
+        /* @var $annotation Register | Subscribe */
         foreach ($annotations as $annotation) {
             if ($annotation) {
 
+                /* @var $workerAnnotation Register | Subscribe */
                 $workerAnnotation = isset($this->workerAnnotationsClasses[$class->getName()]) ? $this->workerAnnotationsClasses[$class->getName()] : null;
 
                 if ($workerAnnotation) {
@@ -85,9 +90,13 @@ class ResourceMapper
                     throw new Exception("The URI '{$uri}' has already been registered in '{$className}' for the worker '{$worker}'");
                 }
 
+                //Set security Annotation
+                $mapping->setSecurityAnnotation($securityAnnotation);
+
                 $this->mappings[$worker][$annotation->getName()] = $mapping;
             }
         }
+
 
     }
 

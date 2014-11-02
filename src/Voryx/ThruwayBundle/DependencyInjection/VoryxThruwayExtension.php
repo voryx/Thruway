@@ -105,10 +105,11 @@ class VoryxThruwayExtension extends Extension
                 ->getDefinition('voryx.thruway.manager.client')
                 ->setClass('Thruway\Manager\ManagerClient');
 
-            //Inject the manager into the router
+            //Inject the manager client into the router
             $container
                 ->getDefinition('voryx.thruway.server')
                 ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.internal.manager')]);
+
         }
 
         if ($config['enable_logging'] === true) {

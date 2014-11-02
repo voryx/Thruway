@@ -3,7 +3,7 @@ ThruwayBundle
 
 This a Symfony Bundle for [Thruway](https://github.com/voryx/Thruway), which is a php implementation of WAMP (Web Application Messaging Protocol).
 
-
+Note:  This project is still undergoing a lot of changes, so the API will change.
 
 ### Quick Start with Composer
 

@@ -2,6 +2,7 @@
 
 namespace Voryx\ThruwayBundle\Mapping;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Voryx\ThruwayBundle\Annotation\Annotation;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
@@ -15,6 +16,11 @@ class URIClassMapping implements MappingInterface
      * @var Annotation
      */
     protected $annotation;
+
+    /**
+     * @var Security
+     */
+    protected $securityAnnotation;
 
     /**
      * @var \ReflectionMethod
@@ -111,4 +117,22 @@ class URIClassMapping implements MappingInterface
     {
         $this->serviceId = $serviceId;
     }
+
+    /**
+     * @return Security
+     */
+    public function getSecurityAnnotation()
+    {
+        return $this->securityAnnotation;
+    }
+
+    /**
+     * @param Security $securityAnnotation
+     */
+    public function setSecurityAnnotation($securityAnnotation)
+    {
+        $this->securityAnnotation = $securityAnnotation;
+    }
+
+
 }
