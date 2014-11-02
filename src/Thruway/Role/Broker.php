@@ -57,10 +57,11 @@ class Broker extends AbstractRole
     }
 
     /**
-     * Handle process revieced message
+     * Handle received message
      *
      * @param \Thruway\AbstractSession $session
      * @param \Thruway\Message\Message $msg
+     * @throws \Exception
      * @return mixed|void
      */
     public function onMessage(AbstractSession $session, Message $msg)
@@ -110,7 +111,7 @@ class Broker extends AbstractRole
             }
             if (isset($options['exclude']) && is_array($options['exclude'])) {
                 // fixup exclude array - make sure it is legit
-                foreach($options['exclude'] as $excludedSession) {
+                foreach ($options['exclude'] as $excludedSession) {
                     if (is_numeric($excludedSession)) {
                         array_push($excludedSessions, $excludedSession);
                     }
@@ -118,7 +119,7 @@ class Broker extends AbstractRole
             }
             if (isset($options['eligible']) && is_array($options['eligible'])) {
                 $whiteList = [];
-                foreach($options['eligible'] as $sessionId) {
+                foreach ($options['eligible'] as $sessionId) {
                     if (is_numeric($sessionId)) {
                         array_push($whiteList, $sessionId);
                     }
@@ -134,12 +135,31 @@ class Broker extends AbstractRole
                 if (!in_array($subscription->getSession()->getSessionId(), $excludedSessions)) {
                     if ($whiteList === null || in_array($subscription->getSession()->getSessionId(), $whiteList)) {
                         $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
+                        $this->disclosePublisherOption($session, $eventMsg, $subscription);
                         $subscription->getSession()->sendMessage($eventMsg);
                     }
                 }
             }
         }
-        
+    }
+
+    /**
+     * @param Session $session
+     * @param EventMessage $msg
+     * @param Subscription $subscription
+     */
+    private function disclosePublisherOption(Session $session, EventMessage $msg, Subscription $subscription)
+    {
+        if ($subscription->isDisclosePublisher() === true) {
+            $details = [
+                "caller"     => $session->getSessionId(),
+                "authid"     => $session->getAuthenticationDetails()->getAuthId(),
+                "authrole"   => $session->getAuthenticationDetails()->getAuthRole(),
+                "authroles"  => $session->getAuthenticationDetails()->getAuthRoles(),
+                "authmethod" => $session->getAuthenticationDetails()->getAuthMethod(),
+            ];
+            $msg->setDetails(array_merge($msg->getDetails(), $details));
+        }
     }
 
     /**
@@ -164,7 +184,7 @@ class Broker extends AbstractRole
 
         array_push($this->topics[$msg->getTopicName()], $session);
 
-        $subscription = new Subscription($msg->getTopicName(), $session);
+        $subscription = Subscription::createSubscriptionFromSubscribeMessage($session, $msg);
         $this->subscriptions->attach($subscription);
         $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $subscription->getId());
         $session->sendMessage($subscribedMsg);
@@ -185,11 +205,11 @@ class Broker extends AbstractRole
         if (!$subscription || !isset($this->topics[$subscription->getTopic()])) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.no_such_subscription'));
-            
+
             return;
         }
 
-        $topicName   = $subscription->getTopic();
+        $topicName = $subscription->getTopic();
         //$subscribers = $this->topics[$topicName];
 
         /* @var $subscriber \Thruway\Session */

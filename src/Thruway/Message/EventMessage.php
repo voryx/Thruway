@@ -102,7 +102,7 @@ class EventMessage extends Message
         return new static(
             $subscriptionId,
             $msg->getRequestId(),
-            new \stdClass,
+            $msg->getOptions(),
             $msg->getArguments(),
             $msg->getArgumentsKw()
         );

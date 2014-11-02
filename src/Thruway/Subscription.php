@@ -2,6 +2,8 @@
 
 namespace Thruway;
 
+use Thruway\Message\SubscribeMessage;
+
 /**
  * Class Subscription
  */
@@ -28,6 +30,11 @@ class Subscription
      */
     private $options;
 
+    /*
+     * @var boolean
+     */
+    private $disclosePublisher;
+
     /**
      * Constructor
      *
@@ -38,16 +45,36 @@ class Subscription
     public function __construct($topic, Session $session, $options = null)
     {
 
-        $this->topic   = $topic;
-        $this->session = $session;
-        $this->options = new \stdClass();
-        $this->id      = Session::getUniqueId();
+        $this->topic             = $topic;
+        $this->session           = $session;
+        $this->options           = $options ?: new \stdClass();
+        $this->id                = Session::getUniqueId();
+        $this->disclosePublisher = false;
 
     }
 
     /**
+     * Create Subscription from SubscribeMessage
+     *
+     * @param Session $session
+     * @param SubscribeMessage $msg
+     * @return Subscription
+     */
+    public static function createSubscriptionFromSubscribeMessage(Session $session, SubscribeMessage $msg)
+    {
+        $options      = (array)$msg->getOptions();
+        $subscription = new Subscription($msg->getTopicName(), $session, $options);
+
+        if (isset($options['disclose_publisher']) && $options['disclose_publisher'] === true) {
+            $subscription->setDisclosePublisher(true);
+        }
+
+        return $subscription;
+    }
+
+    /**
      * Get subscription ID
-     * 
+     *
      * @return mixed
      */
     public function getId()
@@ -57,7 +84,7 @@ class Subscription
 
     /**
      * Get subscription options
-     * 
+     *
      * @return \stdClass
      */
     public function getOptions()
@@ -67,7 +94,7 @@ class Subscription
 
     /**
      * Set subscription options
-     * 
+     *
      * @param \stdClass $options
      */
     public function setOptions($options)
@@ -77,7 +104,7 @@ class Subscription
 
     /**
      * Set topic name
-     * 
+     *
      * @param string $topic
      */
     public function setTopic($topic)
@@ -87,7 +114,7 @@ class Subscription
 
     /**
      * Get topic name
-     * 
+     *
      * @return string
      */
     public function getTopic()
@@ -97,7 +124,7 @@ class Subscription
 
     /**
      * Get session
-     * 
+     *
      * @return \Thruway\Session
      */
     public function getSession()
@@ -107,12 +134,29 @@ class Subscription
 
     /**
      * Set session
-     * 
+     *
      * @param \Thruway\Session $session
      */
     public function setSession($session)
     {
         $this->session = $session;
     }
+
+    /**
+     * @return boolean
+     */
+    public function isDisclosePublisher()
+    {
+        return $this->disclosePublisher;
+    }
+
+    /**
+     * @param boolean $disclosePublisher
+     */
+    public function setDisclosePublisher($disclosePublisher)
+    {
+        $this->disclosePublisher = $disclosePublisher;
+    }
+
 
 } 

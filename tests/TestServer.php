@@ -4,6 +4,7 @@ require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/Clients/InternalClient.php';
 require_once __DIR__ . '/Clients/SimpleAuthProviderClient.php';
 require_once __DIR__ . '/Clients/AbortAfterHelloAuthProviderClient.php';
+require_once __DIR__ . '/Clients/DisclosePublisherClient.php';
 
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
@@ -34,14 +35,14 @@ $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProv
 ////////////////////
 // Test stuff for Authorization
 $authorizationManager = new \Thruway\Authentication\AuthorizationManager('authorizing_realm');
-$authorizingRealm = new \Thruway\Realm('authorizing_realm');
+$authorizingRealm     = new \Thruway\Realm('authorizing_realm');
 $authorizingRealm->setAuthorizationManager($authorizationManager);
 $router->getRealmManager()->addRealm($authorizingRealm);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authorizationManager));
 // Create a realm with Authentication also
 // to test some stuff
 $authAndAuthAuthorizer = new \Thruway\Authentication\AuthorizationManager("authful_realm");
-$authAndAuthRealm = new \Thruway\Realm("authful_realm");
+$authAndAuthRealm      = new \Thruway\Realm("authful_realm");
 $authAndAuthRealm->setAuthorizationManager($authAndAuthAuthorizer);
 $authAndAuthRealm->setAuthenticationManager($authMgr);
 $router->getRealmManager()->addRealm($authAndAuthRealm);
@@ -54,9 +55,14 @@ $router->addTransportProvider($transportProvider);
 
 $theInternalClient = new InternalClient('testRealm', $loop);
 $theInternalClient->setRouter($router);
-
 $internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider($theInternalClient);
 $router->addTransportProvider($internalTransportProvider);
+
+//Client for Disclose Publisher Test
+$dpClient = new DisclosePublisherClient('testSimpleAuthRealm', $loop);
+$internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider($dpClient);
+$router->addTransportProvider($internalTransportProvider);
+
 
 if ($timeout) {
     $loop->addTimer($timeout, function () use ($loop) {

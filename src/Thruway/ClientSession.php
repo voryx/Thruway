@@ -38,12 +38,12 @@ class ClientSession extends AbstractSession
      *
      * @param string $topicName
      * @param \Closure $callback
-     *
+     * @param $options array
      * @return Promise
      */
-    public function subscribe($topicName, $callback)
+    public function subscribe($topicName, $callback, $options = null)
     {
-        return $this->peer->getSubscriber()->subscribe($this, $topicName, $callback);
+        return $this->peer->getSubscriber()->subscribe($this, $topicName, $callback, $options);
     }
 
     /**
