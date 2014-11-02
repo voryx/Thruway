@@ -50,8 +50,8 @@ class HeartbeatMessage extends Message {
     {
         $a = [$this->getIncomingSeq(), $this->getOutgoingSeq()];
 
-        if (!empty($this->getDiscard())) {
-            $a[] = $this->getDiscard();
+        if (is_string($this->getDiscard())) {
+            array_push($a, $this->getDiscard());
         }
 
         return $a;
