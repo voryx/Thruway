@@ -26,7 +26,6 @@
     },
     "require": {
         "php": ">=5.4",
-        "ratchet/pawl": "dev-master",
         "voryx/thruway": "dev-master",
         "jms/serializer-bundle": "0.13.0"
     },
