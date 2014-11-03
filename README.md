@@ -26,10 +26,6 @@ Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloadin
 
       $ curl -sS https://getcomposer.org/installer | php
       
-Download Pawl
-
-      $ php composer.phar require "ratchet/pawl":"dev-master"
-
 Download Thruway and dependencies
 
       $ php composer.phar require "voryx/thruway":"dev-master"
