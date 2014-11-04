@@ -84,7 +84,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
 
 
         // tell the internal client to start up
-        $this->internalClient->start();
+        $this->internalClient->start(false);
     }
 
     /**
