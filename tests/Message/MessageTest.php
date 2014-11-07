@@ -104,6 +104,12 @@ class MessageTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("", $callResult, "CallResult null when zero arguments.");
     }
 
+    function testCallResultNullArgs() {
+        $callResult = new CallResult(new ResultMessage(1, new \stdClass(), null));
+
+        $this->assertEquals("", $callResult, "CallResult null when null arguments.");
+    }
+
     function testABunchOfMessages() {
         $tests = [
             // AbortMessage
@@ -183,6 +189,7 @@ class MessageTest extends \PHPUnit_Framework_TestCase {
 
             // ResultMessage
             [ "in" => '[50, 7814135, {}]', "out" => '[50,7814135,{}]' ],
+            [ "in" => '[50, 7814135, {}, []]', "out" => '[50,7814135,{}]' ],
             [ "in" => '[50, 7814135, {}, ["Hello, world!"]]', "out" => '[50,7814135,{},["Hello, world!"]]' ],
             [ "in" => '[50, 7814135, {}, [30]]', "out" => '[50,7814135,{},[30]]' ],
             [ "in" => '[50, 7814135, {}, [], {"userid": 123, "karma": 10}]', "out" => '[50,7814135,{},[],{"userid":123,"karma":10}]' ],

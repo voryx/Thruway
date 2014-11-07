@@ -49,27 +49,32 @@ trait ArgumentsTrait
 
     /**
      * Get arguments
-     * 
+     *
      * @return mixed
      */
     public function getArguments()
     {
-        return $this->arguments;
+        return $this->arguments ?: [];
     }
 
     /**
      * Set arguments
-     * 
+     *
      * @param mixed $arguments
      */
     public function setArguments($arguments)
     {
-        $this->arguments = $arguments;
+        if (is_array($arguments) || $arguments === null) {
+            $this->arguments = $arguments;
+        } else {
+            $this->arguments = null;
+            throw new \InvalidArgumentException();
+        }
     }
 
     /**
      * Get arguments kw
-     * 
+     *
      * @return mixed
      */
     public function getArgumentsKw()
@@ -79,7 +84,7 @@ trait ArgumentsTrait
 
     /**
      * Set arguments
-     * 
+     *
      * @param mixed $argumentsKw
      */
     public function setArgumentsKw($argumentsKw)
@@ -89,7 +94,7 @@ trait ArgumentsTrait
 
     /**
      * Set arguments from result
-     * 
+     *
      * @param \Thruway\Result $result
      */
     public function setArgumentsFromResult(Result $result)
