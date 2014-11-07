@@ -7,6 +7,7 @@ use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 
@@ -76,7 +77,7 @@ class RealmManager
     {
         if (!array_key_exists($realmName, $this->realms)) {
             if ($this->getAllowRealmAutocreate()) {
-                $this->manager->debug("Creating new realm \"" . $realmName . "\"");
+                Logger::debug($this, "Creating new realm \"" . $realmName . "\"");
                 $realm = new Realm($realmName);
                 $realm->setAuthenticationManager($this->getDefaultAuthenticationManager());
                 $realm->setAuthorizationManager($this->getDefaultAuthorizationManager());
@@ -110,12 +111,12 @@ class RealmManager
             throw new \Exception("There is already a realm \"" . $realm->getRealmName() . "\"");
         }
 
-        $this->manager->debug("Adding realm \"" . $realmName . "\"");
+        Logger::debug($this, "Adding realm \"" . $realmName . "\"");
 
         if ($realm->getManager() instanceof ManagerDummy) {
             /** remind people that we don't setup the manager for them if they
              * are creating their own realms */
-            $this->manager->warning("Realm \"" . $realmName . "\" is using ManagerDummy");
+            Logger::info($this, "Realm \"" . $realmName . "\" is using ManagerDummy");
         }
 
         $this->realms[$realm->getRealmName()] = $realm;

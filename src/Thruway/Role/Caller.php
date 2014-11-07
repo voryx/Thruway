@@ -6,6 +6,7 @@ namespace Thruway\Role;
 use Thruway\AbstractSession;
 use Thruway\CallResult;
 use Thruway\ClientSession;
+use Thruway\Logging\Logger;
 use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
@@ -145,7 +146,7 @@ class Caller extends AbstractRole
 
         if (!(is_array($options) && Message::isAssoc($options))) {
             if ($options !== null) {
-                echo "Warning: options don't appear to be the correct type.";
+                Logger::warning($this, "Options don't appear to be the correct type.");
             }
             $options = new \stdClass();
         }

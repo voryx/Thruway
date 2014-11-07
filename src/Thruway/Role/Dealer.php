@@ -5,6 +5,7 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\Call;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\CallMessage;
@@ -265,7 +266,7 @@ class Dealer extends AbstractRole
 
         if (!$call) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $this->manager->error('No call for invocation error message: ' . $msg->getRequestId());
+            Logger::error($this, 'No call for invocation error message: ' . $msg->getRequestId());
 
             // TODO: do we send a message back to the callee?
             $errorMsg->setErrorURI('wamp.error.no_such_procedure');

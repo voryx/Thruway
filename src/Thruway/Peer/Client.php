@@ -2,10 +2,9 @@
 
 namespace Thruway\Peer;
 
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Thruway\ClientAuthenticationInterface;
 use Thruway\ClientSession;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\ChallengeMessage;
@@ -126,10 +125,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     private $attemptRetry = true;
 
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $logger;
 
     /**
      * Constructor
@@ -148,7 +143,6 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $this->session              = null;
         $this->clientAuthenticators = [];
         $this->authId               = "anonymous";
-        $this->logger               = new NullLogger();
 
         $this->reconnectOptions = [
             "max_retries"         => 15,
@@ -160,9 +154,18 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
         $this->on('open', [$this, 'onSessionStart']);
 
-        $this->manager->debug("New client created");
+        Logger::info($this, "New client created");
 
     }
+
+    /**
+     * @return string
+     */
+    function __toString()
+    {
+        return get_class($this);
+    }
+
 
     /**
      * This is meant to be overridden so that the client can do its
@@ -269,7 +272,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $details["authmethods"] = $this->authMethods;
         $details["authid"]      = $this->authId;
 
-        $this->addRole(new Callee($this->getLogger()))
+        $this->addRole(new Callee())
             ->addRole(new Caller())
             ->addRole(new Publisher())
             ->addRole(new Subscriber());
@@ -312,7 +315,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function onMessage(TransportInterface $transport, Message $msg)
     {
 
-        $this->manager->debug("Client onMessage!");
+        Logger::debug($this, "Client onMessage: {$msg}");
 
         $session = $this->session;
 
@@ -339,7 +342,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function processWelcome(ClientSession $session, WelcomeMessage $msg)
     {
-        $this->getLogger()->info("We have been welcomed...");
+        Logger::info($this, "We have been welcomed...");
         //TODO: I'm sure that there are some other things that we need to do here
         $session->setSessionId($msg->getSessionId());
         $this->emit('open', [$session, $this->transport]);
@@ -359,7 +362,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Handle process challenge message
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\ChallengeMessage $msg
      */
@@ -383,7 +386,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Handle process goodbye message
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\GoodbyeMessage $msg
      */
@@ -398,7 +401,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Handle process other Message
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param Message $msg
      */
@@ -495,7 +498,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get callee
-     * 
+     *
      * @return \Thruway\Role\Callee
      */
     public function getCallee()
@@ -506,7 +509,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get caller
-     * 
+     *
      * @return \Thruway\Role\Caller
      */
     public function getCaller()
@@ -517,7 +520,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get publisher
-     * 
+     *
      * @return \Thruway\Role\Publisher
      */
     public function getPublisher()
@@ -527,7 +530,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get subscriber
-     * 
+     *
      * @return \Thruway\Role\Subscriber
      */
     public function getSubscriber()
@@ -537,7 +540,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get list roles
-     * 
+     *
      * @return array
      */
     public function getRoles()
@@ -547,7 +550,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
@@ -557,7 +560,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -567,7 +570,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get loop
-     * 
+     *
      * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
@@ -577,7 +580,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Set authenticate ID
-     * 
+     *
      * @param string $authId
      */
     public function setAuthId($authId)
@@ -587,7 +590,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get authenticate ID
-     * 
+     *
      * @return string
      */
     public function getAuthId()
@@ -597,7 +600,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get list authenticate methods
-     * 
+     *
      * @return array
      */
     public function getAuthMethods()
@@ -607,7 +610,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Set list authenticate methods
-     * 
+     *
      * @param array $authMethods
      */
     public function setAuthMethods($authMethods)
@@ -616,28 +619,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
-     * Get logger
-     * 
-     * @return \Psr\Log\LoggerInterface
-     */
-    public function getLogger()
-    {
-        return $this->logger;
-    }
-
-    /**
-     * Set logger
-     * 
-     * @param \Psr\Log\LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
-
-    /**
      * Get client session
-     * 
+     *
      * @return \Thruway\ClientSession
      */
     public function getSession()

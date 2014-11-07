@@ -7,6 +7,7 @@ use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
+use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\EventMessage;
 use Thruway\Message\Message;
@@ -75,7 +76,7 @@ class Subscriber extends AbstractRole
                 // TODO
                 break;
             default:
-                echo "Unhandled error\n";
+                Logger::critical($this, "Unhandled error");
         }
     }
 

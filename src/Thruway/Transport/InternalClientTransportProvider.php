@@ -3,11 +3,11 @@
 namespace Thruway\Transport;
 
 
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
-use Thruway\Peer\Client;
 
 /**
  * Class InternalClientTransportProvider
@@ -95,12 +95,7 @@ class InternalClientTransportProvider implements TransportProviderInterface
     public function setManager(ManagerInterface $manager)
     {
         $this->manager = $manager;
-
-        if ($this->internalClient instanceof Client) {
-            $this->internalClient->setLogger($this->getManager()->getLogger());
-        }
-
-        $this->manager->info("Manager attached to InternalClientTransportProvider");
+        Logger::info($this, "Manager attached to InternalClientTransportProvider");
     }
 
     /**

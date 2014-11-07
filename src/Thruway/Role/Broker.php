@@ -3,6 +3,7 @@
 namespace Thruway\Role;
 
 use Thruway\AbstractSession;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\ErrorMessage;
@@ -53,7 +54,7 @@ class Broker extends AbstractRole
         $manager             = $manager ? $manager : new ManagerDummy();
 
         $this->setManager($manager);
-        $this->getManager()->debug("Broker constructor");
+        Logger::debug($this, "Broker constructor");
     }
 
     /**
@@ -66,7 +67,7 @@ class Broker extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
-        $this->getManager()->debug(
+        Logger::debug($this,
             "Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . json_encode($msg)
         );
 
@@ -89,7 +90,7 @@ class Broker extends AbstractRole
      */
     protected function processPublish(Session $session, PublishMessage $msg)
     {
-        $this->getManager()->debug("processing publish message");
+        Logger::debug($this, "processing publish message");
 
         $includePublisher = false;
 
@@ -281,7 +282,7 @@ class Broker extends AbstractRole
             $subscription = $this->subscriptions->current();
             $this->subscriptions->next();
             if ($subscription->getSession() == $session) {
-                $this->getManager()->debug("Leaving and unsubscribing: {$subscription->getTopic()}");
+                Logger::debug($this, "Leaving and unsubscribing: {$subscription->getTopic()}");
                 $this->subscriptions->detach($subscription);
             }
         }
@@ -290,7 +291,7 @@ class Broker extends AbstractRole
             foreach ($subscribers as $key => $subscriber) {
                 if ($session == $subscriber) {
                     unset($subscribers[$key]);
-                    $this->getManager()->debug("Removing session from topic list: {$topicName}");
+                    Logger::debug($this, "Removing session from topic list: {$topicName}");
 
                 }
             }

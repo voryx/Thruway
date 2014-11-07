@@ -5,6 +5,7 @@ namespace Thruway\Authentication;
 
 
 use Ratchet\Wamp\Exception;
+
 use Thruway\ClientSession;
 use Thruway\Message\ActionMessageInterface;
 use Thruway\Peer\Client;

@@ -3,6 +3,7 @@
 namespace Thruway\Authentication;
 
 use React\EventLoop\LoopInterface;
+use Thruway\Logging\Logger;
 use Thruway\Peer\Client;
 
 /**
@@ -85,7 +86,7 @@ abstract class AbstractAuthProviderClient extends Client
                             ]
                         )
                             ->then(function ($args) {
-                                $this->manager->info(print_r($args, true));
+                                Logger::debug($this, "Authentication Method Registration Successful: {$this->getMethodName()}");
                             });
                     });
             });

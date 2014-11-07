@@ -30,8 +30,8 @@ class CallResult extends \ArrayObject
     }
 
     /**
-     * Conver to string
-     * 
+     * Convert to string
+     *
      * @return string
      */
     public function __toString()
@@ -59,7 +59,7 @@ class CallResult extends \ArrayObject
 
     /**
      * Get arguments
-     * 
+     *
      * @return mixed
      */
     public function getArguments()
@@ -69,7 +69,7 @@ class CallResult extends \ArrayObject
 
     /**
      * Get arguments kw
-     * 
+     *
      * @return mixed
      */
     public function getArgumentsKw()
@@ -79,7 +79,7 @@ class CallResult extends \ArrayObject
 
     /**
      * Get result detail
-     * 
+     *
      * @return mixed
      */
     public function getDetails()

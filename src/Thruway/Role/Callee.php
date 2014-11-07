@@ -2,12 +2,11 @@
 
 namespace Thruway\Role;
 
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
+use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\InvocationMessage;
 use Thruway\Message\Message;
@@ -32,19 +31,13 @@ class Callee extends AbstractRole
      */
     private $registrations;
 
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $logger;
 
     /**
      * Constructor
-     *
-     * @param \Psr\Log\LoggerInterface $logger
      */
-    public function __construct(LoggerInterface $logger = null)
+    public function __construct()
     {
-        $this->logger        = $logger ? $logger : new NullLogger();
+
         $this->registrations = [];
     }
 
@@ -81,7 +74,7 @@ class Callee extends AbstractRole
     {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
-                $this->logger->info("---Setting registration_id for " . $registration['procedure_name'] . " (" . $key . ")\n");
+                Logger::info($this, "Setting registration_id for " . $registration['procedure_name'] . " (" . $key . ")");
                 $this->registrations[$key]['registration_id'] = $msg->getRegistrationId();
 
                 if ($this->registrations[$key]['futureResult'] instanceof Deferred) {
@@ -92,7 +85,7 @@ class Callee extends AbstractRole
                 return;
             }
         }
-        $this->logger->error("---Got a Registered Message, but the request ids don't match\n");
+        Logger::error($this, "Got a Registered Message, but the request ids don't match");
     }
 
     /**
@@ -114,7 +107,7 @@ class Callee extends AbstractRole
                 }
             }
         }
-        $this->logger->error("---Got an Unregistered Message, but couldn't find corresponding request.\n");
+        Logger::error($this, "Got an Unregistered Message, but couldn't find corresponding request");
     }
 
     /**
@@ -127,7 +120,7 @@ class Callee extends AbstractRole
     {
         foreach ($this->registrations as $key => $registration) {
             if (!isset($registration["registration_id"])) {
-                $this->logger->info("Registration_id not set for " . $registration['procedure_name'] . "\n");
+                Logger::info($this, "Registration_id not set for " . $registration['procedure_name']);
             } else {
                 if ($registration["registration_id"] === $msg->getRegistrationId()) {
 
@@ -250,7 +243,7 @@ class Callee extends AbstractRole
         } elseif ($msg->getErrorMsgCode() == Message::MSG_UNREGISTER) {
             $this->handleErrorUnregister($session, $msg);
         } else {
-            $this->logger->error("Unhandled error message: " . json_encode($msg) . "\n");
+            Logger::error($this, "Unhandled error message: " . json_encode($msg));
         }
 
     }
@@ -363,7 +356,7 @@ class Callee extends AbstractRole
 
     /**
      * process unregister
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param string $Uri
      * @throws \Exception
@@ -385,7 +378,7 @@ class Callee extends AbstractRole
         }
 
         if ($registration === null) {
-            $this->logger->warning("registration not found: " . $Uri);
+            Logger::warning($this, "registration not found: " . $Uri);
             return false;
         }
 
@@ -398,7 +391,7 @@ class Callee extends AbstractRole
         if (!isset($registration["registration_id"])) {
             // this would happen if the registration was never acknowledged by the router
             // we should remove the registration and resolve any pending deferreds
-            $this->logger->error("Registration ID is not set while attempting to unregister " . $Uri . "\n");
+            Logger::error($this, "Registration ID is not set while attempting to unregister " . $Uri);
 
             // reject the pending registration
             $registration['futureResult']->reject();
@@ -444,24 +437,5 @@ class Callee extends AbstractRole
         return array_keys($keys) === $keys;
     }
 
-    /**
-     * Get logger
-     *
-     * @return \Psr\Log\LoggerInterface
-     */
-    public function getLogger()
-    {
-        return $this->logger;
-    }
-
-    /**
-     * Set logger
-     *
-     * @param \Psr\Log\LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
 
 } 

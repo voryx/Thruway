@@ -2,6 +2,7 @@
 
 namespace Thruway\Authentication;
 
+use Thruway\Logging\Logger;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
 use Thruway\Message\HelloMessage;
@@ -64,7 +65,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 },
                 function () {
                     $this->setReady(false);
-                    $this->getManager()->error("registration of registerAuthMethod failed.");
+                    Logger::error($this, "registration of registerAuthMethod failed.");
                 }
             );
     }
@@ -236,7 +237,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         }
                     },
                     function () use ($session) {
-                        $this->getManager()->error("onhello rejected the promise");
+                        Logger::error($this, "onhello rejected the promise");
                         $session->abort("thruway.error.unknown");
                     }
                 );
@@ -353,7 +354,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         }
                     },
                     function () use ($session) {
-                        $this->getManager()->error("onauthenticate rejected the promise");
+                        Logger::error($this, "onauthenticate rejected the promise");
                         $session->abort("thruway.error.unknown");
                     }
                 );

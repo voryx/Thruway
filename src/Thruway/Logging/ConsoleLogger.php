@@ -1,6 +1,6 @@
 <?php
 
-namespace Thruway;
+namespace Thruway\Logging;
 
 use Psr\Log\AbstractLogger;
 
@@ -22,7 +22,8 @@ class ConsoleLogger extends AbstractLogger
      */
     public function log($level, $message, array $context = [])
     {
-        echo $level . ": " . $message . "\n";
+        $now = date("Y-m-d\TH:i:s") . substr((string)microtime(), 1, 8);
+        echo $now . " " . str_pad($level, 10, " ") . " " . $message . "\n";
     }
 
 }

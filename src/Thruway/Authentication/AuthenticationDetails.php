@@ -78,7 +78,7 @@ class AuthenticationDetails
     }
 
     /**
-     * Set authentiocation ID
+     * Set authentication ID
      *
      * @param mixed $authId
      */

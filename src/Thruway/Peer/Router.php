@@ -7,6 +7,7 @@ use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\AbortMessage;
@@ -73,7 +74,7 @@ class Router extends AbstractPeer
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
 
-        $this->manager->debug("New router created");
+        Logger::debug($this, "New router created");
     }
 
     /**
@@ -89,7 +90,7 @@ class Router extends AbstractPeer
         $session->setLoop($this->getLoop());
 
         // TODO: add a little more detail to this (what kind and address maybe?)
-        $this->manager->info("New Session started " . json_encode($transport->getTransportDetails()) . "");
+        Logger::info($this, "New Session started " . json_encode($transport->getTransportDetails()) . "");
 
         $this->sessions->attach($transport, $session);
 
@@ -155,7 +156,7 @@ class Router extends AbstractPeer
      */
     public function start()
     {
-        $this->manager->debug("Starting router");
+        Logger::info($this, "Starting router");
         if ($this->loop === null) {
             throw new \Exception("Loop is null");
         }
@@ -165,14 +166,14 @@ class Router extends AbstractPeer
         }
 
         foreach ($this->transportProviders as $transportProvider) {
-            $this->manager->debug("Starting transport provider " . get_class($transportProvider));
+            Logger::info($this, "Starting transport provider " . get_class($transportProvider));
             $transportProvider->setManager($this->manager);
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
         $this->setupManager();
 
-        $this->manager->debug("Starting loop");
+        Logger::info($this, "Starting loop");
         $this->loop->run();
     }
 
@@ -183,7 +184,7 @@ class Router extends AbstractPeer
      */
     public function onClose(TransportInterface $transport)
     {
-        $this->manager->debug("onClose from " . json_encode($transport->getTransportDetails()));
+        Logger::debug($this, "onClose from " . json_encode($transport->getTransportDetails()));
 
         /* @var  $session \Thruway\Session */
         $session = $this->sessions[$transport];

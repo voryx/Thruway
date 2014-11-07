@@ -5,6 +5,7 @@ namespace Thruway\Transport;
 use React\EventLoop\LoopInterface;
 use React\Socket\Connection;
 use React\Socket\Server;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
@@ -12,9 +13,9 @@ use Thruway\Serializer\JsonSerializer;
 
 /**
  * Class RawSocketTransportProvider
- * 
+ *
  * Implements a transport provider on raw socket (for router)
- * 
+ *
  * @package Thruway\Transport
  */
 class RawSocketTransportProvider implements TransportProviderInterface
@@ -57,7 +58,7 @@ class RawSocketTransportProvider implements TransportProviderInterface
 
     /**
      * Constructor
-     * 
+     *
      * @param string $address
      * @param int $port
      */
@@ -73,7 +74,7 @@ class RawSocketTransportProvider implements TransportProviderInterface
 
     /**
      * Start transport provider
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
@@ -89,12 +90,12 @@ class RawSocketTransportProvider implements TransportProviderInterface
 
     /**
      * Handle process on open new connection
-     * 
+     *
      * @param \React\Socket\Connection $conn
      */
     public function handleConnection(Connection $conn)
     {
-        $this->getManager()->debug("Raw socket opened " . $conn->getRemoteAddress());
+        Logger::debug($this, "Raw socket opened " . $conn->getRemoteAddress());
 
         $transport = new RawSocketTransport($conn, $this->loop, $this->peer);
 
@@ -112,7 +113,7 @@ class RawSocketTransportProvider implements TransportProviderInterface
 
     /**
      * Handle process reveiced data
-     * 
+     *
      * @param mixed $data
      * @param \React\Socket\Connection $conn
      */
@@ -125,12 +126,12 @@ class RawSocketTransportProvider implements TransportProviderInterface
 
     /**
      * Handle process on close transport
-     * 
+     *
      * @param \React\Socket\Connection $conn
      */
     public function handleClose(Connection $conn)
     {
-        $this->getManager()->debug("Raw socket closed " . $conn->getRemoteAddress());
+        Logger::debug($this, "Raw socket closed " . $conn->getRemoteAddress());
         $transport = $this->transports[$conn];
         $this->transports->detach($conn);
 
@@ -139,7 +140,7 @@ class RawSocketTransportProvider implements TransportProviderInterface
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -149,7 +150,7 @@ class RawSocketTransportProvider implements TransportProviderInterface
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
     public function setManager(ManagerInterface $managerInterface)

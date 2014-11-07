@@ -6,6 +6,7 @@ use React\EventLoop\LoopInterface;
 use React\Socket\Connection;
 use React\Stream\Stream;
 use Thruway\Exception\PingNotSupportedException;
+use Thruway\Logging\Logger;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\SerializerInterface;
@@ -105,7 +106,7 @@ class RawSocketTransport implements TransportInterface
                 if ($bufferLen >= 4) {
                     $this->msgLen = array_values(unpack("N", $this->buffer))[0];
                     if ($this->msgLen <= 0) {
-                        echo "Invalid message size sent\n";
+                        Logger::error("Invalid message size sent");
                         $this->close();
                     }
                     // shift off the first 4 bytes

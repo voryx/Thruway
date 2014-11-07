@@ -6,15 +6,16 @@ require_once __DIR__ . '/Clients/SimpleAuthProviderClient.php';
 require_once __DIR__ . '/Clients/AbortAfterHelloAuthProviderClient.php';
 require_once __DIR__ . '/Clients/DisclosePublisherClient.php';
 
+use Thruway\Logging\Logger;
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
 
+//Logger::set(new \Psr\Log\NullLogger());
+
+
 $timeout = isset($argv[1]) ? $argv[1] : 0;
 
-$mgr = new \Thruway\Manager\ManagerDummy();
-$mgr->setLogger(new \Thruway\ConsoleLogger());
-
-$router = new Router(null, $mgr);
+$router = new Router();
 
 $loop = $router->getLoop();
 
@@ -59,10 +60,9 @@ $internalTransportProvider = new Thruway\Transport\InternalClientTransportProvid
 $router->addTransportProvider($internalTransportProvider);
 
 //Client for Disclose Publisher Test
-$dpClient = new DisclosePublisherClient('testSimpleAuthRealm', $loop);
+$dpClient                  = new DisclosePublisherClient('testSimpleAuthRealm', $loop);
 $internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider($dpClient);
 $router->addTransportProvider($internalTransportProvider);
-
 
 if ($timeout) {
     $loop->addTimer($timeout, function () use ($loop) {

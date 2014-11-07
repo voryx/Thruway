@@ -3,7 +3,7 @@
 namespace Thruway;
 
 
-use Psr\Log\LoggerInterface;
+
 use React\EventLoop\LoopInterface;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
@@ -48,23 +48,16 @@ class Connection implements EventEmitterInterface
      *
      * @param array $options
      * @param \React\EventLoop\LoopInterface $loop
-     * @param \Psr\Log\LoggerInterface $logger
      * @throws \Exception
      */
-    public function __construct(Array $options, LoopInterface $loop = null, LoggerInterface $logger = null)
+    public function __construct(Array $options, LoopInterface $loop = null)
     {
 
         $this->options = $options;
         $this->client  = new Client($options['realm'], $loop);
-
         $url           = isset($options['url']) ? $options['url'] : null;
         $pawlTransport = new PawlTransportProvider($url);
-
-        if ($logger) {
-            $pawlTransport->getManager()->setLogger($logger);
-        }
         $this->client->addTransportProvider($pawlTransport);
-
         $this->client->setReconnectOptions($options);
 
         /*

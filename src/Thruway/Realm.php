@@ -6,6 +6,7 @@ use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\ActionMessageInterface;
@@ -109,7 +110,7 @@ class Realm
     {
 
         if ($msg instanceof GoodByeMessage):
-            $this->manager->info("Received a GoodBye, so shutting the session down");
+            Logger::info($this, "Received a GoodBye, so shutting the session down");
             $session->sendMessage(new GoodbyeMessage(new \stdClass(), "wamp.error.goodbye_and_out"));
             $session->shutdown();
         elseif ($session->isAuthenticated()):
@@ -121,7 +122,7 @@ class Realm
         elseif ($msg instanceof AuthenticateMessage):
             $this->processAuthenticate($session, $msg);
         else:
-            $this->manager->error("Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
+            Logger::error($this, "Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
             $session->abort(new \stdClass(), "wamp.error.not_authorized");
         endif;
     }
@@ -148,7 +149,7 @@ class Realm
         // authorization stuff here
         if ($msg instanceof ActionMessageInterface) {
             if (!$this->getAuthorizationManager()->isAuthorizedTo($session, $msg)) {
-                $this->manager->alert("Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
+                Logger::alert($this, "Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
 
                 return;
@@ -165,7 +166,7 @@ class Realm
         }
 
         if (!$handled) {
-            $this->manager->warning("Unhandled message sent to \"{$this->getRealmName()}\"");
+            Logger::warning($this, "Unhandled message sent to \"{$this->getRealmName()}\"");
         }
     }
 
@@ -181,10 +182,10 @@ class Realm
         if ($this->getRealmName() != $msg->getRealm()) {
             throw new InvalidRealmNameException();
         }
-        $this->manager->debug("got hello");
+        Logger::debug($this, "Got Hello");
         // send welcome message
         if ($this->sessions->contains($session)) {
-            $this->manager->error(
+            Logger::error($this,
                 "Connection tried to rejoin realm when it is already joined to the realm."
             );
             // shutdown session here because it is obvious we are just on a different
@@ -233,17 +234,17 @@ class Realm
                 $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
             } catch (\Exception $e) {
                 $session->abort(new \stdClass(), "thruway.error.internal");
-                $this->manager->error("Authenticate sent to realm without auth manager.");
+                Logger::error($this, "Authenticate sent to realm without auth manager.");
             }
         } else {
             $session->abort(new \stdClass(), "thruway.error.internal");
-            $this->manager->error("Authenticate sent to realm without auth manager.");
+            Logger::error($this, "Authenticate sent to realm without auth manager.");
         }
     }
 
     /**
      * Get list sessions
-     * 
+     *
      * @return array
      */
     public function managerGetSessions()
@@ -284,7 +285,7 @@ class Realm
 
     /**
      * Get realm name
-     * 
+     *
      * @return mixed
      */
     public function getRealmName()
@@ -294,13 +295,13 @@ class Realm
 
     /**
      * Process on session leave
-     * 
+     *
      * @param \Thruway\Session $session
      */
     public function leave(Session $session)
     {
 
-        $this->manager->debug("Leaving realm {$session->getRealm()->getRealmName()}");
+        Logger::debug($this, "Leaving realm {$session->getRealm()->getRealmName()}");
 
         if ($this->getAuthenticationManager() !== null) {
             $this->getAuthenticationManager()->onSessionClose($session);
@@ -314,7 +315,7 @@ class Realm
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      */
     public function setManager($manager)
@@ -333,7 +334,7 @@ class Realm
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -343,7 +344,7 @@ class Realm
 
     /**
      * Set authentication manager
-     * 
+     *
      * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager)
@@ -353,7 +354,7 @@ class Realm
 
     /**
      * Get authentication manager
-     * 
+     *
      * @return \Thruway\Authentication\AuthenticationManagerInterface
      */
     public function getAuthenticationManager()
@@ -379,7 +380,7 @@ class Realm
 
     /**
      * Get list session
-     * 
+     *
      * @return \SplObjectStorage
      */
     public function getSessions()
@@ -389,7 +390,7 @@ class Realm
 
     /**
      * Get broker
-     * 
+     *
      * @return \Thruway\Role\Broker
      */
     public function getBroker()
@@ -399,7 +400,7 @@ class Realm
 
     /**
      * Get dealer
-     * 
+     *
      * @return \Thruway\Role\Dealer
      */
     public function getDealer()
@@ -409,7 +410,7 @@ class Realm
 
     /**
      * Publish meta
-     * 
+     *
      * @param string $topicName
      * @param mixed $arguments
      * @param mixed $argumentsKw
@@ -419,7 +420,7 @@ class Realm
     {
         if ($this->metaSession === null) {
             // setup a new metaSession
-            $s = new Session(new DummyTransport());
+            $s                 = new Session(new DummyTransport());
             $this->metaSession = $s;
         }
 

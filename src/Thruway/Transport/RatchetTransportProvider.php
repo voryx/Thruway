@@ -4,6 +4,7 @@ namespace Thruway\Transport;
 
 use Ratchet\WebSocket\Version\RFC6455\Frame;
 use Thruway\Exception\DeserializationException;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
@@ -125,7 +126,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
      */
     public function onOpen(ConnectionInterface $conn)
     {
-        $this->manager->debug("RatchetTransportProvider::onOpen");
+        Logger::debug($this, "RatchetTransportProvider::onOpen");
 
         $transport = new RatchetTransport($conn, $this->loop);
 
@@ -159,7 +160,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
 
         $this->peer->onClose($transport);
 
-        $this->manager->debug("onClose...");
+        Logger::info($this, "Ratchet has closed");
     }
 
     /**
@@ -173,7 +174,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
      */
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
-        $this->manager->error("onError...");
+        Logger::error($this, "onError...");
         // TODO: Implement onError() method.
     }
 
@@ -186,16 +187,16 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
      */
     public function onMessage(ConnectionInterface $from, $msg)
     {
-        $this->manager->debug("onMessage...({$msg})");
+        Logger::debug($this, "onMessage: ({$msg})");
         /** @var TransportInterface $transport */
         $transport = $this->transports[$from];
 
         try {
             $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
         } catch (DeserializationException $e) {
-            $this->manager->warning("Deserialization exception occurred.");
+            Logger::alert($this, "Deserialization exception occurred.");
         } catch (\Exception $e) {
-            $this->manager->warning("Exception occurred during onMessage: " . $e->getMessage());
+            Logger::alert($this, "Exception occurred during onMessage: " . $e->getMessage());
         }
     }
 
@@ -223,7 +224,7 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     {
         $this->manager = $manager;
 
-        $this->manager->info("Manager attached to RatchetTransportProvider");
+       Logger::info($this, "Manager attached to RatchetTransportProvider");
     }
 
     /**

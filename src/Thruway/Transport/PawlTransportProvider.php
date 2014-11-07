@@ -3,6 +3,7 @@
 namespace Thruway\Transport;
 
 use Thruway\Exception\DeserializationException;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
@@ -68,7 +69,7 @@ class PawlTransportProvider implements TransportProviderInterface
      */
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
-        $this->manager->info("Starting Transport\n");
+        Logger::info($this, "Starting Transport");
 
         $this->peer      = $peer;
         $this->loop      = $loop;
@@ -77,7 +78,7 @@ class PawlTransportProvider implements TransportProviderInterface
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
 
-                $this->manager->info("Pawl has connected\n");
+                Logger::info($this, "Pawl has connected");
 
                 $transport = new PawlTransport($conn, $this->loop);
                 $transport->setSerializer(new JsonSerializer());
@@ -88,13 +89,13 @@ class PawlTransportProvider implements TransportProviderInterface
                 $conn->on(
                     'message',
                     function ($msg) use ($transport) {
-                        $this->manager->info("Received: {$msg}\n");
+                        Logger::debug($this, "Received: {$msg}");
                         try {
                             $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
                         } catch (DeserializationException $e) {
-                            $this->manager->warning("Deserialization exception occurred.");
+                            Logger::warning($this, "Deserialization exception occurred.");
                         } catch (\Exception $e) {
-                            $this->manager->warning("Exception occurred during onMessage: " . $e->getMessage());
+                            Logger::warning($this, "Exception occurred during onMessage: " . $e->getMessage());
                         }
                     }
                 );
@@ -102,7 +103,7 @@ class PawlTransportProvider implements TransportProviderInterface
                 $conn->on(
                     'close',
                     function ($conn) {
-                        $this->manager->info("Pawl has closed\n");
+                        Logger::info($this, "Pawl has closed");
                         $this->peer->onClose('close');
                     }
                 );
@@ -116,7 +117,7 @@ class PawlTransportProvider implements TransportProviderInterface
             },
             function ($e) {
                 $this->peer->onClose('unreachable');
-                $this->manager->info("Could not connect: {$e->getMessage()}\n");
+                Logger::info($this, "Could not connect: {$e->getMessage()}");
                 // $this->loop->stop();
             }
         );
@@ -151,7 +152,7 @@ class PawlTransportProvider implements TransportProviderInterface
     {
         $this->manager = $manager;
 
-        $this->manager->info("Manager attached to PawlTransportProvider");
+        Logger::info($this, "Manager attached to PawlTransportProvider");
     }
 
     /**
