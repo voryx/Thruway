@@ -53,7 +53,6 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
             $client    = new Client($realm, $loop);
 
             $client->addTransportProvider($transport);
-            $client->setLogger(new ConsoleLogger());
 
             $kernel->setProcessName($name);
             $kernel->setClient($client);

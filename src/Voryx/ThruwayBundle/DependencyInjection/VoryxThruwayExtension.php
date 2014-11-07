@@ -2,12 +2,14 @@
 
 namespace Voryx\ThruwayBundle\DependencyInjection;
 
+use Psr\Log\NullLogger;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
+use Thruway\Logging\Logger;
 
 /**
  * This is the class that loads and manages your bundle configuration
@@ -112,10 +114,8 @@ class VoryxThruwayExtension extends Extension
 
         }
 
-        if ($config['enable_logging'] === true) {
-            $container
-                ->getDefinition('voryx.thruway.manager.client')
-                ->addMethodCall('setLogger', [new Reference('logger')]);
+        if ($config['enable_logging'] !== true) {
+            Logger::set(new NullLogger());
         }
 
         if ($config['router'] && isset($config['router']['authentication']) && $config['router']['authentication'] == "in_memory") {
