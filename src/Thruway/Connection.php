@@ -3,7 +3,6 @@
 namespace Thruway;
 
 
-
 use React\EventLoop\LoopInterface;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
@@ -71,10 +70,15 @@ class Connection implements EventEmitterInterface
             $this->client->on(
                 'challenge',
                 function (ClientSession $session, ChallengeMessage $msg) use ($options) {
-                    $token = $options['onChallenge']($session, $msg->getAuthMethod());
+                    $token = call_user_func_array($options['onChallenge'], [$session, $msg->getAuthMethod(), $msg]);
                     $session->sendMessage(new AuthenticateMessage($token));
                 }
             );
+        }
+
+        //Set Authid
+        if (isset($options['authid'])) {
+            $this->client->setAuthId($options['authid']);
         }
 
         if (isset($this->options['onClose']) && is_callable($this->options['onClose'])) {
