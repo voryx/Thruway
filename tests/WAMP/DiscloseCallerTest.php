@@ -47,9 +47,9 @@ class DiscloseCallerTest extends PHPUnit_Framework_TestCase
             function (\Thruway\ClientSession $session) {
 
                 $add2 = function ($args, $kwargs, $details) {
-                    $this->_testCallerId = $details["caller"];
-                    $this->_testAuthId = $details["authid"];
-                    $this->_testAuthMethod = $details["authmethod"];
+                    $this->_testCallerId = $details->caller;
+                    $this->_testAuthId = $details->authid;
+                    $this->_testAuthMethod = $details->authmethod;
 //                    $this->_testAuthRole = $details["authrole"];
 
                     return $args[0] + $args[1];

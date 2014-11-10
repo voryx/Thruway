@@ -176,7 +176,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
         $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
         $this->assertEquals('test publish', $this->_testArgs[0]);
-        $this->assertEquals('test1', $this->_testKWArgs['key1']);
+        $this->assertEquals('test1', $this->_testKWArgs->key1);
         $this->assertNotNull($this->_publicationId);
         $this->assertEquals('ok', $this->_testResult[0]);
     }

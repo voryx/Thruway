@@ -32,5 +32,9 @@
         "ratchet/pawl": "0.1.*",
         "psr/log": "~1"
     }
-
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.3-dev"
+        }
+    }
 }

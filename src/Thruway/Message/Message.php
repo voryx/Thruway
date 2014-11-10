@@ -199,8 +199,8 @@ abstract class Message implements \JsonSerializable
      */
     public static function shouldBeDictionary($a)
     {
-        if (is_array($a) && count($a) == 0) {
-            $a = new \stdClass();
+        if (is_array($a)) {
+            $a = (object)$a;
         }
         return $a;
     }

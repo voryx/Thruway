@@ -52,10 +52,10 @@ class DisclosePublisherTest extends PHPUnit_Framework_TestCase
                     function ($args, $kwargs = null, $details, $publicationId = null) {
 
                         $this->_testArgs        = $args;
-                        $this->_testPublisherId = $details['caller'];
-                        $this->_testAuthId      = $details['authid'];
-                        $this->_testAuthMethod  = $details['authmethod'];
-                        $this->_testAuthRole    = $details['authroles'];
+                        $this->_testPublisherId = $details->caller;
+                        $this->_testAuthId      = $details->authid;
+                        $this->_testAuthMethod  = $details->authmethod;
+                        $this->_testAuthRole    = $details->authroles;
 
                     },
                     ['disclose_publisher' => true]

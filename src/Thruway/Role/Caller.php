@@ -69,7 +69,7 @@ class Caller extends AbstractRole
             $callResult = new CallResult($msg);
 
             $details = $msg->getDetails();
-            if (is_array($details) && isset($details['progress']) && $details['progress']) {
+            if (is_object($details) && isset($details->progress) && $details->progress) {
                 // TODO: what if we didn't want progress?
                 $futureResult->progress($callResult);
             } else {
@@ -144,7 +144,11 @@ class Caller extends AbstractRole
             "future_result"  => $futureResult
         ];
 
-        if (!(is_array($options) && Message::isAssoc($options))) {
+        if (is_array($options)) {
+            $options = (object)$options;
+        }
+
+        if (!is_object($options)) {
             if ($options !== null) {
                 Logger::warning($this, "Options don't appear to be the correct type.");
             }

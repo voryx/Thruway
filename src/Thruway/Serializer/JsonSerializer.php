@@ -34,7 +34,7 @@ class JsonSerializer implements SerializerInterface
      */
     public function deserialize($serializedData)
     {
-        if (null === ($data = @json_decode($serializedData, true))) {
+        if (null === ($data = @json_decode($serializedData))) {
             throw new DeserializationException("Error decoding json \"" . $serializedData . "\"");
         }
 
