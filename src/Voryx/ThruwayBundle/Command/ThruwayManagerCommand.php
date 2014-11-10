@@ -43,7 +43,6 @@ class ThruwayManagerCommand extends ContainerAwareCommand
 
             $client->addTransportProvider($transport);
             $client->setAuthId('trusted_worker');
-            $client->setLogger(new ConsoleLogger());
             $client->start();
 
         } catch (\Exception $e) {
