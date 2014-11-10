@@ -191,7 +191,8 @@ class Callee extends AbstractRole
                 $session->sendMessage($errorMsg);
             },
             function ($results) use ($msg, $session, $registration) {
-                $options = ["progress" => true];
+                $options = new \stdClass();
+                $options->progress = true;
                 if ($results instanceof Result) {
                     $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
                         $results->getArgumentsKw());

@@ -177,8 +177,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
                 $authDetails->setAuthMethod($authMethod);
                 $helloDetails = $msg->getDetails();
-                if (isset($helloDetails['authid'])) {
-                    $authDetails->setAuthId($helloDetails['authid']);
+                if (isset($helloDetails->authid)) {
+                    $authDetails->setAuthId($helloDetails->authid);
                 }
 
                 $session->setAuthenticationDetails($authDetails);

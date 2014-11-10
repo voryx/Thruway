@@ -139,6 +139,7 @@ class InvocationMessage extends Message
      */
     public function setDetails($details)
     {
+        if (is_array($details)) $details = (object)$details;
         $this->details = $details;
     }
 

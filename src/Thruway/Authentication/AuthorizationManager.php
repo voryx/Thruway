@@ -202,26 +202,26 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         if (!is_array($args)) {
             return false;
         }
-        if (!is_array($args[0])) {
+        if (!is_object($args[0])) {
             return false;
         }
 
         $rule = $args[0];
 
-        if (isset($rule['role']) &&
-            isset($rule['action']) &&
-            isset($rule['uri']) &&
-            isset($rule['allow'])
+        if (isset($rule->role) &&
+            isset($rule->action) &&
+            isset($rule->uri) &&
+            isset($rule->allow)
         ) {
-            if (in_array($rule['action'], ["publish", "subscribe", "register", "call"]) &&
-                static::isValidRuleUri($rule['uri']) && AbstractRole::uriIsValid($rule['role'])
+            if ($this->isValidAction($rule->action) &&
+                static::isValidRuleUri($rule->uri) && AbstractRole::uriIsValid($rule->role)
             ) {
-                if ($rule['allow'] === true || $rule['allow'] === false) {
-                    return [
-                        "action" => $rule['action'],
-                        "uri"    => $rule["uri"],
-                        "role"   => $rule["role"],
-                        "allow"  => $rule['allow']
+                if ($rule->allow === true || $rule->allow === false) {
+                    return (object)[
+                        "action" => $rule->action,
+                        "uri"    => $rule->uri,
+                        "role"   => $rule->role,
+                        "allow"  => $rule->allow
                     ];
                 }
             }
@@ -232,13 +232,13 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
 
     /**
      *
-     * rules look like
-     * [
-     *    "role" => "some_role",
-     *    "action" => "publish",
-     *    "uri" => "some.uri",
-     *    "allow" => true
-     * ]
+     * rules look like (JSON)
+     * {
+     *    "role": "some_role",
+     *    "action": "publish",
+     *    "uri": "some.uri",
+     *    "allow": true
+     * }
      *
      * Should be $args[0]
      *
@@ -253,9 +253,9 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
             return "ERROR";
         }
 
-        $role      = $rule['role'];
-        $actionUri = $rule['action'] . '.' . $rule['uri'];
-        $allow     = $rule['allow'];
+        $role      = $rule->role;
+        $actionUri = $rule->action . '.' . $rule->uri;
+        $allow     = $rule->allow;
 
         if (!isset($this->rules[$role])) {
             $this->rules[$role] = [];

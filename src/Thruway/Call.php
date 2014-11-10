@@ -100,9 +100,9 @@ class Call
         $details   = new \stdClass();
 
         $yieldOptions = $msg->getOptions();
-        if (is_array($yieldOptions) && isset($yieldOptions['progress']) && $yieldOptions['progress']) {
+        if (is_object($yieldOptions) && isset($yieldOptions->progress) && $yieldOptions->progress) {
             if ($this->isProgressive()) {
-                $details = ["progress" => true];
+                $details->progress = true;
             } else {
                 // not sure what to do here - just going to drop progress
                 // if we are getting progress messages that the caller didn't ask for
@@ -221,7 +221,7 @@ class Call
             // TODO: check to see if callee supports progressive call
             $callOptions   = $this->getCallMessage()->getOptions();
             $isProgressive = false;
-            if (is_array($callOptions) && isset($callOptions['receive_progress']) && $callOptions['receive_progress']) {
+            if (is_object($callOptions) && isset($callOptions->receive_progress) && $callOptions->receive_progress) {
                 $details       = array_merge($details, ["receive_progress" => true]);
                 $isProgressive = true;
             }

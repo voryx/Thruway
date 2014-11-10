@@ -138,7 +138,7 @@ class InternalClient extends Thruway\Peer\Client
     }
 
     public function callWithProgressOption($args, $argsKw, $details) {
-        if (is_array($details) && isset($details['receive_progress']) && $details['receive_progress']) {
+        if (is_object($details) && isset($details->receive_progress) && $details->receive_progress) {
             return "SUCCESS";
         } else {
             throw new \Exception("receive_progress option not set");
@@ -146,7 +146,7 @@ class InternalClient extends Thruway\Peer\Client
     }
 
     public function callReturnSomeProgress($args, $argsKw, $details) {
-        if (is_array($details) && isset($details['receive_progress']) && $details['receive_progress']) {
+        if (is_object($details) && isset($details->receive_progress) && $details->receive_progress) {
             $deferred = new \React\Promise\Deferred();
 
             $this->getLoop()->addTimer(1, function () use ($deferred) {

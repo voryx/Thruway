@@ -42,7 +42,7 @@ class HelloMessage extends Message
     {
         $this->setDetails($details);
         $this->realm       = $realm;
-        $this->authMethods = isset($details['authmethods']) ? $details['authmethods'] : [];
+        $this->authMethods = isset($details->authmethods) ? $details->authmethods : [];
     }
 
     /**
@@ -75,8 +75,8 @@ class HelloMessage extends Message
     {
         $this->details = $details;
 
-        if (isset($details['roles'])) {
-            $this->roles = $details['roles'];
+        if (isset($details->roles)) {
+            $this->roles = $details->roles;
         }
     }
 
