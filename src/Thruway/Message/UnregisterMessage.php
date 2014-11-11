@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class UnregisterMessage
  * A Callees request to unregister a previsouly established registration.
@@ -12,11 +14,7 @@ namespace Thruway\Message;
 class UnregisterMessage extends Message
 {
 
-    /**
-     *
-     * @var int
-     */
-    private $requestId;
+    use RequestTrait;
 
     /**
      *
@@ -32,13 +30,13 @@ class UnregisterMessage extends Message
      */
     public function __construct($requestId, $registrationId)
     {
-        $this->registrationId = $registrationId;
-        $this->requestId      = $requestId;
+        $this->setRegistrationId($registrationId);
+        $this->setRequestId($requestId);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -59,7 +57,7 @@ class UnregisterMessage extends Message
 
     /**
      * Get registration ID
-     * 
+     *
      * @return int
      */
     public function getRegistrationId()
@@ -68,13 +66,12 @@ class UnregisterMessage extends Message
     }
 
     /**
-     * Get request ID
-     * 
-     * @return int
+     * @param int $registrationId
      */
-    public function getRequestId()
+    public function setRegistrationId($registrationId)
     {
-        return $this->requestId;
+        $this->registrationId = $registrationId;
     }
+
 
 }

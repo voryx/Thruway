@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class SubscribedMessage
  * Acknowledge sent by a Broker to a Subscriber to acknowledge a subscription.
@@ -12,17 +14,13 @@ namespace Thruway\Message;
 class SubscribedMessage extends Message
 {
 
-    /**
-     *
-     * @var int
-     */
-    private $subscriptionId;
+    use RequestTrait;
 
     /**
      *
      * @var int
      */
-    private $requestId;
+    private $subscriptionId;
 
     /**
      * Constructor
@@ -32,15 +30,13 @@ class SubscribedMessage extends Message
      */
     public function __construct($requestId, $subscriptionId)
     {
-        parent::__construct();
-
         $this->setRequestId($requestId);
-        $this->subscriptionId = $subscriptionId;
+        $this->setSubscriptionId($subscriptionId);
     }
 
     /**
      * Set subcription ID
-     * 
+     *
      * @param int $subscriptionId
      */
     public function setSubscriptionId($subscriptionId)
@@ -50,7 +46,7 @@ class SubscribedMessage extends Message
 
     /**
      * Get Subscription ID
-     * 
+     *
      * @return int
      */
     public function getSubscriptionId()
@@ -60,7 +56,7 @@ class SubscribedMessage extends Message
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -77,26 +73,6 @@ class SubscribedMessage extends Message
     public function getAdditionalMsgFields()
     {
         return [$this->getRequestId(), $this->getSubscriptionId()];
-    }
-
-    /**
-     * Set request ID
-     * 
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * Get request ID
-     * 
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
 }

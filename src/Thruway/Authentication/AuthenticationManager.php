@@ -103,8 +103,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             if ($msg instanceof HelloMessage) {
                 $details = $msg->getDetails();
                 if (isset($details)) {
-                    if (isset($details['authid'])) {
-                        $authDetails->setAuthId($details['authid']);
+                    if (isset($details->authid)) {
+                        $authDetails->setAuthId($details->authid);
                     }
                 }
             }
@@ -113,19 +113,16 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             $authDetails->addAuthRole("admin");
 
             $session->setAuthenticationDetails($authDetails);
-
             $session->setAuthenticated(true);
 
-            $session->sendMessage(
-                new WelcomeMessage(
-                    $session->getSessionId(), [
-                        'authid'     => $authDetails->getAuthId(),
-                        'authmethod' => $authDetails->getAuthMethod(),
-                        'authrole'   => $authDetails->getAuthRole(),
-                        'authroles'  => $authDetails->getAuthRoles()
-                    ]
-                )
-            );
+            $details             = new \stdClass();
+            $details->authid     = $authDetails->getAuthId();
+            $details->authmethod = $authDetails->getAuthMethod();
+            $details->authrole   = $authDetails->getAuthRole();
+            $details->authroles  = $authDetails->getAuthRoles();
+
+            $session->sendMessage(new WelcomeMessage($session->getSessionId(), $details));
+
             return;
         }
 
@@ -189,7 +186,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 ];
 
                 $this->session->call(
-                    $authMethodInfo['handlers']['onhello'],
+                    $authMethodInfo['handlers']->onhello,
                     [
                         $msg,
                         $sessionInfo
@@ -290,7 +287,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                 // now we send our authenticate information to the RPC
                 $this->getCaller()->call(
                     $this->session,
-                    $authMethodInfo['handlers']['onauthenticate'],
+                    $authMethodInfo['handlers']->onauthenticate,
                     [
                         'authmethod' => $authMethod,
                         'challenge'  => $session->getAuthenticationDetails()->getChallenge(),
@@ -374,7 +371,6 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      */
     public function registerAuthMethod(array $args, $kwargs, $details)
     {
-        $details = (array)$details;
 
         // TODO: should return different error
         if (!is_array($args)) {
@@ -397,15 +393,15 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             return ["ERROR", "Method registration already exists"];
         }
 
-        if (!isset($methodInfo['onhello'])) {
+        if (!isset($methodInfo->onhello)) {
             return ["ERROR", "Authentication provider must provide \"onhello\" handler"];
         }
 
-        if (!isset($methodInfo['onauthenticate'])) {
+        if (!isset($methodInfo->onauthenticate)) {
             return ["ERROR", "Authentication provider must provide \"onauthenticate\" handler"];
         }
 
-        if (!isset($details['caller'])) {
+        if (!isset($details->caller)) {
             return ["ERROR", "Invocation must provide \"caller\" detail on registration"];
         }
 
@@ -414,7 +410,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             'authMethod'  => $authMethod,
             'handlers'    => $methodInfo,
             'auth_realms' => $authRealms,
-            'session_id'  => $details['caller']
+            'session_id'  => $details->caller
         ];
 
         return ["SUCCESS"];

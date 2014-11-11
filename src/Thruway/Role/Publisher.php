@@ -116,9 +116,11 @@ class Publisher extends AbstractRole
      */
     public function publish(ClientSession $session, $topicName, $arguments, $argumentsKw, $options)
     {
+        $options = (object)$options;
+
         $requestId = Session::getUniqueId();
 
-        if (isset($options['acknowledge']) && $options['acknowledge'] === true) {
+        if (isset($options->acknowledge) && $options->acknowledge === true) {
             $futureResult                      = new Deferred();
             $this->publishRequests[$requestId] = ['future_result' => $futureResult];
         }

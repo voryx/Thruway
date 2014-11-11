@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class RegisteredMessage
  * Acknowledge sent by a Dealer to a Callee for successful registration.
@@ -12,10 +14,7 @@ namespace Thruway\Message;
 class RegisteredMessage extends Message
 {
 
-    /**
-     * @var int
-     */
-    private $requestId;
+    use RequestTrait;
 
     /**
      * @var int
@@ -30,13 +29,13 @@ class RegisteredMessage extends Message
      */
     public function __construct($requestId, $registrationId)
     {
-        $this->registrationId = $registrationId;
-        $this->requestId      = $requestId;
+        $this->setRequestId($requestId);
+        $this->setRegistrationId($registrationId);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -57,7 +56,7 @@ class RegisteredMessage extends Message
 
     /**
      * Get registration ID
-     * 
+     *
      * @return int
      */
     public function getRegistrationId()
@@ -66,13 +65,11 @@ class RegisteredMessage extends Message
     }
 
     /**
-     * Get request ID
-     * 
-     * @return int
+     * @param int $registrationId
      */
-    public function getRequestId()
+    public function setRegistrationId($registrationId)
     {
-        return $this->requestId;
+        $this->registrationId = $registrationId;
     }
 
 }

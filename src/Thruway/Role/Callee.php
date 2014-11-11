@@ -337,7 +337,7 @@ class Callee extends AbstractRole
         $futureResult = new Deferred();
 
         $requestId    = Session::getUniqueId();
-        $options      = isset($options) ? $options : new \stdClass();
+        $options      = isset($options) ? (object) $options : new \stdClass();
         $registration = [
             "procedure_name" => $procedureName,
             "callback"       => $callback,

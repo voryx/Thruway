@@ -74,14 +74,16 @@ abstract class AbstractAuthProviderClient extends Client
                     ["replace_orphaned_session" => "yes"]
                 )
                     ->then(function () use ($session) {
+
+                        $registrations                 = new \stdClass();
+                        $registrations->onhello        = "thruway.auth.{$this->getMethodName()}.onhello";
+                        $registrations->onauthenticate = "thruway.auth.{$this->getMethodName()}.onauthenticate";
+
                         $this->getCaller()->call($session,
                             'thruway.auth.registermethod',
                             [
                                 $this->getMethodName(),
-                                [
-                                    "onhello"        => "thruway.auth.{$this->getMethodName()}.onhello",
-                                    "onauthenticate" => "thruway.auth.{$this->getMethodName()}.onauthenticate"
-                                ],
+                                $registrations,
                                 $this->getAuthRealms()
                             ]
                         )

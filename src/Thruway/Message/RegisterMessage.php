@@ -2,6 +2,9 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class RegisterMessage
  * A Callees request to register an endpoint at a Dealer.
@@ -11,16 +14,9 @@ namespace Thruway\Message;
  */
 class RegisterMessage extends Message implements ActionMessageInterface
 {
+    use RequestTrait;
 
-    /**
-     * @var int
-     */
-    private $requestId;
-
-    /**
-     * @var array
-     */
-    private $options;
+    use OptionsTrait;
 
     /**
      * @var string
@@ -29,14 +25,14 @@ class RegisterMessage extends Message implements ActionMessageInterface
 
     /**
      * @param int $requestId
-     * @param array $options
+     * @param \stdClass $options
      * @param string $procedureName
      */
     public function __construct($requestId, $options, $procedureName)
     {
         $this->setOptions($options);
-        $this->procedureName = strtolower($procedureName);
-        $this->requestId     = $requestId;
+        $this->setProcedureName(strtolower($procedureName));
+        $this->setRequestId($requestId);
     }
 
     /**
@@ -61,26 +57,6 @@ class RegisterMessage extends Message implements ActionMessageInterface
     }
 
     /**
-     * Get options
-     *
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     * Set options
-     *
-     * @param array $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = (array)$options;
-    }
-
-    /**
      * Get procedure name
      *
      * @return string
@@ -88,16 +64,6 @@ class RegisterMessage extends Message implements ActionMessageInterface
     public function getProcedureName()
     {
         return $this->procedureName;
-    }
-
-    /**
-     * Get request ID
-     *
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
     /**
@@ -121,5 +87,12 @@ class RegisterMessage extends Message implements ActionMessageInterface
         return "register";
     }
 
+    /**
+     * @param string $procedureName
+     */
+    public function setProcedureName($procedureName)
+    {
+        $this->procedureName = $procedureName;
+    }
 
 }

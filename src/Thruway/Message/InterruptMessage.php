@@ -4,16 +4,21 @@
 namespace Thruway\Message;
 
 
-class InterruptMessage extends Message {
-    /**
-     * @var int
-     */
-    private $requestId;
-    /**
-     * @var array
-     */
-    private $options;
+use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Message\Traits\RequestTrait;
 
+class InterruptMessage extends Message
+{
+
+    use RequestTrait;
+
+    use OptionsTrait;
+
+
+    /**
+     * @param int $requestId
+     * @param \stdClass $options
+     */
     function __construct($requestId, $options)
     {
         $this->setRequestId($requestId);
@@ -41,35 +46,4 @@ class InterruptMessage extends Message {
         return [$this->getRequestId(), (object)$this->getOptions()];
     }
 
-    /**
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
-    }
-
-    /**
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     * @param array $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = $options;
-    }
 }

@@ -2,6 +2,10 @@
 
 namespace Thruway\Message;
 
+use Thruway\Logging\Logger;
+use Thruway\Message\Traits\ArgumentsTrait;
+use Thruway\Message\Traits\DetailsTrait;
+
 /**
  * Class error message
  * Error reply sent by a Peer as an error response to different kinds of requests.
@@ -11,9 +15,11 @@ namespace Thruway\Message;
  *
  * @package Thruway\Message
  */
-
 class ErrorMessage extends Message
 {
+
+
+    use DetailsTrait;
 
     /**
      * using arguments trait
@@ -34,12 +40,6 @@ class ErrorMessage extends Message
     private $errorRequestId;
 
     /**
-     * Error details
-     * @var mixed
-     */
-    private $details;
-
-    /**
      * Error URI
      * @var string
      */
@@ -50,25 +50,25 @@ class ErrorMessage extends Message
      *
      * @param int $errorMsgCode
      * @param mixed $errorRequestId
-     * @param mixed $details
+     * @param \stdClass $details
      * @param string $errorURI
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
     public function __construct($errorMsgCode, $errorRequestId, $details, $errorURI, $arguments = null, $argumentsKw = null)
     {
-        $this->errorRequestId = $errorRequestId;
-        $this->errorMsgCode   = $errorMsgCode;
-        $this->details        = Message::shouldBeDictionary($details);
-        $this->errorURI       = $errorURI;
 
+        $this->setErrorRequestId($errorRequestId);
+        $this->setErrorMsgCode($errorMsgCode);
+        $this->setDetails($details);
+        $this->setErrorURI($errorURI);
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
     }
 
     /**
      * Set error URI
-     * 
+     *
      * @param string $errorURI
      * @return \Thruway\Message\ErrorMessage
      */
@@ -81,7 +81,7 @@ class ErrorMessage extends Message
 
     /**
      * Get error URI
-     * 
+     *
      * @return string
      */
     public function getErrorURI()
@@ -102,12 +102,17 @@ class ErrorMessage extends Message
         if ($errorUri === null) {
             $errorUri = "wamp.error.unknown";
         }
-        return new ErrorMessage($msg->getMsgCode(), $msg->getRequestId(), new \stdClass, $errorUri);
+
+        if (method_exists($msg, "getRequestId")) {
+            return new ErrorMessage($msg->getMsgCode(), $msg->getRequestId(), new \stdClass, $errorUri);
+        }
+
+        Logger::error(null, "Can't send an error message because the message didn't not have a request id ");
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -131,31 +136,8 @@ class ErrorMessage extends Message
     }
 
     /**
-     * Set error details
-     * 
-     * @param mixed $details
-     * @return \Thruway\Message\ErrorMessage
-     */
-    public function setDetails($details)
-    {
-        $this->details = $details;
-
-        return $this;
-    }
-
-    /**
-     * Get error details
-     * 
-     * @return mixed
-     */
-    public function getDetails()
-    {
-        return $this->details;
-    }
-
-    /**
      * Set error message code
-     * 
+     *
      * @param int $errorMsgCode
      * @return \Thruway\Message\ErrorMessage
      */
@@ -168,7 +150,7 @@ class ErrorMessage extends Message
 
     /**
      * Get error message code
-     * 
+     *
      * @return mixed
      */
     public function getErrorMsgCode()
@@ -178,7 +160,7 @@ class ErrorMessage extends Message
 
     /**
      * Set request ID
-     * 
+     *
      * @param mixed $requestId
      * @return \Thruway\Message\ErrorMessage
      */
@@ -191,7 +173,7 @@ class ErrorMessage extends Message
 
     /**
      * Get request ID
-     * 
+     *
      * @return mixed
      */
     public function getRequestId()
@@ -201,7 +183,7 @@ class ErrorMessage extends Message
 
     /**
      * Set error request ID
-     * 
+     *
      * @param mixed $errorRequestId
      * @return \Thruway\Message\ErrorMessage
      */
@@ -214,7 +196,7 @@ class ErrorMessage extends Message
 
     /**
      * Get error request ID
-     * 
+     *
      * @return mixed
      */
     public function getErrorRequestId()

@@ -1,7 +1,8 @@
 <?php
 
-namespace Thruway\Message;
+namespace Thruway\Message\Traits;
 
+use Thruway\Message\Message;
 use Thruway\Result;
 
 /**
@@ -89,7 +90,7 @@ trait ArgumentsTrait
      */
     public function setArgumentsKw($argumentsKw)
     {
-        $this->argumentsKw = Message::shouldBeDictionary($argumentsKw);
+        $this->argumentsKw = (object)$argumentsKw;
     }
 
     /**

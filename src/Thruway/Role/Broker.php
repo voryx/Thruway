@@ -99,34 +99,34 @@ class Broker extends AbstractRole
         $whiteList = null;
 
         $options = $msg->getOptions();
-        if (is_array($options)) {
-            // see if they wanted confirmation
-            if (isset($options['acknowledge']) && $options['acknowledge'] == true) {
-                $publicationId = Session::getUniqueId();
-                $session->sendMessage(
-                    new PublishedMessage($msg->getRequestId(), $publicationId)
-                );
-            }
-            if (isset($options['exclude_me']) && !$options['exclude_me']) {
-                $includePublisher = true;
-            }
-            if (isset($options['exclude']) && is_array($options['exclude'])) {
-                // fixup exclude array - make sure it is legit
-                foreach ($options['exclude'] as $excludedSession) {
-                    if (is_numeric($excludedSession)) {
-                        array_push($excludedSessions, $excludedSession);
-                    }
-                }
-            }
-            if (isset($options['eligible']) && is_array($options['eligible'])) {
-                $whiteList = [];
-                foreach ($options['eligible'] as $sessionId) {
-                    if (is_numeric($sessionId)) {
-                        array_push($whiteList, $sessionId);
-                    }
+
+        // see if they wanted confirmation
+        if (isset($options->acknowledge) && $options->acknowledge == true) {
+            $publicationId = Session::getUniqueId();
+            $session->sendMessage(
+                new PublishedMessage($msg->getRequestId(), $publicationId)
+            );
+        }
+        if (isset($options->exclude_me) && !$options->exclude_me) {
+            $includePublisher = true;
+        }
+        if (isset($options->exclude) && is_array($options->exclude)) {
+            // fixup exclude array - make sure it is legit
+            foreach ($options->exclude as $excludedSession) {
+                if (is_numeric($excludedSession)) {
+                    array_push($excludedSessions, $excludedSession);
                 }
             }
         }
+        if (isset($options->eligible) && is_array($options->eligible)) {
+            $whiteList = [];
+            foreach ($options->eligible as $sessionId) {
+                if (is_numeric($sessionId)) {
+                    array_push($whiteList, $sessionId);
+                }
+            }
+        }
+
 
         /* @var $subscription \Thruway\Subscription */
         foreach ($this->subscriptions as $subscription) {
@@ -152,14 +152,14 @@ class Broker extends AbstractRole
     private function disclosePublisherOption(Session $session, EventMessage $msg, Subscription $subscription)
     {
         if ($subscription->isDisclosePublisher() === true) {
-            $details = [
-                "caller"     => $session->getSessionId(),
-                "authid"     => $session->getAuthenticationDetails()->getAuthId(),
-                "authrole"   => $session->getAuthenticationDetails()->getAuthRole(),
-                "authroles"  => $session->getAuthenticationDetails()->getAuthRoles(),
-                "authmethod" => $session->getAuthenticationDetails()->getAuthMethod(),
-            ];
-            $msg->setDetails(array_merge($msg->getDetails(), $details));
+
+            $details             = $msg->getDetails();
+            $details->caller     = $session->getSessionId();
+            $details->authid     = $session->getAuthenticationDetails()->getAuthId();
+            $details->authrole   = $session->getAuthenticationDetails()->getAuthRole();
+            $details->authroles  = $session->getAuthenticationDetails()->getAuthRoles();
+            $details->authmethod = $session->getAuthenticationDetails()->getAuthMethod();
+
         }
     }
 

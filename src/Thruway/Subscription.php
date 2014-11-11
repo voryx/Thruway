@@ -3,12 +3,15 @@
 namespace Thruway;
 
 use Thruway\Message\SubscribeMessage;
+use Thruway\Message\Traits\OptionsTrait;
 
 /**
  * Class Subscription
  */
 class Subscription
 {
+
+    use OptionsTrait;
 
     /**
      * @var string
@@ -25,10 +28,6 @@ class Subscription
      */
     private $topic;
 
-    /**
-     * @var \stdClass
-     */
-    private $options;
 
     /*
      * @var boolean
@@ -47,9 +46,10 @@ class Subscription
 
         $this->topic             = $topic;
         $this->session           = $session;
-        $this->options           = $options ?: new \stdClass();
         $this->id                = Session::getUniqueId();
         $this->disclosePublisher = false;
+
+        $this->setOptions($options);
 
     }
 
@@ -62,10 +62,10 @@ class Subscription
      */
     public static function createSubscriptionFromSubscribeMessage(Session $session, SubscribeMessage $msg)
     {
-        $options      = (array)$msg->getOptions();
+        $options      = $msg->getOptions();
         $subscription = new Subscription($msg->getTopicName(), $session, $options);
 
-        if (isset($options['disclose_publisher']) && $options['disclose_publisher'] === true) {
+        if (isset($options->disclose_publisher) && $options->disclose_publisher === true) {
             $subscription->setDisclosePublisher(true);
         }
 
@@ -82,25 +82,6 @@ class Subscription
         return $this->id;
     }
 
-    /**
-     * Get subscription options
-     *
-     * @return \stdClass
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     * Set subscription options
-     *
-     * @param \stdClass $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = $options;
-    }
 
     /**
      * Set topic name

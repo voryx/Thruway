@@ -2,6 +2,10 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\ArgumentsTrait;
+use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class YieldMessage
  * Actual yield from an endpoint send by a Callee to Dealer.
@@ -14,6 +18,10 @@ namespace Thruway\Message;
 class YieldMessage extends Message
 {
 
+    use RequestTrait;
+
+    use OptionsTrait;
+
     /**
      * using arguments trait
      * @see \Thruway\Message\ArgumentsTrait
@@ -21,34 +29,24 @@ class YieldMessage extends Message
     use ArgumentsTrait;
 
     /**
-     * @var mixed
-     */
-    private $requestId;
-
-    /**
-     * @var mixed
-     */
-    private $options;
-
-    /**
      * Constructor
      *
      * @param mixed $requestId
-     * @param mixed $options
+     * @param \stdClass $options
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
     public function __construct($requestId, $options, $arguments = null, $argumentsKw = null)
     {
-        $this->requestId = $requestId;
-        $this->options   = $options;
+        $this->setRequestId($requestId);
+        $this->setOptions($options);
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -67,42 +65,9 @@ class YieldMessage extends Message
         $options = $this->getOptions() === null ? new \stdClass() : (object)$this->getOptions();
 
         $a = [$this->getRequestId(), $options];
-
         $a = array_merge($a, $this->getArgumentsForSerialization());
 
         return $a;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     * @param mixed $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = $options;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
-    }
-
-    /**
-     * @param mixed $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
     }
 
 }

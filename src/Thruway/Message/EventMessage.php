@@ -2,6 +2,9 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\ArgumentsTrait;
+use Thruway\Message\Traits\DetailsTrait;
+
 /**
  * Class EventMessage
  * Event dispatched by Broker to Subscribers for subscription the event was matching.
@@ -14,6 +17,8 @@ namespace Thruway\Message;
 
 class EventMessage extends Message
 {
+
+    use DetailsTrait;
 
     /**
      * using arguments trait
@@ -29,34 +34,28 @@ class EventMessage extends Message
      * @var int
      */
     private $publicationId;
-    /**
-     * @var mixed
-     */
-    private $details;
 
     /**
      * Constructor
-     * 
+     *
      * @param int $subscriptionId
      * @param int $publicationId
-     * @param mixed $details
+     * @param \stdClass $details
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
     public function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null)
     {
-        parent::__construct();
-
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
-        $this->details        = $details;
-        $this->publicationId  = $publicationId;
-        $this->subscriptionId = $subscriptionId;
+        $this->setDetails($details);
+        $this->setPublicationId($publicationId);
+        $this->setSubscriptionId($subscriptionId);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -92,7 +91,7 @@ class EventMessage extends Message
 
     /**
      * Create event message from publish message
-     * 
+     *
      * @param \Thruway\Message\PublishMessage $msg
      * @param int $subscriptionId
      * @return \Thruway\Message\EventMessage
@@ -109,28 +108,8 @@ class EventMessage extends Message
     }
 
     /**
-     * set event details
-     * 
-     * @param mixed $details
-     */
-    public function setDetails($details)
-    {
-        $this->details = $details;
-    }
-
-    /**
-     * get event details
-     * 
-     * @return mixed
-     */
-    public function getDetails()
-    {
-        return $this->details;
-    }
-
-    /**
      * Set publication ID
-     * 
+     *
      * @param int $publicationId
      */
     public function setPublicationId($publicationId)
@@ -140,7 +119,7 @@ class EventMessage extends Message
 
     /**
      * Get publication ID
-     * 
+     *
      * @return int
      */
     public function getPublicationId()
@@ -150,7 +129,7 @@ class EventMessage extends Message
 
     /**
      * Set subscription ID
-     * 
+     *
      * @param int $subscriptionId
      */
     public function setSubscriptionId($subscriptionId)
@@ -160,7 +139,7 @@ class EventMessage extends Message
 
     /**
      * Get subscription ID
-     * 
+     *
      * @return int
      */
     public function getSubscriptionId()

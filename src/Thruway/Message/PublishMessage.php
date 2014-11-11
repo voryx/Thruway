@@ -2,6 +2,10 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\ArgumentsTrait;
+use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class Publish message
  * Sent by a Publisher to a Broker to publish an event.
@@ -14,6 +18,10 @@ namespace Thruway\Message;
 class PublishMessage extends Message implements ActionMessageInterface
 {
 
+    use RequestTrait;
+
+    use OptionsTrait;
+
     /**
      * using arguments trait
      * @see \Thruway\Message\ArgumentsTrait
@@ -22,40 +30,27 @@ class PublishMessage extends Message implements ActionMessageInterface
 
     /**
      *
-     * @var mixed
-     */
-    private $options;
-
-    /**
-     *
      * @var string
      */
     private $topicName;
 
-    /**
-     *
-     * @var int
-     */
-    private $requestId;
 
     /**
      * Constructor
      *
      * @param int $requestId
-     * @param mixed $options
+     * @param \stdClass $options
      * @param string $topicName
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
     public function __construct($requestId, $options, $topicName, $arguments = null, $argumentsKw = null)
     {
-        parent::__construct();
-
         $this->setRequestId($requestId);
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
         $this->setOptions($options);
-        $this->topicName = $topicName;
+        $this->setTopicName($topicName);
     }
 
     /**
@@ -90,26 +85,6 @@ class PublishMessage extends Message implements ActionMessageInterface
     }
 
     /**
-     * Set options
-     *
-     * @param mixed $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = (array)$options;
-    }
-
-    /**
-     * Get options
-     *
-     * @return mixed
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
      * Set topic name
      *
      * @param string $topicName
@@ -127,26 +102,6 @@ class PublishMessage extends Message implements ActionMessageInterface
     public function getTopicName()
     {
         return $this->topicName;
-    }
-
-    /**
-     * Set request ID
-     *
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * Get request ID
-     *
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
     /**

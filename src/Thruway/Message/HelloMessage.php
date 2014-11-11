@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\DetailsTrait;
+
 /**
  * Class HelloMessage
  * Sent by a Client to initiate opening of a WAMP session to a Router attaching to a Realm.
@@ -12,15 +14,12 @@ namespace Thruway\Message;
 class HelloMessage extends Message
 {
 
+    use DetailsTrait;
+
     /**
      * @var string
      */
     private $realm;
-
-    /**
-     * @var mixed
-     */
-    private $details;
 
     /**
      * @var array
@@ -34,20 +33,22 @@ class HelloMessage extends Message
 
     /**
      * Constructor
-     * 
+     *
      * @param string $realm
-     * @param mixed $details
+     * @param \stdClass $details
      */
     public function __construct($realm, $details)
     {
         $this->setDetails($details);
-        $this->realm       = $realm;
-        $this->authMethods = isset($details->authmethods) ? $details->authmethods : [];
+        $this->setRealm($realm);
+        $authMethods = isset($details->authmethods) ? $details->authmethods : [];
+        $this->setAuthMethods($authMethods);
     }
+
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -63,36 +64,12 @@ class HelloMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        return [$this->getRealm(), (object)$this->getDetails()];
-    }
-
-    /**
-     * Set details
-     * 
-     * @param mixed $details
-     */
-    public function setDetails($details)
-    {
-        $this->details = $details;
-
-        if (isset($details->roles)) {
-            $this->roles = $details->roles;
-        }
-    }
-
-    /**
-     * Get details
-     * 
-     * @return mixed
-     */
-    public function getDetails()
-    {
-        return $this->details;
+        return [$this->getRealm(), $this->getDetails()];
     }
 
     /**
      * Set realm
-     * 
+     *
      * @param string $realm
      */
     public function setRealm($realm)
@@ -102,7 +79,7 @@ class HelloMessage extends Message
 
     /**
      * Get realm
-     * 
+     *
      * @return string
      */
     public function getRealm()
@@ -112,12 +89,20 @@ class HelloMessage extends Message
 
     /**
      * Get list authenticate methods
-     * 
+     *
      * @return array
      */
     public function getAuthMethods()
     {
         return $this->authMethods;
+    }
+
+    /**
+     * @param array $authMethods
+     */
+    public function setAuthMethods($authMethods)
+    {
+        $this->authMethods = $authMethods;
     }
 
 }

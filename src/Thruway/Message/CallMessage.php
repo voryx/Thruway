@@ -2,6 +2,10 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\ArgumentsTrait;
+use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Message\Traits\RequestTrait;
+
 
 /**
  * Class CallMessage
@@ -15,21 +19,15 @@ namespace Thruway\Message;
 class CallMessage extends Message implements ActionMessageInterface
 {
 
+    use RequestTrait;
+
+    use OptionsTrait;
+
     /**
      * using arguments trait
      * @see \Thruway\Message\ArgumentsTrait
      */
     use ArgumentsTrait;
-
-    /**
-     * @var int
-     */
-    private $requestId;
-
-    /**
-     * @var mixed
-     */
-    private $options;
 
     /**
      * @var string
@@ -40,14 +38,13 @@ class CallMessage extends Message implements ActionMessageInterface
      * Constructor
      *
      * @param int $requestId
-     * @param mixed $options
+     * @param \stdClass $options
      * @param string $procedureName
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
     public function __construct($requestId, $options, $procedureName, $arguments = null, $argumentsKw = null)
     {
-        parent::__construct();
         $this->setRequestId($requestId);
         $this->setOptions($options);
         $this->setProcedureName($procedureName);
@@ -57,7 +54,7 @@ class CallMessage extends Message implements ActionMessageInterface
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -87,22 +84,6 @@ class CallMessage extends Message implements ActionMessageInterface
     /**
      * @return mixed
      */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     * @param mixed $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = Message::shouldBeDictionary($options);
-    }
-
-    /**
-     * @return mixed
-     */
     public function getProcedureName()
     {
         return $this->procedureName;
@@ -114,22 +95,6 @@ class CallMessage extends Message implements ActionMessageInterface
     public function setProcedureName($procedureName)
     {
         $this->procedureName = strtolower($procedureName);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
-    }
-
-    /**
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
     }
 
     /**

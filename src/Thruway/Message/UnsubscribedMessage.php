@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class UnsubscribedMessage
  * Acknowledge sent by a Broker to a Subscriber to acknowledge unsubscription.
@@ -9,15 +11,10 @@ namespace Thruway\Message;
  *
  * @package Thruway\Message
  */
-
 class UnsubscribedMessage extends Message
 {
 
-    /**
-     *
-     * @var int
-     */
-    private $requestId;
+    use RequestTrait;
 
     /**
      * Constructor
@@ -26,14 +23,12 @@ class UnsubscribedMessage extends Message
      */
     public function __construct($requestId)
     {
-        parent::__construct();
-
         $this->setRequestId($requestId);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -50,26 +45,6 @@ class UnsubscribedMessage extends Message
     public function getAdditionalMsgFields()
     {
         return [$this->getRequestId()];
-    }
-
-    /**
-     * Set request ID
-     * 
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * Get request ID
-     * 
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
 }
