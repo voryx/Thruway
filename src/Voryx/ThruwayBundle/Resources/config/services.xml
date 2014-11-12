@@ -134,6 +134,9 @@
             </call>
         </service>
 
+        <service id="voryx.thruway.stdClass_handler" class="Voryx\ThruwayBundle\Serialization\StdClassHandler">
+            <tag name="jms_serializer.subscribing_handler"/>
+        </service>
 
     </services>
 

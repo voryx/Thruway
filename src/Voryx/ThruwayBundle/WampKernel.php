@@ -179,7 +179,7 @@ class WampKernel implements HttpKernelInterface
 
             //Inject the User object if the UserAware trait in in use
             if (isset($traits['Voryx\ThruwayBundle\DependencyInjection\UserAwareTrait'])) {
-                $user = $this->authenticateAuthId($details["authid"]);
+                $user = $this->authenticateAuthId($details->authid);
                 $controller->setUser($user);
             }
 
