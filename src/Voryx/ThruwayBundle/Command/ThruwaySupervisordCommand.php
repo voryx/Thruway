@@ -165,7 +165,7 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
     protected function createLogFile($config)
     {
         //Create the log file if it doesn't already exist
-        $logfile = $this->getContainer()->get('kernel')->getLogDir() . $config['supervisor']['logfile'];
+        $logfile = $this->getContainer()->get('kernel')->getLogDir() . DIRECTORY_SEPARATOR . $config['supervisor']['logfile'];
 
         touch($logfile);
 
