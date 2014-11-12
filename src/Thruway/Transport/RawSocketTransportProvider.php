@@ -7,7 +7,6 @@ use React\Socket\Connection;
 use React\Socket\Server;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\JsonSerializer;
 
@@ -18,7 +17,7 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class RawSocketTransportProvider implements TransportProviderInterface
+class RawSocketTransportProvider extends AbstractTransportProvider implements TransportProviderInterface
 {
 
     /**
@@ -32,29 +31,9 @@ class RawSocketTransportProvider implements TransportProviderInterface
     private $port;
 
     /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
-    private $manager;
-
-    /**
      * @var \SplObjectStorage
      */
     private $transports;
-
-    /**
-     * @var \Thruway\Peer\AbstractPeer
-     */
-    private $peer;
-
-    /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    private $loop;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
@@ -138,31 +117,4 @@ class RawSocketTransportProvider implements TransportProviderInterface
         $this->peer->onClose($transport);
     }
 
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $managerInterface
-     */
-    public function setManager(ManagerInterface $managerInterface)
-    {
-        $this->manager = $managerInterface;
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
-    }
 }

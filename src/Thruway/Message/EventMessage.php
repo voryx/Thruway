@@ -14,16 +14,10 @@ use Thruway\Message\Traits\DetailsTrait;
  *
  * @package Thruway\Message
  */
-
 class EventMessage extends Message
 {
 
     use DetailsTrait;
-
-    /**
-     * using arguments trait
-     * @see \Thruway\Message\ArgumentsTrait
-     */
     use ArgumentsTrait;
 
     /**
@@ -71,22 +65,9 @@ class EventMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $details = $this->getDetails();
-        if ($details === null) {
-            $details = new \stdClass();
-        }
+        $a = [$this->getSubscriptionId(), $this->getPublicationId(), $this->getDetails()];
 
-        $details = (object)$details;
-
-        $a = [
-            $this->getSubscriptionId(),
-            $this->getPublicationId(),
-            $details
-        ];
-
-        $a = array_merge($a, $this->getArgumentsForSerialization());
-
-        return $a;
+        return array_merge($a, $this->getArgumentsForSerialization());
     }
 
     /**

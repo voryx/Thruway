@@ -35,7 +35,7 @@ class UnsubscribeMessage extends Message
     }
 
     /**
-     * Set subcription ID
+     * Set subscription ID
      *
      * @param int $subscriptionId
      */
@@ -45,7 +45,7 @@ class UnsubscribeMessage extends Message
     }
 
     /**
-     * Get subcription ID
+     * Get subscription ID
      *
      * @return int
      */

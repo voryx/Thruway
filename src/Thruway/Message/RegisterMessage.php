@@ -15,7 +15,6 @@ use Thruway\Message\Traits\RequestTrait;
 class RegisterMessage extends Message implements ActionMessageInterface
 {
     use RequestTrait;
-
     use OptionsTrait;
 
     /**

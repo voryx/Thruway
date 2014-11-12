@@ -19,13 +19,7 @@ class PublishMessage extends Message implements ActionMessageInterface
 {
 
     use RequestTrait;
-
     use OptionsTrait;
-
-    /**
-     * using arguments trait
-     * @see \Thruway\Message\ArgumentsTrait
-     */
     use ArgumentsTrait;
 
     /**
@@ -71,17 +65,11 @@ class PublishMessage extends Message implements ActionMessageInterface
      */
     public function getAdditionalMsgFields()
     {
-        if ($this->getOptions() === null) {
-            $this->setOptions(new \stdClass());
-        }
 
-        $options = (object)$this->getOptions();
+        $a = [$this->getRequestId(), $this->getOptions(), $this->getTopicName()];
 
-        $a = [$this->getRequestId(), $options, $this->getTopicName()];
+        return array_merge($a, $this->getArgumentsForSerialization());
 
-        $a = array_merge($a, $this->getArgumentsForSerialization());
-
-        return $a;
     }
 
     /**

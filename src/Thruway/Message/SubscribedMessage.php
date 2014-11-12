@@ -35,7 +35,7 @@ class SubscribedMessage extends Message
     }
 
     /**
-     * Set subcription ID
+     * Set subscription ID
      *
      * @param int $subscriptionId
      */

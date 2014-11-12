@@ -16,7 +16,6 @@ class SubscribeMessage extends Message implements ActionMessageInterface
 {
 
     use RequestTrait;
-
     use OptionsTrait;
 
     /**

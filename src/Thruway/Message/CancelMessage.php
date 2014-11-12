@@ -16,7 +16,6 @@ class CancelMessage extends Message
 {
 
     use RequestTrait;
-
     use OptionsTrait;
 
     /**

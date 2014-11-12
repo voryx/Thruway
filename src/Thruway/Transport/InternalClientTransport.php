@@ -3,17 +3,15 @@
 namespace Thruway\Transport;
 
 use React\EventLoop\LoopInterface;
-use Thruway\Exception\PingNotSupportedException;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
-use Thruway\Serializer\SerializerInterface;
 
 /**
  * Class InternalClientTransport
  *
  * @package Thruway\Transport
  */
-class InternalClientTransport implements TransportInterface
+class InternalClientTransport extends AbstractTransport implements TransportInterface
 {
 
     /**
@@ -25,16 +23,6 @@ class InternalClientTransport implements TransportInterface
      * @var \Thruway\Transport\TransportInterface
      */
     private $farPeerTransport;
-
-    /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    private $loop;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
@@ -82,14 +70,6 @@ class InternalClientTransport implements TransportInterface
     }
 
     /**
-     * Close transport
-     */
-    public function close()
-    {
-        // TODO: Implement close() method.
-    }
-
-    /**
      * Get transport details
      *
      * @return array
@@ -100,62 +80,6 @@ class InternalClientTransport implements TransportInterface
             "type"             => "internalClient",
             "transportAddress" => "internal"
         ];
-    }
-
-    /**
-     * Ping
-     *
-     * @throws \Thruway\Exception\PingNotSupportedException
-     */
-    public function ping()
-    {
-        throw new PingNotSupportedException;
-    }
-
-    /**
-     * Handle on pong
-     */
-    public function onPong()
-    {
-
-    }
-
-    /**
-     * Set Serializer
-     *
-     * These are required by interface but not used here because there is no serialization
-     */
-    public function setSerializer(SerializerInterface $serializer)
-    {
-
-    }
-
-    /**
-     * Get Serializer
-     *
-     * These are required by interface but not used here because there is no serialization
-     */
-    public function getSerializer()
-    {
-
-    }
-
-    /**
-     * Checks to see if a transport is trusted
-     *
-     * @return boolean
-     */
-    public function isTrusted()
-    {
-        return (boolean)$this->trusted;
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
     }
 
 } 

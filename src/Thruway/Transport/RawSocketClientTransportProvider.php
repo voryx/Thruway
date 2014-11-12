@@ -5,18 +5,17 @@ namespace Thruway\Transport;
 use React\EventLoop\LoopInterface;
 use React\SocketClient\Connector;
 use React\Stream\Stream;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\JsonSerializer;
 
 /**
  * Class RawSocketClientTransportProvider
- * 
+ *
  * Implements transport provider on raw socket for client
- * 
+ *
  * @package Thruway\Transport
  */
-class RawSocketClientTransportProvider implements TransportProviderInterface
+class RawSocketClientTransportProvider extends AbstractTransportProvider implements TransportProviderInterface
 {
 
     /**
@@ -29,34 +28,10 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
      */
     private $port;
 
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
-    private $manager;
-
-    /**
-     * @var \Thruway\Peer\AbstractPeer
-     */
-    private $peer;
-
-    /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    private $loop;
-
-    /**
-     * @var \Thruway\Transport\RawSocketTransport
-     */
-    private $transport;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
-     * 
+     *
      * @param string $address
      * @param int $port
      */
@@ -70,7 +45,7 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
 
     /**
      * Start transport provider
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
@@ -93,7 +68,7 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
 
     /**
      * Handle process on open new connection
-     * 
+     *
      * @param \React\Stream\Stream $conn
      */
     public function handleConnection(Stream $conn)
@@ -111,7 +86,7 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
 
     /**
      * Handle process reveiced data
-     * 
+     *
      * @param mixed $data
      * @param \React\Stream\Stream $conn
      */
@@ -122,7 +97,7 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
 
     /**
      * Handle process on close connection
-     * 
+     *
      * @param \React\Stream\Stream $conn
      */
     public function handleClose(Stream $conn)
@@ -130,33 +105,5 @@ class RawSocketClientTransportProvider implements TransportProviderInterface
         //$this->getManager()->debug("Raw socket closed " . $conn->getRemoteAddress());
 
         $this->peer->onClose($this->transport);
-    }
-
-    /**
-     * Get manager
-     * 
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
-     * Set manager
-     * 
-     * @param \Thruway\Manager\ManagerInterface $managerInterface
-     */
-    public function setManager(ManagerInterface $managerInterface)
-    {
-        $this->manager = $managerInterface;
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
     }
 }

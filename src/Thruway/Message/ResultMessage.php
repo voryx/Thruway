@@ -18,7 +18,6 @@ use Thruway\Message\Traits\RequestTrait;
 class ResultMessage extends Message
 {
     use RequestTrait;
-
     use DetailsTrait;
 
     /**
@@ -62,16 +61,10 @@ class ResultMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $details = $this->getDetails();
-        if ($details === null) {
-            $details = new \stdClass();
-        }
-        $details = (object)$details;
 
-        $a = [$this->getRequestId(), $details];
-        $a = array_merge($a, $this->getArgumentsForSerialization());
+        $a = [$this->getRequestId(), $this->getDetails()];
 
-        return $a;
+        return array_merge($a, $this->getArgumentsForSerialization());
     }
 
 

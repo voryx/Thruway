@@ -21,13 +21,7 @@ class InvocationMessage extends Message
 {
 
     use RequestTrait;
-
     use DetailsTrait;
-
-    /**
-     * using arguments trait
-     * @see \Thruway\Message\ArgumentsTrait
-     */
     use ArgumentsTrait;
 
     /**
@@ -71,17 +65,10 @@ class InvocationMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $details = $this->getDetails() === null ? new \stdClass() : (object)$this->getDetails();
 
-        $a = [
-            $this->requestId,
-            $this->registrationId,
-            $details
-        ];
+        $a = [$this->getRequestId(), $this->getRegistrationId(), $this->getDetails()];
 
-        $a = array_merge($a, $this->getArgumentsForSerialization());
-
-        return $a;
+        return array_merge($a, $this->getArgumentsForSerialization());
     }
 
     /**

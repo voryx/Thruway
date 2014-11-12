@@ -393,7 +393,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function processGoodbye(ClientSession $session, GoodbyeMessage $msg)
     {
         if (!$session->isGoodbyeSent()) {
-            $goodbyeMsg = new GoodbyeMessage([], "wamp.error.goodbye_and_out");
+            $goodbyeMsg = new GoodbyeMessage(new \stdClass(), "wamp.error.goodbye_and_out");
             $session->sendMessage($goodbyeMsg);
             $session->setGoodbyeSent(true);
         }

@@ -74,7 +74,7 @@ class AuthenticateMessage extends Message
     }
 
     /**
-     * @param array $extra
+     * @param \stdClass | array $extra
      */
     public function setExtra($extra)
     {

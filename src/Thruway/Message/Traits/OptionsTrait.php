@@ -23,7 +23,7 @@ trait OptionsTrait
     }
 
     /**
-     * @param mixed $options
+     * @param \stdClass|array $options
      */
     public function setOptions($options)
     {

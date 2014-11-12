@@ -19,13 +19,7 @@ class YieldMessage extends Message
 {
 
     use RequestTrait;
-
     use OptionsTrait;
-
-    /**
-     * using arguments trait
-     * @see \Thruway\Message\ArgumentsTrait
-     */
     use ArgumentsTrait;
 
     /**
@@ -62,12 +56,9 @@ class YieldMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $options = $this->getOptions() === null ? new \stdClass() : (object)$this->getOptions();
+        $a = [$this->getRequestId(), $this->getOptions()];
 
-        $a = [$this->getRequestId(), $options];
-        $a = array_merge($a, $this->getArgumentsForSerialization());
-
-        return $a;
+        return array_merge($a, $this->getArgumentsForSerialization());
     }
 
 }

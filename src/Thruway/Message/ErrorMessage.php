@@ -18,13 +18,7 @@ use Thruway\Message\Traits\DetailsTrait;
 class ErrorMessage extends Message
 {
 
-
     use DetailsTrait;
-
-    /**
-     * using arguments trait
-     * @see \Thruway\Message\ArgumentsTrait
-     */
     use ArgumentsTrait;
 
     /**

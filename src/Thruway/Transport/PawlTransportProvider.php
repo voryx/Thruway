@@ -5,7 +5,6 @@ namespace Thruway\Transport;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
@@ -16,13 +15,8 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class PawlTransportProvider implements TransportProviderInterface
+class PawlTransportProvider extends AbstractTransportProvider implements TransportProviderInterface
 {
-
-    /**
-     * @var \Thruway\Peer\AbstractPeer
-     */
-    private $peer;
 
     /**
      * @var string
@@ -30,24 +24,9 @@ class PawlTransportProvider implements TransportProviderInterface
     private $URL;
 
     /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    private $loop;
-
-    /**
      * @var \Ratchet\Client\Factory
      */
     private $connector;
-
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
-    private $manager;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
@@ -143,33 +122,4 @@ class PawlTransportProvider implements TransportProviderInterface
         $this->peer = $peer;
     }
 
-    /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     */
-    public function setManager(ManagerInterface $manager)
-    {
-        $this->manager = $manager;
-
-        Logger::info($this, "Manager attached to PawlTransportProvider");
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
-    }
 }

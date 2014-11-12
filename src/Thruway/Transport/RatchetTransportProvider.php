@@ -6,7 +6,6 @@ use Ratchet\WebSocket\Version\RFC6455\Frame;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\JsonSerializer;
 use Ratchet\ConnectionInterface;
@@ -23,13 +22,8 @@ use React\Socket\Server as Reactor;
  *
  * @package Thruway\Transport
  */
-class RatchetTransportProvider implements TransportProviderInterface, MessageComponentInterface, WsServerInterface
+class RatchetTransportProvider extends AbstractTransportProvider implements TransportProviderInterface, MessageComponentInterface, WsServerInterface
 {
-
-    /**
-     * @var \Thruway\Peer\AbstractPeer
-     */
-    private $peer;
 
     /**
      * @var string
@@ -42,11 +36,6 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
     private $port;
 
     /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    private $loop;
-
-    /**
      * @var \Ratchet\Server\IoServer
      */
     private $server;
@@ -55,16 +44,6 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
      * @var \SplObjectStorage
      */
     private $transports;
-
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
-    private $manager;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
@@ -215,33 +194,4 @@ class RatchetTransportProvider implements TransportProviderInterface, MessageCom
         }
     }
 
-    /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     */
-    public function setManager(ManagerInterface $manager)
-    {
-        $this->manager = $manager;
-
-       Logger::info($this, "Manager attached to RatchetTransportProvider");
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
-    }
 }

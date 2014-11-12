@@ -11,9 +11,7 @@ class InterruptMessage extends Message
 {
 
     use RequestTrait;
-
     use OptionsTrait;
-
 
     /**
      * @param int $requestId

@@ -7,23 +7,17 @@ use Ratchet\WebSocket\Version\RFC6455\Frame;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
 use Thruway\Message\Message;
-use Thruway\Serializer\SerializerInterface;
 
 /**
  * class RatchetTransport
  */
-class RatchetTransport implements TransportInterface
+class RatchetTransport extends AbstractTransport implements TransportInterface
 {
 
     /**
      * @var \Ratchet\ConnectionInterface
      */
     private $conn;
-
-    /**
-     * @var \Thruway\Serializer\SerializerInterface
-     */
-    private $serializer;
 
     /**
      * @var mixed
@@ -34,16 +28,6 @@ class RatchetTransport implements TransportInterface
      * @var array
      */
     private $pingRequests;
-
-    /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    private $loop;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
@@ -150,44 +134,4 @@ class RatchetTransport implements TransportInterface
         }
 
     }
-
-    /**
-     * Set serializer
-     *
-     * @param \Thruway\Serializer\SerializerInterface $serializer
-     * @return $this
-     */
-    public function setSerializer(SerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
-    }
-
-    /**
-     * Get serializer
-     *
-     * @return \Thruway\Serializer\SerializerInterface
-     */
-    public function getSerializer()
-    {
-        return $this->serializer;
-    }
-
-    /**
-     * Checks to see if a transport is trusted
-     *
-     * @return boolean
-     */
-    public function isTrusted()
-    {
-        return (boolean)$this->trusted;
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
-    }
-
 } 

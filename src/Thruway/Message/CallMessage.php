@@ -20,13 +20,7 @@ class CallMessage extends Message implements ActionMessageInterface
 {
 
     use RequestTrait;
-
     use OptionsTrait;
-
-    /**
-     * using arguments trait
-     * @see \Thruway\Message\ArgumentsTrait
-     */
     use ArgumentsTrait;
 
     /**
@@ -70,15 +64,10 @@ class CallMessage extends Message implements ActionMessageInterface
      */
     public function getAdditionalMsgFields()
     {
-        $a = [
-            $this->getRequestId(),
-            $this->getOptions(),
-            $this->getProcedureName(),
-        ];
+        $a = [$this->getRequestId(), $this->getOptions(), $this->getProcedureName()];
 
-        $a = array_merge($a, $this->getArgumentsForSerialization());
+        return array_merge($a, $this->getArgumentsForSerialization());
 
-        return $a;
     }
 
     /**

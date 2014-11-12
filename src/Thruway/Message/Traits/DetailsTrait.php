@@ -19,7 +19,7 @@ trait DetailsTrait
     /**
      * Set abort message details
      *
-     * @param \stdClass $details
+     * @param \stdClass|array $details
      */
     public function setDetails($details)
     {

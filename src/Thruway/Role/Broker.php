@@ -93,12 +93,9 @@ class Broker extends AbstractRole
         Logger::debug($this, "processing publish message");
 
         $includePublisher = false;
-
         $excludedSessions = [];
-
-        $whiteList = null;
-
-        $options = $msg->getOptions();
+        $whiteList        = null;
+        $options          = $msg->getOptions();
 
         // see if they wanted confirmation
         if (isset($options->acknowledge) && $options->acknowledge == true) {
@@ -127,6 +124,20 @@ class Broker extends AbstractRole
             }
         }
 
+        $this->sendEventMessages($session, $msg, $includePublisher, $excludedSessions, $whiteList);
+
+    }
+
+    /**
+     * Send an Event Message for each subscription
+     * @param Session $session
+     * @param PublishMessage $msg
+     * @param $includePublisher
+     * @param $excludedSessions
+     * @param $whiteList
+     */
+    private function sendEventMessages(Session $session, PublishMessage $msg, $includePublisher, $excludedSessions, $whiteList)
+    {
 
         /* @var $subscription \Thruway\Subscription */
         foreach ($this->subscriptions as $subscription) {
