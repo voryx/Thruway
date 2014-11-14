@@ -37,6 +37,20 @@ class Caller extends AbstractRole
     }
 
     /**
+     * Return supported features
+     *
+     * @return \stdClass
+     */
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->caller_identification = true;
+        $features->progressive_call_results = true;
+
+        return $features;
+    }
+
+    /**
      * process message
      *
      * @param \Thruway\AbstractSession $session

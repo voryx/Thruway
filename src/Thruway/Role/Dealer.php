@@ -62,6 +62,15 @@ class Dealer extends AbstractRole
         $this->registrationsBySession = new \SplObjectStorage();
     }
 
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->caller_identification = true;
+        $features->progressive_call_results = true;
+
+        return $features;
+    }
+
     /**
      * process message
      *

@@ -34,6 +34,20 @@ class Publisher extends AbstractRole
     }
 
     /**
+     * Return supported features
+     *
+     * @return \stdClass
+     */
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->subscriber_blackwhite_listing = true;
+        $features->publisher_exclusion = true;
+
+        return $features;
+    }
+
+    /**
      * handle received message
      *
      * @param \Thruway\AbstractSession $session

@@ -41,6 +41,19 @@ class Callee extends AbstractRole
         $this->registrations = [];
     }
 
+    /**
+     * Return supported features
+     *
+     * @return \stdClass
+     */
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->caller_identification = true;
+        $features->progressive_call_results = true;
+
+        return $features;
+    }
 
     /**
      * Handle process reveiced message

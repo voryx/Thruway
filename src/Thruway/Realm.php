@@ -194,6 +194,13 @@ class Realm
         } else {
             $this->sessions->attach($session);
             $session->setRealm($this);
+
+            $details = $msg->getDetails();
+
+            if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
+                $session->setRoleFeatures($details->roles);
+            }
+
             $session->setState(Session::STATE_UP); // this should probably be after authentication
 
             if ($this->getAuthenticationManager() !== null) {
@@ -213,9 +220,10 @@ class Realm
                 $session->setAuthenticationDetails($authDetails);
 
                 // the broker and dealer should give us this information
-                $roles = ["broker" => new \stdClass, "dealer" => new \stdClass];
+                $details = new \stdClass();
+                $this->addRolesToDetails($details);
                 $session->sendMessage(
-                    new WelcomeMessage($session->getSessionId(), ["roles" => $roles])
+                    new WelcomeMessage($session->getSessionId(), $details)
                 );
             }
         }
@@ -386,6 +394,23 @@ class Realm
     public function getSessions()
     {
         return $this->sessions;
+    }
+
+    public function addRolesToDetails($details) {
+        // if details is null - we will create it
+        if ($details === null) $details = new \stdClass();
+
+        // if details is not an object - we pass it through
+        if (is_object($details)) {
+            $details->roles = (object)[
+                "broker" => (object)[ "features" => $this->getBroker()->getFeatures()],
+                "dealer" => (object)[ "features" => $this->getDealer()->getFeatures()]
+            ];
+        } else {
+            Logger::warning($this, "non-object sent to addRolesToDetails - returning as is");
+        }
+
+        return $details;
     }
 
     /**

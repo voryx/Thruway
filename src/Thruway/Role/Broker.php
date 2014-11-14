@@ -58,6 +58,22 @@ class Broker extends AbstractRole
     }
 
     /**
+     * Return supported features
+     *
+     * @return \stdClass
+     */
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->subscriber_blackwhite_listing = true;
+        $features->publisher_exclusion = true;
+        //$features->publisher_identification = true;
+        $features->subscriber_metaevents = true;
+
+        return $features;
+    }
+
+    /**
      * Handle received message
      *
      * @param \Thruway\AbstractSession $session

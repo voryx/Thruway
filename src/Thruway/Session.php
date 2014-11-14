@@ -44,6 +44,11 @@ class Session extends AbstractSession
     private $pendingCallCount;
 
     /**
+     * @var \stdClass|null
+     */
+    private $roleFeatures;
+
+    /**
      * Constructor
      *
      * @param \Thruway\Transport\TransportInterface $transport
@@ -210,12 +215,13 @@ class Session extends AbstractSession
         }
 
         return [
-            "realm"        => $this->getRealm()->getRealmName(),
-            "authprovider" => null,
-            "authid"       => $authId,
-            "authrole"     => "none",
-            "authmethod"   => $authMethod,
-            "session"      => $this->getSessionId()
+            "realm"         => $this->getRealm()->getRealmName(),
+            "authprovider"  => null,
+            "authid"        => $authId,
+            "authrole"      => "none",
+            "authmethod"    => $authMethod,
+            "session"       => $this->getSessionId(),
+            "role_features" => $this->getRoleFeatures()
         ];
     }
 
@@ -252,5 +258,21 @@ class Session extends AbstractSession
             return 0;
         }
         return $this->pendingCallCount--;
+    }
+
+    /**
+     * @return null|\stdClass
+     */
+    public function getRoleFeatures()
+    {
+        return $this->roleFeatures;
+    }
+
+    /**
+     * @param null|\stdClass $roleFeatures
+     */
+    public function setRoleFeatures($roleFeatures)
+    {
+        $this->roleFeatures = $roleFeatures;
     }
 }

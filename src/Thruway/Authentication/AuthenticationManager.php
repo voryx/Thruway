@@ -121,6 +121,8 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             $details->authrole   = $authDetails->getAuthRole();
             $details->authroles  = $authDetails->getAuthRoles();
 
+            $realm->addRolesToDetails($details);
+
             $session->sendMessage(new WelcomeMessage($session->getSessionId(), $details));
 
             return;
@@ -192,7 +194,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         $sessionInfo
                     ]
                 )->then(
-                    function ($res) use ($session, $msg) {
+                    function ($res) use ($realm, $session, $msg) {
                         // this is handling the return of the onhello RPC call
                         if (count($res) < 2) {
                             $session->abort(new \stdClass(), "thruway.auth.invalid_response_to_hello");
@@ -215,13 +217,17 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                             );
                         } else {
                             if ($res[0] == "NOCHALLENGE") {
+                                $details = (object)[
+                                    "authid"     => $res[1]["authid"],
+                                    "authmethod" => $session->getAuthenticationDetails()->getAuthMethod()
+                                ];
+
+                                $realm->addRolesToDetails($details);
+
                                 $session->sendMessage(
                                     new WelcomeMessage(
                                         $session->getSessionId(),
-                                        [
-                                            "authid"     => $res[1]["authid"],
-                                            "authmethod" => $session->getAuthenticationDetails()->getAuthMethod()
-                                        ]
+                                        $details
                                     )
                                 );
                             } else {
@@ -255,9 +261,11 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
 
                 $session->setAuthenticationDetails(AuthenticationDetails::createAnonymous());
 
-                $roles = ["broker" => new \stdClass, "dealer" => new \stdClass];
+                $details = new \stdClass();
+                $realm->addRolesToDetails($details);
+
                 $session->sendMessage(
-                    new WelcomeMessage($session->getSessionId(), ["roles" => $roles])
+                    new WelcomeMessage($session->getSessionId(), $details)
                 );
                 $session->setAuthenticated(true);
             }
@@ -298,7 +306,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         'authid'     => $session->getAuthenticationDetails()->getAuthId()
                     ]
                 )->then(
-                    function ($res) use ($session) {
+                    function ($res) use ($realm, $session) {
 //                        if (!is_array($res)) {
 //                            return;
 //                        }
@@ -310,7 +318,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                         // message so that the roles and extras that go along with it can be
                         // filled in
                         if ($res[0] == "SUCCESS") {
-                            $welcomeDetails = ["roles" => []];
+                            $welcomeDetails = new \stdClass();
 
                             if (isset($res[1]) && isset($res[1]['authid'])) {
                                 $session->getAuthenticationDetails()->setAuthId($res[1]['authid']);
@@ -335,11 +343,16 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                                 $res[1]['authroles'] = $session->getAuthenticationDetails()->getAuthRoles();
                                 $res[1]['authid']    = $session->getAuthenticationDetails()->getAuthId();
                                 if (is_array($res[1])) {
-                                    $welcomeDetails = array_merge($welcomeDetails, $res[1]);
+                                    foreach ($res[1] as $k => $v) {
+                                        $welcomeDetails->$k = $v;
+                                    }
                                 }
                             }
 
                             $session->setAuthenticated(true);
+
+                            $realm->addRolesToDetails($welcomeDetails);
+
                             $session->sendMessage(
                                 new WelcomeMessage(
                                     $session->getSessionId(),

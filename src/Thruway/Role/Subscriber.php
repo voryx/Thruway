@@ -39,6 +39,19 @@ class Subscriber extends AbstractRole
     }
 
     /**
+     * Return supported features
+     *
+     * @return \stdClass
+     */
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->subscriber_metaevents = true;
+
+        return $features;
+    }
+
+    /**
      * Handle on recieved message
      *
      * @param \Thruway\AbstractSession $session
