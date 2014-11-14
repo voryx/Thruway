@@ -14,7 +14,7 @@ use Thruway\Message\Message;
  *
  * @package Thruway\Transport
  */
-class PawlTransport extends AbstractTransport implements TransportInterface
+class PawlTransport extends AbstractTransport
 {
 
     /**

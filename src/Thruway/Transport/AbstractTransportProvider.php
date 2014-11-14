@@ -5,7 +5,7 @@ namespace Thruway\Transport;
 
 use Thruway\Manager\ManagerInterface;
 
-abstract class AbstractTransportProvider
+abstract class AbstractTransportProvider implements TransportProviderInterface
 {
 
     /**
@@ -29,7 +29,7 @@ abstract class AbstractTransportProvider
     protected $loop;
 
     /**
-     * @var \Thruway\Transport\RawSocketTransport
+     * @var \Thruway\Transport\TransportInterface
      */
     protected $transport;
 

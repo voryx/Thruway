@@ -9,7 +9,7 @@ use Thruway\Serializer\SerializerInterface;
  * Class AbstractTransport
  * @package Thruway\Transport
  */
-abstract class AbstractTransport
+abstract class AbstractTransport implements TransportInterface
 {
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Thruway\Transport;
 
+use Ratchet\Client\Factory;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
@@ -15,7 +16,7 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class PawlTransportProvider extends AbstractTransportProvider implements TransportProviderInterface
+class PawlTransportProvider extends AbstractTransportProvider
 {
 
     /**
@@ -24,7 +25,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements Transpo
     private $URL;
 
     /**
-     * @var \Ratchet\Client\Factory
+     * @var Factory
      */
     private $connector;
 
@@ -52,7 +53,7 @@ class PawlTransportProvider extends AbstractTransportProvider implements Transpo
 
         $this->peer      = $peer;
         $this->loop      = $loop;
-        $this->connector = new \Ratchet\Client\Factory($this->loop);
+        $this->connector = new Factory($this->loop);
 
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {

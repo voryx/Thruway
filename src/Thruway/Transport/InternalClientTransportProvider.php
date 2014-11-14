@@ -12,7 +12,7 @@ use React\EventLoop\LoopInterface;
  *
  * @package Thruway\Transport
  */
-class InternalClientTransportProvider extends AbstractTransportProvider implements TransportProviderInterface
+class InternalClientTransportProvider extends AbstractTransportProvider
 {
 
     /**

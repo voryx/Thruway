@@ -15,7 +15,7 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class RawSocketClientTransportProvider extends AbstractTransportProvider implements TransportProviderInterface
+class RawSocketClientTransportProvider extends AbstractTransportProvider
 {
 
     /**
@@ -37,9 +37,8 @@ class RawSocketClientTransportProvider extends AbstractTransportProvider impleme
      */
     function __construct($address = "127.0.0.1", $port = 8181)
     {
-        $this->address = $address;
-        $this->port    = $port;
-
+        $this->address   = $address;
+        $this->port      = $port;
         $this->transport = null;
     }
 

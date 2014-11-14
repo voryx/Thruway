@@ -10,7 +10,7 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class DummyTransport extends AbstractTransport implements TransportInterface
+class DummyTransport extends AbstractTransport
 {
 
     /**

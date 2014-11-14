@@ -15,7 +15,7 @@ use Thruway\Peer\AbstractPeer;
  *
  * @package Thruway\Transport
  */
-class RawSocketTransport extends AbstractTransport implements TransportInterface
+class RawSocketTransport extends AbstractTransport
 {
 
     /**

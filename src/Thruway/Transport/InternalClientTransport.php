@@ -11,7 +11,7 @@ use Thruway\Peer\AbstractPeer;
  *
  * @package Thruway\Transport
  */
-class InternalClientTransport extends AbstractTransport implements TransportInterface
+class InternalClientTransport extends AbstractTransport
 {
 
     /**

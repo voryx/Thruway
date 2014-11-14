@@ -17,7 +17,7 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class RawSocketTransportProvider extends AbstractTransportProvider implements TransportProviderInterface
+class RawSocketTransportProvider extends AbstractTransportProvider
 {
 
     /**

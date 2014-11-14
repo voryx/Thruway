@@ -35,7 +35,6 @@ interface TransportInterface
      * Set serializer
      *
      * @param \Thruway\Serializer\SerializerInterface $serializer
-     * @return \Thruway\Transport\TransportInterface
      */
     public function setSerializer(SerializerInterface $serializer);
 

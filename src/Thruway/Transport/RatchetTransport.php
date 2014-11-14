@@ -11,7 +11,7 @@ use Thruway\Message\Message;
 /**
  * class RatchetTransport
  */
-class RatchetTransport extends AbstractTransport implements TransportInterface
+class RatchetTransport extends AbstractTransport
 {
 
     /**
