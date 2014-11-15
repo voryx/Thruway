@@ -154,9 +154,15 @@ class Broker extends AbstractRole
      */
     private function sendEventMessages(Session $session, PublishMessage $msg, $includePublisher, $excludedSessions, $whiteList)
     {
+        $arrayOfSubscriptions = [];
 
         /* @var $subscription \Thruway\Subscription */
         foreach ($this->subscriptions as $subscription) {
+            array_push($arrayOfSubscriptions, $subscription);
+        }
+
+        foreach ($this->subscriptions as $subscription) {
+        //foreach ($arrayOfSubscriptions as $subscription) {
             if ($msg->getTopicName() == $subscription->getTopic() &&
                 ($includePublisher || $subscription->getSession() != $session)
             ) {
