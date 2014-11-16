@@ -161,8 +161,8 @@ class Broker extends AbstractRole
             array_push($arrayOfSubscriptions, $subscription);
         }
 
-        foreach ($this->subscriptions as $subscription) {
-        //foreach ($arrayOfSubscriptions as $subscription) {
+        //foreach ($this->subscriptions as $subscription) {
+        foreach ($arrayOfSubscriptions as $subscription) {
             if ($msg->getTopicName() == $subscription->getTopic() &&
                 ($includePublisher || $subscription->getSession() != $session)
             ) {
