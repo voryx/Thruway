@@ -10,4 +10,4 @@ class WebPushClient extends Client
 {
 
     //Add web push stuff here
-} 
+}

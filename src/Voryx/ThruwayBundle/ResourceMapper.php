@@ -213,4 +213,4 @@ class ResourceMapper
         return isset($this->workerAnnotations[$workerName]) ? $this->workerAnnotations[$workerName] : false;
     }
 
-} 
+}
