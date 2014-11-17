@@ -2,8 +2,6 @@
 
 namespace Voryx\ThruwayBundle\Command;
 
-
-use Thruway\ConsoleLogger;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

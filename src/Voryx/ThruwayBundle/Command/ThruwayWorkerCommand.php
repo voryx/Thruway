@@ -4,7 +4,6 @@ namespace Voryx\ThruwayBundle\Command;
 
 
 use Symfony\Component\Console\Input\InputArgument;
-use Thruway\ConsoleLogger;
 use Thruway\Peer\Client;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;

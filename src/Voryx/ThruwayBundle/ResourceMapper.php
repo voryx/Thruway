@@ -7,7 +7,6 @@ namespace Voryx\ThruwayBundle;
 use Doctrine\Common\Annotations\Reader;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Voryx\ThruwayBundle\Annotation\Register;
-use Voryx\ThruwayBundle\Annotation\Subscribe;
 use Voryx\ThruwayBundle\Mapping\URIClassMapping;
 
 /**
@@ -68,11 +67,11 @@ class ResourceMapper
         $annotations[]      = $this->reader->getMethodAnnotation($method, self::SUBSCRIBE_ANNOTATION_CLASS);
         $securityAnnotation = $this->reader->getMethodAnnotation($method, self::SECURITY_ANNOTATION_CLASS);
 
-        /* @var $annotation Register | Subscribe */
+        /* @var $annotation Register */
         foreach ($annotations as $annotation) {
             if ($annotation) {
 
-                /* @var $workerAnnotation Register | Subscribe */
+                /* @var $workerAnnotation Register  */
                 $workerAnnotation = isset($this->workerAnnotationsClasses[$class->getName()]) ? $this->workerAnnotationsClasses[$class->getName()] : null;
 
                 if ($workerAnnotation) {

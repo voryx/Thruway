@@ -17,7 +17,7 @@ use Doctrine\Common\Annotations\Annotation\Required;
 class Register implements AnnotationInterface
 {
     /**
-     * @Required
+     * @Required()
      * @var string
      */
     protected $value;
