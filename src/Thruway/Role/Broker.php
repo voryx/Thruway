@@ -32,11 +32,6 @@ class Broker extends AbstractRole
     private $subscriptions;
 
     /**
-     * @var array
-     */
-    private $topics;
-
-    /**
      * @var \Thruway\Manager\ManagerInterface
      */
     protected $manager;
@@ -50,7 +45,6 @@ class Broker extends AbstractRole
     {
 
         $this->subscriptions = new \SplObjectStorage();
-        $this->topics        = [];
         $manager             = $manager ? $manager : new ManagerDummy();
 
         $this->setManager($manager);
@@ -67,7 +61,6 @@ class Broker extends AbstractRole
 
         $features->subscriber_blackwhite_listing = true;
         $features->publisher_exclusion = true;
-        //$features->publisher_identification = true;
         $features->subscriber_metaevents = true;
 
         return $features;
@@ -212,12 +205,6 @@ class Broker extends AbstractRole
             return;
         }
 
-        if (!isset($this->topics[$msg->getTopicName()])) {
-            $this->topics[$msg->getTopicName()] = [];
-        }
-
-        array_push($this->topics[$msg->getTopicName()], $session);
-
         $subscription = Subscription::createSubscriptionFromSubscribeMessage($session, $msg);
         $this->subscriptions->attach($subscription);
         $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $subscription->getId());
@@ -236,21 +223,11 @@ class Broker extends AbstractRole
 
         $subscription = $this->getSubscriptionById($msg->getSubscriptionId());
 
-        if (!$subscription || !isset($this->topics[$subscription->getTopic()])) {
+        if (!$subscription) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.no_such_subscription'));
 
             return;
-        }
-
-        $topicName = $subscription->getTopic();
-        //$subscribers = $this->topics[$topicName];
-
-        /* @var $subscriber \Thruway\Session */
-        foreach ($this->topics[$topicName] as $key => $subscriber) {
-            if ($subscriber == $session) {
-                unset($this->topics[$topicName][$key]);
-            }
         }
 
         if ($subscription) {
@@ -319,16 +296,6 @@ class Broker extends AbstractRole
                 $this->subscriptions->detach($subscription);
             }
         }
-
-        foreach ($this->topics as $topicName => $subscribers) {
-            foreach ($subscribers as $key => $subscriber) {
-                if ($session == $subscriber) {
-                    unset($subscribers[$key]);
-                    Logger::debug($this, "Removing session from topic list: {$topicName}");
-
-                }
-            }
-        }
     }
 
     /**
@@ -372,5 +339,4 @@ class Broker extends AbstractRole
 
         return [$theSubscriptions];
     }
-
-} 
+}
