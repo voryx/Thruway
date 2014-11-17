@@ -125,9 +125,8 @@ class ClientManager
         }
 
         //If we don't already have a long running client, get a short lived one.
-        $client                 = $this->getShortClient();
-        $options['acknowledge'] = true;
-        $deferrer               = new Deferred();
+        $client   = $this->getShortClient();
+        $deferrer = new Deferred();
 
         $client->on(
             "open",
