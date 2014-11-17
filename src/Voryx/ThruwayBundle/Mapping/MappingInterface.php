@@ -2,7 +2,7 @@
 
 namespace Voryx\ThruwayBundle\Mapping;
 
-use Voryx\ThruwayBundle\Annotation\Annotation;
+use Voryx\ThruwayBundle\Annotation\AnnotationInterface;
 
 /**
  * Interface MappingInterface
@@ -16,10 +16,10 @@ interface MappingInterface
     public function getAnnotation();
 
     /**
-     * @param Annotation $annotation
+     * @param AnnotationInterface $annotation
      * @return mixed
      */
-    public function setAnnotation(Annotation $annotation);
+    public function setAnnotation(AnnotationInterface $annotation);
 
     /**
      * @return mixed

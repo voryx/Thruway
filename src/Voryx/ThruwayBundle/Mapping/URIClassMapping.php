@@ -3,7 +3,7 @@
 namespace Voryx\ThruwayBundle\Mapping;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Voryx\ThruwayBundle\Annotation\Annotation;
+use Voryx\ThruwayBundle\Annotation\AnnotationInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
 
 /**
@@ -13,7 +13,7 @@ use Symfony\Component\Config\Definition\Exception\Exception;
 class URIClassMapping implements MappingInterface
 {
     /**
-     * @var Annotation
+     * @var AnnotationInterface
      */
     protected $annotation;
 
@@ -40,9 +40,9 @@ class URIClassMapping implements MappingInterface
     /**
      * @param null $serviceId
      * @param \ReflectionMethod $method
-     * @param Annotation $annotation
+     * @param AnnotationInterface $annotation
      */
-    function __construct($serviceId = null, \ReflectionMethod $method = null, Annotation $annotation = null)
+    function __construct($serviceId = null, \ReflectionMethod $method = null, AnnotationInterface $annotation = null)
     {
         $this->setServiceId($serviceId);
         $this->setMethod($method);
@@ -61,7 +61,7 @@ class URIClassMapping implements MappingInterface
      * @param mixed $annotation
      * @return mixed|void
      */
-    public function setAnnotation(Annotation $annotation)
+    public function setAnnotation(AnnotationInterface $annotation)
     {
         $this->annotation = $annotation;
     }
