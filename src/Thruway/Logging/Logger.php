@@ -19,7 +19,7 @@ class Logger
      */
     public static function set(LoggerInterface $logger)
     {
-        static::$logger = new $logger;
+        static::$logger = $logger;
     }
 
     /**
