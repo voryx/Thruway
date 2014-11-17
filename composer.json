@@ -26,8 +26,8 @@
     },
     "require": {
         "php": ">=5.4",
-        "voryx/thruway": "dev-master",
-        "jms/serializer-bundle": "0.13.0"
+        "voryx/thruway": "0.3.*@dev",
+        "jms/serializer-bundle": "0.13.*"
     },
     "suggest": {
         "mondalaci/supervisor-client": "Allows you to startup multiple workers in separate processes"
