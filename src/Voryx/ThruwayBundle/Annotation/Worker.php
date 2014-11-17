@@ -16,7 +16,7 @@ use Doctrine\Common\Annotations\Annotation\Required;
  * @Target({"CLASS"})
  *
  */
-class Worker implements Annotation
+class Worker implements AnnotationInterface
 {
     /**
      * @Required

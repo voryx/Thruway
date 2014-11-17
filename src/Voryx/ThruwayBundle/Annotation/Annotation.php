@@ -2,7 +2,7 @@
 
 namespace Voryx\ThruwayBundle\Annotation;
 
-interface Annotation
+interface AnnotationInterface
 {
     /**
      * @return mixed

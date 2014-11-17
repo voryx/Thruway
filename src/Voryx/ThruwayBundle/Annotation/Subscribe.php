@@ -14,7 +14,7 @@ use Doctrine\Common\Annotations\Annotation\Required;
  * @Target({"METHOD"})
  *
  */
-class Subscribe implements Annotation
+class Subscribe implements AnnotationInterface
 {
     /**
      * @Required

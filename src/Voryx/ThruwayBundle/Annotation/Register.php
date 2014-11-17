@@ -14,7 +14,7 @@ use Doctrine\Common\Annotations\Annotation\Required;
  * @Target({"METHOD"})
  *
  */
-class Register implements Annotation
+class Register implements AnnotationInterface
 {
     /**
      * @Required
