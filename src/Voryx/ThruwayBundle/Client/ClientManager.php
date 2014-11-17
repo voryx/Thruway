@@ -71,33 +71,26 @@ class ClientManager
         $options['acknowledge'] = true;
         $deferrer               = new Deferred();
 
-        $client->on(
-            "open",
-            function (ClientSession $session, TransportInterface $transport) use (
-                $deferrer,
-                $topicName,
-                $arguments,
-                $argumentsKw,
-                $options
-            ) {
-                $session->publish($topicName, $arguments, $argumentsKw, $options)->then(
-                    function () use ($deferrer, $transport) {
-                        $transport->close();
-                        $deferrer->resolve();
-                    }
-                );
-            }
-        );
+        $client->on("open", function (ClientSession $session, TransportInterface $transport) use (
+            $deferrer,
+            $topicName,
+            $arguments,
+            $argumentsKw,
+            $options
+        ) {
+            $session->publish($topicName, $arguments, $argumentsKw, $options)->then(
+                function () use ($deferrer, $transport) {
+                    $transport->close();
+                    $deferrer->resolve();
+                }
+            );
+        });
 
-        $client->on(
-            "error",
-            function ($error) use ($topicName) {
-                $this->container->get('logger')->addError(
-                    "Got the following error when trying to publish to '{$topicName}': {$error}"
-                );
-//                throw new \Exception("Got the following error when trying to publish to '{$topicName}': {$error}");
-            }
-        );
+        $client->on("error", function ($error) use ($topicName) {
+            $this->container->get('logger')->addError(
+                "Got the following error when trying to publish to '{$topicName}': {$error}"
+            );
+        });
 
         $client->start();
 
