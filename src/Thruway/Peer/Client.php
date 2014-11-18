@@ -2,7 +2,7 @@
 
 namespace Thruway\Peer;
 
-use Thruway\ClientAuthenticationInterface;
+use Thruway\Authentication\ClientAuthenticationInterface;
 use Thruway\ClientSession;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
@@ -46,7 +46,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     private $roles;
 
     /**
-     * @var \Thruway\ClientAuthenticationInterface[]
+     * @var \Thruway\Authentication\ClientAuthenticationInterface[]
      */
     private $clientAuthenticators;
 
@@ -206,7 +206,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * Add client authenticator
      *
-     * @param \Thruway\ClientAuthenticationInterface $ca
+     * @param \Thruway\Authentication\ClientAuthenticationInterface $ca
      */
     public function addClientAuthenticator(ClientAuthenticationInterface $ca)
     {
@@ -277,12 +277,13 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $session->sendMessage(new HelloMessage($session->getRealm(), $details));
     }
 
-    public function getRoleInfoObject() {
+    public function getRoleInfoObject()
+    {
         return (object)[
-            "publisher"  => (object)[ "features" => $this->getPublisher()->getFeatures()],
-            "subscriber" => (object)[ "features" => $this->getSubscriber()->getFeatures()],
-            "caller"     => (object)[ "features" => $this->getCaller()->getFeatures()],
-            "callee"     => (object)[ "features" => $this->getCallee()->getFeatures()]
+            "publisher"  => (object)["features" => $this->getPublisher()->getFeatures()],
+            "subscriber" => (object)["features" => $this->getSubscriber()->getFeatures()],
+            "caller"     => (object)["features" => $this->getCaller()->getFeatures()],
+            "callee"     => (object)["features" => $this->getCallee()->getFeatures()]
         ];
     }
 

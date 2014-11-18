@@ -1,6 +1,6 @@
 <?php
 
-namespace Thruway;
+namespace Thruway\Authentication;
 
 
 use Thruway\Logging\Logger;
@@ -50,7 +50,7 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
     public function getAuthenticateFromChallenge(ChallengeMessage $msg)
     {
         Logger::info($this, "Got challenge");
-        Logger::debug($this, "Challenge Message: ".json_encode($msg));
+        Logger::debug($this, "Challenge Message: " . json_encode($msg));
 
         if (!in_array($msg->getAuthMethod(), $this->getAuthMethods())) {
             //throw new \Exception("method isn't in methods");
