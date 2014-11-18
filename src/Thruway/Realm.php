@@ -11,18 +11,16 @@ use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\ActionMessageInterface;
 use Thruway\Message\AuthenticateMessage;
-use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
-use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
-use Thruway\Message\RegisterMessage;
-use Thruway\Message\SubscribeMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
+use Thruway\Topic\TopicStateManagerDummy;
+use Thruway\Topic\TopicStateManagerInterface;
 use Thruway\Transport\DummyTransport;
 
 /**
@@ -95,8 +93,8 @@ class Realm
         $this->authenticationManager = null;
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
-
         $this->setManager(new ManagerDummy());
+        $this->setTopicStateManager(new TopicStateManagerDummy());
 
     }
 
@@ -149,7 +147,8 @@ class Realm
         // authorization stuff here
         if ($msg instanceof ActionMessageInterface) {
             if (!$this->getAuthorizationManager()->isAuthorizedTo($session, $msg)) {
-                Logger::alert($this, "Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
+                Logger::alert($this,
+                    "Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
 
                 return;
@@ -387,6 +386,22 @@ class Realm
     }
 
     /**
+     * @return topicStateManagerInterface
+     */
+    public function getTopicStateManager()
+    {
+        return $this->getBroker()->getTopicStateManager();
+    }
+
+    /**
+     * @param topicStateManagerInterface $topicStateManager
+     */
+    public function setTopicStateManager($topicStateManager)
+    {
+        $this->getBroker()->setTopicStateManager($topicStateManager);
+    }
+
+    /**
      * Get list session
      *
      * @return \SplObjectStorage
@@ -396,15 +411,22 @@ class Realm
         return $this->sessions;
     }
 
-    public function addRolesToDetails($details) {
+    /**
+     * @param $details
+     * @return \stdClass
+     */
+    public function addRolesToDetails($details)
+    {
         // if details is null - we will create it
-        if ($details === null) $details = new \stdClass();
+        if ($details === null) {
+            $details = new \stdClass();
+        }
 
         // if details is not an object - we pass it through
         if (is_object($details)) {
             $details->roles = (object)[
-                "broker" => (object)[ "features" => $this->getBroker()->getFeatures()],
-                "dealer" => (object)[ "features" => $this->getDealer()->getFeatures()]
+                "broker" => (object)["features" => $this->getBroker()->getFeatures()],
+                "dealer" => (object)["features" => $this->getDealer()->getFeatures()]
             ];
         } else {
             Logger::warning($this, "non-object sent to addRolesToDetails - returning as is");

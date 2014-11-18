@@ -32,6 +32,9 @@ class Subscription
     /*
      * @var boolean
      */
+    /**
+     * @var bool
+     */
     private $disclosePublisher;
 
     /**
@@ -139,5 +142,19 @@ class Subscription
         $this->disclosePublisher = $disclosePublisher;
     }
 
+    /**
+     * Pauses all non-state building event messages
+     */
+    public function pauseForState()
+    {
+        //@todo implement pauseForState
+    }
 
+    /**
+     * @param $lastPublicationId
+     */
+    public function unPauseForState($lastPublicationId = null)
+    {
+        //@todo implement unPauseForState
+    }
 } 

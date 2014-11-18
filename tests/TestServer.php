@@ -5,6 +5,7 @@ require_once __DIR__ . '/Clients/InternalClient.php';
 require_once __DIR__ . '/Clients/SimpleAuthProviderClient.php';
 require_once __DIR__ . '/Clients/AbortAfterHelloAuthProviderClient.php';
 require_once __DIR__ . '/Clients/DisclosePublisherClient.php';
+require_once __DIR__ . '/Clients/TopicStateClient.php';
 
 use Thruway\Logging\Logger;
 use Thruway\Peer\Router;
@@ -63,6 +64,20 @@ $router->addTransportProvider($internalTransportProvider);
 $dpClient                  = new DisclosePublisherClient('testSimpleAuthRealm', $loop);
 $internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider($dpClient);
 $router->addTransportProvider($internalTransportProvider);
+/////////
+
+/////////////////////////
+//Topic State Testing
+$topicStateManager = new \Thruway\Topic\TopicStateManager('topic.state.test.realm', $loop);
+$topicStateRealm   = new \Thruway\Realm('topic.state.test.realm');
+$topicStateRealm->setTopicStateManager($topicStateManager);
+$router->getRealmManager()->addRealm($topicStateRealm);
+$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($topicStateManager));
+
+//Add the State Handler Client
+$topicStateClient = new TopicStateClient('topic.state.test.realm', $loop);
+$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($topicStateClient));
+////////////////////////
 
 if ($timeout) {
     $loop->addTimer($timeout, function () use ($loop) {

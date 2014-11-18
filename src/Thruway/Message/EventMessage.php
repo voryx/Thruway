@@ -4,6 +4,7 @@ namespace Thruway\Message;
 
 use Thruway\Message\Traits\ArgumentsTrait;
 use Thruway\Message\Traits\DetailsTrait;
+use Thruway\Session;
 
 /**
  * Class EventMessage
@@ -126,6 +127,21 @@ class EventMessage extends Message
     public function getSubscriptionId()
     {
         return $this->subscriptionId;
+    }
+
+    /**
+     * @param Session $session
+     */
+    public function disclosePublisher(Session $session)
+    {
+
+        $details             = $this->getDetails();
+        $details->caller     = $session->getSessionId();
+        $details->authid     = $session->getAuthenticationDetails()->getAuthId();
+        $details->authrole   = $session->getAuthenticationDetails()->getAuthRole();
+        $details->authroles  = $session->getAuthenticationDetails()->getAuthRoles();
+        $details->authmethod = $session->getAuthenticationDetails()->getAuthMethod();
+
     }
 
 } 

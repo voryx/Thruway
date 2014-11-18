@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . '/../../bootstrap.php';
 
-class BrokerTest extends PHPUnit_Framework_TestCase {
-    public function testUnsubscribeFromNonExistentSubscription() {
+class BrokerTest extends PHPUnit_Framework_TestCase
+{
+    public function testUnsubscribeFromNonExistentSubscription()
+    {
         $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
             ->getMock();
 
@@ -24,7 +26,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
         $broker->onMessage($session, $unsubscribeMsg);
     }
 
-    public function testDoNotExcludeMe() {
+    public function testDoNotExcludeMe()
+    {
         $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
             ->getMock();
 
@@ -34,6 +37,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
             ->setMethods(["sendMessage"])
             ->setConstructorArgs([$transport])
             ->getMock();
+        /** @var $session \Thruway\Session */
+        $session->setRealm(new \Thruway\Realm("testrealm"));
 
         $broker = new \Thruway\Role\Broker();
 
@@ -45,11 +50,13 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
         $session->expects($this->exactly(3))
             ->method("sendMessage")
             ->withConsecutive(
-                [$this->callback(function ($msg) use (&$subscribedMsg) {
-                    $this->isInstanceOf('\Thruway\Message\SubscribedMessage');
-                    $subscribedMsg = $msg;
-                    return true;
-                })],
+                [
+                    $this->callback(function ($msg) use (&$subscribedMsg) {
+                        $this->isInstanceOf('\Thruway\Message\SubscribedMessage');
+                        $subscribedMsg = $msg;
+                        return true;
+                    })
+                ],
                 [$this->isInstanceOf('\Thruway\Message\PublishedMessage')],
                 [$this->isInstanceOf('\Thruway\Message\EventMessage')]
             );
@@ -71,7 +78,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
      * @throws Exception
      * @expectedException Exception
      */
-    public function testBadMessageToOnMessage() {
+    public function testBadMessageToOnMessage()
+    {
         $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
             ->getMock();
 
@@ -87,5 +95,40 @@ class BrokerTest extends PHPUnit_Framework_TestCase {
         $goodbyeMsg = new \Thruway\Message\GoodbyeMessage([], 'test_reason');
 
         $broker->onMessage($session, $goodbyeMsg);
+    }
+
+    public function testRemoveRegistration()
+    {
+        $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+            ->getMock();
+
+        $transport->expects($this->any())->method("getTransportDetails")->will($this->returnValue(""));
+
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->setMethods(["sendMessage"])
+            ->setConstructorArgs([$transport])
+            ->getMock();
+        /** @var $session \Thruway\Session */
+        $session->setRealm(new \Thruway\Realm("testrealm"));
+
+        $broker = new \Thruway\Role\Broker();
+
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Session::getUniqueId(), [], "test.topic");
+
+        $broker->onMessage($session, $subscribeMsg);
+
+        $subscriptions = $broker->getSubscriptions();
+        $this->assertTrue(count($subscriptions) === 1);
+
+        $topic = $broker->getTopicManager()->getTopic('test.topic');
+        $this->assertInstanceOf('\Thruway\Topic\Topic', $topic);
+
+        $this->assertTrue(count($topic->getSubscriptions()) === 1);
+
+        $subscriptions = array_values($subscriptions);
+        $broker->removeSubscription($subscriptions[0]);
+        $this->assertTrue(count($broker->getSubscriptions()) === 0);
+        $this->assertTrue(count($topic->getSubscriptions()) === 0);
+
     }
 } 

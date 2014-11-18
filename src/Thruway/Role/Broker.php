@@ -7,7 +7,6 @@ use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\ErrorMessage;
-use Thruway\Message\EventMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
@@ -17,6 +16,10 @@ use Thruway\Message\UnsubscribedMessage;
 use Thruway\Message\UnsubscribeMessage;
 use Thruway\Session;
 use Thruway\Subscription;
+use Thruway\Topic\Topic;
+use Thruway\Topic\TopicManager;
+use Thruway\Topic\TopicStateManagerInterface;
+use Thruway\TopicStateManager;
 
 /**
  * Class Broker
@@ -27,7 +30,7 @@ class Broker extends AbstractRole
 {
 
     /**
-     * @var \SplObjectStorage
+     * @var array
      */
     private $subscriptions;
 
@@ -37,6 +40,16 @@ class Broker extends AbstractRole
     protected $manager;
 
     /**
+     * @var TopicManager
+     */
+    private $topicManager;
+
+    /**
+     * @var TopicStateManagerInterface
+     */
+    private $topicStateManager;
+
+    /**
      * Constructor
      *
      * @param \Thruway\Manager\ManagerInterface $manager
@@ -44,9 +57,11 @@ class Broker extends AbstractRole
     public function __construct(ManagerInterface $manager = null)
     {
 
-        $this->subscriptions = new \SplObjectStorage();
-        $manager             = $manager ? $manager : new ManagerDummy();
+        $this->subscriptions = [];
 
+        $manager = $manager ? $manager : new ManagerDummy();
+
+        $this->setTopicManager(new TopicManager());
         $this->setManager($manager);
         Logger::debug($this, "Broker constructor");
     }
@@ -56,12 +71,13 @@ class Broker extends AbstractRole
      *
      * @return \stdClass
      */
-    public function getFeatures() {
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
         $features->subscriber_blackwhite_listing = true;
-        $features->publisher_exclusion = true;
-        $features->subscriber_metaevents = true;
+        $features->publisher_exclusion           = true;
+        $features->subscriber_metaevents         = true;
 
         return $features;
     }
@@ -99,94 +115,27 @@ class Broker extends AbstractRole
      */
     protected function processPublish(Session $session, PublishMessage $msg)
     {
-        Logger::debug($this, "processing publish message");
+        Logger::debug($this, "Processing publish message");
 
-        $includePublisher = false;
-        $excludedSessions = [];
-        $whiteList        = null;
-        $options          = $msg->getOptions();
+        //Check to make sure that the URI is valid
+        if (!static::uriIsValid($msg->getTopicName())) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
+
+            return;
+        }
 
         // see if they wanted confirmation
-        if (isset($options->acknowledge) && $options->acknowledge == true) {
+        if ($msg->acknowledge()) {
             $publicationId = Session::getUniqueId();
-            $session->sendMessage(
-                new PublishedMessage($msg->getRequestId(), $publicationId)
-            );
-        }
-        if (isset($options->exclude_me) && !$options->exclude_me) {
-            $includePublisher = true;
-        }
-        if (isset($options->exclude) && is_array($options->exclude)) {
-            // fixup exclude array - make sure it is legit
-            foreach ($options->exclude as $excludedSession) {
-                if (is_numeric($excludedSession)) {
-                    array_push($excludedSessions, $excludedSession);
-                }
-            }
-        }
-        if (isset($options->eligible) && is_array($options->eligible)) {
-            $whiteList = [];
-            foreach ($options->eligible as $sessionId) {
-                if (is_numeric($sessionId)) {
-                    array_push($whiteList, $sessionId);
-                }
-            }
+            $session->sendMessage(new PublishedMessage($msg->getRequestId(), $publicationId));
         }
 
-        $this->sendEventMessages($session, $msg, $includePublisher, $excludedSessions, $whiteList);
+        $topicManager = $this->getTopicManager();
+        $topic        = $topicManager->getTopic($msg->getTopicName(), true);
 
-    }
+        $topic->processPublish($session, $msg);
 
-    /**
-     * Send an Event Message for each subscription
-     * @param Session $session
-     * @param PublishMessage $msg
-     * @param $includePublisher
-     * @param $excludedSessions
-     * @param $whiteList
-     */
-    private function sendEventMessages(Session $session, PublishMessage $msg, $includePublisher, $excludedSessions, $whiteList)
-    {
-        $arrayOfSubscriptions = [];
-
-        /* @var $subscription \Thruway\Subscription */
-        foreach ($this->subscriptions as $subscription) {
-            array_push($arrayOfSubscriptions, $subscription);
-        }
-
-        //foreach ($this->subscriptions as $subscription) {
-        foreach ($arrayOfSubscriptions as $subscription) {
-            if ($msg->getTopicName() == $subscription->getTopic() &&
-                ($includePublisher || $subscription->getSession() != $session)
-            ) {
-                if (!in_array($subscription->getSession()->getSessionId(), $excludedSessions)) {
-                    if ($whiteList === null || in_array($subscription->getSession()->getSessionId(), $whiteList)) {
-                        $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
-                        $this->disclosePublisherOption($session, $eventMsg, $subscription);
-                        $subscription->getSession()->sendMessage($eventMsg);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * @param Session $session
-     * @param EventMessage $msg
-     * @param Subscription $subscription
-     */
-    private function disclosePublisherOption(Session $session, EventMessage $msg, Subscription $subscription)
-    {
-        if ($subscription->isDisclosePublisher() === true) {
-
-            $details             = $msg->getDetails();
-            $details->caller     = $session->getSessionId();
-            $details->authid     = $session->getAuthenticationDetails()->getAuthId();
-            $details->authrole   = $session->getAuthenticationDetails()->getAuthRole();
-            $details->authroles  = $session->getAuthenticationDetails()->getAuthRoles();
-            $details->authmethod = $session->getAuthenticationDetails()->getAuthMethod();
-
-        }
     }
 
     /**
@@ -205,10 +154,19 @@ class Broker extends AbstractRole
             return;
         }
 
+        $topicManager = $this->getTopicManager();
+        $topic        = $topicManager->getTopic($msg->getTopicName(), true);
         $subscription = Subscription::createSubscriptionFromSubscribeMessage($session, $msg);
-        $this->subscriptions->attach($subscription);
+
+        $this->subscriptions[$subscription->getId()] = $subscription;
+
+        $topic->addSubscription($subscription);
         $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $subscription->getId());
+
         $session->sendMessage($subscribedMsg);
+
+        $topicStateManager = $session->getRealm()->getTopicStateManager();
+        $topicStateManager->publishState($subscription);
 
     }
 
@@ -231,7 +189,7 @@ class Broker extends AbstractRole
         }
 
         if ($subscription) {
-            $this->subscriptions->detach($subscription);
+            $this->removeSubscription($subscription);
         }
 
         $session->sendMessage(new UnsubscribedMessage($msg->getRequestId()));
@@ -286,16 +244,28 @@ class Broker extends AbstractRole
      */
     public function leave(Session $session)
     {
-        $this->subscriptions->rewind();
-        while ($this->subscriptions->valid()) {
-            /* @var $subscription \Thruway\Subscription */
-            $subscription = $this->subscriptions->current();
-            $this->subscriptions->next();
-            if ($subscription->getSession() == $session) {
+
+        /* @var $subscription \Thruway\Subscription */
+        foreach ($this->subscriptions as $subscription) {
+
+            if ($subscription->getSession() === $session) {
                 Logger::debug($this, "Leaving and unsubscribing: {$subscription->getTopic()}");
-                $this->subscriptions->detach($subscription);
+
+                $this->removeSubscription($subscription);
             }
         }
+    }
+
+    /**
+     * @param Subscription $subscription
+     */
+    public function removeSubscription(Subscription $subscription)
+    {
+        $topicName = $subscription->getTopic();
+        $topic     = $this->getTopicManager()->getTopic($topicName);
+
+        $topic->removeSubscription($subscription->getId());
+        unset ($this->subscriptions[$subscription->getId()]);
     }
 
     /**
@@ -318,6 +288,46 @@ class Broker extends AbstractRole
         return $this->manager;
     }
 
+    /**
+     * @return array
+     */
+    public function getSubscriptions()
+    {
+        return $this->subscriptions;
+    }
+
+    /**
+     * @return TopicManager
+     */
+    public function getTopicManager()
+    {
+        return $this->topicManager;
+    }
+
+    /**
+     * @param TopicManager $topicManager
+     */
+    public function setTopicManager($topicManager)
+    {
+        $this->topicManager = $topicManager;
+    }
+
+    /**
+     * @return TopicStateManagerInterface
+     */
+    public function getTopicStateManager()
+    {
+        return $this->topicStateManager;
+    }
+
+    /**
+     * @param TopicStateManagerInterface $topicStateManager
+     */
+    public function setTopicStateManager(TopicStateManagerInterface $topicStateManager)
+    {
+        $this->topicStateManager = $topicStateManager;
+        $this->topicStateManager->setTopicManager($this->getTopicManager());
+    }
 
     /**
      * Get list subscriptions
@@ -339,4 +349,6 @@ class Broker extends AbstractRole
 
         return [$theSubscriptions];
     }
+
 }
+

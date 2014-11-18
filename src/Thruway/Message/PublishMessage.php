@@ -6,6 +6,7 @@ use Thruway\Message\Traits\ArgumentsTrait;
 use Thruway\Message\Traits\OptionsTrait;
 use Thruway\Message\Traits\RequestTrait;
 
+
 /**
  * Class Publish message
  * Sent by a Publisher to a Broker to publish an event.
@@ -19,7 +20,9 @@ class PublishMessage extends Message implements ActionMessageInterface
 {
 
     use RequestTrait;
-    use OptionsTrait;
+    use OptionsTrait {
+        setOptions as traitSetOptions;
+    }
     use ArgumentsTrait;
 
     /**
@@ -28,6 +31,26 @@ class PublishMessage extends Message implements ActionMessageInterface
      */
     private $topicName;
 
+
+    /**
+     * @var boolean
+     */
+    private $acknowledge;
+
+    /**
+     * @var boolean
+     */
+    private $exclude_me;
+
+    /**
+     * @var array
+     */
+    private $exclude;
+
+    /**
+     * @var array
+     */
+    private $eligible;
 
     /**
      * Constructor
@@ -114,4 +137,72 @@ class PublishMessage extends Message implements ActionMessageInterface
     }
 
 
+    /**
+     * @param $options
+     */
+    public function setOptions($options)
+    {
+        $this->traitSetOptions($options);
+
+        //Get the options that have been cast to an object
+        $options = $this->getOptions();
+
+        $this->acknowledge = isset($options->acknowledge) && $options->acknowledge === true ? true : false;
+        $this->exclude_me  = isset($options->exclude_me) && $options->exclude_me === false ? false : true;
+        $this->exclude     = isset($options->exclude) && is_array($options->exclude) ? $options->exclude : [];
+        $this->eligible    = isset($options->eligible) && is_array($options->eligible) ? $options->eligible : null;
+
+    }
+
+    /**
+     * @return boolean
+     */
+    public function acknowledge()
+    {
+        return $this->acknowledge;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function excludeMe()
+    {
+        return $this->exclude_me;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExclude()
+    {
+        return $this->exclude;
+    }
+
+    /**
+     * @return array | null
+     */
+    public function getEligible()
+    {
+        return $this->eligible;
+    }
+
+    /**
+     * @param $sessionId
+     * @return bool
+     */
+    public function isWhiteListed($sessionId)
+    {
+        return null === $this->getEligible() || in_array($sessionId, $this->getEligible());
+    }
+
+    /**
+     * @param $sessionId
+     * @return bool
+     */
+    public function isExcluded($sessionId)
+    {
+        return in_array($sessionId, $this->getExclude());
+    }
+
 }
+
