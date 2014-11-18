@@ -144,4 +144,23 @@ class EventMessage extends Message
 
     }
 
-} 
+    /**
+     * @return boolean
+     */
+    public function isRestoringState()
+    {
+        $restoringState = isset($this->getDetails()->_thruway_restoring_state) ? $this->getDetails()->_thruway_restoring_state : false;
+        return $restoringState;
+    }
+
+    /**
+     * @param boolean $restoringState
+     */
+    public function setRestoringState($restoringState)
+    {
+        $details = $this->getDetails();
+        if (is_object($details)) {
+            $details->_thruway_restoring_state = true;
+        }
+    }
+}

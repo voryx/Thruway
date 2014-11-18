@@ -18,8 +18,9 @@ use Thruway\Session;
 use Thruway\Subscription;
 use Thruway\Topic\Topic;
 use Thruway\Topic\TopicManager;
+use Thruway\Topic\TopicStateManagerDummy;
 use Thruway\Topic\TopicStateManagerInterface;
-use Thruway\TopicStateManager;
+use Thruway\Topic\TopicStateManager;
 
 /**
  * Class Broker
@@ -62,6 +63,7 @@ class Broker extends AbstractRole
         $manager = $manager ? $manager : new ManagerDummy();
 
         $this->setTopicManager(new TopicManager());
+        $this->setTopicStateManager(new TopicStateManagerDummy());
         $this->setManager($manager);
         Logger::debug($this, "Broker constructor");
     }
@@ -165,8 +167,10 @@ class Broker extends AbstractRole
 
         $session->sendMessage($subscribedMsg);
 
-        $topicStateManager = $session->getRealm()->getTopicStateManager();
-        $topicStateManager->publishState($subscription);
+        if ($topic->hasStateHandler()) {
+            $topicStateManager = $this->getTopicStateManager();
+            $topicStateManager->publishState($subscription);
+        }
 
     }
 

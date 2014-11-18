@@ -101,6 +101,12 @@ class Topic
         return $this->stateHandler;
     }
 
+    public function hasStateHandler() {
+        if ($this->stateHandler !== null) return true;
+
+        return false;
+    }
+
     /**
      * @param string $handlerUri
      * @throws \Exception
