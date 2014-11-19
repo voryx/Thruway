@@ -108,7 +108,9 @@ class TopicStateManager extends Client implements TopicStateManagerInterface
 
         $this->getCaller()->call($this->getSession(), $topic->getStateHandler(), [$topic->getUri(), $sessionId])->then(
             function ($res) use ($subscription) {
-                $subscription->unPauseForState($res[0]);
+                $pubId = null;
+                if (isset($res[0])) $pubId = $res[0];
+                $subscription->unPauseForState($pubId);
             },
             function ($error) use ($topic, $subscription) {
                 Logger::error($this, "Could not call '{$topic->getStateHandler()}'");

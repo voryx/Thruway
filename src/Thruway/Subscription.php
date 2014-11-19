@@ -168,6 +168,7 @@ class Subscription
 
     /**
      * @param $lastPublicationId
+     * @throws \Exception
      */
     public function unPauseForState($lastPublicationId = null)
     {
