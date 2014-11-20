@@ -119,7 +119,7 @@ class Broker extends AbstractRole
         Logger::debug($this, "Processing publish message");
 
         //Check to make sure that the URI is valid
-        if (!static::uriIsValid($msg->getTopicName())) {
+        if (!Utils::uriIsValid($msg->getTopicName())) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
 
@@ -148,7 +148,7 @@ class Broker extends AbstractRole
     protected function processSubscribe(Session $session, SubscribeMessage $msg)
     {
 
-        if (!static::uriIsValid($msg->getTopicName())) {
+        if (!Utils::uriIsValid($msg->getTopicName())) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
 

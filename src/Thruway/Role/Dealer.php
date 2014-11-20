@@ -5,6 +5,7 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\Call;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
@@ -108,7 +109,7 @@ class Dealer extends AbstractRole
     private function processRegister(Session $session, RegisterMessage $msg)
     {
         // check for valid URI
-        if (!static::uriIsValid($msg->getProcedureName())) {
+        if (!Utils::uriIsValid($msg->getProcedureName())) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.invalid_uri'));
             return;
         }
@@ -181,7 +182,7 @@ class Dealer extends AbstractRole
      */
     private function processCall(Session $session, CallMessage $msg)
     {
-        if (!static::uriIsValid($msg->getProcedureName())) {
+        if (!Utils::uriIsValid($msg->getProcedureName())) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.invalid_uri'));
             return;
         }

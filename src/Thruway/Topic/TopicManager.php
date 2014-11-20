@@ -8,7 +8,8 @@ namespace Thruway\Topic;
  * Class TopicManager
  * @package Thruway\Topic
  */
-use Thruway\Role\AbstractRole;
+use Thruway\Common\Utils;
+
 
 /**
  * Class TopicManager
@@ -46,7 +47,7 @@ class TopicManager
      */
     public function getTopic($topicName, $create = false)
     {
-        if (!AbstractRole::uriIsValid($topicName)) {
+        if (!Utils::uriIsValid($topicName)) {
             throw new \Exception("Invalid URI");
         }
 

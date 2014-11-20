@@ -21,5 +21,15 @@ class Utils
         return abs(($high << 32 | $low) & $filter);
     }
 
+    /**
+     * Strict URI Test
+     *
+     * @param $uri
+     * @return boolean
+     */
+    public static function uriIsValid($uri)
+    {
+        return !!preg_match('/^([0-9a-z_]+\.)*([0-9a-z_]+)$/', $uri);
+    }
 
 }

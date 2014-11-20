@@ -32,17 +32,10 @@ abstract class AbstractRole
     abstract public function handlesMessage(Message $msg);
 
     /**
-     * Strict URI Test
-     *
-     * @param $uri
-     * @return boolean
+     * @return \stdClass
      */
-    public static function uriIsValid($uri)
+    public function getFeatures()
     {
-        return !!preg_match('/^([0-9a-z_]+\.)*([0-9a-z_]+)$/', $uri);
-    }
-
-    public function getFeatures() {
         return new \stdClass();
     }
 

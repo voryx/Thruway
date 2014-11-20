@@ -3,10 +3,10 @@
 
 namespace Thruway\Topic;
 
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\EventMessage;
 use Thruway\Message\PublishMessage;
-use Thruway\Role\AbstractRole;
 use Thruway\Session;
 use Thruway\Subscription;
 
@@ -113,7 +113,7 @@ class Topic
      */
     public function setStateHandler($handlerUri)
     {
-        if (!AbstractRole::uriIsValid($handlerUri)) {
+        if (!Utils::uriIsValid($handlerUri)) {
             Logger::error($this, "Invalid URI");
             throw new \InvalidArgumentException("Invalid URI");
         }

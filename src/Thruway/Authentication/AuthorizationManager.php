@@ -5,12 +5,10 @@ namespace Thruway\Authentication;
 
 
 use Ratchet\Wamp\Exception;
-
-use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Message\ActionMessageInterface;
 use Thruway\Peer\Client;
 use Thruway\Result;
-use Thruway\Role\AbstractRole;
 use Thruway\Session;
 
 
@@ -190,7 +188,7 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
             $uriToCheck = substr($uriToCheck, 0, strlen($uriToCheck) - 1);
         }
 
-        return AbstractRole::uriIsValid($uriToCheck);
+        return Utils::uriIsValid($uriToCheck);
     }
 
     /**
@@ -214,7 +212,7 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
             isset($rule->allow)
         ) {
             if ($this->isValidAction($rule->action) &&
-                static::isValidRuleUri($rule->uri) && AbstractRole::uriIsValid($rule->role)
+                static::isValidRuleUri($rule->uri) && Utils::uriIsValid($rule->role)
             ) {
                 if ($rule->allow === true || $rule->allow === false) {
                     return (object)[
@@ -338,7 +336,7 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         }
 
         $uriToCheck = $args[2];
-        if (!AbstractRole::uriIsValid($uriToCheck)) {
+        if (!Utils::uriIsValid($uriToCheck)) {
             return false;
         }
 
