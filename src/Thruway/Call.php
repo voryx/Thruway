@@ -3,11 +3,11 @@
 namespace Thruway;
 
 
+use Thruway\Common\Utils;
 use Thruway\Message\CallMessage;
 use Thruway\Message\InvocationMessage;
 use Thruway\Message\ResultMessage;
 use Thruway\Message\YieldMessage;
-use Thruway\Role\AbstractRole;
 
 /**
  * Class Call
@@ -75,7 +75,7 @@ class Call
         $this->setRegistration($registration);
 
         $this->callStart = microtime(true);
-        $this->invocationRequestId = Session::getUniqueId();
+        $this->invocationRequestId = Utils::getUniqueId();
     }
 
     /**

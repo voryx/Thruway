@@ -2,8 +2,7 @@
 
 namespace Thruway;
 
-use Thruway\Message\CallMessage;
-use Thruway\Message\InvocationMessage;
+use Thruway\Common\Utils;
 use Thruway\Message\RegisterMessage;
 
 
@@ -100,7 +99,7 @@ class Registration
      */
     public function __construct(Session $session, $procedureName)
     {
-        $this->id                         = Session::getUniqueId();
+        $this->id                         = Utils::getUniqueId();
         $this->session                    = $session;
         $this->procedureName              = $procedureName;
         $this->allowMultipleRegistrations = false;

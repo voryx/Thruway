@@ -5,6 +5,7 @@ namespace Thruway;
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthorizationManagerInterface;
+use Thruway\Common\Utils;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
@@ -473,7 +474,7 @@ class Realm
 
         $this->getBroker()->onMessage($this->metaSession,
             new PublishMessage(
-                Session::getUniqueId(),
+                Utils::getUniqueId(),
                 $options,
                 $topicName,
                 $arguments,

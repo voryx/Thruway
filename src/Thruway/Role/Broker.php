@@ -3,6 +3,7 @@
 namespace Thruway\Role;
 
 use Thruway\AbstractSession;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
@@ -16,11 +17,9 @@ use Thruway\Message\UnsubscribedMessage;
 use Thruway\Message\UnsubscribeMessage;
 use Thruway\Session;
 use Thruway\Subscription;
-use Thruway\Topic\Topic;
 use Thruway\Topic\TopicManager;
 use Thruway\Topic\TopicStateManagerDummy;
 use Thruway\Topic\TopicStateManagerInterface;
-use Thruway\Topic\TopicStateManager;
 
 /**
  * Class Broker
@@ -129,7 +128,7 @@ class Broker extends AbstractRole
 
         // see if they wanted confirmation
         if ($msg->acknowledge()) {
-            $publicationId = Session::getUniqueId();
+            $publicationId = Utils::getUniqueId();
             $session->sendMessage(new PublishedMessage($msg->getRequestId(), $publicationId));
         }
 

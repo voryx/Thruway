@@ -29,7 +29,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             ->getMock();
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             'different_name'
         );
@@ -55,7 +55,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             ->getMock();
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             'test_procedure'
         );
@@ -84,7 +84,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             'test_procedure'
         );
@@ -115,7 +115,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             ['replace_orphaned_session' => true],
             'test_procedure'
         );
@@ -150,7 +150,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             ['replace_orphaned_session' => true],
             'test_procedure'
         );
@@ -189,7 +189,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             ['replace_orphaned_session' => true],
             'test_procedure'
         );
@@ -272,7 +272,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         }
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             ['thruway_multiregister' => true],
             'test_procedure'
         );
@@ -282,7 +282,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         }
 
         $callMsg = new \Thruway\Message\CallMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             'test_procedure'
         );
@@ -337,7 +337,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             );
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [
                 'disclose_caller'       => true,
                 'thruway_multiregister' => true
@@ -379,7 +379,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             );
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [
                 'disclose_caller'       => true,
                 'thruway_multiregister' => true
@@ -414,7 +414,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             }));
 
         $callMsg = new \Thruway\Message\CallMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             'test_procedure'
         );
@@ -441,7 +441,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             );
 
 //        $rregMsg = new \Thruway\Message\RegisterMessage(
-//            \Thruway\Session::getUniqueId(),
+//            \Thruway\Common\Utils::getUniqueId(),
 //            ['thruway_multiregister' => true],
 //            'test_procedure'
 //        );
@@ -483,7 +483,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             );
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             'test_procedure'
         );
@@ -493,7 +493,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf('\Thruway\Message\RegisteredMessage', $registeredMsg);
 
         $callMsg = new \Thruway\Message\CallMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             "test_procedure"
         );
@@ -514,7 +514,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($registeredMsg->getRegistrationId(), $registration->getId());
 
         $unregisterMsg = new \Thruway\Message\UnregisterMessage(
-            \Thruway\Session::getUniqueId(), $registration->getId());
+            \Thruway\Common\Utils::getUniqueId(), $registration->getId());
 
         $this->assertEquals(1, count($this->_proc->getRegistrations()));
 
@@ -524,7 +524,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($this->_proc->getRegistrations()));
 
         // try unregistering a non-existent registration
-        $badUnregisterMsg = new \Thruway\Message\UnregisterMessage(\Thruway\Session::getUniqueId(), 0);
+        $badUnregisterMsg = new \Thruway\Message\UnregisterMessage(\Thruway\Common\Utils::getUniqueId(), 0);
         $this->_proc->processUnregister($session, $badUnregisterMsg);
 
         $this->assertEquals(1, count($this->_proc->getRegistrations()));
@@ -568,7 +568,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             ->with($this->isInstanceOf('\Thruway\Message\RegisteredMessage'));
 
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             'test_procedure'
         );

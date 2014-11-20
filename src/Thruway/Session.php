@@ -4,6 +4,7 @@ namespace Thruway;
 
 
 use Thruway\Authentication\AuthenticationDetails;
+use Thruway\Common\Utils;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\Message;
@@ -58,7 +59,7 @@ class Session extends AbstractSession
     {
         $this->transport             = $transport;
         $this->state                 = static::STATE_PRE_HELLO;
-        $this->sessionId             = Session::getUniqueId();
+        $this->sessionId             = Utils::getUniqueId();
         $this->realm                 = null;
         $this->messagesSent          = 0;
         $this->sessionStart          = new \DateTime();
@@ -102,17 +103,6 @@ class Session extends AbstractSession
         }
     }
 
-    /**
-     * Generate a unique id for sessions and requests
-     * @return mixed
-     */
-    public static function getUniqueId()
-    {
-        $filter      = 0x1fffffffffffff; // 53 bits
-        $randomBytes = openssl_random_pseudo_bytes(8);
-        list($high, $low) = array_values(unpack("N2", $randomBytes));
-        return abs(($high << 32 | $low) & $filter);
-    }
 
     /**
      * Set manager

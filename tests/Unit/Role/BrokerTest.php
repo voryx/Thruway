@@ -21,7 +21,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase
             ->method("sendMessage")
             ->with($this->isInstanceOf('\Thruway\Message\ErrorMessage'));
 
-        $unsubscribeMsg = new \Thruway\Message\UnsubscribeMessage(\Thruway\Session::getUniqueId(), 0);
+        $unsubscribeMsg = new \Thruway\Message\UnsubscribeMessage(\Thruway\Common\Utils::getUniqueId(), 0);
 
         $broker->onMessage($session, $unsubscribeMsg);
     }
@@ -66,7 +66,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase
         $subscriptionId = $subscribedMsg->getSubscriptionId();
 
         $publishMsg = new \Thruway\Message\PublishMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             ['exclude_me' => false, 'acknowledge' => true],
             'test_subscription'
         );
@@ -113,7 +113,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         $broker = new \Thruway\Role\Broker();
 
-        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Session::getUniqueId(), [], "test.topic");
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Common\Utils::getUniqueId(), [], "test.topic");
 
         $broker->onMessage($session, $subscribeMsg);
 

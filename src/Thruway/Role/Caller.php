@@ -6,6 +6,7 @@ namespace Thruway\Role;
 use Thruway\AbstractSession;
 use Thruway\CallResult;
 use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
@@ -151,7 +152,7 @@ class Caller extends AbstractRole
         //This promise gets resolved in Caller::processResult
         $futureResult = new Deferred();
 
-        $requestId = Session::getUniqueId();
+        $requestId = Utils::getUniqueId();
 
         $this->callRequests[$requestId] = [
             "procedure_name" => $procedureName,

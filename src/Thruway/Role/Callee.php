@@ -6,6 +6,7 @@ use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\InvocationMessage;
@@ -349,7 +350,7 @@ class Callee extends AbstractRole
     {
         $futureResult = new Deferred();
 
-        $requestId    = Session::getUniqueId();
+        $requestId    = Utils::getUniqueId();
         $options      = isset($options) ? (object) $options : new \stdClass();
         $registration = [
             "procedure_name" => $procedureName,
@@ -417,7 +418,7 @@ class Callee extends AbstractRole
             // good to go - so maybe still send the unregister?
         }
 
-        $requestId = Session::getUniqueId();
+        $requestId = Utils::getUniqueId();
 
         // save the request id so we can find this in the registration
         // list to call the deferred and remove it from the list

@@ -704,7 +704,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->onMessage($transportPublisher, $helloMsg);
 
         // subscribe
-        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Session::getUniqueId(), (object)[], "com.example.issue53");
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Common\Utils::getUniqueId(), (object)[], "com.example.issue53");
 
         $router->onMessage($transport1, $subscribeMsg);
         $router->onMessage($transport2, $subscribeMsg);

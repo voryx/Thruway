@@ -22,7 +22,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
                 $this->isInstanceOf('\Thruway\Message\InvocationMessage')
                 );
 
-        $registerMsg = new \Thruway\Message\RegisterMessage(Session::getUniqueId(), [], "test.procedure");
+        $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], "test.procedure");
 
         $dealer->onMessage($calleeSession, $registerMsg);
 
@@ -30,7 +30,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
             ->disableOriginalConstructor()
             ->getMock();
 
-        $callMsg = new \Thruway\Message\CallMessage(Session::getUniqueId(), [], "test.procedure");
+        $callMsg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "test.procedure");
 
         $dealer->onMessage($callerSession, $callMsg);
 
@@ -113,14 +113,14 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         // register proc0 as multi
         $registerMsg = new \Thruway\Message\RegisterMessage(
-            Session::getUniqueId(), ["thruway_multiregister" => true], "qpanmy_proc0");
+            \Thruway\Common\Utils::getUniqueId(), ["thruway_multiregister" => true], "qpanmy_proc0");
 
         $dealer->onMessage($callee0Session, $registerMsg);
 
-        $callMsg = new \Thruway\Message\CallMessage(Session::getUniqueId(), [], "qpanmy_proc0");
+        $callMsg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "qpanmy_proc0");
 
         $dealer->onMessage($callerSession, $callMsg);
-        $callMsg->setRequestId(Session::getUniqueId());
+        $callMsg->setRequestId(\Thruway\Common\Utils::getUniqueId());
         $dealer->onMessage($callerSession, $callMsg);
 
         $dealer->onMessage($callee0Session, new \Thruway\Message\YieldMessage(
@@ -132,16 +132,16 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         ));
 
         // there are now zero calls on proc0
-        $registerMsg = new \Thruway\Message\RegisterMessage(Session::getUniqueId(), [], "qpanmy_proc1");
+        $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], "qpanmy_proc1");
 
-        $callProc1Msg = new \Thruway\Message\CallMessage(Session::getUniqueId(), [], "qpanmy_proc1");
+        $callProc1Msg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "qpanmy_proc1");
 
         $dealer->onMessage($callee0Session, $registerMsg);
 
         $dealer->onMessage($callerSession, $callProc1Msg);
 
         // this should cause congestion and queuing because it should be busy with proc1
-        $callMsg->setRequestId(Session::getUniqueId());
+        $callMsg->setRequestId(\Thruway\Common\Utils::getUniqueId());
         $dealer->onMessage($callerSession, $callMsg);
 
         // yield on proc1 - this should cause proc0 to process queue

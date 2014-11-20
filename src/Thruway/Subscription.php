@@ -2,6 +2,7 @@
 
 namespace Thruway;
 
+use Thruway\Common\Utils;
 use Thruway\Message\EventMessage;
 use Thruway\Message\SubscribeMessage;
 use Thruway\Message\Traits\OptionsTrait;
@@ -57,7 +58,7 @@ class Subscription
 
         $this->topic             = $topic;
         $this->session           = $session;
-        $this->id                = Session::getUniqueId();
+        $this->id                = Utils::getUniqueId();
         $this->disclosePublisher = false;
         $this->pausedForState    = false;
         $this->pauseQueue        = new \SplQueue();

@@ -7,6 +7,7 @@ use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\EventMessage;
@@ -208,7 +209,7 @@ class Subscriber extends AbstractRole
      */
     public function subscribe(ClientSession $session, $topicName, $callback, $options)
     {
-        $requestId = Session::getUniqueId();
+        $requestId = Utils::getUniqueId();
         $options   = (object)$options;
         $deferred  = new Deferred();
 

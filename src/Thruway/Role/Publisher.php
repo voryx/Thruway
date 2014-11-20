@@ -5,6 +5,7 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishedMessage;
@@ -132,7 +133,7 @@ class Publisher extends AbstractRole
     {
         $options = (object)$options;
 
-        $requestId = Session::getUniqueId();
+        $requestId = Utils::getUniqueId();
 
         if (isset($options->acknowledge) && $options->acknowledge === true) {
             $futureResult                      = new Deferred();

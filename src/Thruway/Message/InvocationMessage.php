@@ -2,6 +2,7 @@
 
 namespace Thruway\Message;
 
+use Thruway\Common\Utils;
 use Thruway\Message\Traits\ArgumentsTrait;
 use Thruway\Message\Traits\DetailsTrait;
 use Thruway\Message\Traits\RequestTrait;
@@ -80,7 +81,7 @@ class InvocationMessage extends Message
      */
     public static function createMessageFrom(CallMessage $msg, Registration $registration)
     {
-        $requestId = Session::getUniqueId();
+        $requestId = Utils::getUniqueId();
         $details   = new \stdClass();
 
         return new static($requestId, $registration->getId(), $details, $msg->getArguments(), $msg->getArgumentsKw());
