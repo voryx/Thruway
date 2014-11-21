@@ -3,7 +3,6 @@
 namespace Thruway\Peer;
 
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
-use Thruway\Authentication\AuthenticationManagerInterface;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;

@@ -18,7 +18,7 @@ class SubscribeMessageTest extends \PHPUnit_Framework_TestCase
     {
         $msg = new SubscribeMessage(12345, [], 'com.test.subscribe');
 
-        $this->assertTrue(is_array($msg->getOptions()));
+        $this->assertTrue(is_object($msg->getOptions()));
 
         $expectedJson = '[32,12345,{},"com.test.subscribe"]';
 
@@ -29,7 +29,7 @@ class SubscribeMessageTest extends \PHPUnit_Framework_TestCase
     {
         $msg = new SubscribeMessage(12345, ["match" => "prefix"], 'com.test.subscribe');
 
-        $this->assertTrue(is_array($msg->getOptions()));
+        $this->assertTrue(is_object($msg->getOptions()));
 
         $expectedJson = '[32,12345,{"match":"prefix"},"com.test.subscribe"]';
 
@@ -42,7 +42,7 @@ class SubscribeMessageTest extends \PHPUnit_Framework_TestCase
 
         $msg = new SubscribeMessage(12345, $options, 'com.test.subscribe');
 
-        $this->assertTrue(is_array($msg->getOptions()));
+        $this->assertTrue(is_object($msg->getOptions()));
 
         $expectedJson = '[32,12345,{},"com.test.subscribe"]';
 
@@ -57,7 +57,7 @@ class SubscribeMessageTest extends \PHPUnit_Framework_TestCase
 
         $msg = new SubscribeMessage(12345, $options, 'com.test.subscribe');
 
-        $this->assertTrue(is_array($msg->getOptions()));
+        $this->assertTrue(is_object($msg->getOptions()));
 
         $expectedJson = '[32,12345,{"match":"prefix"},"com.test.subscribe"]';
 

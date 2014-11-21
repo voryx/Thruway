@@ -5,24 +5,23 @@ namespace Thruway;
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthorizationManagerInterface;
+use Thruway\Common\Utils;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\ActionMessageInterface;
 use Thruway\Message\AuthenticateMessage;
-use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
-use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
-use Thruway\Message\RegisterMessage;
-use Thruway\Message\SubscribeMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
+use Thruway\Topic\TopicStateManagerDummy;
+use Thruway\Topic\TopicStateManagerInterface;
 use Thruway\Transport\DummyTransport;
 
 /**
@@ -95,8 +94,8 @@ class Realm
         $this->authenticationManager = null;
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
-
         $this->setManager(new ManagerDummy());
+        $this->setTopicStateManager(new TopicStateManagerDummy());
 
     }
 
@@ -149,7 +148,8 @@ class Realm
         // authorization stuff here
         if ($msg instanceof ActionMessageInterface) {
             if (!$this->getAuthorizationManager()->isAuthorizedTo($session, $msg)) {
-                Logger::alert($this, "Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
+                Logger::alert($this,
+                    "Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
 
                 return;
@@ -194,6 +194,13 @@ class Realm
         } else {
             $this->sessions->attach($session);
             $session->setRealm($this);
+
+            $details = $msg->getDetails();
+
+            if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
+                $session->setRoleFeatures($details->roles);
+            }
+
             $session->setState(Session::STATE_UP); // this should probably be after authentication
 
             if ($this->getAuthenticationManager() !== null) {
@@ -213,9 +220,10 @@ class Realm
                 $session->setAuthenticationDetails($authDetails);
 
                 // the broker and dealer should give us this information
-                $roles = ["broker" => new \stdClass, "dealer" => new \stdClass];
+                $details = new \stdClass();
+                $this->addRolesToDetails($details);
                 $session->sendMessage(
-                    new WelcomeMessage($session->getSessionId(), ["roles" => $roles])
+                    new WelcomeMessage($session->getSessionId(), $details)
                 );
             }
         }
@@ -379,6 +387,22 @@ class Realm
     }
 
     /**
+     * @return topicStateManagerInterface
+     */
+    public function getTopicStateManager()
+    {
+        return $this->getBroker()->getTopicStateManager();
+    }
+
+    /**
+     * @param topicStateManagerInterface $topicStateManager
+     */
+    public function setTopicStateManager($topicStateManager)
+    {
+        $this->getBroker()->setTopicStateManager($topicStateManager);
+    }
+
+    /**
      * Get list session
      *
      * @return \SplObjectStorage
@@ -386,6 +410,30 @@ class Realm
     public function getSessions()
     {
         return $this->sessions;
+    }
+
+    /**
+     * @param $details
+     * @return \stdClass
+     */
+    public function addRolesToDetails($details)
+    {
+        // if details is null - we will create it
+        if ($details === null) {
+            $details = new \stdClass();
+        }
+
+        // if details is not an object - we pass it through
+        if (is_object($details)) {
+            $details->roles = (object)[
+                "broker" => (object)["features" => $this->getBroker()->getFeatures()],
+                "dealer" => (object)["features" => $this->getDealer()->getFeatures()]
+            ];
+        } else {
+            Logger::warning($this, "non-object sent to addRolesToDetails - returning as is");
+        }
+
+        return $details;
     }
 
     /**
@@ -426,7 +474,7 @@ class Realm
 
         $this->getBroker()->onMessage($this->metaSession,
             new PublishMessage(
-                Session::getUniqueId(),
+                Utils::getUniqueId(),
                 $options,
                 $topicName,
                 $arguments,

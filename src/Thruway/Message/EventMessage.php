@@ -2,6 +2,10 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\ArgumentsTrait;
+use Thruway\Message\Traits\DetailsTrait;
+use Thruway\Session;
+
 /**
  * Class EventMessage
  * Event dispatched by Broker to Subscribers for subscription the event was matching.
@@ -11,14 +15,10 @@ namespace Thruway\Message;
  *
  * @package Thruway\Message
  */
-
 class EventMessage extends Message
 {
 
-    /**
-     * using arguments trait
-     * @see \Thruway\Message\ArgumentsTrait
-     */
+    use DetailsTrait;
     use ArgumentsTrait;
 
     /**
@@ -29,34 +29,28 @@ class EventMessage extends Message
      * @var int
      */
     private $publicationId;
-    /**
-     * @var mixed
-     */
-    private $details;
 
     /**
      * Constructor
-     * 
+     *
      * @param int $subscriptionId
      * @param int $publicationId
-     * @param mixed $details
+     * @param \stdClass $details
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
     public function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null)
     {
-        parent::__construct();
-
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
-        $this->details        = $details;
-        $this->publicationId  = $publicationId;
-        $this->subscriptionId = $subscriptionId;
+        $this->setDetails($details);
+        $this->setPublicationId($publicationId);
+        $this->setSubscriptionId($subscriptionId);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -72,27 +66,14 @@ class EventMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $details = $this->getDetails();
-        if ($details === null) {
-            $details = new \stdClass();
-        }
+        $a = [$this->getSubscriptionId(), $this->getPublicationId(), $this->getDetails()];
 
-        $details = (object)$details;
-
-        $a = [
-            $this->getSubscriptionId(),
-            $this->getPublicationId(),
-            $details
-        ];
-
-        $a = array_merge($a, $this->getArgumentsForSerialization());
-
-        return $a;
+        return array_merge($a, $this->getArgumentsForSerialization());
     }
 
     /**
      * Create event message from publish message
-     * 
+     *
      * @param \Thruway\Message\PublishMessage $msg
      * @param int $subscriptionId
      * @return \Thruway\Message\EventMessage
@@ -109,28 +90,8 @@ class EventMessage extends Message
     }
 
     /**
-     * set event details
-     * 
-     * @param mixed $details
-     */
-    public function setDetails($details)
-    {
-        $this->details = $details;
-    }
-
-    /**
-     * get event details
-     * 
-     * @return mixed
-     */
-    public function getDetails()
-    {
-        return $this->details;
-    }
-
-    /**
      * Set publication ID
-     * 
+     *
      * @param int $publicationId
      */
     public function setPublicationId($publicationId)
@@ -140,7 +101,7 @@ class EventMessage extends Message
 
     /**
      * Get publication ID
-     * 
+     *
      * @return int
      */
     public function getPublicationId()
@@ -150,7 +111,7 @@ class EventMessage extends Message
 
     /**
      * Set subscription ID
-     * 
+     *
      * @param int $subscriptionId
      */
     public function setSubscriptionId($subscriptionId)
@@ -160,7 +121,7 @@ class EventMessage extends Message
 
     /**
      * Get subscription ID
-     * 
+     *
      * @return int
      */
     public function getSubscriptionId()
@@ -168,4 +129,38 @@ class EventMessage extends Message
         return $this->subscriptionId;
     }
 
-} 
+    /**
+     * @param Session $session
+     */
+    public function disclosePublisher(Session $session)
+    {
+
+        $details             = $this->getDetails();
+        $details->caller     = $session->getSessionId();
+        $details->authid     = $session->getAuthenticationDetails()->getAuthId();
+        $details->authrole   = $session->getAuthenticationDetails()->getAuthRole();
+        $details->authroles  = $session->getAuthenticationDetails()->getAuthRoles();
+        $details->authmethod = $session->getAuthenticationDetails()->getAuthMethod();
+
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isRestoringState()
+    {
+        $restoringState = isset($this->getDetails()->_thruway_restoring_state) ? $this->getDetails()->_thruway_restoring_state : false;
+        return $restoringState;
+    }
+
+    /**
+     * @param boolean $restoringState
+     */
+    public function setRestoringState($restoringState)
+    {
+        $details = $this->getDetails();
+        if (is_object($details)) {
+            $details->_thruway_restoring_state = true;
+        }
+    }
+}

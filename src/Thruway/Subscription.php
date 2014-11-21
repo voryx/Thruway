@@ -2,13 +2,18 @@
 
 namespace Thruway;
 
+use Thruway\Common\Utils;
+use Thruway\Message\EventMessage;
 use Thruway\Message\SubscribeMessage;
+use Thruway\Message\Traits\OptionsTrait;
 
 /**
  * Class Subscription
  */
 class Subscription
 {
+
+    use OptionsTrait;
 
     /**
      * @var string
@@ -25,13 +30,19 @@ class Subscription
      */
     private $topic;
 
-    /**
-     * @var \stdClass
-     */
-    private $options;
 
-    /*
+    /**
      * @var boolean
+     */
+    private $pausedForState;
+
+    /**
+     * @var \SplQueue
+     */
+    private $pauseQueue;
+
+    /**
+     * @var bool
      */
     private $disclosePublisher;
 
@@ -47,9 +58,12 @@ class Subscription
 
         $this->topic             = $topic;
         $this->session           = $session;
-        $this->options           = $options ?: new \stdClass();
-        $this->id                = Session::getUniqueId();
+        $this->id                = Utils::getUniqueId();
         $this->disclosePublisher = false;
+        $this->pausedForState    = false;
+        $this->pauseQueue        = new \SplQueue();
+
+        $this->setOptions($options);
 
     }
 
@@ -62,10 +76,10 @@ class Subscription
      */
     public static function createSubscriptionFromSubscribeMessage(Session $session, SubscribeMessage $msg)
     {
-        $options      = (array)$msg->getOptions();
+        $options      = $msg->getOptions();
         $subscription = new Subscription($msg->getTopicName(), $session, $options);
 
-        if (isset($options['disclose_publisher']) && $options['disclose_publisher'] === true) {
+        if (isset($options->disclose_publisher) && $options->disclose_publisher === true) {
             $subscription->setDisclosePublisher(true);
         }
 
@@ -82,25 +96,6 @@ class Subscription
         return $this->id;
     }
 
-    /**
-     * Get subscription options
-     *
-     * @return \stdClass
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
-     * Set subscription options
-     *
-     * @param \stdClass $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = $options;
-    }
 
     /**
      * Set topic name
@@ -158,5 +153,61 @@ class Subscription
         $this->disclosePublisher = $disclosePublisher;
     }
 
+    /**
+     * Pauses all non-state building event messages
+     */
+    public function pauseForState()
+    {
+        if ($this->pausedForState) throw new \Exception("Tried to paused already paused subscription");
+        $this->pausedForState = true;
+    }
 
+    public function isPausedForState()
+    {
+        return $this->pausedForState;
+    }
+
+    /**
+     * @param $lastPublicationId
+     * @throws \Exception
+     */
+    public function unPauseForState($lastPublicationId = null)
+    {
+        if (!$this->pausedForState) throw new \Exception("Tried to unpaused subscription that was not paused");
+
+        $this->pausedForState = false;
+
+        $this->processStateQueue($lastPublicationId);
+    }
+
+    private function processStateQueue($lastPublicationId = null) {
+        if ($lastPublicationId !== null) {
+            // create an array of pub ids
+            // if we can't find the lastPublicationId in the queue
+            // then we are going to assume it was before our time
+            $pubIds = [];
+
+            /** @var EventMessage $msg */
+            foreach($this->pauseQueue as $msg) {
+                $pubIds[] = $msg->getPublicationId();
+            }
+
+            if (!in_array($lastPublicationId, $pubIds)) $lastPublicationId = null;
+        }
+
+        while (!$this->pauseQueue->isEmpty()) {
+            $msg = $this->pauseQueue->dequeue();
+            if ($lastPublicationId === null) $this->sendEventMessage($msg);
+            if ($lastPublicationId == $msg->getPublicationId()) $lastPublicationId = null;
+        }
+    }
+
+    public function sendEventMessage(EventMessage $msg) {
+        if ($this->pausedForState && !$msg->isRestoringState()) {
+            $this->pauseQueue->enqueue($msg);
+            return;
+        }
+
+        $this->getSession()->sendMessage($msg);
+    }
 } 

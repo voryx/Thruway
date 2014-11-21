@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class PublishedMessage
  * Acknowledge sent by a Broker to a Publisher for acknowledged publications.
@@ -9,15 +11,10 @@ namespace Thruway\Message;
  *
  * @package Thruway\Message
  */
-
 class PublishedMessage extends Message
 {
 
-    /**
-     *
-     * @var int
-     */
-    private $requestId;
+    use RequestTrait;
 
     /**
      *
@@ -33,13 +30,13 @@ class PublishedMessage extends Message
      */
     public function __construct($requestId, $publicationId)
     {
-        $this->requestId     = $requestId;
-        $this->publicationId = $publicationId;
+        $this->setRequestId($requestId);
+        $this->setPublicationId($publicationId);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -49,7 +46,7 @@ class PublishedMessage extends Message
 
     /**
      * Set publication ID
-     * 
+     *
      * @param int $publicationId
      */
     public function setPublicationId($publicationId)
@@ -59,32 +56,12 @@ class PublishedMessage extends Message
 
     /**
      * Get publication ID
-     * 
+     *
      * @return int
      */
     public function getPublicationId()
     {
         return $this->publicationId;
-    }
-
-    /**
-     * Get request ID
-     * 
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
-    }
-
-    /**
-     * Set request ID
-     * 
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
     }
 
     /**

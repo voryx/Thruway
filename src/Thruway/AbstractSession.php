@@ -67,7 +67,7 @@ abstract class AbstractSession
 
     /**
      * Send message
-     * 
+     *
      * @param \Thruway\Message\Message $msg
      * @return mixed
      */
@@ -75,7 +75,7 @@ abstract class AbstractSession
 
     /**
      * Set client state
-     * 
+     *
      * @param int $state
      */
     public function setState($state)
@@ -85,7 +85,7 @@ abstract class AbstractSession
 
     /**
      * Get client state
-     * 
+     *
      * @return int
      */
     public function getState()
@@ -96,7 +96,7 @@ abstract class AbstractSession
 
     /**
      * Set athentication state (authenticated or not)
-     * 
+     *
      * @param boolean $authenticated
      */
     public function setAuthenticated($authenticated)
@@ -106,7 +106,7 @@ abstract class AbstractSession
 
     /**
      * Get authentication state (authenticated or not)
-     * 
+     *
      * @return boolean
      */
     public function getAuthenticated()
@@ -116,7 +116,7 @@ abstract class AbstractSession
 
     /**
      * check is authenticated
-     * 
+     *
      * @return boolean
      */
     public function isAuthenticated()
@@ -126,7 +126,7 @@ abstract class AbstractSession
 
     /**
      * Set realm
-     * 
+     *
      * @param \Thruway\Realm $realm
      */
     public function setRealm($realm)
@@ -136,7 +136,7 @@ abstract class AbstractSession
 
     /**
      * Get realm
-     * 
+     *
      * @return \Thruway\Realm
      */
     public function getRealm()
@@ -147,7 +147,7 @@ abstract class AbstractSession
 
     /**
      * Get session ID
-     * 
+     *
      * @return int
      */
     public function getSessionId()
@@ -157,7 +157,7 @@ abstract class AbstractSession
 
     /**
      * Get transport
-     * 
+     *
      * @return \Thruway\Transport\TransportInterface
      */
     public function getTransport()
@@ -167,7 +167,7 @@ abstract class AbstractSession
 
     /**
      * Check sent Goodbye message
-     * 
+     *
      * @return boolean
      */
     public function isGoodbyeSent()
@@ -177,7 +177,7 @@ abstract class AbstractSession
 
     /**
      * Set state sent goodbye message ?
-     * 
+     *
      * @param boolean $goodbyeSent
      */
     public function setGoodbyeSent($goodbyeSent)
@@ -187,7 +187,7 @@ abstract class AbstractSession
 
     /**
      * Ping
-     * 
+     *
      * @param int $timeout
      * @return \React\Promise\Promise
      */
@@ -231,7 +231,7 @@ abstract class AbstractSession
 
     /**
      * Set loop
-     * 
+     *
      * @param \React\EventLoop\LoopInterface $loop
      */
     public function setLoop($loop)
@@ -241,7 +241,7 @@ abstract class AbstractSession
 
     /**
      * Get loop
-     * 
+     *
      * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()

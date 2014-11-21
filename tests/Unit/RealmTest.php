@@ -67,7 +67,7 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $realm = $session->getRealm();
 
         $registerMessage = new \Thruway\Message\RegisterMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             [],
             'test_procedure'
         );
@@ -118,10 +118,10 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $realm = new \Thruway\Realm("some_realm");
         $realm->setAuthorizationManager($authorizationManager);
 
-        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Session::getUniqueId(), [], "some_topic");
-        $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Session::getUniqueId(), [], "some_topic");
-        $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Session::getUniqueId(), [], 'some_procedure');
-        $callMsg = new \Thruway\Message\CallMessage(\Thruway\Session::getUniqueId(), [], "some_procedure");
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_topic");
+        $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_topic");
+        $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], 'some_procedure');
+        $callMsg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_procedure");
 
         $authorizationManager->expects($this->exactly(4))
             ->method("isAuthorizedTo")
@@ -186,7 +186,7 @@ class RealmTest extends PHPUnit_Framework_TestCase
             ->method("abort")
             ->with($this->isInstanceOf("stdClass"), $this->equalTo("wamp.error.not_authorized"));
 
-        $realm->onMessage($session, new \Thruway\Message\CallMessage(\Thruway\Session::getUniqueId(), [], 'some_procedure'));
+        $realm->onMessage($session, new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], 'some_procedure'));
     }
 
     /**

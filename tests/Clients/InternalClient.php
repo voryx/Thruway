@@ -1,10 +1,6 @@
 <?php
 
 /**
- * This is an example of how to use the InternalClientTransportProvider
- *
- * For more information go to:
- * http://voryx.net/creating-internal-client-thruway/
  */
 class InternalClient extends Thruway\Peer\Client
 {
@@ -64,6 +60,12 @@ class InternalClient extends Thruway\Peer\Client
             array($this, 'callReturnSomeProgress')
         );
 
+        $this->getCallee()->register(
+            $this->session,
+            'com.example.get_hello_details',
+            [$this, 'callGetHelloDetails'],
+            ['disclose_caller' => true]
+        );
     }
 
     public function start()
@@ -77,6 +79,14 @@ class InternalClient extends Thruway\Peer\Client
     public function callTheTestCall($res)
     {
         return array($res[0]);
+    }
+
+    public function callGetHelloDetails($args, $argsKw, $details)  {
+        $callingSession = $this->getRouter()->getSessionBySessionId($details->caller);
+
+        $roleFeatures = $callingSession->getRoleFeatures();
+
+        return [$roleFeatures];
     }
 
     public function callPublish($args)
@@ -138,7 +148,7 @@ class InternalClient extends Thruway\Peer\Client
     }
 
     public function callWithProgressOption($args, $argsKw, $details) {
-        if (is_array($details) && isset($details['receive_progress']) && $details['receive_progress']) {
+        if (is_object($details) && isset($details->receive_progress) && $details->receive_progress) {
             return "SUCCESS";
         } else {
             throw new \Exception("receive_progress option not set");
@@ -146,7 +156,7 @@ class InternalClient extends Thruway\Peer\Client
     }
 
     public function callReturnSomeProgress($args, $argsKw, $details) {
-        if (is_array($details) && isset($details['receive_progress']) && $details['receive_progress']) {
+        if (is_object($details) && isset($details->receive_progress) && $details->receive_progress) {
             $deferred = new \React\Promise\Deferred();
 
             $this->getLoop()->addTimer(1, function () use ($deferred) {

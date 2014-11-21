@@ -12,7 +12,7 @@ use Thruway\Peer\AbstractPeer;
  *
  * @package Thruway\Transport
  */
-class DummyTransportProvider implements TransportProviderInterface
+class DummyTransportProvider extends AbstractTransportProvider
 {
 
     /**
@@ -25,29 +25,4 @@ class DummyTransportProvider implements TransportProviderInterface
     {
     }
 
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return null;
-    }
-
-    /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $managerInterface
-     */
-    public function setManager(ManagerInterface $managerInterface)
-    {
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-    }
 }

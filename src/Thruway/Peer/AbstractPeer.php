@@ -2,7 +2,6 @@
 
 namespace Thruway\Peer;
 
-use Thruway\Manager\ManagerInterface;
 use Thruway\Message\Message;
 use Thruway\Transport\TransportInterface;
 use Thruway\Transport\TransportProviderInterface;
@@ -15,7 +14,7 @@ use Thruway\Transport\TransportProviderInterface;
 abstract class AbstractPeer
 {
     /**
-     * @var \Thruway\Peer\ManagerInterface
+     * @var \Thruway\Manager\ManagerInterface
      */
     protected $manager;
 

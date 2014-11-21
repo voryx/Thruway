@@ -2,6 +2,10 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\ArgumentsTrait;
+use Thruway\Message\Traits\DetailsTrait;
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class ResultMessage
  * Result of a call as returned by Dealer to Caller.
@@ -13,6 +17,8 @@ namespace Thruway\Message;
  */
 class ResultMessage extends Message
 {
+    use RequestTrait;
+    use DetailsTrait;
 
     /**
      * using arguments trait
@@ -20,35 +26,26 @@ class ResultMessage extends Message
      */
     use ArgumentsTrait;
 
-    /**
-     * @var int
-     */
-    private $requestId;
-
-    /**
-     * @var array
-     */
-    private $details;
 
     /**
      * Constructor
-     * 
+     *
      * @param int $requestId
-     * @param array $details
+     * @param \stdClass $details
      * @param array $arguments
      * @param array $argumentsKw
      */
     public function __construct($requestId, $details, $arguments = null, $argumentsKw = null)
     {
-        $this->requestId = $requestId;
-        $this->details   = $details;
+        $this->setRequestId($requestId);
+        $this->setDetails($details);
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -64,57 +61,11 @@ class ResultMessage extends Message
      */
     public function getAdditionalMsgFields()
     {
-        $details = $this->getDetails();
-        if ($details === null) {
-            $details = new \stdClass();
-        }
-        $details = (object)$details;
 
-        $a = [$this->getRequestId(), $details];
+        $a = [$this->getRequestId(), $this->getDetails()];
 
-        $a = array_merge($a, $this->getArgumentsForSerialization());
-
-        return $a;
+        return array_merge($a, $this->getArgumentsForSerialization());
     }
 
-    /**
-     * Get result details
-     * 
-     * @return array
-     */
-    public function getDetails()
-    {
-        return $this->details;
-    }
-
-    /**
-     * Set result details
-     * 
-     * @param array $details
-     */
-    public function setDetails($details)
-    {
-        $this->details = $details;
-    }
-
-    /**
-     * Get request ID
-     * 
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
-    }
-
-    /**
-     * Set request ID
-     * 
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
 
 }

@@ -28,7 +28,7 @@ Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloadin
       
 Download Thruway and dependencies
 
-      $ php composer.phar require "voryx/thruway":"dev-master"
+      $ php composer.phar require "voryx/thruway":"0.2.*"
 
 Start the WAMP server
 

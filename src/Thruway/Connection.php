@@ -3,7 +3,6 @@
 namespace Thruway;
 
 
-
 use React\EventLoop\LoopInterface;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
@@ -57,59 +56,25 @@ class Connection implements EventEmitterInterface
         $this->client  = new Client($options['realm'], $loop);
         $url           = isset($options['url']) ? $options['url'] : null;
         $pawlTransport = new PawlTransportProvider($url);
+
         $this->client->addTransportProvider($pawlTransport);
         $this->client->setReconnectOptions($options);
 
-        /*
-         * Authentication on challenge callback
-         */
-        if (isset($options['onChallenge']) && is_callable($options['onChallenge'])
-            && isset($options['authmethods'])
-            && is_array($options['authmethods'])
-        ) {
-            $this->client->setAuthMethods($options['authmethods']);
-            $this->client->on(
-                'challenge',
-                function (ClientSession $session, ChallengeMessage $msg) use ($options) {
-                    $token = $options['onChallenge']($session, $msg->getAuthMethod());
-                    $session->sendMessage(new AuthenticateMessage($token));
-                }
-            );
+        //Set Authid
+        if (isset($options['authid'])) {
+            $this->client->setAuthId($options['authid']);
         }
 
-        if (isset($this->options['onClose']) && is_callable($this->options['onClose'])) {
-            $this->on('close', $this->options['onClose']);
-        }
+        //Register Handlers
+        $this->handleOnChallenge();
+        $this->handleOnOpen();
+        $this->handleOnClose();
+        $this->handleOnError();
 
-        /*
-         * Handle On Open event
-         *
-         */
-        $this->client->on(
-            'open',
-            function (ClientSession $session, TransportInterface $transport) {
-                $this->transport = $transport;
-                $this->emit('open', [$session]);
-            }
-        );
-
-        /*
-         * Handle On Close event
-         */
-        $this->client->on(
-            'close',
-            function ($reason) {
-                $this->emit('close', [$reason]);
-            }
-        );
-
-        $this->client->on('error', function ($reason) {
-            $this->emit('error', [$reason]);
-
-        });
     }
 
     /**
+     * @deprecated
      *  Process events at a set interval
      *
      * @param int $timer
@@ -119,12 +84,9 @@ class Connection implements EventEmitterInterface
         $loop = $this->getClient()->getLoop();
 
         $looping = true;
-        $loop->addTimer(
-            $timer,
-            function () use (&$looping) {
-                $looping = false;
-            }
-        );
+        $loop->addTimer($timer, function () use (&$looping) {
+            $looping = false;
+        });
 
         while ($looping) {
             usleep(1000);
@@ -156,6 +118,63 @@ class Connection implements EventEmitterInterface
     public function getClient()
     {
         return $this->client;
+    }
+
+    /**
+     * Handle On Open event
+     */
+
+    private function handleOnOpen()
+    {
+        $this->client->on('open', function (ClientSession $session, TransportInterface $transport) {
+            $this->transport = $transport;
+            $this->emit('open', [$session]);
+        });
+    }
+
+    /**
+     * Handle On Close event
+     */
+    private function handleOnClose()
+    {
+        $this->client->on('close', function ($reason) {
+            $this->emit('close', [$reason]);
+        });
+
+        if (isset($this->options['onClose']) && is_callable($this->options['onClose'])) {
+            $this->on('close', $this->options['onClose']);
+        }
+    }
+
+    /**
+     * Handle On Error event
+     */
+    private function handleOnError()
+    {
+        $this->client->on('error', function ($reason) {
+            $this->emit('error', [$reason]);
+        });
+    }
+
+    /**
+     * Setup the onChallenge callback
+     */
+    private function handleOnChallenge()
+    {
+
+        $options = $this->options;
+
+        if (isset($options['onChallenge']) && is_callable($options['onChallenge'])
+            && isset($options['authmethods'])
+            && is_array($options['authmethods'])
+        ) {
+            $this->client->setAuthMethods($options['authmethods']);
+
+            $this->client->on('challenge', function (ClientSession $session, ChallengeMessage $msg) use ($options) {
+                $token = call_user_func_array($options['onChallenge'], [$session, $msg->getAuthMethod(), $msg]);
+                $session->sendMessage(new AuthenticateMessage($token));
+            });
+        }
     }
 
 }

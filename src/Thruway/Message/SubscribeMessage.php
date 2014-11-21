@@ -2,6 +2,9 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class SubscribeMessage
  * Subscribe request sent by a Subscriber to a Broker to subscribe to a topic.
@@ -12,11 +15,8 @@ namespace Thruway\Message;
 class SubscribeMessage extends Message implements ActionMessageInterface
 {
 
-    /**
-     *
-     * @var array
-     */
-    private $options;
+    use RequestTrait;
+    use OptionsTrait;
 
     /**
      *
@@ -25,30 +25,22 @@ class SubscribeMessage extends Message implements ActionMessageInterface
     private $topicName;
 
     /**
-     *
-     * @var int
-     */
-    private $requestId;
-
-    /**
      * Constructor
      *
      * @param int $requestId
-     * @param array $options
+     * @param \stdClass $options
      * @param string $topicName
      */
     public function __construct($requestId, $options, $topicName)
     {
-        parent::__construct();
-
         $this->setOptions($options);
-        $this->topicName = $topicName;
+        $this->setTopicName($topicName);
         $this->setRequestId($requestId);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -68,28 +60,8 @@ class SubscribeMessage extends Message implements ActionMessageInterface
     }
 
     /**
-     * Set options
-     * 
-     * @param array $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = (array)$options;
-    }
-
-    /**
-     * Get options
-     * 
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
-    }
-
-    /**
      * Set topic name
-     * 
+     *
      * @param string $topicName
      */
     public function setTopicName($topicName)
@@ -99,32 +71,12 @@ class SubscribeMessage extends Message implements ActionMessageInterface
 
     /**
      * Get topic name
-     * 
+     *
      * @return string
      */
     public function getTopicName()
     {
         return $this->topicName;
-    }
-
-    /**
-     * Set request ID
-     * 
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * Get request ID
-     * 
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
     /**

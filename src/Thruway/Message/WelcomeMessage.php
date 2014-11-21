@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\DetailsTrait;
+
 /**
  * Class WelcomeMessage
  * Sent by a Router to accept a Client. The WAMP session is now open.
@@ -12,26 +14,24 @@ namespace Thruway\Message;
 class WelcomeMessage extends Message
 {
 
+    use DetailsTrait;
+
     /**
      * @var int
      */
     private $sessionId;
 
-    /**
-     * @var array
-     */
-    private $details;
 
     /**
      * Constructor
      *
      * @param int $sessionId
-     * @param array $details
+     * @param \stdClass $details
      */
     public function __construct($sessionId, $details)
     {
-        $this->details   = $details;
-        $this->sessionId = $sessionId;
+        $this->setDetails($details);
+        $this->setSessionId($sessionId);
     }
 
 
@@ -57,23 +57,21 @@ class WelcomeMessage extends Message
     }
 
     /**
-     * Get details
-     * 
-     * @return mixed
-     */
-    public function getDetails()
-    {
-        return $this->details;
-    }
-
-    /**
      * Get session ID
-     * 
+     *
      * @return int
      */
     public function getSessionId()
     {
         return $this->sessionId;
+    }
+
+    /**
+     * @param int $sessionId
+     */
+    public function setSessionId($sessionId)
+    {
+        $this->sessionId = $sessionId;
     }
 
 } 

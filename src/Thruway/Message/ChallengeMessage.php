@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\DetailsTrait;
+
 /**
  * Class ChallengeMessage
  * During authenticated session establishment, a Router sends a challenge message.
@@ -11,6 +13,7 @@ namespace Thruway\Message;
  */
 class ChallengeMessage extends Message
 {
+    use DetailsTrait;
 
     /**
      * @var mixed
@@ -18,13 +21,8 @@ class ChallengeMessage extends Message
     private $authMethod;
 
     /**
-     * @var mixed
-     */
-    private $details;
-
-    /**
      * @param mixed $authMethod
-     * @param mixed $details
+     * @param \stdClass $details
      */
     public function __construct($authMethod, $details = null)
     {
@@ -34,7 +32,7 @@ class ChallengeMessage extends Message
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -61,13 +59,6 @@ class ChallengeMessage extends Message
         return $this->authMethod;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDetails()
-    {
-        return $this->details;
-    }
 
     /**
      * @param mixed $authMethod
@@ -77,11 +68,4 @@ class ChallengeMessage extends Message
         $this->authMethod = $authMethod;
     }
 
-    /**
-     * @param mixed $details
-     */
-    public function setDetails($details)
-    {
-        $this->details = $details;
-    }
 }

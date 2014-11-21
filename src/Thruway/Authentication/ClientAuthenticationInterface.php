@@ -1,6 +1,6 @@
 <?php
 
-namespace Thruway;
+namespace Thruway\Authentication;
 
 use Thruway\Message\ChallengeMessage;
 

@@ -74,6 +74,7 @@ class Procedure
      *
      * @param Session $session
      * @param \Thruway\Message\RegisterMessage $msg
+     * @return bool
      * @throws \Exception
      */
     public function processRegister(Session $session, RegisterMessage $msg)
@@ -93,7 +94,7 @@ class Procedure
                 // get the existing registration
                 /** @var Registration $oldRegistration */
                 $oldRegistration = $this->registrations[0];
-                if (isset($options['replace_orphaned_session']) && $options['replace_orphaned_session'] == "yes") {
+                if (isset($options->replace_orphaned_session) && $options->replace_orphaned_session == "yes") {
                     try {
                         $oldRegistration->getSession()->ping(5)
                             ->then(function ($res) use ($session, $errorMsg) {

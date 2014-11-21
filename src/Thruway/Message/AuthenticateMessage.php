@@ -24,7 +24,7 @@ class AuthenticateMessage extends Message
 
     /**
      * @param string $signature
-     * @param array $extra
+     * @param \stdClass $extra
      */
     public function __construct($signature, $extra = null)
     {
@@ -34,7 +34,7 @@ class AuthenticateMessage extends Message
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -55,7 +55,7 @@ class AuthenticateMessage extends Message
 
     /**
      * Get authentication signature
-     * 
+     *
      * @return mixed
      */
     public function getSignature()
@@ -65,7 +65,7 @@ class AuthenticateMessage extends Message
 
     /**
      * Get authentication extra
-     * 
+     *
      * @return array
      */
     public function getExtra()
@@ -74,15 +74,11 @@ class AuthenticateMessage extends Message
     }
 
     /**
-     * @param array $extra
+     * @param \stdClass | array $extra
      */
     public function setExtra($extra)
     {
-        if ($extra === null) {
-            $extra = new \stdClass();
-        }
-
-        $this->extra = $extra;
+        $this->extra = (object)$extra;
     }
 
     /**

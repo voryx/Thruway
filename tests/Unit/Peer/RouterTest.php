@@ -30,6 +30,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     public function setup()
     {
+        \Thruway\Logging\Logger::set(new \Psr\Log\NullLogger());
+
         $this->router = new \Thruway\Peer\Router();
 
 
@@ -643,6 +645,74 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         //Simulate a HelloMessage with an empty Realm
         $helloMessage = new \Thruway\Message\HelloMessage("", []);
         $router->onMessage($transport, $helloMessage);
+    }
+
+    /**
+     * Issue 53 - publishing inside of subscription event callback
+     * prevents other internal clients from receiving the published event
+     *
+     * @depends testStart
+     * @param \Thruway\Peer\Router $router
+     */
+    public function testIssue53(\Thruway\Peer\Router $router) {
+        $this->_callCount = 0;
+
+        $transport1 = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+            ->getMock();
+
+        $transport1->expects($this->exactly(3))
+            ->method('sendMessage')
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')],
+                [$this->callback(function ($arg) use ($router, $transport1) {
+                    $this->assertInstanceOf('\Thruway\Message\EventMessage', $arg);
+
+                    // publish while in the callback
+                    $publishMsg = new \Thruway\Message\PublishMessage(12346, (object)[], 'com.example.nowhere');
+                    $router->onMessage($transport1, $publishMsg);
+
+                    $this->_callCount = $this->_callCount + 1;
+                    return true;
+                })]
+            );
+
+        $transport2 = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+            ->getMock();
+
+        $transport2->expects($this->exactly(3))
+            ->method('sendMessage')
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')],
+                [$this->isInstanceOf('\Thruway\Message\EventMessage')]
+            );
+
+        $transportPublisher = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+            ->getMock();
+
+
+        $router->onOpen($transport1);
+        $router->onOpen($transport2);
+        $router->onOpen($transportPublisher);
+
+        // send in a few hellos
+        $helloMsg = new \Thruway\Message\HelloMessage("realm_issue53", (object)[]);
+
+        $router->onMessage($transport1, $helloMsg);
+        $router->onMessage($transport2, $helloMsg);
+        $router->onMessage($transportPublisher, $helloMsg);
+
+        // subscribe
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Common\Utils::getUniqueId(), (object)[], "com.example.issue53");
+
+        $router->onMessage($transport1, $subscribeMsg);
+        $router->onMessage($transport2, $subscribeMsg);
+
+        // publish to the topic from the publishing transport
+        $publishMsg = new \Thruway\Message\PublishMessage(12345, (object)[], 'com.example.issue53');
+
+        $router->onMessage($transportPublisher, $publishMsg);
     }
 
 }

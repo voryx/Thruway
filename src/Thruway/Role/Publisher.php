@@ -5,6 +5,7 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishedMessage;
@@ -31,6 +32,20 @@ class Publisher extends AbstractRole
     public function __construct()
     {
         $this->publishRequests = [];
+    }
+
+    /**
+     * Return supported features
+     *
+     * @return \stdClass
+     */
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->subscriber_blackwhite_listing = true;
+        $features->publisher_exclusion = true;
+
+        return $features;
     }
 
     /**
@@ -116,9 +131,11 @@ class Publisher extends AbstractRole
      */
     public function publish(ClientSession $session, $topicName, $arguments, $argumentsKw, $options)
     {
-        $requestId = Session::getUniqueId();
+        $options = (object)$options;
 
-        if (isset($options['acknowledge']) && $options['acknowledge'] === true) {
+        $requestId = Utils::getUniqueId();
+
+        if (isset($options->acknowledge) && $options->acknowledge === true) {
             $futureResult                      = new Deferred();
             $this->publishRequests[$requestId] = ['future_result' => $futureResult];
         }

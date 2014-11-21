@@ -32,7 +32,7 @@ class RegistrationTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0, $this->_registration->getCurrentCallCount());
 
         $callMsg = new \Thruway\Message\CallMessage(
-            \Thruway\Session::getUniqueId(),
+            \Thruway\Common\Utils::getUniqueId(),
             new \stdClass(),
             'test_procedure'
         );

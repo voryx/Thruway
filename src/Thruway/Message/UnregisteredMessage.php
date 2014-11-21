@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class UnregisteredMessage
  * Acknowledge sent by a Dealer to a Callee for successful unregistration.
@@ -9,15 +11,10 @@ namespace Thruway\Message;
  *
  * @package Thruway\Message
  */
-
 class UnregisteredMessage extends Message
 {
 
-    /**
-     *
-     * @var int
-     */
-    private $requestId;
+    use RequestTrait;
 
     /**
      * Constructor
@@ -31,18 +28,18 @@ class UnregisteredMessage extends Message
 
     /**
      * Create Unregisterd message from unregister message
-     * 
+     *
      * @param \Thruway\Message\UnregisterMessage $msg
      * @return \Thruway\Message\UnregisteredMessage
      */
-    public static function createFromUnregisterMessage(UnregisterMessage $msg) 
+    public static function createFromUnregisterMessage(UnregisterMessage $msg)
     {
         return new UnregisteredMessage($msg->getRequestId());
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -59,26 +56,6 @@ class UnregisteredMessage extends Message
     public function getAdditionalMsgFields()
     {
         return [$this->getRequestId()];
-    }
-
-    /**
-     * Set request ID
-     * 
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * Get request ID
-     * 
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
 }

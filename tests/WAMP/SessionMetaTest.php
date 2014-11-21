@@ -94,26 +94,26 @@ class SessionMetaTest extends PHPUnit_Framework_TestCase {
     public function testMetaWithSubscription() {
         $this->doTheStuff(true);
 
-        $this->assertTrue(is_array($this->_joinInfo));
-        $this->assertTrue(is_array($this->_leaveInfo));
-        $this->assertArrayHasKey("authid", $this->_joinInfo);
-        $this->assertArrayHasKey("authid", $this->_leaveInfo);
-        $this->assertArrayHasKey("authmethod", $this->_joinInfo);
-        $this->assertArrayHasKey("authmethod", $this->_leaveInfo);
-        $this->assertArrayHasKey("authrole", $this->_joinInfo);
-        $this->assertArrayHasKey("authrole", $this->_leaveInfo);
-        $this->assertArrayHasKey("session", $this->_joinInfo);
-        $this->assertArrayHasKey("session", $this->_leaveInfo);
-        $this->assertArrayHasKey("realm", $this->_joinInfo);
-        $this->assertArrayHasKey("realm", $this->_leaveInfo);
-        $this->assertArrayHasKey("authprovider", $this->_joinInfo);
-        $this->assertArrayHasKey("authprovider", $this->_leaveInfo);
-        $this->assertEquals("conn2user", $this->_joinInfo['authid']);
-        $this->assertEquals("conn2user", $this->_leaveInfo['authid']);
-        $this->assertEquals("testSimpleAuthRealm", $this->_joinInfo['realm']);
-        $this->assertEquals("testSimpleAuthRealm", $this->_leaveInfo['realm']);
-        $this->assertEquals("simplysimple", $this->_joinInfo['authmethod']);
-        $this->assertEquals("simplysimple", $this->_leaveInfo['authmethod']);
+        $this->assertTrue(is_object($this->_joinInfo));
+        $this->assertTrue(is_object($this->_leaveInfo));
+        $this->assertObjectHasAttribute("authid", $this->_joinInfo);
+        $this->assertObjectHasAttribute("authid", $this->_leaveInfo);
+        $this->assertObjectHasAttribute("authmethod", $this->_joinInfo);
+        $this->assertObjectHasAttribute("authmethod", $this->_leaveInfo);
+        $this->assertObjectHasAttribute("authrole", $this->_joinInfo);
+        $this->assertObjectHasAttribute("authrole", $this->_leaveInfo);
+        $this->assertObjectHasAttribute("session", $this->_joinInfo);
+        $this->assertObjectHasAttribute("session", $this->_leaveInfo);
+        $this->assertObjectHasAttribute("realm", $this->_joinInfo);
+        $this->assertObjectHasAttribute("realm", $this->_leaveInfo);
+        $this->assertObjectHasAttribute("authprovider", $this->_joinInfo);
+        $this->assertObjectHasAttribute("authprovider", $this->_leaveInfo);
+        $this->assertEquals("conn2user", $this->_joinInfo->authid);
+        $this->assertEquals("conn2user", $this->_leaveInfo->authid);
+        $this->assertEquals("testSimpleAuthRealm", $this->_joinInfo->realm);
+        $this->assertEquals("testSimpleAuthRealm", $this->_leaveInfo->realm);
+        $this->assertEquals("simplysimple", $this->_joinInfo->authmethod);
+        $this->assertEquals("simplysimple", $this->_leaveInfo->authmethod);
 
         $this->assertEquals(1, $this->_joinCount);
         $this->assertEquals(1, $this->_leaveCount);

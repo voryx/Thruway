@@ -6,7 +6,7 @@
  * For more information go to:
  * http://voryx.net/creating-internal-client-thruway/
  */
-class DisclosePublisherClient extends Thruway\Peer\Client
+class   DisclosePublisherClient extends Thruway\Peer\Client
 {
     /**
      * @var \Thruway\Peer\Router

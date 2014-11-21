@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class UnsubscribeMessage
  * Unsubscribe request sent by a Subscriber to a Broker to unsubscribe a subscription.
@@ -12,11 +14,7 @@ namespace Thruway\Message;
 class UnsubscribeMessage extends Message
 {
 
-    /**
-     *
-     * @var int
-     */
-    private $requestId;
+    use RequestTrait;
 
     /**
      *
@@ -32,16 +30,13 @@ class UnsubscribeMessage extends Message
      */
     public function __construct($requestId, $subscriptionId)
     {
-        parent::__construct();
-
         $this->setRequestId($requestId);
-
-        $this->subscriptionId = $subscriptionId;
+        $this->setSubscriptionId($subscriptionId);
     }
 
     /**
-     * Set subcription ID
-     * 
+     * Set subscription ID
+     *
      * @param int $subscriptionId
      */
     public function setSubscriptionId($subscriptionId)
@@ -50,8 +45,8 @@ class UnsubscribeMessage extends Message
     }
 
     /**
-     * Get subcription ID
-     * 
+     * Get subscription ID
+     *
      * @return int
      */
     public function getSubscriptionId()
@@ -61,7 +56,7 @@ class UnsubscribeMessage extends Message
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -78,26 +73,6 @@ class UnsubscribeMessage extends Message
     public function getAdditionalMsgFields()
     {
         return [$this->getRequestId(), $this->getSubscriptionId()];
-    }
-
-    /**
-     * Set request ID
-     * 
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * Get request ID
-     * 
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
 }

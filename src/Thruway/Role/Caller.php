@@ -6,6 +6,7 @@ namespace Thruway\Role;
 use Thruway\AbstractSession;
 use Thruway\CallResult;
 use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
@@ -34,6 +35,20 @@ class Caller extends AbstractRole
     public function __construct()
     {
         $this->callRequests = [];
+    }
+
+    /**
+     * Return supported features
+     *
+     * @return \stdClass
+     */
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->caller_identification = true;
+        $features->progressive_call_results = true;
+
+        return $features;
     }
 
     /**
@@ -69,7 +84,7 @@ class Caller extends AbstractRole
             $callResult = new CallResult($msg);
 
             $details = $msg->getDetails();
-            if (is_array($details) && isset($details['progress']) && $details['progress']) {
+            if (is_object($details) && isset($details->progress) && $details->progress) {
                 // TODO: what if we didn't want progress?
                 $futureResult->progress($callResult);
             } else {
@@ -137,14 +152,18 @@ class Caller extends AbstractRole
         //This promise gets resolved in Caller::processResult
         $futureResult = new Deferred();
 
-        $requestId = Session::getUniqueId();
+        $requestId = Utils::getUniqueId();
 
         $this->callRequests[$requestId] = [
             "procedure_name" => $procedureName,
             "future_result"  => $futureResult
         ];
 
-        if (!(is_array($options) && Message::isAssoc($options))) {
+        if (is_array($options)) {
+            $options = (object)$options;
+        }
+
+        if (!is_object($options)) {
             if ($options !== null) {
                 Logger::warning($this, "Options don't appear to be the correct type.");
             }

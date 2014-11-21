@@ -2,6 +2,9 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Message\Traits\RequestTrait;
+
 /**
  * Class CancelMessage
  * A Caller can cancel and issued call actively by sending a cancel message to the Dealer.
@@ -12,35 +15,24 @@ namespace Thruway\Message;
 class CancelMessage extends Message
 {
 
-    /**
-     *
-     * @var int
-     */
-    public $requestId;
-
-    /**
-     *
-     * @var array
-     */
-    public $options;
+    use RequestTrait;
+    use OptionsTrait;
 
     /**
      * Constructor
-     * 
+     *
      * @param int $requestId
-     * @param array $options
+     * @param \stdClass $options
      */
     public function __construct($requestId, $options)
     {
-        parent::__construct();
-
         $this->setRequestId($requestId);
         $this->setOptions($options);
     }
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     public function getMsgCode()
@@ -57,46 +49,6 @@ class CancelMessage extends Message
     public function getAdditionalMsgFields()
     {
         return [$this->getRequestId(), (object)$this->getOptions()];
-    }
-
-    /**
-     * Set request ID
-     * 
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * Get request ID
-     * 
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
-    }
-
-    /**
-     * Set options
-     * 
-     * @param array $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = $options;   
-    }
-
-    /**
-     * Get options
-     * 
-     * @return array
-     */
-    public function getOptions()
-    {
-        return $this->options;
     }
 
 }

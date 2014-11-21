@@ -2,6 +2,8 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\DetailsTrait;
+
 
 /**
  * Class GoodbyeMessage
@@ -13,43 +15,21 @@ namespace Thruway\Message;
 class GoodbyeMessage extends Message
 {
 
-    /**
-     * @var mixed
-     */
-    private $details;
+    use DetailsTrait;
+
     /**
      * @var string
      */
     private $reason;
 
     /**
-     * @param mixed $details
+     * @param \stdClass $details
      * @param string $reason
      */
     public function __construct($details, $reason)
     {
-        $this->details = $details;
-        $this->reason  = $reason;
-    }
-
-    /**
-     * Set details
-     * 
-     * @param mixed $details
-     */
-    public function setDetails($details)
-    {
-        $this->details = $details;
-    }
-
-    /**
-     * Get details
-     * 
-     * @return mixed
-     */
-    public function getDetails()
-    {
-        return $this->details;
+        $this->setDetails($details);
+        $this->setReason($reason);
     }
 
     /**

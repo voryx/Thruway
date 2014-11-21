@@ -2,7 +2,7 @@
 
 namespace Thruway\Peer;
 
-use Thruway\ClientAuthenticationInterface;
+use Thruway\Authentication\ClientAuthenticationInterface;
 use Thruway\ClientSession;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
@@ -46,7 +46,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     private $roles;
 
     /**
-     * @var \Thruway\ClientAuthenticationInterface[]
+     * @var \Thruway\Authentication\ClientAuthenticationInterface[]
      */
     private $clientAuthenticators;
 
@@ -206,7 +206,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     /**
      * Add client authenticator
      *
-     * @param \Thruway\ClientAuthenticationInterface $ca
+     * @param \Thruway\Authentication\ClientAuthenticationInterface $ca
      */
     public function addClientAuthenticator(ClientAuthenticationInterface $ca)
     {
@@ -260,26 +260,31 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function startSession(ClientSession $session)
     {
-        $details = [
-            "roles" => [
-                "publisher"  => new \stdClass(),
-                "subscriber" => new \stdClass(),
-                "caller"     => new \stdClass(),
-                "callee"     => new \stdClass(),
-            ]
-        ];
-
-        $details["authmethods"] = $this->authMethods;
-        $details["authid"]      = $this->authId;
-
         $this->addRole(new Callee())
             ->addRole(new Caller())
             ->addRole(new Publisher())
             ->addRole(new Subscriber());
 
+        $details = (object)[
+            "roles" => $this->getRoleInfoObject()
+        ];
+
+        $details->authmethods = $this->authMethods;
+        $details->authid      = $this->authId;
+
         $session->setRealm($this->realm);
 
-        $session->sendMessage(new HelloMessage($session->getRealm(), $details, []));
+        $session->sendMessage(new HelloMessage($session->getRealm(), $details));
+    }
+
+    public function getRoleInfoObject()
+    {
+        return (object)[
+            "publisher"  => (object)["features" => $this->getPublisher()->getFeatures()],
+            "subscriber" => (object)["features" => $this->getSubscriber()->getFeatures()],
+            "caller"     => (object)["features" => $this->getCaller()->getFeatures()],
+            "callee"     => (object)["features" => $this->getCallee()->getFeatures()]
+        ];
     }
 
     /**
@@ -393,7 +398,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
     public function processGoodbye(ClientSession $session, GoodbyeMessage $msg)
     {
         if (!$session->isGoodbyeSent()) {
-            $goodbyeMsg = new GoodbyeMessage([], "wamp.error.goodbye_and_out");
+            $goodbyeMsg = new GoodbyeMessage(new \stdClass(), "wamp.error.goodbye_and_out");
             $session->sendMessage($goodbyeMsg);
             $session->setGoodbyeSent(true);
         }

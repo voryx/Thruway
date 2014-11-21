@@ -8,14 +8,13 @@ use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\TimerInterface;
 use React\Promise\Deferred;
 use Thruway\Message\Message;
-use Thruway\Serializer\SerializerInterface;
 
 /**
  * Class PawlTransport
  *
  * @package Thruway\Transport
  */
-class PawlTransport implements TransportInterface
+class PawlTransport extends AbstractTransport
 {
 
     /**
@@ -29,24 +28,9 @@ class PawlTransport implements TransportInterface
     private $pingRequests;
 
     /**
-     * @var \Thruway\Serializer\SerializerInterface
-     */
-    private $serializer;
-
-    /**
      * @var \Ratchet\Client\WebSocket
      */
     private $conn;
-
-    /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    private $loop;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
@@ -98,34 +82,33 @@ class PawlTransport implements TransportInterface
      */
     public function ping($timeout = 10)
     {
-        $payload = $this->pingSeq;
-
-        $this->conn->send(new Frame($payload, true, Frame::OP_PING));
-
-        $seq = $this->pingSeq;
-
-        $this->pingSeq++;
-
-        if ($timeout > 0) {
-            $timer = $this->loop->addTimer($timeout, function () use ($seq) {
-                if (isset($this->pingRequests[$seq])) {
-                    $this->pingRequests[$seq]['deferred']->reject('timeout');
-                    unset($this->pingRequests[$seq]);
-                }
-
-            });
-
-            $deferred = new Deferred();
-
-            $this->pingRequests[$seq] = [
-                'seq'      => $seq,
-                'deferred' => $deferred,
-                'timer'    => $timer
-            ];
-
-            return $deferred->promise();
+        if ($timeout <= 0) {
+            return false;
         }
 
+        $payload = $this->pingSeq;
+        $seq     = $this->pingSeq;
+
+        $this->conn->send(new Frame($payload, true, Frame::OP_PING));
+        $this->pingSeq++;
+
+        $timer = $this->loop->addTimer($timeout, function () use ($seq) {
+            if (isset($this->pingRequests[$seq])) {
+                $this->pingRequests[$seq]['deferred']->reject('timeout');
+                unset($this->pingRequests[$seq]);
+            }
+
+        });
+
+        $deferred = new Deferred();
+
+        $this->pingRequests[$seq] = [
+            'seq'      => $seq,
+            'deferred' => $deferred,
+            'timer'    => $timer
+        ];
+
+        return $deferred->promise();
 
     }
 
@@ -149,44 +132,6 @@ class PawlTransport implements TransportInterface
 
         // all sequence numbers before this one are probably no good anymore
         // and actually are probably errors
-    }
-
-    /**
-     * Set serializer
-     *
-     * @param \Thruway\Serializer\SerializerInterface $serializer
-     */
-    public function setSerializer(SerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
-    }
-
-    /**
-     * Get serializer
-     *
-     * @return \Thruway\Serializer\SerializerInterface
-     */
-    public function getSerializer()
-    {
-        return $this->serializer;
-    }
-
-    /**
-     * Checks to see if a transport is trusted
-     *
-     * @return boolean
-     */
-    public function isTrusted()
-    {
-        return (boolean)$this->trusted;
-    }
-
-    /**
-     * @param boolean $trusted\
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
     }
 
 } 

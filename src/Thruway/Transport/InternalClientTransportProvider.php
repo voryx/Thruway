@@ -3,9 +3,7 @@
 namespace Thruway\Transport;
 
 
-use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
 
@@ -14,28 +12,13 @@ use React\EventLoop\LoopInterface;
  *
  * @package Thruway\Transport
  */
-class InternalClientTransportProvider implements TransportProviderInterface
+class InternalClientTransportProvider extends AbstractTransportProvider
 {
 
     /**
      * @var \Thruway\Peer\AbstractPeer
      */
-    private $peer;
-
-    /**
-     * @var \Thruway\Peer\AbstractPeer
-     */
     private $internalClient;
-
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
-    private $manager;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
@@ -45,11 +28,11 @@ class InternalClientTransportProvider implements TransportProviderInterface
     public function __construct(AbstractPeer $internalClient)
     {
         $this->internalClient = $internalClient;
+        $this->manager        = new ManagerDummy();
+        $this->trusted        = true;
 
         $this->internalClient->addTransportProvider(new DummyTransportProvider());
 
-        $this->manager = new ManagerDummy();
-        $this->trusted = true;
     }
 
     /**
@@ -87,32 +70,4 @@ class InternalClientTransportProvider implements TransportProviderInterface
         $this->internalClient->start(false);
     }
 
-    /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     */
-    public function setManager(ManagerInterface $manager)
-    {
-        $this->manager = $manager;
-        Logger::info($this, "Manager attached to InternalClientTransportProvider");
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
-    }
 }

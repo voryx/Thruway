@@ -5,6 +5,7 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\Call;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
@@ -62,6 +63,15 @@ class Dealer extends AbstractRole
         $this->registrationsBySession = new \SplObjectStorage();
     }
 
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->caller_identification = true;
+        $features->progressive_call_results = true;
+
+        return $features;
+    }
+
     /**
      * process message
      *
@@ -99,7 +109,7 @@ class Dealer extends AbstractRole
     private function processRegister(Session $session, RegisterMessage $msg)
     {
         // check for valid URI
-        if (!static::uriIsValid($msg->getProcedureName())) {
+        if (!Utils::uriIsValid($msg->getProcedureName())) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.invalid_uri'));
             return;
         }
@@ -149,7 +159,8 @@ class Dealer extends AbstractRole
                     // Unregistration was successful - remove from this sessions
                     // list of registrations
                     if ($this->registrationsBySession->contains($session) &&
-                        in_array($procedure, $this->registrationsBySession[$session])) {
+                        in_array($procedure, $this->registrationsBySession[$session])
+                    ) {
                         $registrationsInSession = $this->registrationsBySession[$session];
                         array_splice($registrationsInSession, array_search($procedure, $registrationsInSession), 1);
                     }
@@ -171,7 +182,7 @@ class Dealer extends AbstractRole
      */
     private function processCall(Session $session, CallMessage $msg)
     {
-        if (!static::uriIsValid($msg->getProcedureName())) {
+        if (!Utils::uriIsValid($msg->getProcedureName())) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.invalid_uri'));
             return;
         }
@@ -207,35 +218,47 @@ class Dealer extends AbstractRole
         /* @var $call Call */
         $call = isset($this->callIndex[$msg->getRequestId()]) ? $this->callIndex[$msg->getRequestId()] : null;
 
-        if ($call) {
-            $keepIndex = $call->processYield($session, $msg);
-
-            if (!$keepIndex) {
-                unset($this->callIndex[$msg->getRequestId()]);
-            }
-
-            /* @var $procedure \Thruway\Procedure */
-            $procedure = isset($this->procedures[$call->getCallMessage()->getUri()]) ? $this->procedures[$call->getCallMessage()->getUri()] : null;
-            if ($procedure && $procedure->getAllowMultipleRegistrations()) {
-                $procedure->processQueue();
-            }
-
-            //Process queues on other registrations if we can take more requests
-            if ($session->getPendingCallCount() == 0 && $this->registrationsBySession->contains($session)) {
-                $registrationsForThisSession = $this->registrationsBySession[$session];
-                /** @var Registration $registration */
-                foreach ($registrationsForThisSession as $registration) {
-                    if ($registration->getAllowMultipleRegistrations()) {
-                        // find the procedure for this registration
-                        $procedure = $this->procedures[$registration->getProcedureName()];
-                        $procedure->processQueue();
-                    }
-                }
-            }
+        if (!$call) {
+            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
+            Logger::error($this, "Was expecting a call");
+            return;
         }
 
-        // TODO: This is an error - can I return a yield error?
+        $keepIndex = $call->processYield($session, $msg);
 
+        if (!$keepIndex) {
+            unset($this->callIndex[$msg->getRequestId()]);
+        }
+
+        /* @var $procedure \Thruway\Procedure */
+        $procedure = isset($this->procedures[$call->getCallMessage()->getUri()]) ? $this->procedures[$call->getCallMessage()->getUri()] : null;
+        if ($procedure && $procedure->getAllowMultipleRegistrations()) {
+            $procedure->processQueue();
+        }
+
+        //Process queues on other registrations if we can take more requests
+        if ($session->getPendingCallCount() == 0 && $this->registrationsBySession->contains($session)) {
+            $this->processQueue($session);
+        }
+
+    }
+
+    /**
+     * @param Session $session
+     */
+    private function processQueue(Session $session)
+    {
+        $registrationsForThisSession = $this->registrationsBySession[$session];
+        /** @var Registration $registration */
+        foreach ($registrationsForThisSession as $registration) {
+            if ($registration->getAllowMultipleRegistrations()) {
+
+                // find the procedure for this registration
+                /** @var $procedure Procedure */
+                $procedure = $this->procedures[$registration->getProcedureName()];
+                $procedure->processQueue();
+            }
+        }
     }
 
     /**
@@ -258,7 +281,6 @@ class Dealer extends AbstractRole
      *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\ErrorMessage $msg
-     * @return boolean|void
      */
     private function processInvocationError(Session $session, ErrorMessage $msg)
     {
@@ -272,7 +294,7 @@ class Dealer extends AbstractRole
             $errorMsg->setErrorURI('wamp.error.no_such_procedure');
             $session->sendMessage($errorMsg);
 
-            return false;
+            return;
         }
 
         $call->getRegistration()->removeCall($call);

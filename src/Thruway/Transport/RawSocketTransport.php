@@ -3,13 +3,10 @@
 namespace Thruway\Transport;
 
 use React\EventLoop\LoopInterface;
-use React\Socket\Connection;
 use React\Stream\Stream;
-use Thruway\Exception\PingNotSupportedException;
 use Thruway\Logging\Logger;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
-use Thruway\Serializer\SerializerInterface;
 
 /**
  * Class RawSocketTransport
@@ -18,23 +15,13 @@ use Thruway\Serializer\SerializerInterface;
  *
  * @package Thruway\Transport
  */
-class RawSocketTransport implements TransportInterface
+class RawSocketTransport extends AbstractTransport
 {
 
     /**
      * @var \React\Stream\Stream
      */
     private $conn;
-
-    /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    private $loop;
-
-    /**
-     * @var \Thruway\Serializer\SerializerInterface
-     */
-    private $serializer;
 
     /**
      * This buffers the message that is coming in
@@ -59,11 +46,6 @@ class RawSocketTransport implements TransportInterface
      * @var \Thruway\Peer\AbstractPeer
      */
     private $peer;
-
-    /**
-     * @var boolean
-     */
-    private $trusted;
 
     /**
      * Constructor
@@ -137,26 +119,6 @@ class RawSocketTransport implements TransportInterface
     }
 
     /**
-     * Get serializer
-     *
-     * @return \Thruway\Serializer\SerializerInterface
-     */
-    public function getSerializer()
-    {
-        return $this->serializer;
-    }
-
-    /**
-     * Set serializer
-     *
-     * @param \Thruway\Serializer\SerializerInterface $serializer
-     */
-    public function setSerializer(SerializerInterface $serializer)
-    {
-        $this->serializer = $serializer;
-    }
-
-    /**
      * Get connection
      *
      * @return \React\Stream\Stream
@@ -166,15 +128,6 @@ class RawSocketTransport implements TransportInterface
         return $this->conn;
     }
 
-    /**
-     * Get loop
-     *
-     * @return \React\EventLoop\LoopInterface
-     */
-    public function getLoop()
-    {
-        return $this->loop;
-    }
 
     /**
      * Get transport details
@@ -214,34 +167,5 @@ class RawSocketTransport implements TransportInterface
     {
         $this->getConn()->close();
     }
-
-    /**
-     * Ping
-     *
-     * @throws \Thruway\Exception\PingNotSupportedException
-     */
-    public function ping()
-    {
-        throw new PingNotSupportedException();
-    }
-
-    /**
-     * Checks to see if a transport is trusted
-     *
-     * @return boolean
-     */
-    public function isTrusted()
-    {
-        return (boolean)$this->trusted;
-    }
-
-    /**
-     * @param boolean $trusted
-     */
-    public function setTrusted($trusted)
-    {
-        $this->trusted = $trusted;
-    }
-
 
 }

@@ -2,6 +2,11 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\ArgumentsTrait;
+use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Message\Traits\RequestTrait;
+
+
 /**
  * Class Publish message
  * Sent by a Publisher to a Broker to publish an event.
@@ -14,17 +19,11 @@ namespace Thruway\Message;
 class PublishMessage extends Message implements ActionMessageInterface
 {
 
-    /**
-     * using arguments trait
-     * @see \Thruway\Message\ArgumentsTrait
-     */
+    use RequestTrait;
+    use OptionsTrait {
+        setOptions as traitSetOptions;
+    }
     use ArgumentsTrait;
-
-    /**
-     *
-     * @var mixed
-     */
-    private $options;
 
     /**
      *
@@ -32,30 +31,43 @@ class PublishMessage extends Message implements ActionMessageInterface
      */
     private $topicName;
 
+
     /**
-     *
-     * @var int
+     * @var boolean
      */
-    private $requestId;
+    private $acknowledge;
+
+    /**
+     * @var boolean
+     */
+    private $exclude_me;
+
+    /**
+     * @var array
+     */
+    private $exclude;
+
+    /**
+     * @var array
+     */
+    private $eligible;
 
     /**
      * Constructor
      *
      * @param int $requestId
-     * @param mixed $options
+     * @param \stdClass $options
      * @param string $topicName
      * @param mixed $arguments
      * @param mixed $argumentsKw
      */
     public function __construct($requestId, $options, $topicName, $arguments = null, $argumentsKw = null)
     {
-        parent::__construct();
-
         $this->setRequestId($requestId);
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
         $this->setOptions($options);
-        $this->topicName = $topicName;
+        $this->setTopicName($topicName);
     }
 
     /**
@@ -76,37 +88,11 @@ class PublishMessage extends Message implements ActionMessageInterface
      */
     public function getAdditionalMsgFields()
     {
-        if ($this->getOptions() === null) {
-            $this->setOptions(new \stdClass());
-        }
 
-        $options = (object)$this->getOptions();
+        $a = [$this->getRequestId(), $this->getOptions(), $this->getTopicName()];
 
-        $a = [$this->getRequestId(), $options, $this->getTopicName()];
+        return array_merge($a, $this->getArgumentsForSerialization());
 
-        $a = array_merge($a, $this->getArgumentsForSerialization());
-
-        return $a;
-    }
-
-    /**
-     * Set options
-     *
-     * @param mixed $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = (array)$options;
-    }
-
-    /**
-     * Get options
-     *
-     * @return mixed
-     */
-    public function getOptions()
-    {
-        return $this->options;
     }
 
     /**
@@ -127,26 +113,6 @@ class PublishMessage extends Message implements ActionMessageInterface
     public function getTopicName()
     {
         return $this->topicName;
-    }
-
-    /**
-     * Set request ID
-     *
-     * @param int $requestId
-     */
-    public function setRequestId($requestId)
-    {
-        $this->requestId = $requestId;
-    }
-
-    /**
-     * Get request ID
-     *
-     * @return int
-     */
-    public function getRequestId()
-    {
-        return $this->requestId;
     }
 
     /**
@@ -171,4 +137,72 @@ class PublishMessage extends Message implements ActionMessageInterface
     }
 
 
+    /**
+     * @param $options
+     */
+    public function setOptions($options)
+    {
+        $this->traitSetOptions($options);
+
+        //Get the options that have been cast to an object
+        $options = $this->getOptions();
+
+        $this->acknowledge = isset($options->acknowledge) && $options->acknowledge === true ? true : false;
+        $this->exclude_me  = isset($options->exclude_me) && $options->exclude_me === false ? false : true;
+        $this->exclude     = isset($options->exclude) && is_array($options->exclude) ? $options->exclude : [];
+        $this->eligible    = isset($options->eligible) && is_array($options->eligible) ? $options->eligible : null;
+
+    }
+
+    /**
+     * @return boolean
+     */
+    public function acknowledge()
+    {
+        return $this->acknowledge;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function excludeMe()
+    {
+        return $this->exclude_me;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExclude()
+    {
+        return $this->exclude;
+    }
+
+    /**
+     * @return array | null
+     */
+    public function getEligible()
+    {
+        return $this->eligible;
+    }
+
+    /**
+     * @param $sessionId
+     * @return bool
+     */
+    public function isWhiteListed($sessionId)
+    {
+        return null === $this->getEligible() || in_array($sessionId, $this->getEligible());
+    }
+
+    /**
+     * @param $sessionId
+     * @return bool
+     */
+    public function isExcluded($sessionId)
+    {
+        return in_array($sessionId, $this->getExclude());
+    }
+
 }
+

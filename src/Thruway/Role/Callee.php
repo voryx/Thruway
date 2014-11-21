@@ -6,6 +6,7 @@ use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\InvocationMessage;
@@ -41,6 +42,19 @@ class Callee extends AbstractRole
         $this->registrations = [];
     }
 
+    /**
+     * Return supported features
+     *
+     * @return \stdClass
+     */
+    public function getFeatures() {
+        $features = new \stdClass();
+
+        $features->caller_identification = true;
+        $features->progressive_call_results = true;
+
+        return $features;
+    }
 
     /**
      * Handle process reveiced message
@@ -191,7 +205,8 @@ class Callee extends AbstractRole
                 $session->sendMessage($errorMsg);
             },
             function ($results) use ($msg, $session, $registration) {
-                $options = ["progress" => true];
+                $options = new \stdClass();
+                $options->progress = true;
                 if ($results instanceof Result) {
                     $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
                         $results->getArgumentsKw());
@@ -335,8 +350,8 @@ class Callee extends AbstractRole
     {
         $futureResult = new Deferred();
 
-        $requestId    = Session::getUniqueId();
-        $options      = isset($options) ? $options : new \stdClass();
+        $requestId    = Utils::getUniqueId();
+        $options      = isset($options) ? (object) $options : new \stdClass();
         $registration = [
             "procedure_name" => $procedureName,
             "callback"       => $callback,
@@ -403,7 +418,7 @@ class Callee extends AbstractRole
             // good to go - so maybe still send the unregister?
         }
 
-        $requestId = Session::getUniqueId();
+        $requestId = Utils::getUniqueId();
 
         // save the request id so we can find this in the registration
         // list to call the deferred and remove it from the list

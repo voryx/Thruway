@@ -18,7 +18,7 @@ class RegisterMessageTest extends \PHPUnit_Framework_TestCase
     {
         $msg = new RegisterMessage(12345, [], 'com.test.register');
 
-        $this->assertTrue(is_array($msg->getOptions()));
+        $this->assertTrue(is_object($msg->getOptions()));
 
         $expectedJson = '[64,12345,{},"com.test.register"]';
 
@@ -29,7 +29,7 @@ class RegisterMessageTest extends \PHPUnit_Framework_TestCase
     {
         $msg = new RegisterMessage(12345, ["disclose_caller" => true], 'com.test.register');
 
-        $this->assertTrue(is_array($msg->getOptions()));
+        $this->assertTrue(is_object($msg->getOptions()));
 
         $expectedJson = '[64,12345,{"disclose_caller":true},"com.test.register"]';
 
@@ -42,7 +42,7 @@ class RegisterMessageTest extends \PHPUnit_Framework_TestCase
 
         $msg = new RegisterMessage(12345, $options, 'com.test.register');
 
-        $this->assertTrue(is_array($msg->getOptions()));
+        $this->assertTrue(is_object($msg->getOptions()));
 
         $expectedJson = '[64,12345,{},"com.test.register"]';
 
@@ -57,7 +57,7 @@ class RegisterMessageTest extends \PHPUnit_Framework_TestCase
 
         $msg = new RegisterMessage(12345, $options, 'com.test.register');
 
-        $this->assertTrue(is_array($msg->getOptions()));
+        $this->assertTrue(is_object($msg->getOptions()));
 
         $expectedJson = '[64,12345,{"disclose_caller":true},"com.test.register"]';
 

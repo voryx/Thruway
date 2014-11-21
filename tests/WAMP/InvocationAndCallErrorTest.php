@@ -132,9 +132,9 @@ class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
 
         $argsKw = $this->_testResult->getArgumentsKw();
 
-        $this->assertEquals("alpha", $argsKw['a']);
-        $this->assertEquals("bravo", $argsKw['b']);
-        $this->assertEquals("charlie", $argsKw['c']);
+        $this->assertEquals("alpha", $argsKw->a);
+        $this->assertEquals("bravo", $argsKw->b);
+        $this->assertEquals("charlie", $argsKw->c);
     }
 
     public function testCallWithResultWithPromise() {
@@ -180,9 +180,9 @@ class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
 
         $argsKw = $this->_testResult->getArgumentsKw();
 
-        $this->assertEquals("alpha", $argsKw['a']);
-        $this->assertEquals("bravo", $argsKw['b']);
-        $this->assertEquals("charlie", $argsKw['c']);
+        $this->assertEquals("alpha", $argsKw->a);
+        $this->assertEquals("bravo", $argsKw->b);
+        $this->assertEquals("charlie", $argsKw->c);
 
 
     }

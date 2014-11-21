@@ -4,6 +4,7 @@ namespace Thruway;
 
 
 use Thruway\Authentication\AuthenticationDetails;
+use Thruway\Common\Utils;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\Message;
@@ -44,6 +45,11 @@ class Session extends AbstractSession
     private $pendingCallCount;
 
     /**
+     * @var \stdClass|null
+     */
+    private $roleFeatures;
+
+    /**
      * Constructor
      *
      * @param \Thruway\Transport\TransportInterface $transport
@@ -53,7 +59,7 @@ class Session extends AbstractSession
     {
         $this->transport             = $transport;
         $this->state                 = static::STATE_PRE_HELLO;
-        $this->sessionId             = Session::getUniqueId();
+        $this->sessionId             = Utils::getUniqueId();
         $this->realm                 = null;
         $this->messagesSent          = 0;
         $this->sessionStart          = new \DateTime();
@@ -97,17 +103,6 @@ class Session extends AbstractSession
         }
     }
 
-    /**
-     * Generate a unique id for sessions and requests
-     * @return mixed
-     */
-    public static function getUniqueId()
-    {
-        $filter      = 0x1fffffffffffff; // 53 bits
-        $randomBytes = openssl_random_pseudo_bytes(8);
-        list($high, $low) = array_values(unpack("N2", $randomBytes));
-        return abs(($high << 32 | $low) & $filter);
-    }
 
     /**
      * Set manager
@@ -210,12 +205,13 @@ class Session extends AbstractSession
         }
 
         return [
-            "realm"        => $this->getRealm()->getRealmName(),
-            "authprovider" => null,
-            "authid"       => $authId,
-            "authrole"     => "none",
-            "authmethod"   => $authMethod,
-            "session"      => $this->getSessionId()
+            "realm"         => $this->getRealm()->getRealmName(),
+            "authprovider"  => null,
+            "authid"        => $authId,
+            "authrole"      => "none",
+            "authmethod"    => $authMethod,
+            "session"       => $this->getSessionId(),
+            "role_features" => $this->getRoleFeatures()
         ];
     }
 
@@ -252,5 +248,21 @@ class Session extends AbstractSession
             return 0;
         }
         return $this->pendingCallCount--;
+    }
+
+    /**
+     * @return null|\stdClass
+     */
+    public function getRoleFeatures()
+    {
+        return $this->roleFeatures;
+    }
+
+    /**
+     * @param null|\stdClass $roleFeatures
+     */
+    public function setRoleFeatures($roleFeatures)
+    {
+        $this->roleFeatures = $roleFeatures;
     }
 }
