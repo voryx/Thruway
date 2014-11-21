@@ -50,8 +50,6 @@ class ThruwayClientCommand extends ContainerAwareCommand
             $internalTransportProvider = new InternalClientTransportProvider($client);
             $server->addTransportProvider($internalTransportProvider);
 
-            $client->setLogger(new ConsoleLogger());
-
             $output->writeln("You can connect to this server on 'ws://{$config['router']['ip']}:{$config['router']['port']}' with the realm '{$config['realm']}'");
 
             $server->start();
