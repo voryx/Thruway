@@ -70,7 +70,7 @@ You can also tag services with `thruway.resource` and any annotation will get pi
 #### Register RPC
 
 ```php
-    use Voryx\ThruwayBundle\Annotation\RPC;
+    use Voryx\ThruwayBundle\Annotation\Register;
     
     /**
      *
