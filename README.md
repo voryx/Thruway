@@ -10,7 +10,6 @@ Note:  This project is still undergoing a lot of changes, so the API will change
 
 Download the Thruway Bundle (and dependancies)
 
-      $ php composer.phar require "ratchet/pawl":"dev-master"
       $ php composer.phar require "voryx/thruway":"dev-master"
       $ php composer.phar require "voryx/thruway-bundle":"dev-master"
       
