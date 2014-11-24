@@ -43,8 +43,8 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
             $helloMsg = $args[0];
 
             $authid = "";
-            if (isset($helloMsg->getDetails()['authid'])) {
-                $authid = $helloMsg->getDetails()['authid'];
+            if (isset($helloMsg->getDetails()->authid)) {
+                $authid = $helloMsg->getDetails()->authid;
             } else {
                 return ["ERROR"];
             }
