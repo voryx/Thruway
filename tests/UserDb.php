@@ -22,7 +22,7 @@ class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
 
     /**
      * Add new user
-     * 
+     *
      * @param string $userName
      * @param string $password
      * @param string $salt
@@ -30,7 +30,7 @@ class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
     function add($userName, $password, $salt = null)
     {
         if ($salt !== null) {
-            $key = \Thruway\Authentication\WampCraAuthProvider::getDerivedKey($password, $salt);
+            $key = \Thruway\Common\Utils::getDerivedKey($password, $salt);
         } else {
             $key = $password;
         }
@@ -40,7 +40,7 @@ class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
 
     /**
      * Get user by username
-     * 
+     *
      * @param string $authId Username
      * @return boolean
      */

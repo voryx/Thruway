@@ -30,7 +30,7 @@ class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
     function add($userName, $password, $salt = null)
     {
         if ($salt !== null) {
-            $key = \Thruway\Authentication\WampCraAuthProvider::getDerivedKey($password, $salt);
+            $key = \Thruway\Common\Utils::getDerivedKey($password, $salt);
         } else {
             $key = $password;
         }

@@ -3,6 +3,7 @@
 namespace Thruway\Authentication;
 
 
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
@@ -92,7 +93,7 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
                 }
             }
 
-            $keyToUse = $this->getDerivedKey($this->key, $salt, $iterations, $keyLen);
+            $keyToUse = Utils::getDerivedKey($this->key, $salt, $iterations, $keyLen);
         }
 
         $token = base64_encode(hash_hmac('sha256', $challenge, $keyToUse, true));
@@ -102,20 +103,6 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
         Logger::debug($this, "returning: " . json_encode($authMessage));
 
         return $authMessage;
-    }
-
-    /**
-     * Get Derived Key
-     *
-     * @param string $key
-     * @param string $salt
-     * @param int $iterations
-     * @param int $keyLen
-     * @return string
-     */
-    private function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32)
-    {
-        return base64_encode(hash_pbkdf2('sha256', $key, $salt, $iterations, $keyLen, true));;
     }
 
     /**
