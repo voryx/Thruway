@@ -52,40 +52,41 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
         Logger::info($this, "Got challenge");
         Logger::debug($this, "Challenge Message: " . json_encode($msg));
 
+
         if (!in_array($msg->getAuthMethod(), $this->getAuthMethods())) {
             //throw new \Exception("method isn't in methods");
             return false;
         }
 
-        if (!is_array($msg->getDetails())) {
+        $details = $msg->getDetails();
+        if (!is_object($details)) {
             Logger::info($this, "No details sent with challenge");
             return false;
         }
 
-        $challenge = '';
-        if (isset($msg->getDetails()['challenge'])) {
-            $challenge = $msg->getDetails()['challenge'];
+        if (isset($details->challenge)) {
+            $challenge = $details->challenge;
         } else {
             Logger::info($this, "No challenge for wampcra?");
             return false;
         }
 
         $keyToUse = $this->key;
-        if (isset($msg->getDetails()['salt'])) {
+        if (isset($details->salt)) {
             // we need a salted key
-            $salt   = $msg->getDetails()['salt'];
+            $salt   = $details->salt;
             $keyLen = 32;
-            if (isset($msg->getDetails()['keylen'])) {
-                if (is_numeric($msg->getDetails()['keylen'])) {
-                    $keyLen = $msg->getDetails()['keylen'];
+            if (isset($details->keylen)) {
+                if (is_numeric($details->keylen)) {
+                    $keyLen = $details->keylen;
                 } else {
                     Logger::error($this, "keylen is not numeric.");
                 }
             }
             $iterations = 1000;
-            if (isset($msg->getDetails()['iterations'])) {
-                if (is_numeric($msg->getDetails()['iterations'])) {
-                    $iterations = $msg->getDetails()['iterations'];
+            if (isset($details->iterations)) {
+                if (is_numeric($details->iterations)) {
+                    $iterations = $details->iterations;
                 } else {
                     Logger::error($this, "iterations is not numeric.");
                 }
