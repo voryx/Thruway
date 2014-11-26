@@ -126,9 +126,9 @@ class Connection implements EventEmitterInterface
 
     private function handleOnOpen()
     {
-        $this->client->on('open', function (ClientSession $session, TransportInterface $transport) {
+        $this->client->on('open', function (ClientSession $session, TransportInterface $transport, $details) {
             $this->transport = $transport;
-            $this->emit('open', [$session]);
+            $this->emit('open', [$session, $transport, $details]);
         });
     }
 

@@ -350,7 +350,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
         Logger::info($this, "We have been welcomed...");
         //TODO: I'm sure that there are some other things that we need to do here
         $session->setSessionId($msg->getSessionId());
-        $this->emit('open', [$session, $this->transport]);
+        $this->emit('open', [$session, $this->transport, $msg->getDetails()]);
 
         $session->setState(Session::STATE_UP);
     }
