@@ -5,7 +5,7 @@ use Thruway\Message\ChallengeMessage;
 /**
  * Class SimpleClientAuth
  */
-class SimpleClientAuth implements \Thruway\ClientAuthenticationInterface
+class SimpleClientAuth implements \Thruway\Authentication\ClientAuthenticationInterface
 {
 
     /**

@@ -99,7 +99,7 @@ class WampCraTest extends PHPUnit_Framework_TestCase
 
         $conn->open();
 
-        $this->assertEquals("bad.login", $this->_error);
+        $this->assertEquals("thruway.error.authentication_failure", $this->_error);
         $this->assertNull($this->_result);
     }
 
@@ -121,7 +121,7 @@ class WampCraTest extends PHPUnit_Framework_TestCase
 
         $conn->open();
 
-        $this->assertEquals("bad.login", $this->_error);
+        $this->assertEquals("thruway.error.authentication_failure", $this->_error);
         $this->assertNull($this->_result);
     }
 

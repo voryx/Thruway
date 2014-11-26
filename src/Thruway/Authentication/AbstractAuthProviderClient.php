@@ -3,6 +3,7 @@
 namespace Thruway\Authentication;
 
 use React\EventLoop\LoopInterface;
+use Thruway\ClientSession;
 use Thruway\Logging\Logger;
 use Thruway\Peer\Client;
 
@@ -55,42 +56,37 @@ abstract class AbstractAuthProviderClient extends Client
     /**
      * Handles session start
      *
-     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportProviderInterface $transport
      */
-    public function onSessionStart($session, $transport)
+    public function onSessionStart(ClientSession $session, $transport)
     {
-        $this->getCallee()->register(
-            $session,
+        $session->register(
             "thruway.auth.{$this->getMethodName()}.onhello",
             [$this, 'processHello'],
             ["replace_orphaned_session" => "yes"]
         )
             ->then(function () use ($session) {
-                $this->getCallee()->register(
-                    $session,
+                $session->register(
                     "thruway.auth.{$this->getMethodName()}.onauthenticate",
                     [$this, 'preProcessAuthenticate'],
                     ["replace_orphaned_session" => "yes"]
-                )
-                    ->then(function () use ($session) {
+                )->then(function () use ($session) {
 
-                        $registrations                 = new \stdClass();
-                        $registrations->onhello        = "thruway.auth.{$this->getMethodName()}.onhello";
-                        $registrations->onauthenticate = "thruway.auth.{$this->getMethodName()}.onauthenticate";
+                    $registrations                 = new \stdClass();
+                    $registrations->onhello        = "thruway.auth.{$this->getMethodName()}.onhello";
+                    $registrations->onauthenticate = "thruway.auth.{$this->getMethodName()}.onauthenticate";
 
-                        $this->getCaller()->call($session,
-                            'thruway.auth.registermethod',
-                            [
-                                $this->getMethodName(),
-                                $registrations,
-                                $this->getAuthRealms()
-                            ]
-                        )
-                            ->then(function ($args) {
-                                Logger::debug($this, "Authentication Method Registration Successful: {$this->getMethodName()}");
-                            });
+                    $session->call('thruway.auth.registermethod',
+                        [
+                            $this->getMethodName(),
+                            $registrations,
+                            $this->getAuthRealms()
+                        ]
+                    )->then(function ($args) {
+                        Logger::debug($this, "Authentication Method Registration Successful: {$this->getMethodName()}");
                     });
+                });
             });
     }
 
@@ -104,8 +100,9 @@ abstract class AbstractAuthProviderClient extends Client
     public function preProcessAuthenticate(array $args)
     {
 
-        $signature = isset($args['signature']) ? $args['signature'] : null;
-        $extra     = isset($args['extra']) ? $args['extra'] : null;
+        $args      = $args[0];
+        $signature = isset($args->signature) ? $args->signature : null;
+        $extra     = isset($args->extra) ? $args->extra : null;
 
         if (!$signature) {
             return ["ERROR"];
