@@ -8,3 +8,7 @@ make install
 
 #Tests need to be run against dev-master, not the latest stable
 composer require "voryx/thruway":"dev-master"
+
+
+#Quite down the logger
+sed -i .bak "s/\/\/Logger::/Logger::/g" client.php
