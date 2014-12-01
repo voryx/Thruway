@@ -44,7 +44,7 @@ class AuthenticationDetails
      */
     public function setChallengeDetails($challengeDetails)
     {
-        $this->challengeDetails = $challengeDetails;
+        $this->challengeDetails = (object)$challengeDetails;
     }
 
     /**

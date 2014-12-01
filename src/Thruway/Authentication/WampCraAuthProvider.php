@@ -2,6 +2,7 @@
 
 namespace Thruway\Authentication;
 
+
 use Thruway\Message\HelloMessage;
 
 /**
@@ -36,73 +37,63 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
      */
     public function processHello(array $args)
     {
-        if (count($args) < 2) {
+        $helloMsg    = array_shift($args);
+        $sessionInfo = array_shift($args);
+
+        if (!$helloMsg instanceof HelloMessage
+            || !$sessionInfo
+            || !isset($helloMsg->getDetails()->authid)
+            || !$this->getUserDb() instanceof WampCraUserDbInterface
+        ) {
             return ["ERROR"];
         }
-        if ($args[0] instanceof HelloMessage) {
-            $helloMsg = $args[0];
 
-            $authid = "";
-            if (isset($helloMsg->getDetails()['authid'])) {
-                $authid = $helloMsg->getDetails()['authid'];
-            } else {
-                return ["ERROR"];
-            }
+        $authid = $helloMsg->getDetails()->authid;
+        $user   = $this->getUserDb()->get($authid);
 
-            // lookup the user
-            if ($this->getUserDb() === null) {
-                return ["FAILURE"];
-            }
-
-            $user = $this->getUserDb()->get($authid);
-            if ($user === null) {
-                return ["FAILURE"];
-            }
-
-            // create a challenge
-            $nonce        = bin2hex(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM));
-            $authRole     = "user";
-            $authMethod   = "wampcra";
-            $authProvider = "nunya";
-            $now          = new \DateTime();
-            $timeStamp    = $now->format($now::ISO8601);
-            $sessionId    = $args[1]['sessionId'];
-
-            $challenge = [
-                "authid"       => $authid,
-                "authrole"     => $authRole,
-                "authprovider" => $authProvider,
-                "authmethod"   => $authMethod,
-                "nonce"        => $nonce,
-                "timestamp"    => $timeStamp,
-                "session"      => $sessionId
-            ];
-
-            $serializedChallenge = json_encode($challenge);
-
-            $challengeDetails = [
-                "challenge"        => $serializedChallenge,
-                "challenge_method" => $this->getMethodName()
-            ];
-
-            if ($user['salt'] !== null) {
-                // we are using salty password
-                $saltInfo = [
-                    "salt"       => $user['salt'],
-                    "keylen"     => 32,
-                    "iterations" => 1000
-                ];
-
-                $challengeDetails = array_merge($challengeDetails, $saltInfo);
-            }
-
-            return [
-                "CHALLENGE",
-                $challengeDetails
-            ];
+        if (!$user) {
+            return ["FAILURE"];
         }
 
-        return ["FAILURE"];
+        // create a challenge
+        $nonce        = bin2hex(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM));
+        $authRole     = "user";
+        $authMethod   = "wampcra";
+        $authProvider = "userdb";
+        $now          = new \DateTime();
+        $timeStamp    = $now->format($now::ISO8601);
+        $sessionId    = $sessionInfo['sessionId'];
+
+        $challenge = [
+            "authid"       => $authid,
+            "authrole"     => $authRole,
+            "authprovider" => $authProvider,
+            "authmethod"   => $authMethod,
+            "nonce"        => $nonce,
+            "timestamp"    => $timeStamp,
+            "session"      => $sessionId
+        ];
+
+        $serializedChallenge = json_encode($challenge);
+
+        $challengeDetails = [
+            "challenge"        => $serializedChallenge,
+            "challenge_method" => $this->getMethodName()
+        ];
+
+        if ($user['salt'] !== null) {
+            // we are using salty password
+            $saltInfo = [
+                "salt"       => $user['salt'],
+                "keylen"     => 32,
+                "iterations" => 1000
+            ];
+
+            $challengeDetails = array_merge($challengeDetails, $saltInfo);
+        }
+
+        return ["CHALLENGE", $challengeDetails];
+
     }
 
     /**
@@ -114,56 +105,44 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
      */
     public function processAuthenticate($signature, $extra = null)
     {
-        if (is_array($extra)) {
-            if (isset($extra['challenge_details'])) {
-                $challengeDetails = $extra['challenge_details'];
-                if (is_array($challengeDetails)) {
-                    if (isset($challengeDetails['challenge'])) {
-                        $challenge      = $challengeDetails['challenge'];
-                        $challengeArray = json_decode($challenge);
 
-                        // lookup the user
-                        if ($this->getUserDb() === null) {
-                            return ["FAILURE"];
-                        }
+        $challenge = $this->getChallengeFromExtra($extra);
 
-                        if (!isset($challengeArray->authid)) {
-                            return ["FAILURE"];
-                        }
-
-                        $authid = $challengeArray->authid;
-
-                        $user = $this->getUserDb()->get($authid);
-                        if ($user === null) {
-                            return ["FAILURE"];
-                        }
-
-                        $keyToUse = $user['key'];
-
-                        $token = base64_encode(hash_hmac('sha256', $challenge, $keyToUse, true));
-
-                        if ($token == $signature) {
-                            return [
-                                "SUCCESS",
-                                [
-                                    "authmethod"   => "wampcra",
-                                    "authrole"     => "user",
-                                    "authid"       => $challengeArray->authid,
-                                    "authprovider" => $challengeArray->authprovider
-                                ]
-                            ];
-                        }
-                    }
-                }
-            }
+        if (!$challenge
+            || !isset($challenge->authid)
+            || !$this->getUserDb() instanceof WampCraUserDbInterface
+        ) {
+            return ["FAILURE"];
         }
 
-        return ["FAILURE"];
+        $authid = $challenge->authid;
+        $user   = $this->getUserDb()->get($authid);
+
+        if (!$user) {
+            return ["FAILURE"];
+        }
+
+        $keyToUse = $user['key'];
+        $token    = base64_encode(hash_hmac('sha256', json_encode($challenge), $keyToUse, true));
+
+        if ($token != $signature) {
+            return ["FAILURE"];
+        }
+
+        $authDetails = [
+            "authmethod"   => "wampcra",
+            "authrole"     => "user",
+            "authid"       => $challenge->authid,
+            "authprovider" => $challenge->authprovider
+        ];
+
+        return ["SUCCESS", $authDetails];
+
     }
 
     /**
      * Set userDB
-     * 
+     *
      * @param \Thruway\Authentication\WampCraUserDbInterface $userDb
      */
     public function setUserDb($userDb)
@@ -173,7 +152,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
 
     /**
      * Get UserDB
-     * 
+     *
      * @return \Thruway\Authentication\WampCraUserDbInterface
      */
     public function getUserDb()
@@ -182,17 +161,17 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
     }
 
     /**
-     * Encode and get derived key
-     *
-     * @param string $key
-     * @param string $salt
-     * @param int $iterations
-     * @param int $keyLen
-     * @return string
+     * Gets the Challenge Message from the extra object
+     * @param $extra
+     * @return bool | \stdClass
      */
-    public static function getDerivedKey($key, $salt, $iterations = 1000, $keyLen = 32)
+    private function getChallengeFromExtra($extra)
     {
-        return base64_encode(hash_pbkdf2('sha256', $key, $salt, $iterations, $keyLen, true));;
+        return (is_object($extra)
+            && isset($extra->challenge_details)
+            && is_object($extra->challenge_details)
+            && isset($extra->challenge_details->challenge))
+            ? json_decode($extra->challenge_details->challenge)
+            : false;
     }
-
-} 
+}

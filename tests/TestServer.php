@@ -6,6 +6,7 @@ require_once __DIR__ . '/Clients/SimpleAuthProviderClient.php';
 require_once __DIR__ . '/Clients/AbortAfterHelloAuthProviderClient.php';
 require_once __DIR__ . '/Clients/DisclosePublisherClient.php';
 require_once __DIR__ . '/Clients/TopicStateClient.php';
+require_once __DIR__ . '/UserDb.php';
 
 use Thruway\Logging\Logger;
 use Thruway\Peer\Router;
@@ -15,12 +16,8 @@ use Thruway\Transport\RatchetTransportProvider;
 
 
 $timeout = isset($argv[1]) ? $argv[1] : 0;
-
-$router = new Router();
-
-$loop = $router->getLoop();
-
-
+$router  = new Router();
+$loop    = $router->getLoop();
 $authMgr = new \Thruway\Authentication\AuthenticationManager();
 
 $router->setAuthenticationManager($authMgr);
@@ -78,6 +75,19 @@ $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProv
 $topicStateClient = new TopicStateClient('topic.state.test.realm', $loop);
 $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($topicStateClient));
 ////////////////////////
+
+
+////////////////////////
+//WAMP-CRA Authentication
+// setup some users to auth against
+$userDb = new UserDb();
+$userDb->add('peter', 'secret1', 'salt123');
+$userDb->add('joe', 'secret2', "mmm...salt");
+//Add the WAMP-CRA Auth Provider
+$authProvClient = new \Thruway\Authentication\WampCraAuthProvider(["test.wampcra.auth"], $loop);
+$authProvClient->setUserDb($userDb);
+$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
+///////////////////////
 
 if ($timeout) {
     $loop->addTimer($timeout, function () use ($loop) {

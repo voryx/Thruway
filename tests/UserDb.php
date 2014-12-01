@@ -22,7 +22,7 @@ class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
 
     /**
      * Add new user
-     * 
+     *
      * @param string $userName
      * @param string $password
      * @param string $salt
@@ -40,7 +40,7 @@ class UserDb implements \Thruway\Authentication\WampCraUserDbInterface
 
     /**
      * Get user by username
-     * 
+     *
      * @param string $authId Username
      * @return boolean
      */

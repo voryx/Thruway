@@ -21,10 +21,10 @@ class SimpleAuthProviderClient extends \Thruway\Authentication\AbstractAuthProvi
      */
     public function preProcessAuthenticate(array $args)
     {
-
-        $signature = isset($args['signature']) ? $args['signature'] : null;
-        $extra     = isset($args['extra']) ? $args['extra'] : null;
-        $authid    = isset($args['authid']) ? $args['authid'] : "anonymous";
+        $args = $args[0];
+        $signature = isset($args->signature) ? $args->signature : null;
+        $extra     = isset($args->extra) ? $args->extra : null;
+        $authid    = isset($args->authid) ? $args->authid : "anonymous";
 
         if (!$signature) {
             return ["ERROR"];
