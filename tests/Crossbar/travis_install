@@ -11,4 +11,4 @@ composer require "voryx/thruway":"dev-master"
 
 
 #Quite down the logger
-sed -i .bak "s/\/\/Logger::/Logger::/g" client.php
+sed -ie "s/\/\/Logger::/Logger::/g" client.php
