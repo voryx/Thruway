@@ -52,7 +52,7 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportProviderInterface $transport
      */
-    public function onSessionStart(ClientSession $session, $transport)
+    public function onSessionStart($session, $transport)
     {
         $session->register('thruway.auth.registermethod', [$this, 'registerAuthMethod'], ['disclose_caller' => true])
             ->then(
@@ -361,15 +361,15 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
             $session->abort("thruway.error.unknown");
         };
 
-        $arguments = (object)[
-            'authmethod' => $authMethod,
-            'challenge'  => $session->getAuthenticationDetails()->getChallenge(),
-            'extra'      => (object)[
-                'challenge_details' => $session->getAuthenticationDetails()->getChallengeDetails()
-            ],
-            'signature'  => $msg->getSignature(),
-            'authid'     => $session->getAuthenticationDetails()->getAuthId()
-        ];
+        $extra                    = new \stdClass();
+        $extra->challenge_details = $session->getAuthenticationDetails()->getChallengeDetails();
+
+        $arguments             = new \stdClass();
+        $arguments->extra      = $extra;
+        $arguments->authid     = $session->getAuthenticationDetails()->getAuthId();
+        $arguments->challenge  = $session->getAuthenticationDetails()->getChallenge();
+        $arguments->signature  = $msg->getSignature();
+        $arguments->authmethod = $authMethod;
 
         // now we send our authenticate information to the RPC
         $onAuthenticateHandler = $authMethodInfo['handlers']->onauthenticate;

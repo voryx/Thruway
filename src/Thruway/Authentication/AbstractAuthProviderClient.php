@@ -59,7 +59,7 @@ abstract class AbstractAuthProviderClient extends Client
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportProviderInterface $transport
      */
-    public function onSessionStart(ClientSession $session, $transport)
+    public function onSessionStart($session, $transport)
     {
         $session->register(
             "thruway.auth.{$this->getMethodName()}.onhello",

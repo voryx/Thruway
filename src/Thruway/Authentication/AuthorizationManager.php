@@ -193,7 +193,7 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
 
     /**
      * @param $args
-     * @return array|bool
+     * @return \stdClass|bool
      */
     private function getRuleFromArgs($args)
     {
