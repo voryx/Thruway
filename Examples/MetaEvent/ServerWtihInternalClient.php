@@ -5,20 +5,30 @@
  * For more information go to:
  * http://voryx.net/creating-internal-client-thruway/
  */
+require __DIR__ . '/../bootstrap.php';
+require __DIR__ . '/InternalClient.php';
 
-require "../bootstrap.php";
-require 'InternalClient.php';
+use \Thruway\Peer\Router;
+use \Thruway\Transport\RatchetTransportProvider;
+use \Thruway\Transport\InternalClientTransportProvider;
 
-use Thruway\Peer\Router;
-use Thruway\Transport\RatchetTransportProvider;
+$timeout = isset($argv[1]) ? $argv[1] : 0;
 
 $router = new Router();
 
-$transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
-
+$transportProvider = new RatchetTransportProvider('127.0.0.1', 9090);
 $router->addTransportProvider($transportProvider);
 
-$internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider(new \InternalClient());
+$internalClient = new \InternalClient();
+$internalClient->setRouter($router);
+$internalTransportProvider = new InternalClientTransportProvider($internalClient);
 $router->addTransportProvider($internalTransportProvider);
 
+if ($timeout) {
+    $loop = $router->getLoop();
+    $loop->addTimer($timeout, function() use ($loop) {
+        $loop->stop();
+    });
+}
+$router->getLoop()->addPeriodicTimer(30, [$internalClient, 'checkKeepAlive']);
 $router->start();
