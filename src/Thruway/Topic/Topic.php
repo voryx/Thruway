@@ -33,7 +33,7 @@ class Topic
     private $stateHandler;
 
     /**
-     * @param $uri
+     * @param string $uri
      */
     function __construct($uri)
     {
@@ -42,7 +42,7 @@ class Topic
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     function __toString()
     {
@@ -94,6 +94,8 @@ class Topic
     }
 
     /**
+     * Get state handler
+     * 
      * @return string
      */
     public function getStateHandler()
@@ -101,13 +103,23 @@ class Topic
         return $this->stateHandler;
     }
 
-    public function hasStateHandler() {
-        if ($this->stateHandler !== null) return true;
+    /**
+     * Check has handler
+     * 
+     * @return boolean
+     */
+    public function hasStateHandler() 
+    {
+        if ($this->stateHandler !== null) {
+            return true;
+        }
 
         return false;
     }
 
     /**
+     * Set state handler
+     * 
      * @param string $handlerUri
      * @throws \Exception
      */
@@ -131,9 +143,10 @@ class Topic
 
     /**
      * Send an Event Message for each subscription
-     * @param Session $session
-     * @param PublishMessage $msg
-     * @param Subscription $subscription
+     * 
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\PublishMessage $msg
+     * @param \Thruway\Message\Subscription $subscription
      */
     private function sendEventMessage(Session $session, PublishMessage $msg, Subscription $subscription)
     {

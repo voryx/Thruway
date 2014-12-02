@@ -63,10 +63,16 @@ class Dealer extends AbstractRole
         $this->registrationsBySession = new \SplObjectStorage();
     }
 
-    public function getFeatures() {
+    /**
+     * Get list supported features of dealer
+     * 
+     * @return \stdClass
+     */
+    public function getFeatures() 
+    {
         $features = new \stdClass();
 
-        $features->caller_identification = true;
+        $features->caller_identification    = true;
         $features->progressive_call_results = true;
 
         return $features;

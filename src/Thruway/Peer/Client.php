@@ -277,6 +277,11 @@ class Client extends AbstractPeer implements EventEmitterInterface
         $session->sendMessage(new HelloMessage($session->getRealm(), $details));
     }
 
+    /**
+     * Get list features of roles
+     * 
+     * @return \stdClass
+     */
     public function getRoleInfoObject()
     {
         return (object)[
@@ -356,6 +361,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
     }
 
     /**
+     * Process abort message
+     * 
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\AbortMessage $msg
      */
@@ -408,7 +415,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      * Handle process other Message
      *
      * @param \Thruway\ClientSession $session
-     * @param Message $msg
+     * @param \Thruway\Message\Message $msg
      */
     public function processOther(ClientSession $session, Message $msg)
     {

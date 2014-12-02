@@ -52,7 +52,9 @@ class Call
      */
     private $callStart;
 
-
+    /**
+     * @var int
+     */
     private $invocationRequestId;
 
     /**

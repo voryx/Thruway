@@ -32,6 +32,8 @@ abstract class AbstractRole
     abstract public function handlesMessage(Message $msg);
 
     /**
+     * Get list supported features of role
+     * 
      * @return \stdClass
      */
     public function getFeatures()

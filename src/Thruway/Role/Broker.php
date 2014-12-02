@@ -68,7 +68,7 @@ class Broker extends AbstractRole
     }
 
     /**
-     * Return supported features
+     * Get list supported features of broker
      *
      * @return \stdClass
      */
