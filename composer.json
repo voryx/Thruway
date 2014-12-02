@@ -26,10 +26,16 @@
             "Thruway": "src"
         }
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/mbonneau/Ratchet"
+        }
+    ],
     "require": {
         "php": ">=5.4",
         "react/socket": "0.4.*",
-        "cboden/ratchet": "0.3.*",
+        "cboden/ratchet": "dev-pong as 0.3.2",
         "ratchet/pawl": "0.1.*",
         "psr/log": "~1"
     },

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 9/7/14
- * Time: 12:23 AM
- */
 
 class ReplaceOrphanedSessionTest extends PHPUnit_Framework_TestCase {
     /**
@@ -36,7 +30,6 @@ class ReplaceOrphanedSessionTest extends PHPUnit_Framework_TestCase {
         $this->_conn->on(
             'open',
             function (\Thruway\ClientSession $session) {
-                $this->_conn->getClient()->setLogger(new \Thruway\ConsoleLogger());
 
                 $this->_conn->getClient()->getCallee()->register(
                     $session,

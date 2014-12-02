@@ -19,7 +19,7 @@ class InternalClient extends Thruway\Peer\Client
             $this->session,
             'com.example.ping',
             array($this, 'callPing'),
-            ['discloseCaller' => true]
+            ['disclose_caller' => true]
         );
 
         $this->getCallee()->register(
@@ -109,8 +109,8 @@ class InternalClient extends Thruway\Peer\Client
     public function callPing($args, $kwArgs, $details) {
         if ($this->router === null) throw new \Exception("Router must be set before calling ping.");
 
-        if (isset($details['caller'])) {
-            $sessionIdToPing = $details['caller'];
+        if (is_object($details) && isset($details->caller)) {
+            $sessionIdToPing = $details->caller;
 
             $theSession = $this->getRouter()->getSessionBySessionId($sessionIdToPing);
 
