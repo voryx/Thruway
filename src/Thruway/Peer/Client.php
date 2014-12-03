@@ -279,7 +279,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Get list features of roles
-     * 
+     *
      * @return \stdClass
      */
     public function getRoleInfoObject()
@@ -362,7 +362,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
 
     /**
      * Process abort message
-     * 
+     *
      * @param \Thruway\ClientSession $session
      * @param \Thruway\Message\AbortMessage $msg
      */

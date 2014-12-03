@@ -140,7 +140,7 @@ class Router extends AbstractPeer
 
     /**
      * Add transport provider
-     * 
+     *
      * @param \Thruway\Transport\TransportProviderInterface $transportProvider
      */
     public function addTransportProvider(TransportProviderInterface $transportProvider)
@@ -195,7 +195,7 @@ class Router extends AbstractPeer
 
     /**
      * Set authentication manager
-     * 
+     *
      * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager)
@@ -206,7 +206,7 @@ class Router extends AbstractPeer
 
     /**
      * Get authentication manager
-     * 
+     *
      * @return \Thruway\Authentication\AuthenticationManagerInterface
      */
     public function getAuthenticationManager()
@@ -233,7 +233,7 @@ class Router extends AbstractPeer
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      * @throws \Exception
      */
@@ -257,7 +257,7 @@ class Router extends AbstractPeer
 
     /**
      * Get loop
-     * 
+     *
      * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
@@ -267,7 +267,7 @@ class Router extends AbstractPeer
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -297,7 +297,7 @@ class Router extends AbstractPeer
 
     /**
      * Set realm manager
-     * 
+     *
      * @param \Thruway\RealmManager $realmManager
      */
     public function setRealmManager($realmManager)
@@ -307,7 +307,7 @@ class Router extends AbstractPeer
 
     /**
      * Get realm manager
-     * 
+     *
      * @return \Thruway\RealmManager
      */
     public function getRealmManager()

@@ -67,7 +67,7 @@ class RealmManager
 
     /**
      * Get Realm bu realm name
-     * 
+     *
      * @param string $realmName
      * @throws \Thruway\Exception\InvalidRealmNameException
      * @throws \Thruway\Exception\RealmNotFoundException
@@ -94,7 +94,7 @@ class RealmManager
 
     /**
      * Add new realm
-     * 
+     *
      * @param \Thruway\Realm $realm
      * @throws \Thruway\Exception\InvalidRealmNameException
      * @throws \Exception
@@ -146,7 +146,7 @@ class RealmManager
 
     /**
      * Get list realms
-     * 
+     *
      * @return array
      */
     public function getRealms()
@@ -156,7 +156,7 @@ class RealmManager
 
     /**
      * Set option allow auto create realm if not exist
-     * 
+     *
      * @param boolean $allowRealmAutocreate
      */
     public function setAllowRealmAutocreate($allowRealmAutocreate)
@@ -166,7 +166,7 @@ class RealmManager
 
     /**
      * Get option allow auto create realm
-     * 
+     *
      * @return boolean
      */
     public function getAllowRealmAutocreate()
@@ -176,7 +176,7 @@ class RealmManager
 
     /**
      * Set default authentication manager
-     * 
+     *
      * @param \Thruway\Authentication\AuthenticationManagerInterface $defaultAuthenticationManager
      */
     public function setDefaultAuthenticationManager($defaultAuthenticationManager)
@@ -186,7 +186,7 @@ class RealmManager
 
     /**
      * Get default authentication manager
-     * 
+     *
      * @return \Thruway\Authentication\AuthenticationManagerInterface
      */
     public function getDefaultAuthenticationManager()

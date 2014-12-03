@@ -16,7 +16,7 @@ trait OptionsTrait
 
     /**
      * Get options
-     * 
+     *
      * @return \stdClass
      */
     public function getOptions()
@@ -26,7 +26,7 @@ trait OptionsTrait
 
     /**
      * Set options
-     * 
+     *
      * @param \stdClass|array $options
      */
     public function setOptions($options)

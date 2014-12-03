@@ -65,10 +65,10 @@ class Dealer extends AbstractRole
 
     /**
      * Get list supported features of dealer
-     * 
+     *
      * @return \stdClass
      */
-    public function getFeatures() 
+    public function getFeatures()
     {
         $features = new \stdClass();
 

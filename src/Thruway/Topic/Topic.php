@@ -95,7 +95,7 @@ class Topic
 
     /**
      * Get state handler
-     * 
+     *
      * @return string
      */
     public function getStateHandler()
@@ -105,10 +105,10 @@ class Topic
 
     /**
      * Check has handler
-     * 
+     *
      * @return boolean
      */
-    public function hasStateHandler() 
+    public function hasStateHandler()
     {
         if ($this->stateHandler !== null) {
             return true;
@@ -119,7 +119,7 @@ class Topic
 
     /**
      * Set state handler
-     * 
+     *
      * @param string $handlerUri
      * @throws \Exception
      */
@@ -143,7 +143,7 @@ class Topic
 
     /**
      * Send an Event Message for each subscription
-     * 
+     *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\PublishMessage $msg
      * @param \Thruway\Message\Subscription $subscription

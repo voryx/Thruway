@@ -50,7 +50,7 @@ abstract class Message implements \JsonSerializable
 
     /**
      * Get message code
-     * 
+     *
      * @return int
      */
     abstract public function getMsgCode();
@@ -220,7 +220,7 @@ abstract class Message implements \JsonSerializable
 
     /**
      * Get the args from the message data
-     * 
+     *
      * @param array $data
      * @param int $position
      * @return mixed|null

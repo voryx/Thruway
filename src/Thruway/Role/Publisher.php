@@ -39,7 +39,7 @@ class Publisher extends AbstractRole
      *
      * @return \stdClass
      */
-    public function getFeatures() 
+    public function getFeatures()
     {
         $features = new \stdClass();
 

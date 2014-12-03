@@ -16,7 +16,7 @@ interface TransportProviderInterface
 
     /**
      * Start transport provider
-     * 
+     *
      * @param \Thruway\Peer\AbstractPeer $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
@@ -24,14 +24,14 @@ interface TransportProviderInterface
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager();
 
     /**
      * Get manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $managerInterface
      */
     public function setManager(ManagerInterface $managerInterface);

@@ -33,7 +33,7 @@ abstract class AbstractRole
 
     /**
      * Get list supported features of role
-     * 
+     *
      * @return \stdClass
      */
     public function getFeatures()

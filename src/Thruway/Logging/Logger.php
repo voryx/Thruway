@@ -24,7 +24,7 @@ class Logger
 
     /**
      * Log
-     * 
+     *
      * @param mixed $object
      * @param string $level See \Psr\Log\LogLevel
      * @param string $message
