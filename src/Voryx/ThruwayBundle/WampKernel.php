@@ -101,7 +101,7 @@ class WampKernel implements HttpKernelInterface
         $this->session   = $session;
         $this->transport = $transport;
 
-        $event = new SessionEvent($session, $transport);
+        $event = new SessionEvent($session, $transport, $this->processName, $this->processInstance);
         $this->dispatcher->dispatch(WampEvents::OPEN, $event);
 
         //Map RPC calls and subscriptions to their controllers

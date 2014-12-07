@@ -24,13 +24,27 @@ class SessionEvent extends Event
     private $transport;
 
     /**
-     * @param $session
-     * @param $transport
+     * @var string
      */
-    function __construct(ClientSession $session, TransportInterface $transport)
+    private $processName;
+
+    /**
+     * @var int
+     */
+    private $processInstance;
+
+    /**
+     * @param ClientSession $session
+     * @param TransportInterface $transport
+     * @param $processName
+     * @param $processInstance
+     */
+    function __construct(ClientSession $session, TransportInterface $transport, $processName, $processInstance)
     {
-        $this->session   = $session;
-        $this->transport = $transport;
+        $this->session         = $session;
+        $this->transport       = $transport;
+        $this->processName     = $processName;
+        $this->processInstance = $processInstance;
     }
 
     /**
@@ -49,5 +63,20 @@ class SessionEvent extends Event
         return $this->transport;
     }
 
+    /**
+     * @return string
+     */
+    public function getProcessName()
+    {
+        return $this->processName;
+    }
+
+    /**
+     * @return int
+     */
+    public function getProcessInstance()
+    {
+        return $this->processInstance;
+    }
 
 }
