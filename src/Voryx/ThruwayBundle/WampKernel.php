@@ -6,6 +6,7 @@ use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
 use React\Promise\Promise;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
@@ -18,6 +19,7 @@ use Thruway\Peer\Client;
 use Thruway\Transport\TransportInterface;
 use Voryx\ThruwayBundle\Annotation\Register;
 use Voryx\ThruwayBundle\Annotation\Subscribe;
+use Voryx\ThruwayBundle\Event\SessionEvent;
 use Voryx\ThruwayBundle\Mapping\MappingInterface;
 use Voryx\ThruwayBundle\Mapping\URIClassMapping;
 
@@ -58,6 +60,11 @@ class WampKernel implements HttpKernelInterface
     private $resourceMapper;
 
     /**
+     * @var EventDispatcherInterface
+     */
+    private $dispatcher;
+
+    /**
      * @var null
      */
     private $processName;
@@ -67,16 +74,22 @@ class WampKernel implements HttpKernelInterface
      */
     private $processInstance;
 
+
     /**
      * @param ContainerInterface $container
      * @param Serializer $serializer
      * @param ResourceMapper $resourceMapper
      */
-    function __construct(ContainerInterface $container, Serializer $serializer, ResourceMapper $resourceMapper)
-    {
+    function __construct(
+        ContainerInterface $container,
+        Serializer $serializer,
+        ResourceMapper $resourceMapper,
+        EventDispatcherInterface $dispatcher
+    ) {
         $this->container      = $container;
         $this->serializer     = $serializer;
         $this->resourceMapper = $resourceMapper;
+        $this->dispatcher     = $dispatcher;
     }
 
     /**
@@ -87,6 +100,9 @@ class WampKernel implements HttpKernelInterface
     {
         $this->session   = $session;
         $this->transport = $transport;
+
+        $event = new SessionEvent($session, $transport);
+        $this->dispatcher->dispatch(WampEvents::OPEN, $event);
 
         //Map RPC calls and subscriptions to their controllers
         $this->mapResources();
@@ -398,11 +414,10 @@ class WampKernel implements HttpKernelInterface
      */
     private function dispatchControllerEvents($controller, URIClassMapping $mapping)
     {
-        $dispatcher = $this->container->get('event_dispatcher');
-        $request    = new Request();
-        $callable   = [$controller, $mapping->getMethod()->getName()];
-        $event      = new FilterControllerEvent($this, $callable, $request, self::MASTER_REQUEST);
-        $dispatcher->dispatch(KernelEvents::CONTROLLER, $event);
+        $request  = new Request();
+        $callable = [$controller, $mapping->getMethod()->getName()];
+        $event    = new FilterControllerEvent($this, $callable, $request, self::MASTER_REQUEST);
+        $this->dispatcher->dispatch(KernelEvents::CONTROLLER, $event);
     }
 
     /**
