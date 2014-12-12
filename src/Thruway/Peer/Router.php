@@ -65,6 +65,8 @@ class Router extends AbstractPeer
      */
     public function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
     {
+        $this->checkPrecision();
+
         $this->loop               = $loop ? $loop : Factory::create();
         $this->manager            = $manager ? $manager : new ManagerDummy();
         $this->realmManager       = new RealmManager($this->manager);
