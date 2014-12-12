@@ -483,6 +483,13 @@ class WampKernel implements HttpKernelInterface
         if ($this->container->has('doctrine')) {
             $this->container->get('doctrine')->getManager()->clear();
         }
+
+        //Remove any listeners for the kernel.controller event
+        $listeners = $this->dispatcher->getListeners("kernel.controller");
+        foreach ($listeners as $listener) {
+            $this->dispatcher->removeListener("kernel.controller", $listener);
+        }
+
     }
 
     /**
