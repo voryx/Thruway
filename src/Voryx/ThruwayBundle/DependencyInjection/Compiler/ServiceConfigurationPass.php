@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
  * Class ThruwayServicesPass
  * @package Voryx\ThruwayBundle\DependencyInjection\Compiler
  */
-class ThruwayServicesPass implements CompilerPassInterface
+class ServiceConfigurationPass implements CompilerPassInterface
 {
     /**
      * @param ContainerBuilder $container

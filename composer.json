@@ -26,6 +26,7 @@
     },
     "require": {
         "php": ">=5.4",
+        "symfony/finder": "~2.6",
         "voryx/thruway": "0.3.*@dev",
         "jms/serializer-bundle": "0.13.*"
     },

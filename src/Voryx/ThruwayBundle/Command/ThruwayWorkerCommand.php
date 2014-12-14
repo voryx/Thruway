@@ -22,7 +22,7 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
             ->setDescription('Start Thruway WAMP worker')
             ->setHelp("The <info>%command.name%</info> starts the Thruway WAMP client.")
             ->addArgument('name', InputArgument::REQUIRED, 'The name of the worker you\'re starting')
-            ->addArgument('instance', InputArgument::REQUIRED, 'Worker instance number');
+            ->addArgument('instance', InputArgument::OPTIONAL, 'Worker instance number', 0);
     }
 
     /**
@@ -42,10 +42,10 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
 
             if ($workerAnnotation) {
                 $realm = $workerAnnotation->getRealm() ?: $config['realm'];
-                $uri   = $workerAnnotation->getUri() ?: $config['trusted_uri'];
+                $uri   = $workerAnnotation->getUri() ?: $config['uri'];
             } else {
                 $realm = $config['realm'];
-                $uri   = $config['trusted_uri'];
+                $uri   = $config['uri'];
             }
 
             $transport = new PawlTransportProvider($uri);

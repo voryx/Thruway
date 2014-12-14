@@ -45,7 +45,7 @@ class ProcessManager extends Client
 
         try {
             $supervisor = $this->container->get('voryx.thruway.supervisor');
-            $workerName = $this->container->get('voryx.thruway.resource.mapper')->findWorker($args[0]["name"]);
+            $workerName = $this->container->get('voryx.thruway.resource.mapper')->findWorker($args[0]->name);
 
             $processes = $supervisor->getAllProcessInfo();
 

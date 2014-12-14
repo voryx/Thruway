@@ -33,8 +33,6 @@ class VoryxThruwayExtension extends Extension
 
         $container->setParameter('voryx_thruway', $config);
 
-        $this->createResourceServices($config, $container);
-
         $this->configureOptions($config, $container);
     }
 
@@ -63,31 +61,6 @@ class VoryxThruwayExtension extends Extension
             throw new \InvalidArgumentException(
                 'The "realm" option must be set within voryx_thruway'
             );
-        }
-    }
-
-
-    /**
-     * Create a service for each resource that's configured
-     *
-     * @param $config
-     * @param ContainerBuilder $container
-     */
-    protected function createResourceServices(&$config, ContainerBuilder $container)
-    {
-        //Create services for any of the resource classes
-        foreach ($config['resources'] as $class) {
-            $class      = new \ReflectionClass($class);
-            $serviceId  = strtolower(str_replace("\\", "_", $class->getName()));
-            $definition = new Definition($class->getName());
-            $definition->addTag('thruway.resource');
-
-            if ($class->implementsInterface('Symfony\Component\DependencyInjection\ContainerAwareInterface')) {
-                $container->setDefinition($serviceId, $definition)
-                    ->addMethodCall('setContainer', [new Reference('service_container')]);
-            } else {
-                $container->setDefinition($serviceId, $definition);
-            }
         }
     }
 

@@ -38,8 +38,10 @@ voryx_thruway:
         ip: '127.0.0.1'  # the ip that the router should start on
         port: '8080'  # public facing port
         #authentication: 'in_memory'
-    resources:
-        - "Acme\\DemoBundle\\Controller\\DemoController"
+    locations:
+        bundles: ["AppBundle"]
+        files:
+            - "Acme\\DemoBundle\\Controller\\DemoController"
       
 ```
 If you enable ```authentication: 'in_memory'```, you'll need to add a ```thruway``` to the security firewall and set the ``in_memory_user_provider``.

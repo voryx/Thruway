@@ -23,19 +23,39 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->arrayNode('resources')->prototype('scalar')->end()->end()
                 ->scalarNode('realm')->defaultValue('realm1')->end()
                 ->scalarNode('uri')->defaultValue('ws://127.0.0.1:8080')->end()
-                ->scalarNode('trusted_uri')->defaultValue('ws://127.0.0.1:8081')->end()
-                ->booleanNode('enable_web_push')->defaultFalse()->end()
                 ->booleanNode('enable_logging')->defaultFalse()->end()
                 ->scalarNode('user_provider')->info('use fos_user.user_manager or in_memory_user_provider')->end()
             ->end();
 
+        $this->addLocationsSection($rootNode);
         $this->addSupervisorSection($rootNode);
         $this->addRouterSection($rootNode);
 
         return $treeBuilder;
+    }
+
+    private function addLocationsSection(ArrayNodeDefinition $rootNode){
+        $rootNode
+            ->children()
+                ->arrayNode('locations')
+                ->addDefaultsIfNotSet()
+                ->info('Locations of the files that need to be scan for the Thruway annotations')
+                    ->children()
+                        ->arrayNode('bundles')
+                            ->beforeNormalization()
+                                ->ifString()
+                                ->then(function($v) {
+                                    return preg_split('/\s*,\s*/', $v);
+                                })
+                            ->end()
+                            ->prototype('scalar')->end()
+                        ->end()
+                        ->arrayNode('files')->prototype('scalar')->end()->end()
+                    ->end()
+                ->end()
+            ->end();
     }
 
     /**
@@ -81,6 +101,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('trusted_port')->defaultValue('8081')->end()
                         ->scalarNode('authentication')->defaultFalse()->end()
                         ->booleanNode('enable_manager')->defaultFalse()->end()
+                        ->booleanNode('enable_web_push')->defaultFalse()->end()
                     ->end()
                 ->end()
             ->end();
