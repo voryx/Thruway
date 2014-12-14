@@ -140,13 +140,18 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
     {
         try {
             $supervisor = $this->getContainer()->get('voryx.thruway.supervisor');
+            sleep(1);
             $output->writeln("ID: {$supervisor->getIdentification()}");
+            sleep(1);
             $output->writeln("PID: {$supervisor->getPID()}");
+            sleep(1);
             $output->writeln("API Version: {$supervisor->getAPIVersion()}");
 
             $output->writeln("[PID] group:name - description state");
 
-            foreach ($supervisor->getAllProcessInfo() as $process) {
+            sleep(1);
+            $processes = $supervisor->getAllProcessInfo();
+            foreach ($processes as $process) {
                 $output->writeln("[{$process['pid']}] {$process['group']}:{$process['name']} - {$process['description']} {$process['statename']}");
             }
 
@@ -185,6 +190,7 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
         $configPath = $this->getContainer()->get('kernel')->locateResource($config['supervisor']['config']);
 
         $process = new Process("{$config['supervisor']['executable']} -c {$configPath} --pidfile {$pidfile} --logfile {$logfile}");
+        sleep(1);
         $process->run(function ($type, $buffer) use ($output) {
             if (Process::ERR === $type) {
                 $output->writeln("Error while starting supervisord: {$buffer}");
@@ -204,6 +210,7 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
     protected function stopProcessGroup(SupervisorClient $supervisor, $group, OutputInterface $output)
     {
         try {
+            sleep(1);
             $supervisor->stopProcessGroup($group, false);
         } catch (\Exception $e) {
             $output->writeln("Looks like the thruway {$group} is already stopped");
@@ -218,9 +225,11 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
      */
     protected function clearProcessFromGroup(SupervisorClient $supervisor, $group)
     {
+        sleep(1);
         $processes = $supervisor->getAllProcessInfo();
         foreach ($processes as $process) {
             if ($process['group'] === $group) {
+                sleep(1);
                 $supervisor->removeProcessFromGroup($group, $process['name']);
             }
         }
@@ -237,6 +246,7 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
     {
 
         try {
+            sleep(1);
             $supervisor->addProcessGroup($group);
         } catch (\Exception $e) {
             $output->writeln("The group thruway has already been added, which is okay");
@@ -268,6 +278,7 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
             $output->writeln("Adding onetime worker: {$workerName}");
 
             //Add and start the Router
+            sleep(1);
             $supervisor->addProgramToGroup('thruway', $workerName,
                 [
                     'command'      => "{$phpBinary} {$this->getContainer()->get('kernel')->getRootDir()}/console {$command} --env={$env}",
@@ -305,6 +316,7 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
                 $numprocs = $config['supervisor']['workers'];
             }
             //Add the workers to the config, but don't start them yet.
+            sleep(1);
             $supervisor->addProgramToGroup('thruway', $workerName,
                 [
                     'command'      => "{$phpBinary} {$this->getContainer()->get('kernel')->getRootDir()}/console thruway:worker:start {$workerName} %(process_num)d --env={$env}",
@@ -315,9 +327,9 @@ class ThruwaySupervisordCommand extends ContainerAwareCommand
                     'process_name' => '%(program_name)s_%(process_num)02d'
 
                 ]);
-            sleep(3);
 
             //Start the worker
+            sleep(1);
             $supervisor->startProcess("thruway:{$workerName}_00");
         }
     }

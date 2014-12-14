@@ -20,7 +20,7 @@ Update AppKernel.php
 $bundles = array(
     // ...
     new JMS\SerializerBundle\JMSSerializerBundle(),
-    new Voryx\ThruwayBundle\VoryxThruwayBundle(),
+    new Voryx\ThruwayBundle\VoryxThruwayBundle($this),
     // ...
 );
 ```
