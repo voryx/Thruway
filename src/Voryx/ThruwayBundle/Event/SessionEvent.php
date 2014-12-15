@@ -34,17 +34,24 @@ class SessionEvent extends Event
     private $processInstance;
 
     /**
+     * @var
+     */
+    private $resourceMappings;
+
+    /**
      * @param ClientSession $session
      * @param TransportInterface $transport
      * @param $processName
      * @param $processInstance
+     * @param $resourceMappings
      */
-    function __construct(ClientSession $session, TransportInterface $transport, $processName, $processInstance)
+    function __construct(ClientSession $session, TransportInterface $transport, $processName, $processInstance, $resourceMappings)
     {
-        $this->session         = $session;
-        $this->transport       = $transport;
-        $this->processName     = $processName;
-        $this->processInstance = $processInstance;
+        $this->session          = $session;
+        $this->transport        = $transport;
+        $this->processName      = $processName;
+        $this->processInstance  = $processInstance;
+        $this->resourceMappings = $resourceMappings;
     }
 
     /**
@@ -77,6 +84,14 @@ class SessionEvent extends Event
     public function getProcessInstance()
     {
         return $this->processInstance;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getResourceMappings()
+    {
+        return $this->resourceMappings;
     }
 
 }
