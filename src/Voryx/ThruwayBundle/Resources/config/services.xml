@@ -139,6 +139,10 @@
             <tag name="jms_serializer.subscribing_handler"/>
         </service>
 
+        <service id="voryx.thruway.topic_state_handler" class="Voryx\ThruwayBundle\TopicStateHandler">
+            <tag name="kernel.event_listener" event="wamp.open" method="onOpen" />
+        </service>
+
     </services>
 
 </container>

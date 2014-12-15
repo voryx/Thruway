@@ -100,22 +100,22 @@ class WampKernel implements HttpKernelInterface
     {
         $this->session   = $session;
         $this->transport = $transport;
+        $mappings        = $this->resourceMapper->getMappings($this->getProcessName());
 
-        $event = new SessionEvent($session, $transport, $this->processName, $this->processInstance);
+        $event = new SessionEvent($session, $transport, $this->processName, $this->processInstance, $mappings);
         $this->dispatcher->dispatch(WampEvents::OPEN, $event);
 
         //Map RPC calls and subscriptions to their controllers
-        $this->mapResources();
+        $this->mapResources($mappings);
 
     }
 
     /**
      * Go through all of the resource mappings for this worker process and create the corresponding WAMP URIs
+     * @param $mappings
      */
-    protected function mapResources()
+    protected function mapResources($mappings)
     {
-        $mappings = $this->resourceMapper->getMappings($this->getProcessName());
-
         /* @var $mapping URIClassMapping */
         foreach ($mappings as $mapping) {
             if ($mapping->getAnnotation() instanceof Register) {
