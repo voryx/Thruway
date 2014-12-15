@@ -35,15 +35,16 @@ class Publisher extends AbstractRole
     }
 
     /**
-     * Return supported features
+     * Get list supported features of publisher
      *
      * @return \stdClass
      */
-    public function getFeatures() {
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
-        $features->subscriber_blackwhite_listing = true;
-        $features->publisher_exclusion = true;
+        $features->subscriber_blackwhite_listing    = true;
+        $features->publisher_exclusion              = true;
 
         return $features;
     }
@@ -126,12 +127,12 @@ class Publisher extends AbstractRole
      * @param string $topicName
      * @param mixed $arguments
      * @param mixed $argumentsKw
-     * @param mixed $options
+     * @param array|\stdClass $options
      * @return \React\Promise\Promise
      */
-    public function publish(ClientSession $session, $topicName, $arguments, $argumentsKw, $options)
+    public function publish(ClientSession $session, $topicName, $arguments, $argumentsKw, $options = null)
     {
-        $options = (object)$options;
+        $options = isset($options) ? (object) $options : new \stdClass();
 
         $requestId = Utils::getUniqueId();
 

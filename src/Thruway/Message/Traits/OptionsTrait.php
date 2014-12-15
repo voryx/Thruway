@@ -10,12 +10,14 @@ trait OptionsTrait
 {
 
     /**
-     * @var mixed
+     * @var \stdClass
      */
     private $options;
 
     /**
-     * @return mixed
+     * Get options
+     *
+     * @return \stdClass
      */
     public function getOptions()
     {
@@ -23,6 +25,8 @@ trait OptionsTrait
     }
 
     /**
+     * Set options
+     *
      * @param \stdClass|array $options
      */
     public function setOptions($options)

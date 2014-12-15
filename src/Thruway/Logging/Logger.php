@@ -23,13 +23,15 @@ class Logger
     }
 
     /**
-     * @param null $object
-     * @param $level
-     * @param $message
+     * Log
+     *
+     * @param mixed $object
+     * @param string $level See \Psr\Log\LogLevel
+     * @param string $message
      * @param array $context
      * @return null
      */
-    public static function log($object = null, $level, $message, $context = [])
+    public static function log($object = null, $level = LogLevel::INFO, $message = '', $context = [])
     {
         if (is_object($object)) {
             $className = get_class($object);
@@ -45,91 +47,83 @@ class Logger
     }
 
     /**
-     * @param null $object
-     * @param null $object
-     * @param $message
+     * @param mixed $object
+     * @param string $message
      * @param array $context
-     * @return null
      */
-    public static function alert($object = null, $message, $context = [])
+    public static function alert($object = null, $message = '', $context = [])
     {
         static::log($object, LogLevel::ALERT, $message, $context);
     }
 
     /**
-     * @param null $object
-     * @param $message
+     * @param mixed $object
+     * @param string $message
      * @param array $context
-     * @return null
      */
-    public static function critical($object = null, $message, $context = [])
+    public static function critical($object = null, $message = '', $context = [])
     {
         static::log($object, LogLevel::CRITICAL, $message, $context);
     }
 
     /**
-     * @param null $object
-     * @param $message
+     * @param mixed $object
+     * @param string $message
      * @param array $context
-     * @return null
      */
-    public static function debug($object = null, $message, $context = [])
+    public static function debug($object = null, $message = '', $context = [])
     {
 
         static::log($object, LogLevel::DEBUG, $message, $context);
     }
 
     /**
-     * @param null $object
-     * @param $message
+     * @param mixed $object
+     * @param string $message
      * @param array $context
-     * @return null
      */
-    public static function emergency($object = null, $message, $context = [])
+    public static function emergency($object = null, $message = '', $context = [])
     {
 
         static::log($object, LogLevel::EMERGENCY, $message, $context);
     }
 
     /**
-     * @param null $object
-     * @param $message
+     * @param mixed $object
+     * @param string $message
      * @param array $context
-     * @return null
      */
-    public static function error($object = null, $message, $context = [])
+    public static function error($object = null, $message = '', $context = [])
     {
         static::log($object, LogLevel::ERROR, $message, $context);
     }
 
     /**
-     * @param null $object
-     * @param $message
+     * @param mixed $object
+     * @param string $message
      * @param array $context
-     * @return null
      */
-    public static function info($object = null, $message, $context = [])
+    public static function info($object = null, $message = '', $context = [])
     {
         static::log($object, LogLevel::INFO, $message, $context);
     }
 
     /**
-     * @param null $object
-     * @param $message
+     * @param mixed $object
+     * @param string $message
      * @param array $context
-     * @return null
      */
-    public static function notice($object = null, $message, $context = [])
+    public static function notice($object = null, $message = '', $context = [])
     {
         static::log($object, LogLevel::NOTICE, $message, $context);
     }
 
     /**
-     * @param $message
+     * @param mixed $object
+     * @param string $message
      * @param array $context
-     * @return null
      */
-    public static function warning($object = null, $message, $context = [])
+    public static function warning($object = null, $message = '', $context = [])
     {
         static::log($object, LogLevel::WARNING, $message, $context);
     }

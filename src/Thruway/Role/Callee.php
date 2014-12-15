@@ -43,14 +43,15 @@ class Callee extends AbstractRole
     }
 
     /**
-     * Return supported features
+     * Get list supported features of Callee
      *
      * @return \stdClass
      */
-    public function getFeatures() {
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
-        $features->caller_identification = true;
+        $features->caller_identification    = true;
         $features->progressive_call_results = true;
 
         return $features;
@@ -343,7 +344,7 @@ class Callee extends AbstractRole
      * @param \Thruway\ClientSession $session
      * @param string $procedureName
      * @param callable $callback
-     * @param mixed $options
+     * @param array|\stdClass $options
      * @return \React\Promise\Promise
      */
     public function register(ClientSession $session, $procedureName, $callback, $options = null)

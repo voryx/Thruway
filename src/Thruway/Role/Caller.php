@@ -38,14 +38,15 @@ class Caller extends AbstractRole
     }
 
     /**
-     * Return supported features
+     * Get list supported features of Caller
      *
      * @return \stdClass
      */
-    public function getFeatures() {
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
-        $features->caller_identification = true;
+        $features->caller_identification    = true;
         $features->progressive_call_results = true;
 
         return $features;
@@ -144,14 +145,15 @@ class Caller extends AbstractRole
      * @param string $procedureName
      * @param mixed $arguments
      * @param mixed $argumentsKw
-     * @param mixed $options
+     * @param array|\stdClass $options
      * @return \React\Promise\Promise
      */
     public function call(ClientSession $session, $procedureName, $arguments = null, $argumentsKw = null, $options = null)
     {
         //This promise gets resolved in Caller::processResult
         $futureResult = new Deferred();
-
+        $options = isset($options) ? (object) $options : new \stdClass();
+        
         $requestId = Utils::getUniqueId();
 
         $this->callRequests[$requestId] = [

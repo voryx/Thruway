@@ -40,11 +40,12 @@ class Subscriber extends AbstractRole
     }
 
     /**
-     * Return supported features
+     * Get list supported features of subscriber
      *
      * @return \stdClass
      */
-    public function getFeatures() {
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
         $features->subscriber_metaevents = true;
@@ -204,13 +205,13 @@ class Subscriber extends AbstractRole
      * @param \Thruway\ClientSession $session
      * @param string $topicName
      * @param callable $callback
-     * @param $options
+     * @param array|\stdClass $options
      * @return Promise
      */
-    public function subscribe(ClientSession $session, $topicName, $callback, $options)
+    public function subscribe(ClientSession $session, $topicName, $callback, $options = null)
     {
         $requestId = Utils::getUniqueId();
-        $options   = (object)$options;
+        $options   = isset($options) ? (object) $options : new \stdClass();
         $deferred  = new Deferred();
 
         $subscription = [

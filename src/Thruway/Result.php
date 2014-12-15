@@ -35,7 +35,7 @@ class Result
 
     /**
      * Set arguments
-     * 
+     *
      * @param array|null $arguments
      * @throws \InvalidArgumentException
      */
@@ -50,7 +50,7 @@ class Result
 
     /**
      * Get arguments
-     * 
+     *
      * @return array|null
      */
     public function getArguments()
@@ -60,7 +60,7 @@ class Result
 
     /**
      * Set arguments kw
-     * 
+     *
      * @param array|null $argumentsKw
      */
     public function setArgumentsKw($argumentsKw)
@@ -70,7 +70,7 @@ class Result
 
     /**
      * Get arguments kw
-     * 
+     *
      * @return array|null
      */
     public function getArgumentsKw()

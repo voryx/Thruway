@@ -5,14 +5,21 @@
  * For more information go to:
  * @see http://voryx.net/creating-internal-client-thruway/
  */
+require __DIR__ . '/../bootstrap.php';
 
-require "../bootstrap.php";
+use \Thruway\Logging\Logger;
+use \Thruway\Peer\Client;
 
 /**
  * Class InternalClient
  */
-class InternalClient extends Thruway\Peer\Client
+class InternalClient extends Client
 {
+    /**
+     * @var \Thruway\Peer\Router
+     */
+    private $router;
+
     /**
      * List sessions info
      * 
@@ -25,7 +32,7 @@ class InternalClient extends Thruway\Peer\Client
      */
     public function __construct()
     {
-        parent::__construct("realm1");
+        parent::__construct('realm1');
     }
 
     /**
@@ -36,11 +43,33 @@ class InternalClient extends Thruway\Peer\Client
     {
         // TODO: now that the session has started, setup the stuff
         echo "--------------- Hello from InternalClient ------------\n";
-        $this->getCallee()->register($this->session, 'com.example.getphpversion', [$this, 'getPhpVersion']);
-        $this->getCallee()->register($this->session, 'com.example.getonline',     [$this, 'getOnline']);
+        $this->getCallee()->register(
+            $this->session, 
+            'com.example.getphpversion', 
+            [$this, 'getPhpVersion'], 
+            []
+        );
         
-        $this->getSubscriber()->subscribe($this->session, 'wamp.metaevent.session.on_join',  [$this, 'onSessionJoin']);
-        $this->getSubscriber()->subscribe($this->session, 'wamp.metaevent.session.on_leave', [$this, 'onSessionLeave']);
+        $this->getCallee()->register(
+            $this->session, 
+            'com.example.getonline', 
+            [$this, 'getOnline'], 
+            []
+        );
+        
+        $this->getSubscriber()->subscribe(
+            $this->session, 
+            'wamp.metaevent.session.on_join', 
+            [$this, 'onSessionJoin'], 
+            []
+        );
+        
+        $this->getSubscriber()->subscribe(
+            $this->session, 
+            'wamp.metaevent.session.on_leave', 
+            [$this, 'onSessionLeave'], 
+            []
+        );
     }
 
     /**
@@ -59,7 +88,7 @@ class InternalClient extends Thruway\Peer\Client
     {
         return [phpversion()];
     }
-    
+
     /**
      * Get list online
      * 
@@ -84,7 +113,7 @@ class InternalClient extends Thruway\Peer\Client
         echo "Session {$args[0]['session']} joinned\n";
         $this->_sessions[] = $args[0];
     }
-    
+
     /**
      * Handle on session leaved
      * 
@@ -106,4 +135,56 @@ class InternalClient extends Thruway\Peer\Client
             }
         }
     }
+
+    /**
+     * Ping to all sessions
+     * 
+     * @return array
+     */
+    public function checkKeepAlive()
+    {
+        if ($this->router === null) {
+            throw new \Exception("Router must be set before calling ping.");
+        }
+
+        foreach ($this->_sessions as $_details) {
+            
+            $sessionIdToPing = $_details['session'];
+            
+            Logger::info($this, ">>> PING {$sessionIdToPing}", $_details);
+            /*@var $session \Thruway\Session */
+            $theSession = $this->getRouter()->getSessionBySessionId($sessionIdToPing);
+            if (empty($theSession)) {
+                continue;
+            }
+            $theSession->getTransport()->ping(1)->then(
+                function($res) use ($sessionIdToPing) {
+                    //echo "<<< Session {$sessionIdToPing} are connecting\n";
+                    Logger::info($this, "<<< Session {$sessionIdToPing} are connecting", [$res]);
+                },
+                function($error) use ($sessionIdToPing, $theSession) {
+                    //echo "<<< Session {$sessionIdToPing} are disconnected\n";
+                    Logger::info($this, "<<< Session {$sessionIdToPing} are disconnected", [$error]);
+                    $theSession->shutdown();
+                }
+            );
+        }
+    }
+
+    /**
+     * @param \Thruway\Peer\Router $router
+     */
+    public function setRouter($router)
+    {
+        $this->router = $router;
+    }
+
+    /**
+     * @return \Thruway\Peer\Router
+     */
+    public function getRouter()
+    {
+        return $this->router;
+    }
+
 }

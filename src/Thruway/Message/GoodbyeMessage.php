@@ -34,7 +34,7 @@ class GoodbyeMessage extends Message
 
     /**
      * Set reason
-     * 
+     *
      * @param string $reason
      */
     public function setReason($reason)
@@ -44,7 +44,7 @@ class GoodbyeMessage extends Message
 
     /**
      * Get reason
-     * 
+     *
      * @return string 
      */
     public function getReason()
