@@ -134,6 +134,8 @@ class Client extends AbstractPeer implements EventEmitterInterface
      */
     public function __construct($realm, LoopInterface $loop = null)
     {
+        $this->checkPrecision();
+
         $this->realm                = $realm;
         $this->loop                 = $loop ? $loop : Factory::create();
         $this->transportProvider    = null;

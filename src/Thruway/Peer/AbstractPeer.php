@@ -2,6 +2,7 @@
 
 namespace Thruway\Peer;
 
+use Thruway\Logging\Logger;
 use Thruway\Message\Message;
 use Thruway\Transport\TransportInterface;
 use Thruway\Transport\TransportProviderInterface;
@@ -53,5 +54,12 @@ abstract class AbstractPeer
      * don't implement that
      */
     abstract public function start();
+
+    protected function checkPrecision() {
+        if (ini_get('precision') < 16) {
+            Logger::notice($this, 'Changing PHP precision from ' . ini_get('precision') . ' to 16');
+            ini_set('precision', 16);
+        }
+    }
 
 }

@@ -5,3 +5,10 @@
 cd $HOME/hello
 
 make install
+
+#Tests need to be run against dev-master, not the latest stable
+composer require "voryx/thruway":"dev-master"
+
+
+#Quite down the logger
+sed -ie "s/\/\/Logger::/Logger::/g" client.php
