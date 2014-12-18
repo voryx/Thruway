@@ -25,6 +25,7 @@ class Configuration implements ConfigurationInterface
             ->children()
                 ->scalarNode('realm')->defaultValue('realm1')->end()
                 ->scalarNode('uri')->defaultValue('ws://127.0.0.1:8080')->end()
+                ->scalarNode('trusted_uri')->defaultValue('ws://127.0.0.1:8080')->info('Internal URI that does not require authentication')->end()
                 ->booleanNode('enable_logging')->defaultFalse()->end()
                 ->scalarNode('user_provider')->info('use fos_user.user_manager or in_memory_user_provider')->end()
             ->end();
