@@ -40,7 +40,7 @@ class RelayClient extends \Thruway\Peer\Client
     {
         $futureResult = new \React\Promise\Deferred();
 
-        $this->getCaller()->call($this->session, 'com.example.thefunction' . ($this->number + 1), [])
+        $this->session->call('com.example.thefunction' . ($this->number + 1), [])
             ->then(function ($res) use ($futureResult) {
                 $res[0] = $res[0] . ".";
                 $futureResult->resolve($res);
@@ -52,12 +52,12 @@ class RelayClient extends \Thruway\Peer\Client
     /**
      * Handle on session start
      * 
-     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */
     public function onSessionStart($session, $transport)
     {
-        $this->getCallee()->register($session, 'com.example.thefunction' . $this->number, [$this, 'theFunction'])
+        $session->register('com.example.thefunction' . $this->number, [$this, 'theFunction'])
             ->then(function () {
                 $this->registeredDeferred->resolve();
             });

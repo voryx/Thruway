@@ -5,14 +5,16 @@ namespace Thruway\Topic;
 
 use React\EventLoop\LoopInterface;
 use Thruway\Logging\Logger;
+use Thruway\Module\Module;
 use Thruway\Peer\Client;
+use Thruway\Realm;
 use Thruway\Subscription;
 
 /**
  * Class TopicStateManager
  * @package Thruway
  */
-class TopicStateManager extends Client implements TopicStateManagerInterface
+class TopicStateManager extends Module implements TopicStateManagerInterface
 {
 
     /**
@@ -37,6 +39,15 @@ class TopicStateManager extends Client implements TopicStateManagerInterface
         parent::__construct($realm, $loop);
     }
 
+    /**
+     * Gets called when the module is initialized in the router
+     */
+    public function onInitialize()
+    {
+        $topicStateRealm   = new Realm($this->getRealm());
+        $topicStateRealm->setTopicStateManager($this);
+        $this->router->getRealmManager()->addRealm($topicStateRealm);
+    }
 
     /**
      * Handles session started

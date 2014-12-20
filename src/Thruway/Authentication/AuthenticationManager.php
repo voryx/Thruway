@@ -2,14 +2,13 @@
 
 namespace Thruway\Authentication;
 
-use Thruway\ClientSession;
 use Thruway\Logging\Logger;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\WelcomeMessage;
-use Thruway\Peer\Client;
+use Thruway\Module\Module;
 use Thruway\Realm;
 use Thruway\Session;
 
@@ -19,7 +18,7 @@ use Thruway\Session;
  *
  * @package Thruway\Authentication
  */
-class AuthenticationManager extends Client implements AuthenticationManagerInterface
+class AuthenticationManager extends Module implements AuthenticationManagerInterface
 {
     /**
      * List authentication methods
@@ -47,6 +46,15 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
     }
 
     /**
+     * Gets called when the module is initialized in the router
+     */
+    public function onInitialize()
+    {
+        $this->router->setAuthenticationManager($this);
+    }
+
+
+    /**
      * Handles session started
      *
      * @param \Thruway\ClientSession $session
@@ -64,14 +72,6 @@ class AuthenticationManager extends Client implements AuthenticationManagerInter
                     Logger::error($this, "registration of registerAuthMethod failed.");
                 }
             );
-    }
-
-    /**
-     * Override to make sure we do nothing
-     */
-    public function start()
-    {
-
     }
 
     /**

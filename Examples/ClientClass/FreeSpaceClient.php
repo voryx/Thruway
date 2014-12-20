@@ -16,12 +16,12 @@ class FreeSpaceClient extends Thruway\Peer\Client
     }
 
     /**
-     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */
     public function onSessionStart($session, $transport)
     {
-        $this->getCallee()->register($session, 'com.example.getfreespace', [$this, 'getFreeSpace']);
+        $session->register('com.example.getfreespace', [$this, 'getFreeSpace']);
     }
 
 }

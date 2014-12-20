@@ -13,7 +13,7 @@ require "../bootstrap.php";
  */
 class InternalClient extends Thruway\Peer\Client
 {
-    
+
     /**
      * Contructor
      */
@@ -23,31 +23,24 @@ class InternalClient extends Thruway\Peer\Client
     }
 
     /**
-     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */
     public function onSessionStart($session, $transport)
     {
         // TODO: now that the session has started, setup the stuff
         echo "--------------- Hello from InternalClient ------------\n";
-        $this->getCallee()->register($this->session, 'com.example.getphpversion', [$this, 'getPhpVersion']);
-    }
-
-    /**
-     * Override to make sure we do nothing
-     */
-    public function start()
-    {
+        $session->register('com.example.getphpversion', [$this, 'getPhpVersion']);
     }
 
     /**
      * Handle get PHP version
-     * 
+     *
      * @return array
      */
     public function getPhpVersion()
     {
         return [phpversion()];
     }
-    
+
 }

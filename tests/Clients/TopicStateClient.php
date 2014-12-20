@@ -5,7 +5,7 @@
  * For more information go to:
  * http://voryx.net/creating-internal-client-thruway/
  */
-class   TopicStateClient extends Thruway\Peer\Client
+class TopicStateClient extends \Thruway\Module\Module
 {
 
     public function onSessionStart($session, $transport)

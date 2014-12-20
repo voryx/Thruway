@@ -18,7 +18,6 @@ $transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
 
 $router->addTransportProvider($transportProvider);
 
-$internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider(new \InternalClient());
-$router->addTransportProvider($internalTransportProvider);
+$router->addInternalClient(new \InternalClient());
 
 $router->start();

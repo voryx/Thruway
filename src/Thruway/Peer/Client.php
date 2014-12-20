@@ -30,7 +30,7 @@ use React\EventLoop\LoopInterface;
  *
  * @package Thruway\Peer
  */
-class Client extends AbstractPeer implements EventEmitterInterface
+class Client extends AbstractPeer implements EventEmitterInterface, ClientInterface
 {
 
     /**
@@ -173,7 +173,7 @@ class Client extends AbstractPeer implements EventEmitterInterface
      * This is meant to be overridden so that the client can do its
      * thing
      *
-     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */
     public function onSessionStart($session, $transport)
@@ -634,4 +634,14 @@ class Client extends AbstractPeer implements EventEmitterInterface
     {
         return $this->session;
     }
+
+    /**
+     * @return string
+     */
+    public function getRealm()
+    {
+        return $this->realm;
+    }
+
+
 }

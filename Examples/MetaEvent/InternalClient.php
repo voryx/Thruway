@@ -21,7 +21,7 @@ class InternalClient extends Thruway\Peer\Client
     protected $_sessions = [];
     
     /**
-     * Contructor
+     * Constructor
      */
     public function __construct()
     {
@@ -29,25 +29,18 @@ class InternalClient extends Thruway\Peer\Client
     }
 
     /**
-     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\ClientSession $session
      * @param \Thruway\Transport\TransportInterface $transport
      */
     public function onSessionStart($session, $transport)
     {
         // TODO: now that the session has started, setup the stuff
         echo "--------------- Hello from InternalClient ------------\n";
-        $this->getCallee()->register($this->session, 'com.example.getphpversion', [$this, 'getPhpVersion']);
-        $this->getCallee()->register($this->session, 'com.example.getonline',     [$this, 'getOnline']);
+        $session->register('com.example.getphpversion', [$this, 'getPhpVersion']);
+        $session->register('com.example.getonline',     [$this, 'getOnline']);
         
-        $this->getSubscriber()->subscribe($this->session, 'wamp.metaevent.session.on_join',  [$this, 'onSessionJoin']);
-        $this->getSubscriber()->subscribe($this->session, 'wamp.metaevent.session.on_leave', [$this, 'onSessionLeave']);
-    }
-
-    /**
-     * Override to make sure we do nothing
-     */
-    public function start()
-    {
+        $session->subscribe('wamp.metaevent.session.on_join',  [$this, 'onSessionJoin']);
+        $session->subscribe('wamp.metaevent.session.on_leave', [$this, 'onSessionLeave']);
     }
 
     /**
