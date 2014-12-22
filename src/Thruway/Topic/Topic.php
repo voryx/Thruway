@@ -14,7 +14,7 @@ use Thruway\Subscription;
  * Class Topic
  * @package Thruway\Topic
  */
-class Topic
+class Topic implements TopicInterface
 {
 
     /**

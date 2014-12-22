@@ -64,7 +64,7 @@ class TopicManager
     /**
      * @param Topic $topic
      */
-    public function addTopic(Topic $topic)
+    public function addTopic(TopicInterface $topic)
     {
         $this->topics[$topic->getUri()] = $topic;
     }
@@ -74,7 +74,7 @@ class TopicManager
      */
     public function removeTopic($topic)
     {
-        $topicName = $topic instanceof Topic ? $topic->getUri() : $topic;
+        $topicName = $topic instanceof TopicInterface ? $topic->getUri() : $topic;
 
         unset($this->topics[$topicName]);
     }
