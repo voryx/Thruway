@@ -100,5 +100,28 @@ class SubscribeMessage extends Message implements ActionMessageInterface
         return "subscribe";
     }
 
+    /**
+     * @return string
+     */
+    public function getMatchType()
+    {
+        $options = $this->getOptions();
+        if (is_object($options) && isset($options->match) && is_scalar($options->match)) return $options->match;
+
+        return "exact";
+    }
+
+    /**
+     * @param string $matchType
+     */
+    public function setMatchType($matchType)
+    {
+        $options = $this->getOptions();
+        if (is_object($options)) {
+            $options->match = $matchType;
+            if ($matchType == "exact") unset($options->match);
+        }
+        $this->setOptions($options);
+    }
 
 }

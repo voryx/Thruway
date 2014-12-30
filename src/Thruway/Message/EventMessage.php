@@ -82,8 +82,8 @@ class EventMessage extends Message
     {
         return new static(
             $subscriptionId,
-            $msg->getRequestId(),
-            $msg->getOptions(),
+            $msg->getPublicationId(),
+            new \stdClass(),
             $msg->getArguments(),
             $msg->getArgumentsKw()
         );

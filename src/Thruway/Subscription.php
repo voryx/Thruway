@@ -28,7 +28,7 @@ class Subscription
     /**
      * @var string
      */
-    private $topic;
+    private $uri;
 
 
     /**
@@ -47,16 +47,21 @@ class Subscription
     private $disclosePublisher;
 
     /**
+     * @var SubscriptionGroup
+     */
+    private $subscriptionGroup;
+
+    /**
      * Constructor
      *
-     * @param string $topic
+     * @param string $uri
      * @param \Thruway\Session $session
      * @param mixed $options
      */
-    public function __construct($topic, Session $session, $options = null)
+    public function __construct($uri, Session $session, $options = null)
     {
 
-        $this->topic             = $topic;
+        $this->uri               = $uri;
         $this->session           = $session;
         $this->id                = Utils::getUniqueId();
         $this->disclosePublisher = false;
@@ -98,23 +103,23 @@ class Subscription
 
 
     /**
-     * Set topic name
+     * Set URI
      *
-     * @param string $topic
+     * @param string $uri
      */
-    public function setTopic($topic)
+    public function setUri($uri)
     {
-        $this->topic = $topic;
+        $this->uri = $uri;
     }
 
     /**
-     * Get topic name
+     * Get URI
      *
      * @return string
      */
-    public function getTopic()
+    public function getUri()
     {
-        return $this->topic;
+        return $this->uri;
     }
 
     /**
@@ -136,6 +141,24 @@ class Subscription
     {
         $this->session = $session;
     }
+
+    /**
+     * @return SubscriptionGroup
+     */
+    public function getSubscriptionGroup()
+    {
+        return $this->subscriptionGroup;
+    }
+
+    /**
+     * @param SubscriptionGroup $subscriptionGroup
+     */
+    public function setSubscriptionGroup(SubscriptionGroup $subscriptionGroup)
+    {
+        $this->subscriptionGroup = $subscriptionGroup;
+    }
+
+
 
     /**
      * @return boolean

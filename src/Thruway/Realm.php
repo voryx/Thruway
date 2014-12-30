@@ -95,8 +95,6 @@ class Realm
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
         $this->setManager(new ManagerDummy());
-        $this->setTopicStateManager(new TopicStateManagerDummy());
-
     }
 
     /**
@@ -384,22 +382,6 @@ class Realm
     public function setAuthorizationManager($authorizationManager)
     {
         $this->authorizationManager = $authorizationManager;
-    }
-
-    /**
-     * @return topicStateManagerInterface
-     */
-    public function getTopicStateManager()
-    {
-        return $this->getBroker()->getTopicStateManager();
-    }
-
-    /**
-     * @param topicStateManagerInterface $topicStateManager
-     */
-    public function setTopicStateManager($topicStateManager)
-    {
-        $this->getBroker()->setTopicStateManager($topicStateManager);
     }
 
     /**

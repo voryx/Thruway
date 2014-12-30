@@ -34,9 +34,9 @@ $router->registerModules([
     // Client for Disclose Publisher Test
     new DisclosePublisherClient('testSimpleAuthRealm'),
     // Topic State Testing
-    new \Thruway\Topic\TopicStateManager('topic.state.test.realm'),
+    //new \Thruway\Topic\TopicStateManager('topic.state.test.realm'),
     // Add the State Handler Client
-    new TopicStateClient('topic.state.test.realm'),
+    //new TopicStateClient('topic.state.test.realm'),
 
 ]);
 

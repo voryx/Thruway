@@ -1,6 +1,6 @@
 <?php
 
-require "../bootstrap.php";
+require __DIR__ . "/../bootstrap.php";
 
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;

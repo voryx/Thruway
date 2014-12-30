@@ -5,83 +5,33 @@ namespace Thruway\Role;
 use Thruway\AbstractSession;
 use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
+use Thruway\Manager\ManageableInterface;
+use Thruway\Manager\ManageableTrait;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
-use Thruway\Message\SubscribedMessage;
 use Thruway\Message\SubscribeMessage;
-use Thruway\Message\UnsubscribedMessage;
 use Thruway\Message\UnsubscribeMessage;
 use Thruway\Session;
-use Thruway\Subscription;
-use Thruway\Topic\TopicManager;
-use Thruway\Topic\TopicStateManagerDummy;
-use Thruway\Topic\TopicStateManagerInterface;
+use Thruway\Subscription\ExactMatcher;
+use Thruway\Subscription\MatcherInterface;
+use Thruway\Subscription\PrefixMatcher;
+use Thruway\SubscriptionGroup;
 
-/**
- * Class Broker
- *
- * @package Thruway\Role
- */
-class Broker extends AbstractRole
+class Broker implements ManageableInterface
 {
+    use ManageableTrait;
 
-    /**
-     * @var array
-     */
-    private $subscriptions;
+    protected $subscriptionGroups = [];
+    protected $matchers = [];
 
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
-    protected $manager;
-
-    /**
-     * @var TopicManager
-     */
-    private $topicManager;
-
-    /**
-     * @var TopicStateManagerInterface
-     */
-    private $topicStateManager;
-
-    /**
-     * Constructor
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     */
-    public function __construct(ManagerInterface $manager = null)
+    function __construct()
     {
-
-        $this->subscriptions = [];
-
-        $manager = $manager ? $manager : new ManagerDummy();
-
-        $this->setTopicManager(new TopicManager());
-        $this->setTopicStateManager(new TopicStateManagerDummy());
-        $this->setManager($manager);
-        Logger::debug($this, "Broker constructor");
+        $this->addMatcher(new ExactMatcher());
+        $this->addMatcher(new PrefixMatcher());
     }
 
-    /**
-     * Return supported features
-     *
-     * @return \stdClass
-     */
-    public function getFeatures()
-    {
-        $features = new \stdClass();
-
-        $features->subscriber_blackwhite_listing = true;
-        $features->publisher_exclusion           = true;
-        $features->subscriber_metaevents         = true;
-
-        return $features;
-    }
 
     /**
      * Handle received message
@@ -109,114 +59,6 @@ class Broker extends AbstractRole
     }
 
     /**
-     * Process publish message
-     *
-     * @param \Thruway\Session $session
-     * @param \Thruway\Message\PublishMessage $msg
-     */
-    protected function processPublish(Session $session, PublishMessage $msg)
-    {
-        Logger::debug($this, "Processing publish message");
-
-        //Check to make sure that the URI is valid
-        if (!Utils::uriIsValid($msg->getTopicName())) {
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
-
-            return;
-        }
-
-        // see if they wanted confirmation
-        if ($msg->acknowledge()) {
-            $publicationId = Utils::getUniqueId();
-            $session->sendMessage(new PublishedMessage($msg->getRequestId(), $publicationId));
-        }
-
-        $topicManager = $this->getTopicManager();
-        $topic        = $topicManager->getTopic($msg->getTopicName(), true);
-
-        $topic->processPublish($session, $msg);
-
-    }
-
-    /**
-     * Process subscribe message
-     *
-     * @param \Thruway\Session $session
-     * @param \Thruway\Message\SubscribeMessage $msg
-     */
-    protected function processSubscribe(Session $session, SubscribeMessage $msg)
-    {
-
-        if (!Utils::uriIsValid($msg->getTopicName())) {
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
-
-            return;
-        }
-
-        $topicManager = $this->getTopicManager();
-        $topic        = $topicManager->getTopic($msg->getTopicName(), true);
-        $subscription = Subscription::createSubscriptionFromSubscribeMessage($session, $msg);
-
-        $this->subscriptions[$subscription->getId()] = $subscription;
-
-        $topic->addSubscription($subscription);
-        $subscribedMsg = new SubscribedMessage($msg->getRequestId(), $subscription->getId());
-
-        $session->sendMessage($subscribedMsg);
-
-        if ($topic->hasStateHandler()) {
-            $topicStateManager = $this->getTopicStateManager();
-            $topicStateManager->publishState($subscription);
-        }
-
-    }
-
-    /**
-     * Process Unsubcribe message
-     *
-     * @param \Thruway\Session $session
-     * @param \Thruway\Message\UnsubscribeMessage $msg
-     */
-    protected function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
-    {
-
-        $subscription = $this->getSubscriptionById($msg->getSubscriptionId());
-
-        if (!$subscription) {
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $session->sendMessage($errorMsg->setErrorURI('wamp.error.no_such_subscription'));
-
-            return;
-        }
-
-        if ($subscription) {
-            $this->removeSubscription($subscription);
-        }
-
-        $session->sendMessage(new UnsubscribedMessage($msg->getRequestId()));
-    }
-
-    /**
-     * Get subscription by ID
-     *
-     * @param $subscriptionId
-     * @return \Thruway\Subscription|boolean
-     */
-    public function getSubscriptionById($subscriptionId)
-    {
-        /* @var $subscription \Thruway\Subscription */
-        foreach ($this->subscriptions as $subscription) {
-            if ($subscription->getId() == $subscriptionId) {
-                return $subscription;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Handle message
      * Returns true if this role handles this message.
      *
@@ -240,118 +82,143 @@ class Broker extends AbstractRole
     }
 
     /**
-     * Process a session leave
+     * Return supported features
      *
-     * @todo make this better
+     * @return \stdClass
+     */
+    public function getFeatures()
+    {
+        $features = new \stdClass();
+
+//        $features->subscriber_blackwhite_listing = true;
+//        $features->publisher_exclusion           = true;
+//        $features->subscriber_metaevents         = true;
+
+        return $features;
+    }
+
+    /**
+     * Process subscribe message
+     *
      * @param \Thruway\Session $session
+     * @param \Thruway\Message\SubscribeMessage $msg
+     * @throws \Exception
      */
-    public function leave(Session $session)
+    protected function processSubscribe(Session $session, SubscribeMessage $msg)
     {
+        // get a subscription group "hash"
+        /** @var MatcherInterface $matcher */
+        $matcher = $this->getMatcherForMatchType($msg->getMatchType());
+        if ($matcher === null) {
+            Logger::alert($this, "no matching match type for \"" . $msg->getMatchType() . "\" for URI \"" . $msg->getUri() . "\"");
+            return;
+        }
 
-        /* @var $subscription \Thruway\Subscription */
-        foreach ($this->subscriptions as $subscription) {
+        if (!$matcher->uriIsValid($msg->getUri(), $msg->getOptions())) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $session->sendMessage($errorMsg->setErrorURI('wamp.error.invalid_uri'));
 
-            if ($subscription->getSession() === $session) {
-                Logger::debug($this, "Leaving and unsubscribing: {$subscription->getTopic()}");
+            return;
+        }
 
-                $this->removeSubscription($subscription);
-            }
+        $matchHash = $matcher->getMatchHash($msg->getUri(), $msg->getOptions());
+
+        if (!isset($this->subscriptionGroups[$matchHash])) {
+            $this->subscriptionGroups[$matchHash] = new SubscriptionGroup($matcher, $msg->getUri(), $msg->getOptions());
+        }
+        /** @var SubscriptionGroup $subscriptionGroup */
+        $subscriptionGroup = $this->subscriptionGroups[$matchHash];
+
+        $subscriptionGroup->processSubscribe($session, $msg);
+    }
+
+    /**
+     * Process publish message
+     *
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\PublishMessage $msg
+     */
+    protected function processPublish(Session $session, PublishMessage $msg)
+    {
+        if ($msg->getPublicationId() === null) $msg->setPublicationId(Utils::getUniqueId());
+
+        /** @var SubscriptionGroup $subscriptionGroup */
+        foreach($this->subscriptionGroups as $subscriptionGroup) {
+            $subscriptionGroup->processPublish($session, $msg);
+        }
+
+        if ($msg->acknowledge()) {
+            $session->sendMessage(new PublishedMessage($msg->getRequestId(), $msg->getPublicationId()));
         }
     }
 
     /**
-     * @param Subscription $subscription
-     */
-    public function removeSubscription(Subscription $subscription)
-    {
-        $topicName = $subscription->getTopic();
-        $topic     = $this->getTopicManager()->getTopic($topicName);
-
-        $topic->removeSubscription($subscription->getId());
-        unset ($this->subscriptions[$subscription->getId()]);
-    }
-
-    /**
-     * Set manager
+     * Process Unsubcribe message
      *
-     * @param \Thruway\Manager\ManagerInterface $manager
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\UnsubscribeMessage $msg
      */
-    public function setManager($manager)
+    protected function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
     {
-        $this->manager = $manager;
-    }
-
-    /**
-     * get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
-     * @return array
-     */
-    public function getSubscriptions()
-    {
-        return $this->subscriptions;
-    }
-
-    /**
-     * @return TopicManager
-     */
-    public function getTopicManager()
-    {
-        return $this->topicManager;
-    }
-
-    /**
-     * @param TopicManager $topicManager
-     */
-    public function setTopicManager($topicManager)
-    {
-        $this->topicManager = $topicManager;
-    }
-
-    /**
-     * @return TopicStateManagerInterface
-     */
-    public function getTopicStateManager()
-    {
-        return $this->topicStateManager;
-    }
-
-    /**
-     * @param TopicStateManagerInterface $topicStateManager
-     */
-    public function setTopicStateManager(TopicStateManagerInterface $topicStateManager)
-    {
-        $this->topicStateManager = $topicStateManager;
-        $this->topicStateManager->setTopicManager($this->getTopicManager());
-    }
-
-    /**
-     * Get list subscriptions
-     *
-     * @return array
-     */
-    public function managerGetSubscriptions()
-    {
-        $theSubscriptions = [];
-
-        /** @var $subscription Subscription */
-        foreach ($this->subscriptions as $subscription) {
-            $theSubscriptions[] = [
-                "id"      => $subscription->getId(),
-                "topic"   => $subscription->getTopic(),
-                "session" => $subscription->getSession()->getSessionId()
-            ];
+        $subscription = false;
+        // should probably be more efficient about this - maybe later
+        /** @var SubscriptionGroup $subscriptionGroup */
+        foreach($this->subscriptionGroups as $subscriptionGroup) {
+            $subscription = $subscriptionGroup->processUnsubscribe($session, $msg);
         }
 
-        return [$theSubscriptions];
+        if ($subscription === false) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $session->sendMessage($errorMsg->setErrorURI('wamp.error.no_such_subscription'));
+
+            return;
+        }
     }
 
+    public function addMatcher(MatcherInterface $matcher) {
+        foreach($matcher->getMatchTypes() as $matchType) {
+            if (isset($this->matchers[$matchType])) return false;
+        }
+
+        foreach($matcher->getMatchTypes() as $matchType) {
+            $this->matchers[$matchType] = $matcher;
+        }
+
+        return true;
+    }
+
+    private function getMatcherForMatchType($matchType) {
+        if (isset($this->matchers[$matchType])) return $this->matchers[$matchType];
+
+        return false;
+    }
+
+    public function leave(Session $session) {
+        foreach($this->subscriptionGroups as $subscriptionGroup) {
+
+        }
+    }
+
+    public function managerGetSubscriptions() {
+        return [$this->getSubscriptions()];
+    }
+
+    public function getSubscriptions() {
+        // collect all the subscriptions into an array
+        $subscriptions = [];
+        /** @var SubscriptionGroup $subscriptionGroup */
+        foreach($this->subscriptionGroups as $subscriptionGroup) {
+            $subscriptions = array_merge($subscriptions, $subscriptionGroup->getSubscriptions());
+        }
+
+        return $subscriptions;
+    }
+
+    public function getSubscriptionById($id) {
+        /** @var SubscriptionGroup $subscriptionGroup */
+        foreach($this->subscriptionGroups as $subscriptionGroup) {
+            if ($subscriptionGroup->containsSubscriptionId($id)) return $subscriptionGroup->getSubscriptions()[$id];
+        }
+        return false;
+    }
 }
-

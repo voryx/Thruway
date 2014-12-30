@@ -403,7 +403,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->onMessage($transport, $helloMessage);
 
         //Publish Message
-        $msg = new \Thruway\Message\PublishMessage('999654321', new stdClass(), 'test.topic', ["hello world"]);
+        $msg = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), new stdClass(), 'test.topic', ["hello world"]);
+        $msg->setPublicationId('999654321');
         $router->onMessage($transport, $msg);
 
     }
@@ -472,7 +473,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $msg = new \Thruway\Message\UnsubscribeMessage('888888', $subscriptionId);
         $router->onMessage($transport, $msg);
 
-        $this->assertFalse($router->getRealmManager()->getRealm('test.realm2')->getBroker()->getSubscriptionById($subscriptionId));
+        $broker = $router->getRealmManager()->getRealm('test.realm2')->getBroker();
+        $this->assertFalse($broker->getSubscriptionById($subscriptionId));
 
     }
 

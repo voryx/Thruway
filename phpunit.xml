@@ -16,6 +16,8 @@
             <exclude>tests/WAMP/ReplaceOrphanedSessionTest.php</exclude>
             <exclude>tests/WAMP/MultipleRegistrationTest.php</exclude>
             <exclude>tests/WAMP/PingTest.php</exclude>
+            <exclude>tests/WAMP/TopicStateTest.php</exclude>
+            <exclude>tests/Unit/Topic/TopicStateManagerTest.php</exclude>
             <exclude>tests/Crossbar/CrossbarTest.php</exclude>
         </testsuite>
     </testsuites>
