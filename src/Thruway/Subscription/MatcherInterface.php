@@ -1,14 +1,14 @@
 <?php
 
 namespace Thruway\Subscription;
-use Thruway\Common\Utils;
 
 
 /**
  * Interface MatcherInterface
  * @package Thruway\Subscription
  */
-interface MatcherInterface {
+interface MatcherInterface
+{
     /**
      * @return array
      */
@@ -44,4 +44,4 @@ interface MatcherInterface {
      * @return mixed
      */
     public function isSubGroup($parentUri, $parentOptions, $childUri, $childOptions);
-} 
+}

@@ -9,6 +9,10 @@ use Thruway\Transport\TransportInterface;
 use Thruway\Transport\TransportProviderInterface;
 
 
+/**
+ * Interface RouterInterface
+ * @package Thruway\Peer
+ */
 interface RouterInterface
 {
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Thruway;
+namespace Thruway\Subscription;
 
 use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
@@ -11,7 +11,7 @@ use Thruway\Message\SubscribeMessage;
 use Thruway\Message\Traits\OptionsTrait;
 use Thruway\Message\UnsubscribedMessage;
 use Thruway\Message\UnsubscribeMessage;
-use Thruway\Subscription\MatcherInterface;
+use Thruway\Session;
 
 /**
  * Class SubscriptionGroup
@@ -21,7 +21,8 @@ use Thruway\Subscription\MatcherInterface;
  *
  * @package Thruway
  */
-class SubscriptionGroup {
+class SubscriptionGroup
+{
     use OptionsTrait;
 
     /**
@@ -67,11 +68,19 @@ class SubscriptionGroup {
         $this->lastPublicationId = 0;
     }
 
-    public function addSubscription(Subscription $subscription) {
+    /**
+     * @param Subscription $subscription
+     */
+    public function addSubscription(Subscription $subscription)
+    {
         $this->subscriptions[$subscription->getId()] = $subscription;
     }
 
-    public function removeSubscription(Subscription $subscription) {
+    /**
+     * @param Subscription $subscription
+     */
+    public function removeSubscription(Subscription $subscription)
+    {
         if (isset($this->subscriptions[$subscription->getId()])) {
             unset($this->subscriptions[$subscription->getId()]);
         }
@@ -109,7 +118,9 @@ class SubscriptionGroup {
             if ($subscription->isDisclosePublisher() === true) {
                 $eventMsg->disclosePublisher($session);
             }
-            if ($this->getMatchType() != "exact") $eventMsg->getDetails()->topic = $msg->getUri();
+            if ($this->getMatchType() != "exact") {
+                $eventMsg->getDetails()->topic = $msg->getUri();
+            }
             $subscription->sendEventMessage($eventMsg);
         }
     }
@@ -152,7 +163,9 @@ class SubscriptionGroup {
     public function getMatchType()
     {
         $options = $this->getOptions();
-        if (is_object($options) && isset($options->match) && is_scalar($options->match)) return $options->match;
+        if (is_object($options) && isset($options->match) && is_scalar($options->match)) {
+            return $options->match;
+        }
 
         return "exact";
     }
@@ -165,7 +178,9 @@ class SubscriptionGroup {
         $options = $this->getOptions();
         if (is_object($options)) {
             $options->match = $matchType;
-            if ($matchType == "exact") unset($options->match);
+            if ($matchType == "exact") {
+                unset($options->match);
+            }
         }
         $this->setOptions($options);
     }
@@ -178,8 +193,14 @@ class SubscriptionGroup {
         return $this->stateHandler;
     }
 
-    public function hasStateHandler() {
-        if ($this->stateHandler !== null) return true;
+    /**
+     * @return bool
+     */
+    public function hasStateHandler()
+    {
+        if ($this->stateHandler !== null) {
+            return true;
+        }
 
         return false;
     }
@@ -222,7 +243,13 @@ class SubscriptionGroup {
         $this->stateHandler = null;
     }
 
-    public function processSubscribe(Session $session, SubscribeMessage $msg) {
+    /**
+     * @param Session $session
+     * @param SubscribeMessage $msg
+     * @return Subscription
+     */
+    public function processSubscribe(Session $session, SubscribeMessage $msg)
+    {
         $subscription = Subscription::createSubscriptionFromSubscribeMessage($session, $msg);
 
         $this->addSubscription($subscription);
@@ -235,7 +262,13 @@ class SubscriptionGroup {
         return $subscription;
     }
 
-    public function processUnsubscribe(Session $session, UnsubscribeMessage $msg) {
+    /**
+     * @param Session $session
+     * @param UnsubscribeMessage $msg
+     * @return bool|Subscription
+     */
+    public function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
+    {
         if ($this->containsSubscriptionId($msg->getSubscriptionId())) {
             /** @var Subscription $subscription */
             $subscription = $this->subscriptions[$msg->getSubscriptionId()];
@@ -252,15 +285,25 @@ class SubscriptionGroup {
         return false;
     }
 
-    public function containsSubscriptionId($id) {
+    /**
+     * @param $id
+     * @return bool
+     */
+    public function containsSubscriptionId($id)
+    {
         return isset($this->subscriptions[$id]);
     }
 
-    public function leave(Session $session) {
+    /**
+     * @param Session $session
+     */
+    public function leave(Session $session)
+    {
         /** @var Subscription $subscription */
-        foreach($this->subscriptions as $subscription) {
+        foreach ($this->subscriptions as $subscription) {
             if ($subscription->getSession() === $session &&
-                $this->containsSubscriptionId($subscription->getId())) {
+                $this->containsSubscriptionId($subscription->getId())
+            ) {
                 unset($this->subscriptions[$subscription->getId()]);
             }
         }

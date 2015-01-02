@@ -6,7 +6,12 @@ namespace Thruway\Subscription;
 
 use Thruway\Common\Utils;
 
-class PrefixMatcher implements MatcherInterface {
+/**
+ * Class PrefixMatcher
+ * @package Thruway\Subscription
+ */
+class PrefixMatcher implements MatcherInterface
+{
     /**
      * @return array
      */
@@ -60,6 +65,5 @@ class PrefixMatcher implements MatcherInterface {
     {
         return $this->matches($childUri, $parentUri, $parentOptions);
     }
-
 
 }

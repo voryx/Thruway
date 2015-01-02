@@ -1,11 +1,12 @@
 <?php
 
-namespace Thruway;
+namespace Thruway\Subscription;
 
 use Thruway\Common\Utils;
 use Thruway\Message\EventMessage;
 use Thruway\Message\SubscribeMessage;
 use Thruway\Message\Traits\OptionsTrait;
+use Thruway\Session;
 
 /**
  * Class Subscription
@@ -42,7 +43,7 @@ class Subscription
     private $pauseQueue;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $disclosePublisher;
 
@@ -159,7 +160,6 @@ class Subscription
     }
 
 
-
     /**
      * @return boolean
      */
@@ -181,10 +181,15 @@ class Subscription
      */
     public function pauseForState()
     {
-        if ($this->pausedForState) throw new \Exception("Tried to paused already paused subscription");
+        if ($this->pausedForState) {
+            throw new \Exception("Tried to paused already paused subscription");
+        }
         $this->pausedForState = true;
     }
 
+    /**
+     * @return bool
+     */
     public function isPausedForState()
     {
         return $this->pausedForState;
@@ -196,14 +201,20 @@ class Subscription
      */
     public function unPauseForState($lastPublicationId = null)
     {
-        if (!$this->pausedForState) throw new \Exception("Tried to unpaused subscription that was not paused");
+        if (!$this->pausedForState) {
+            throw new \Exception("Tried to unpaused subscription that was not paused");
+        }
 
         $this->pausedForState = false;
 
         $this->processStateQueue($lastPublicationId);
     }
 
-    private function processStateQueue($lastPublicationId = null) {
+    /**
+     * @param null $lastPublicationId
+     */
+    private function processStateQueue($lastPublicationId = null)
+    {
         if ($lastPublicationId !== null) {
             // create an array of pub ids
             // if we can't find the lastPublicationId in the queue
@@ -211,21 +222,31 @@ class Subscription
             $pubIds = [];
 
             /** @var EventMessage $msg */
-            foreach($this->pauseQueue as $msg) {
+            foreach ($this->pauseQueue as $msg) {
                 $pubIds[] = $msg->getPublicationId();
             }
 
-            if (!in_array($lastPublicationId, $pubIds)) $lastPublicationId = null;
+            if (!in_array($lastPublicationId, $pubIds)) {
+                $lastPublicationId = null;
+            }
         }
 
         while (!$this->pauseQueue->isEmpty()) {
             $msg = $this->pauseQueue->dequeue();
-            if ($lastPublicationId === null) $this->sendEventMessage($msg);
-            if ($lastPublicationId == $msg->getPublicationId()) $lastPublicationId = null;
+            if ($lastPublicationId === null) {
+                $this->sendEventMessage($msg);
+            }
+            if ($lastPublicationId == $msg->getPublicationId()) {
+                $lastPublicationId = null;
+            }
         }
     }
 
-    public function sendEventMessage(EventMessage $msg) {
+    /**
+     * @param EventMessage $msg
+     */
+    public function sendEventMessage(EventMessage $msg)
+    {
         if ($this->pausedForState && !$msg->isRestoringState()) {
             $this->pauseQueue->enqueue($msg);
             return;

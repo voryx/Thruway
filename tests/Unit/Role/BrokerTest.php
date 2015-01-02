@@ -218,7 +218,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         $registry->expects($this->once())
             ->method('processSubscriptionAdded')
-            ->with($this->isInstanceOf('\Thruway\Subscription'));
+            ->with($this->isInstanceOf('\Thruway\Subscription\Subscription'));
 
         $broker = new \Thruway\Role\Broker();
 

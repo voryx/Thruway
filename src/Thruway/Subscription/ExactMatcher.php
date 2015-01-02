@@ -4,17 +4,38 @@ namespace Thruway\Subscription;
 
 use Thruway\Common\Utils;
 
-class ExactMatcher implements MatcherInterface {
+/**
+ * Class ExactMatcher
+ * @package Thruway\Subscription
+ */
+class ExactMatcher implements MatcherInterface
+{
+    /**
+     * @return array
+     */
     public function getMatchTypes()
     {
         return ["exact"];
     }
 
-    public function getMatchHash($uri, $options) {
+    /**
+     * @param $uri
+     * @param $options
+     * @return string
+     */
+    public function getMatchHash($uri, $options)
+    {
         return "exact_" . $uri;
     }
 
-    public function matches($eventUri, $subscriptionUri, $subscriptionOptions) {
+    /**
+     * @param $eventUri
+     * @param $subscriptionUri
+     * @param $subscriptionOptions
+     * @return bool
+     */
+    public function matches($eventUri, $subscriptionUri, $subscriptionOptions)
+    {
         return $eventUri == $subscriptionUri;
     }
 
@@ -39,6 +60,5 @@ class ExactMatcher implements MatcherInterface {
     {
         return $parentUri == $childUri;
     }
-
 
 }

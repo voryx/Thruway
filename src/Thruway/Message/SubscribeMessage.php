@@ -102,8 +102,15 @@ class SubscribeMessage extends Message implements ActionMessageInterface
         return "subscribe";
     }
 
-    static public function getMatchTypeFromOption($options) {
-        if (is_object($options) && isset($options->match) && is_scalar($options->match)) return $options->match;
+    /**
+     * @param $options
+     * @return string
+     */
+    static public function getMatchTypeFromOption($options)
+    {
+        if (is_object($options) && isset($options->match) && is_scalar($options->match)) {
+            return $options->match;
+        }
 
         return "exact";
     }

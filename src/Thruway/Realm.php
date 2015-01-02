@@ -333,8 +333,8 @@ class Realm
 
         $manager->addCallable(
             "realm.{$this->getRealmName()}.registrations", function () {
-                return $this->dealer->managerGetRegistrations();
-            }
+            return $this->dealer->managerGetRegistrations();
+        }
         );
     }
 

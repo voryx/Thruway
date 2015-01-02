@@ -10,10 +10,13 @@ use Thruway\Message\SubscribeMessage;
 use Thruway\Module\Module;
 use Thruway\Realm;
 use Thruway\Role\Broker;
-use Thruway\Subscription;
-use Thruway\SubscriptionGroup;
 
-class StateHandlerRegistry extends Module {
+/**
+ * Class StateHandlerRegistry
+ * @package Thruway\Subscription
+ */
+class StateHandlerRegistry extends Module
+{
     /**
      * @var boolean
      */
@@ -58,7 +61,7 @@ class StateHandlerRegistry extends Module {
     public function onInitialize()
     {
         $this->routerRealm = $this->getRouter()->getRealmManager()->getRealm($this->getRealm());
-        $this->broker = $this->routerRealm->getBroker();
+        $this->broker      = $this->routerRealm->getBroker();
         $this->broker->setStateHandlerRegistry($this);
     }
 
@@ -92,12 +95,12 @@ class StateHandlerRegistry extends Module {
      */
     public function addStateHandler($args)
     {
-        $uri    = isset($args[0]->uri) ? $args[0]->uri : null;
-        $handlerUri   = isset($args[0]->handler_uri) ? $args[0]->handler_uri : null;
-        $options = isset($args[0]->options) && is_object($args[0]->options) ? $args[0]->options : new \stdClass();
+        $uri        = isset($args[0]->uri) ? $args[0]->uri : null;
+        $handlerUri = isset($args[0]->handler_uri) ? $args[0]->handler_uri : null;
+        $options    = isset($args[0]->options) && is_object($args[0]->options) ? $args[0]->options : new \stdClass();
 
         $matchType = SubscribeMessage::getMatchTypeFromOption($options);
-        $matcher = $this->broker->getMatcherForMatchType($matchType);
+        $matcher   = $this->broker->getMatcherForMatchType($matchType);
 
         if ($uri === null) {
             throw new \Exception("No uri set for state handler registration.");
@@ -128,7 +131,8 @@ class StateHandlerRegistry extends Module {
     /**
      * @param StateHandlerRegistration $stateHandlerRegistration
      */
-    private function mapNewStateHandlerRegistration($stateHandlerRegistration) {
+    private function mapNewStateHandlerRegistration($stateHandlerRegistration)
+    {
         $subscriptionGroups = $this->broker->getSubscriptionGroups();
         /** @var SubscriptionGroup $subscriptionGroup */
         foreach ($subscriptionGroups as $subscriptionGroup) {
@@ -168,9 +172,10 @@ class StateHandlerRegistry extends Module {
      *
      * @param SubscriptionGroup $subscriptionGroup
      */
-    private function setupStateHandlerRegistration(SubscriptionGroup $subscriptionGroup) {
+    private function setupStateHandlerRegistration(SubscriptionGroup $subscriptionGroup)
+    {
         /** @var StateHandlerRegistration $stateHandlerRegistration */
-        foreach($this->stateHandlerRegistrations as $stateHandlerRegistration) {
+        foreach ($this->stateHandlerRegistrations as $stateHandlerRegistration) {
             if ($stateHandlerRegistration->handlesStateFor($subscriptionGroup)) {
                 $this->stateHandlerMap->attach($subscriptionGroup, $stateHandlerRegistration);
                 return;
@@ -183,7 +188,8 @@ class StateHandlerRegistry extends Module {
      * @param Subscription $subscription
      * @return StateHandlerRegistration|bool|null
      */
-    private function getStateHandlerRegistrationForSubscription(Subscription $subscription) {
+    private function getStateHandlerRegistrationForSubscription(Subscription $subscription)
+    {
         $subscriptionGroup = $subscription->getSubscriptionGroup();
         if ($subscriptionGroup instanceof SubscriptionGroup) {
             if (!$this->stateHandlerMap->contains($subscriptionGroup)) {
@@ -201,14 +207,21 @@ class StateHandlerRegistry extends Module {
     /**
      * @param Subscription $subscription
      */
-    public function processSubscriptionAdded(Subscription $subscription) {
+    public function processSubscriptionAdded(Subscription $subscription)
+    {
         $stateHandlerRegistration = $this->getStateHandlerRegistrationForSubscription($subscription);
         if ($stateHandlerRegistration !== false && $stateHandlerRegistration !== null) {
             $stateHandlerRegistration->publishState($subscription);
         }
     }
 
-    public function processSubscriptionRemoved(Subscription $subscription) {
+    /**
+     * @param Subscription $subscription
+     */
+    public function processSubscriptionRemoved(Subscription $subscription)
+    {
 
     }
-} 
+
+}
+

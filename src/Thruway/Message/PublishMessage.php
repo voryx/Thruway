@@ -225,6 +225,6 @@ class PublishMessage extends Message implements ActionMessageInterface
         $this->publicationId = $publicationId;
     }
 
-
 }
+
 

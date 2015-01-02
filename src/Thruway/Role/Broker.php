@@ -18,19 +18,34 @@ use Thruway\Subscription\ExactMatcher;
 use Thruway\Subscription\MatcherInterface;
 use Thruway\Subscription\PrefixMatcher;
 use Thruway\Subscription\StateHandlerRegistry;
-use Thruway\SubscriptionGroup;
+use Thruway\Subscription\SubscriptionGroup;
 
+/**
+ * Class Broker
+ * @package Thruway\Role
+ */
 class Broker implements ManageableInterface
 {
     use ManageableTrait;
 
+    /**
+     * @var array
+     */
     protected $subscriptionGroups = [];
+
+    /**
+     * @var array
+     */
     protected $matchers = [];
+
     /**
      * @var StateHandlerRegistry
      */
     protected $stateHandlerRegistry;
 
+    /**
+     *
+     */
     function __construct()
     {
         $this->addMatcher(new ExactMatcher());
@@ -115,7 +130,8 @@ class Broker implements ManageableInterface
         /** @var MatcherInterface $matcher */
         $matcher = $this->getMatcherForMatchType($msg->getMatchType());
         if ($matcher === null) {
-            Logger::alert($this, "no matching match type for \"" . $msg->getMatchType() . "\" for URI \"" . $msg->getUri() . "\"");
+            Logger::alert($this,
+                "no matching match type for \"" . $msg->getMatchType() . "\" for URI \"" . $msg->getUri() . "\"");
             return;
         }
 
@@ -131,10 +147,10 @@ class Broker implements ManageableInterface
         if (!isset($this->subscriptionGroups[$matchHash])) {
             $this->subscriptionGroups[$matchHash] = new SubscriptionGroup($matcher, $msg->getUri(), $msg->getOptions());
         }
+
         /** @var SubscriptionGroup $subscriptionGroup */
         $subscriptionGroup = $this->subscriptionGroups[$matchHash];
-
-        $subscription = $subscriptionGroup->processSubscribe($session, $msg);
+        $subscription      = $subscriptionGroup->processSubscribe($session, $msg);
 
         $registry = $this->getStateHandlerRegistry();
         if ($registry !== null) {
@@ -150,10 +166,12 @@ class Broker implements ManageableInterface
      */
     protected function processPublish(Session $session, PublishMessage $msg)
     {
-        if ($msg->getPublicationId() === null) $msg->setPublicationId(Utils::getUniqueId());
+        if ($msg->getPublicationId() === null) {
+            $msg->setPublicationId(Utils::getUniqueId());
+        }
 
         /** @var SubscriptionGroup $subscriptionGroup */
-        foreach($this->subscriptionGroups as $subscriptionGroup) {
+        foreach ($this->subscriptionGroups as $subscriptionGroup) {
             $subscriptionGroup->processPublish($session, $msg);
         }
 
@@ -163,7 +181,7 @@ class Broker implements ManageableInterface
     }
 
     /**
-     * Process Unsubcribe message
+     * Process Unsubscribe message
      *
      * @param \Thruway\Session $session
      * @param \Thruway\Message\UnsubscribeMessage $msg
@@ -173,7 +191,7 @@ class Broker implements ManageableInterface
         $subscription = false;
         // should probably be more efficient about this - maybe later
         /** @var SubscriptionGroup $subscriptionGroup */
-        foreach($this->subscriptionGroups as $subscriptionGroup) {
+        foreach ($this->subscriptionGroups as $subscriptionGroup) {
             $subscription = $subscriptionGroup->processUnsubscribe($session, $msg);
         }
 
@@ -185,12 +203,19 @@ class Broker implements ManageableInterface
         }
     }
 
-    public function addMatcher(MatcherInterface $matcher) {
-        foreach($matcher->getMatchTypes() as $matchType) {
-            if (isset($this->matchers[$matchType])) return false;
+    /**
+     * @param MatcherInterface $matcher
+     * @return bool
+     */
+    public function addMatcher(MatcherInterface $matcher)
+    {
+        foreach ($matcher->getMatchTypes() as $matchType) {
+            if (isset($this->matchers[$matchType])) {
+                return false;
+            }
         }
 
-        foreach($matcher->getMatchTypes() as $matchType) {
+        foreach ($matcher->getMatchTypes() as $matchType) {
             $this->matchers[$matchType] = $matcher;
         }
 
@@ -201,38 +226,61 @@ class Broker implements ManageableInterface
      * @param $matchType
      * @return MatcherInterface|bool
      */
-    public function getMatcherForMatchType($matchType) {
-        if (isset($this->matchers[$matchType])) return $this->matchers[$matchType];
+    public function getMatcherForMatchType($matchType)
+    {
+        if (isset($this->matchers[$matchType])) {
+            return $this->matchers[$matchType];
+        }
 
         return false;
     }
 
-    public function leave(Session $session) {
-        foreach($this->subscriptionGroups as $subscriptionGroup) {
+    /**
+     * @param Session $session
+     */
+    public function leave(Session $session)
+    {
+        foreach ($this->subscriptionGroups as $subscriptionGroup) {
 
         }
     }
 
-    public function managerGetSubscriptions() {
+    /**
+     * @return array
+     */
+    public function managerGetSubscriptions()
+    {
         return [$this->getSubscriptions()];
     }
 
-    public function getSubscriptions() {
+    /**
+     * @return array
+     */
+    public function getSubscriptions()
+    {
         // collect all the subscriptions into an array
         $subscriptions = [];
         /** @var SubscriptionGroup $subscriptionGroup */
-        foreach($this->subscriptionGroups as $subscriptionGroup) {
+        foreach ($this->subscriptionGroups as $subscriptionGroup) {
             $subscriptions = array_merge($subscriptions, $subscriptionGroup->getSubscriptions());
         }
 
         return $subscriptions;
     }
 
-    public function getSubscriptionById($id) {
+    /**
+     * @param $id
+     * @return bool
+     */
+    public function getSubscriptionById($id)
+    {
         /** @var SubscriptionGroup $subscriptionGroup */
-        foreach($this->subscriptionGroups as $subscriptionGroup) {
-            if ($subscriptionGroup->containsSubscriptionId($id)) return $subscriptionGroup->getSubscriptions()[$id];
+        foreach ($this->subscriptionGroups as $subscriptionGroup) {
+            if ($subscriptionGroup->containsSubscriptionId($id)) {
+                return $subscriptionGroup->getSubscriptions()[$id];
+            }
         }
+
         return false;
     }
 

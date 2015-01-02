@@ -466,7 +466,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 )
             )->will($this->returnValue(null));
 
-        $this->assertInstanceOf('\Thruway\Subscription',
+        $this->assertInstanceOf('\Thruway\Subscription\Subscription',
             $router->getRealmManager()->getRealm('test.realm2')->getBroker()->getSubscriptionById($subscriptionId)
         );
 

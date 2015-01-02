@@ -4,7 +4,12 @@
 namespace Thruway\Manager;
 
 
-trait ManageableTrait {
+/**
+ * Class ManageableTrait
+ * @package Thruway\Manager
+ */
+trait ManageableTrait
+{
     /**
      * @var ManagerInterface
      */

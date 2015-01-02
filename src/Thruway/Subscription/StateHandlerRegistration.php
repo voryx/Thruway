@@ -8,10 +8,9 @@ use Thruway\ClientSession;
 use Thruway\Logging\Logger;
 use Thruway\Message\Traits\OptionsMatchTypeTrait;
 use Thruway\Message\Traits\OptionsTrait;
-use Thruway\Subscription;
-use Thruway\SubscriptionGroup;
 
-class StateHandlerRegistration {
+class StateHandlerRegistration
+{
     use OptionsTrait;
     use OptionsMatchTypeTrait;
 
@@ -58,10 +57,13 @@ class StateHandlerRegistration {
 
         $sessionId = $subscription->getSession()->getSessionId();
 
-        $this->clientSession->call($this->getProcedureName(), [$subscription->getUri(), $sessionId, $subscription->getOptions()])->then(
+        $this->clientSession->call($this->getProcedureName(),
+            [$subscription->getUri(), $sessionId, $subscription->getOptions()])->then(
             function ($res) use ($subscription) {
                 $pubId = null;
-                if (isset($res[0])) $pubId = $res[0];
+                if (isset($res[0])) {
+                    $pubId = $res[0];
+                }
                 $subscription->unPauseForState($pubId);
             },
             function ($error) use ($subscription) {
@@ -136,10 +138,13 @@ class StateHandlerRegistration {
         $this->matcher = $matcher;
     }
 
-    public function handlesStateFor(SubscriptionGroup $subscriptionGroup) {
-        if ($subscriptionGroup->getMatchType() !== $this->getMatchType()) return false;
+    public function handlesStateFor(SubscriptionGroup $subscriptionGroup)
+    {
+        if ($subscriptionGroup->getMatchType() !== $this->getMatchType()) {
+            return false;
+        }
 
-        $sgUri = $subscriptionGroup->getUri();
+        $sgUri     = $subscriptionGroup->getUri();
         $sgOptions = $subscriptionGroup->getOptions();
 
         return $this->matcher->isSubGroup($this->getUri(), $this->getOptions(), $sgUri, $sgOptions);

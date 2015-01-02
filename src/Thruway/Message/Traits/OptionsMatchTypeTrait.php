@@ -6,7 +6,12 @@ namespace Thruway\Message\Traits;
 
 use Thruway\Message\SubscribeMessage;
 
-trait OptionsMatchTypeTrait {
+/**
+ * Class OptionsMatchTypeTrait
+ * @package Thruway\Message\Traits
+ */
+trait OptionsMatchTypeTrait
+{
     /**
      * @return string
      */
@@ -23,7 +28,9 @@ trait OptionsMatchTypeTrait {
         $options = $this->getOptions();
         if (is_object($options)) {
             $options->match = $matchType;
-            if ($matchType == "exact") unset($options->match);
+            if ($matchType == "exact") {
+                unset($options->match);
+            }
         }
         $this->setOptions($options);
     }

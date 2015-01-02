@@ -279,6 +279,9 @@ class Client extends AbstractPeer implements EventEmitterInterface, ClientInterf
         $session->sendMessage(new HelloMessage($session->getRealm(), $details));
     }
 
+    /**
+     * @return object
+     */
     public function getRoleInfoObject()
     {
         return (object)[
@@ -643,5 +646,5 @@ class Client extends AbstractPeer implements EventEmitterInterface, ClientInterf
         return $this->realm;
     }
 
-
 }
+

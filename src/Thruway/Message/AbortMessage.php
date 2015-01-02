@@ -11,7 +11,6 @@ use Thruway\Message\Traits\DetailsTrait;
  *
  * @package Thruway\Message
  */
-
 class AbortMessage extends Message
 {
 
