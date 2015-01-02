@@ -17,6 +17,7 @@ use Thruway\Session;
 use Thruway\Subscription\ExactMatcher;
 use Thruway\Subscription\MatcherInterface;
 use Thruway\Subscription\PrefixMatcher;
+use Thruway\Subscription\StateHandlerRegistry;
 use Thruway\SubscriptionGroup;
 
 class Broker implements ManageableInterface
@@ -25,6 +26,10 @@ class Broker implements ManageableInterface
 
     protected $subscriptionGroups = [];
     protected $matchers = [];
+    /**
+     * @var StateHandlerRegistry
+     */
+    protected $stateHandlerRegistry;
 
     function __construct()
     {
@@ -90,9 +95,9 @@ class Broker implements ManageableInterface
     {
         $features = new \stdClass();
 
-//        $features->subscriber_blackwhite_listing = true;
-//        $features->publisher_exclusion           = true;
-//        $features->subscriber_metaevents         = true;
+        $features->subscriber_blackwhite_listing = true;
+        $features->publisher_exclusion           = true;
+        $features->subscriber_metaevents         = true;
 
         return $features;
     }
@@ -129,7 +134,12 @@ class Broker implements ManageableInterface
         /** @var SubscriptionGroup $subscriptionGroup */
         $subscriptionGroup = $this->subscriptionGroups[$matchHash];
 
-        $subscriptionGroup->processSubscribe($session, $msg);
+        $subscription = $subscriptionGroup->processSubscribe($session, $msg);
+
+        $registry = $this->getStateHandlerRegistry();
+        if ($registry !== null) {
+            $registry->processSubscriptionAdded($subscription);
+        }
     }
 
     /**
@@ -187,7 +197,11 @@ class Broker implements ManageableInterface
         return true;
     }
 
-    private function getMatcherForMatchType($matchType) {
+    /**
+     * @param $matchType
+     * @return MatcherInterface|bool
+     */
+    public function getMatcherForMatchType($matchType) {
         if (isset($this->matchers[$matchType])) return $this->matchers[$matchType];
 
         return false;
@@ -220,5 +234,29 @@ class Broker implements ManageableInterface
             if ($subscriptionGroup->containsSubscriptionId($id)) return $subscriptionGroup->getSubscriptions()[$id];
         }
         return false;
+    }
+
+    /**
+     * @return StateHandlerRegistry
+     */
+    public function getStateHandlerRegistry()
+    {
+        return $this->stateHandlerRegistry;
+    }
+
+    /**
+     * @param StateHandlerRegistry $stateHandlerRegistry
+     */
+    public function setStateHandlerRegistry($stateHandlerRegistry)
+    {
+        $this->stateHandlerRegistry = $stateHandlerRegistry;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSubscriptionGroups()
+    {
+        return $this->subscriptionGroups;
     }
 }

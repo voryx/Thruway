@@ -5,7 +5,6 @@ require_once __DIR__ . '/Clients/InternalClient.php';
 require_once __DIR__ . '/Clients/SimpleAuthProviderClient.php';
 require_once __DIR__ . '/Clients/AbortAfterHelloAuthProviderClient.php';
 require_once __DIR__ . '/Clients/DisclosePublisherClient.php';
-require_once __DIR__ . '/Clients/TopicStateClient.php';
 require_once __DIR__ . '/UserDb.php';
 
 use Thruway\Logging\Logger;
@@ -33,10 +32,8 @@ $router->registerModules([
     new InternalClient('testRealm'),
     // Client for Disclose Publisher Test
     new DisclosePublisherClient('testSimpleAuthRealm'),
-    // Topic State Testing
-    //new \Thruway\Topic\TopicStateManager('topic.state.test.realm'),
-    // Add the State Handler Client
-    //new TopicStateClient('topic.state.test.realm'),
+    // State Handler Testing
+    new \Thruway\Subscription\StateHandlerRegistry('state.test.realm'),
 
 ]);
 

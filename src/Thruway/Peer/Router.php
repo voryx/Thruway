@@ -155,9 +155,10 @@ class Router extends AbstractPeer implements RouterInterface
     /**
      * Start router
      *
+     * @param bool $runLoop
      * @throws \Exception
      */
-    public function start()
+    public function start($runLoop = true)
     {
         Logger::info($this, "Starting router");
         if ($this->loop === null) {
@@ -177,7 +178,9 @@ class Router extends AbstractPeer implements RouterInterface
         $this->setupManager();
 
         Logger::info($this, "Starting loop");
-        $this->loop->run();
+        if ($runLoop) {
+            $this->loop->run();
+        }
     }
 
     /**

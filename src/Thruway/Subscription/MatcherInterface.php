@@ -35,4 +35,13 @@ interface MatcherInterface {
      * @return bool
      */
     public function uriIsValid($uri, $options);
+
+    /**
+     * @param $parentUri
+     * @param $parentOptions
+     * @param $childUri
+     * @param $childOptions
+     * @return mixed
+     */
+    public function isSubGroup($parentUri, $parentOptions, $childUri, $childOptions);
 } 

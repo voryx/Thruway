@@ -50,6 +50,11 @@ class SubscriptionGroup {
     protected $matcher;
 
     /**
+     * @var int
+     */
+    protected $lastPublicationId;
+
+    /**
      * @param MatcherInterface $matcher
      * @param $uri
      * @param $options
@@ -59,6 +64,7 @@ class SubscriptionGroup {
         $this->setOptions($options);
         $this->setUri($uri);
         $this->setMatcher($matcher);
+        $this->lastPublicationId = 0;
     }
 
     public function addSubscription(Subscription $subscription) {
@@ -78,6 +84,7 @@ class SubscriptionGroup {
     public function processPublish(Session $session, PublishMessage $msg)
     {
         if ($this->getMatcher()->matches($msg->getTopicName(), $this->getUri(), $this->getOptions())) {
+            $this->lastPublicationId = $msg->getPublicationId();
             foreach ($this->getSubscriptions() as $subscription) {
                 $this->sendEventMessage($session, $msg, $subscription);
             }
@@ -103,9 +110,8 @@ class SubscriptionGroup {
                 $eventMsg->disclosePublisher($session);
             }
             if ($this->getMatchType() != "exact") $eventMsg->getDetails()->topic = $msg->getUri();
-            $subscription->getSession()->sendMessage($eventMsg);
+            $subscription->sendEventMessage($eventMsg);
         }
-
     }
 
     /**
@@ -237,7 +243,8 @@ class SubscriptionGroup {
                 Logger::alert($this, "Unsubscribe request from non-owner: " . json_encode($msg));
                 return false;
             }
-            unset($this->subscriptions[$msg->getSubscriptionId()]);
+
+            $this->removeSubscription($subscription);
 
             $session->sendMessage(new UnsubscribedMessage($msg->getRequestId()));
             return $subscription;
@@ -257,5 +264,13 @@ class SubscriptionGroup {
                 unset($this->subscriptions[$subscription->getId()]);
             }
         }
+    }
+
+    /**
+     * @return int
+     */
+    public function getLastPublicationId()
+    {
+        return $this->lastPublicationId;
     }
 }

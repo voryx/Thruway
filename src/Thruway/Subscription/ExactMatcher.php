@@ -27,4 +27,18 @@ class ExactMatcher implements MatcherInterface {
     {
         return Utils::uriIsValid($uri);
     }
+
+    /**
+     * @param $parentUri
+     * @param $parentOptions
+     * @param $childUri
+     * @param $childOptions
+     * @return mixed
+     */
+    public function isSubGroup($parentUri, $parentOptions, $childUri, $childOptions)
+    {
+        return $parentUri == $childUri;
+    }
+
+
 }

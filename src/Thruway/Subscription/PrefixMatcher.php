@@ -48,4 +48,18 @@ class PrefixMatcher implements MatcherInterface {
         // allow matches to a normal URI or one with a trailing dot
         return Utils::uriIsValid($uri) || Utils::uriIsValid($uri . ".");
     }
+
+    /**
+     * @param $parentUri
+     * @param $parentOptions
+     * @param $childUri
+     * @param $childOptions
+     * @return mixed
+     */
+    public function isSubGroup($parentUri, $parentOptions, $childUri, $childOptions)
+    {
+        return $this->matches($childUri, $parentUri, $parentOptions);
+    }
+
+
 }
