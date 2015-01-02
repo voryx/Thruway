@@ -5,14 +5,13 @@ namespace Thruway\Module;
 
 
 use React\EventLoop\LoopInterface;
-use Thruway\Peer\ClientInterface;
 use Thruway\Peer\RouterInterface;
 
 /**
  * Interface ModuleInterface
  * @package Thruway\Module
  */
-interface ModuleInterface extends ClientInterface
+interface ModuleInterface
 {
 
     /**

@@ -64,6 +64,6 @@ interface ClientInterface
      * @param boolean $startLoop
      * @throws \Exception
      */
-    public function start($startLoop);
+    public function start($startLoop = true);
 
 }
