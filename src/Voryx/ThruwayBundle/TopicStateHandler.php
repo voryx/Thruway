@@ -40,7 +40,7 @@ class TopicStateHandler
 
             //Register Topic Handlers
             $registration->topic = $topicStateHandler;
-            $session->call('add_topic_handler', [$registration])->then(
+            $session->call('add_state_handler', [$registration])->then(
                 function ($res) use ($annotation){
                     Logger::info($this,
                         "Registered topic handler RPC: '{$annotation->getName()}'' for topic: '{$annotation->getTopicStateHandlerFor()}'"
