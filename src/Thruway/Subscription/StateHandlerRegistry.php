@@ -137,7 +137,9 @@ class StateHandlerRegistry extends Module
         /** @var SubscriptionGroup $subscriptionGroup */
         foreach ($subscriptionGroups as $subscriptionGroup) {
             // only check groups without an existing state handler
-            if (!$this->stateHandlerMap->contains($subscriptionGroup)) {
+            if (!$this->stateHandlerMap->contains($subscriptionGroup)
+                || ($this->stateHandlerMap->contains($subscriptionGroup) && $this->stateHandlerMap[$subscriptionGroup] === null)
+            ) {
                 if ($stateHandlerRegistration->handlesStateFor($subscriptionGroup)) {
                     $this->stateHandlerMap[$subscriptionGroup] = $stateHandlerRegistration;
                 }
