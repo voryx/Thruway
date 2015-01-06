@@ -8,6 +8,7 @@ use Thruway\Message\EventMessage;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\SubscribedMessage;
 use Thruway\Message\SubscribeMessage;
+use Thruway\Message\Traits\OptionsMatchTypeTrait;
 use Thruway\Message\Traits\OptionsTrait;
 use Thruway\Message\UnsubscribedMessage;
 use Thruway\Message\UnsubscribeMessage;
@@ -24,6 +25,8 @@ use Thruway\Session;
 class SubscriptionGroup
 {
     use OptionsTrait;
+
+    use OptionsMatchTypeTrait;
 
     /**
      * @var string
@@ -168,21 +171,6 @@ class SubscriptionGroup
         }
 
         return "exact";
-    }
-
-    /**
-     * @param string $matchType
-     */
-    public function setMatchType($matchType)
-    {
-        $options = $this->getOptions();
-        if (is_object($options)) {
-            $options->match = $matchType;
-            if ($matchType == "exact") {
-                unset($options->match);
-            }
-        }
-        $this->setOptions($options);
     }
 
     /**
