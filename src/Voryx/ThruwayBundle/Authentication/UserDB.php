@@ -30,7 +30,13 @@ class UserDB implements WampCraUserDbInterface
      */
     public function get($authid)
     {
-        $user = $this->container->get('in_memory_user_provider')->loadUserByUsername($authid);
+        $userProvider = $this->container->getParameter('voryx_thruway')['user_provider'];
+
+        if(null === $userProvider) {
+            throw new \Exception('voryx_thruway.user_provider must be set.');
+        }
+
+        $user = $this->container->get($userProvider)->loadUserByUsername($authid);
         if (!$user) {
             //@todo replace this with an exception that thruway can handle
             throw new \Exception("Can't log in, bad credentials");

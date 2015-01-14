@@ -65,6 +65,33 @@ You can also tag services with `thruway.resource` and any annotation will get pi
 ```
 
 
+### Authentication with FOSUserBundle via WampCRA
+
+Change the Password Encoder (tricky on existing sites) to master wamp challenge
+
+```yml
+#app/config/security.yml
+
+security:
+    ...
+    encoders:
+        FOS\UserBundle\Model\UserInterface:
+            algorithm:            pbkdf2
+            hash_algorithm:       sha256
+            encode_as_base64:     true
+            iterations:           1000
+            key_length:           32
+```
+
+set voryx_thruway.user_provider to "fos_user.user_manager"
+
+```yml
+#app/config/config.yml
+
+voryx_thruway:
+    user_provider: 'fos_user.user_manager' 
+```
+
 ## Usage
 
 
