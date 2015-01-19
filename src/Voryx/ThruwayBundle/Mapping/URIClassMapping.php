@@ -50,7 +50,7 @@ class URIClassMapping implements MappingInterface
     }
 
     /**
-     * @return mixed|void
+     * @return AnnotationInterface
      */
     public function getAnnotation()
     {
@@ -67,7 +67,7 @@ class URIClassMapping implements MappingInterface
     }
 
     /**
-     * @return mixed|void
+     * @return \ReflectionMethod
      */
     public function getMethod()
     {

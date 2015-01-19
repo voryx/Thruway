@@ -352,9 +352,6 @@ class WampKernel implements HttpKernelInterface
                 $className = null;
                 if ($param->getClass() && $param->getClass()->getName()) {
                     if (!$param->getClass()->isInstantiable()) {
-                        $this->container->get('monolog.logger.emergency')->error(
-                            "Can't deserialize to '{$param->getClass()->getName()}', because it is not instantiable."
-                        );
 
                         throw new \Exception(
                             "Can't deserialize to '{$param->getClass()->getName()}', because it is not instantiable."
@@ -373,7 +370,8 @@ class WampKernel implements HttpKernelInterface
             return $deserializedArgs;
 
         } catch (\Exception $e) {
-            $this->container->get('monolog.logger.emergency')->error($e->getMessage());
+            $this->container->get('logger')->addEmergency($e->getMessage());
+
         }
 
         return [];
