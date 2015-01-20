@@ -28,7 +28,7 @@ Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloadin
       
 Download Thruway and dependencies
 
-      $ php composer.phar require "voryx/thruway":"0.2.*"
+      $ php composer.phar require "voryx/thruway":"0.3.*"
 
 Start the WAMP server
 
@@ -99,11 +99,14 @@ $connection->on('open',function (ClientSession $session) {
 $connection->open();
 ```
 
-### Javascript Client
+### Javascript Clients
 
 You can also use [AutobahnJS](https://github.com/tavendo/AutobahnJS) or any other WAMPv2 compatible client.
 
 Here are some [examples] (https://github.com/tavendo/AutobahnJS#show-me-some-code)
 
 Here's a [plunker](http://plnkr.co/edit/8vcBDUzIhp48JtuTGIaj?p=info) that will allow you to run some tests against a local server 
+
+For AngularJS on the frontend, use the [Angular WAMP](https://github.com/voryx/angular-wamp) wrapper.
+
 
