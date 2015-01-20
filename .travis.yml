@@ -12,7 +12,6 @@ matrix:
 
 before_install:
      - sudo apt-get install python-pip -qq
-     - sudo apt-get install -qq coreutils
      - sudo apt-get install -qq build-essential libssl-dev libffi-dev python-dev python-pip
      - sudo pip install crossbar
 
