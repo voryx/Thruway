@@ -18,6 +18,7 @@ use Thruway\Subscription\ExactMatcher;
 use Thruway\Subscription\MatcherInterface;
 use Thruway\Subscription\PrefixMatcher;
 use Thruway\Subscription\StateHandlerRegistry;
+use Thruway\Subscription\Subscription;
 use Thruway\Subscription\SubscriptionGroup;
 
 /**
@@ -240,8 +241,14 @@ class Broker implements ManageableInterface
      */
     public function leave(Session $session)
     {
+        /** @var SubscriptionGroup $subscriptionGroup */
         foreach ($this->subscriptionGroups as $subscriptionGroup) {
-
+            /** @var Subscription $subscription */
+            foreach ($subscriptionGroup->getSubscriptions() as $subscription) {
+                if ($subscription->getSession() === $session) {
+                    $subscriptionGroup->removeSubscription($subscription);
+                }
+            }
         }
     }
 
