@@ -186,10 +186,12 @@ class WampKernel implements HttpKernelInterface
         //@todo match up $kwargs to the method arguments
 
         try {
+            //Force cleanup before making the call
+            $this->cleanup();
+
             $controller     = $this->container->get($mapping->getServiceId());
             $controllerArgs = $this->deserializeArgs($args, $mapping);
-
-            $traits = class_uses($controller);
+            $traits         = class_uses($controller);
 
             //Inject the User object if the UserAware trait in in use
             if (isset($traits['Voryx\ThruwayBundle\DependencyInjection\UserAwareTrait'])) {
@@ -197,8 +199,10 @@ class WampKernel implements HttpKernelInterface
                 $controller->setUser($user);
             }
 
+            // Disabled this for now since it conflicts with the deserializeArgs
+            // @todo make this an option so you can use one or the other
             //Dispatch Controller Events
-            $this->dispatchControllerEvents($controller, $mapping);
+            //$this->dispatchControllerEvents($controller, $mapping);
 
             //Call Controller
             $rawResult = call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
@@ -220,6 +224,7 @@ class WampKernel implements HttpKernelInterface
             }
 
         } catch (\Exception $e) {
+            $this->cleanup();
             $this->container->get('logger')->critical($e->getMessage());
             throw new \Exception("Unable to make the call: {$mapping->getAnnotation()->getName()}");
         }
@@ -247,16 +252,27 @@ class WampKernel implements HttpKernelInterface
      *
      * @param $args
      * @param MappingInterface $mapping
+     * @throws \Exception
      */
     protected function handleEvent($args, MappingInterface $mapping)
     {
-        $controller     = $this->container->get($mapping->getServiceId());
-        $controllerArgs = $this->deserializeArgs($args, $mapping);
+        try {
+            //Force clean up before calling the subscribed method
+            $this->cleanup();
 
-        //Call Controller
-        call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
+            $controller     = $this->container->get($mapping->getServiceId());
+            $controllerArgs = $this->deserializeArgs($args, $mapping);
 
-        $this->cleanup($controller);
+            //Call Controller
+            call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
+
+            $this->cleanup($controller);
+
+        } catch (\Exception $e) {
+            $this->cleanup();
+            $this->container->get('logger')->critical($e->getMessage());
+            throw new \Exception("Unable to publish to: {$mapping->getAnnotation()->getName()}");
+        }
     }
 
     /**
@@ -473,7 +489,7 @@ class WampKernel implements HttpKernelInterface
      *  Cleanup
      * @param $controller
      */
-    private function cleanup($controller)
+    private function cleanup($controller = null)
     {
         unset ($controller);
 
@@ -482,11 +498,11 @@ class WampKernel implements HttpKernelInterface
             $this->container->get('doctrine')->getManager()->clear();
         }
 
-        //Remove any listeners for the kernel.controller event
-        $listeners = $this->dispatcher->getListeners("kernel.controller");
-        foreach ($listeners as $listener) {
-            $this->dispatcher->removeListener("kernel.controller", $listener);
-        }
+//        //Remove any listeners for the kernel.controller event
+//        $listeners = $this->dispatcher->getListeners("kernel.controller");
+//        foreach ($listeners as $listener) {
+//            $this->dispatcher->removeListener("kernel.controller", $listener);
+//        }
 
     }
 
