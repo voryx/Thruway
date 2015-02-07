@@ -75,6 +75,36 @@ class BrokerTest extends PHPUnit_Framework_TestCase
         $broker->onMessage($session, $publishMsg);
     }
 
+    public function testPrefixMatcherValidUris() {
+
+        $prefixMatcher = new Thruway\Subscription\PrefixMatcher();
+        $options = (object)[];
+
+        $this->assertTrue($prefixMatcher->uriIsValid('', $options));
+        $this->assertTrue($prefixMatcher->uriIsValid('.', $options));
+        $this->assertTrue($prefixMatcher->uriIsValid('one', $options));
+        $this->assertTrue($prefixMatcher->uriIsValid('one.', $options));
+        $this->assertTrue($prefixMatcher->uriIsValid('one.two', $options));
+        $this->assertTrue($prefixMatcher->uriIsValid('one.two.', $options));
+
+        $this->assertFalse($prefixMatcher->uriIsValid('..', $options));
+        $this->assertFalse($prefixMatcher->uriIsValid('one..', $options));
+        $this->assertFalse($prefixMatcher->uriIsValid('!', $options));
+        $this->assertFalse($prefixMatcher->uriIsValid('one..two', $options));
+        $this->assertFalse($prefixMatcher->uriIsValid('one..two.', $options));
+
+        $this->assertTrue($prefixMatcher->matches('a', '.', $options));
+        $this->assertTrue($prefixMatcher->matches('a', '', $options));
+        $this->assertTrue($prefixMatcher->matches('a.b', '.', $options));
+        $this->assertTrue($prefixMatcher->matches('a.b', '', $options));
+        $this->assertTrue($prefixMatcher->matches('a', 'a', $options));
+        $this->assertTrue($prefixMatcher->matches('ab', 'a', $options));
+        $this->assertTrue($prefixMatcher->matches('a.b', 'a', $options));
+        $this->assertFalse($prefixMatcher->matches('a', 'a.', $options));
+        $this->assertTrue($prefixMatcher->matches('a.b', 'a.', $options));
+        $this->assertTrue($prefixMatcher->matches('a.b.c', 'a.', $options));
+    }
+
     public function testPrefixMatcher()
     {
         $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
