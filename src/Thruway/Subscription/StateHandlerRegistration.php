@@ -140,13 +140,14 @@ class StateHandlerRegistration
 
     public function handlesStateFor(SubscriptionGroup $subscriptionGroup)
     {
-        if ($subscriptionGroup->getMatchType() !== $this->getMatchType()) {
-            return false;
+        if ($subscriptionGroup->getMatchType() == $this->getMatchType()
+            || $subscriptionGroup->getMatchType() == "exact") {
+            $sgUri     = $subscriptionGroup->getUri();
+            $sgOptions = $subscriptionGroup->getOptions();
+
+            return $this->matcher->isSubGroup($this->getUri(), $this->getOptions(), $sgUri, $sgOptions);
         }
 
-        $sgUri     = $subscriptionGroup->getUri();
-        $sgOptions = $subscriptionGroup->getOptions();
-
-        return $this->matcher->isSubGroup($this->getUri(), $this->getOptions(), $sgUri, $sgOptions);
+        return false;
     }
 }
