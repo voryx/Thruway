@@ -38,6 +38,7 @@ class TopicStateHandler
             $registration              = new \stdClass();
             $registration->handler_uri = $annotation->getName();
             $registration->uri         = $annotation->getTopicStateHandlerFor();
+            $registration->options     = $annotation->getTopicStateHandlerOptions();
 
             //Register Topic Handlers
             $registration->topic = $topicStateHandler;

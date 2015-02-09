@@ -40,6 +40,8 @@ class Register implements AnnotationInterface
 
     protected $topicStateHandlerFor;
 
+    protected $topicStateHandlerOptions;
+
     /**
      * @param $options
      * @throws \InvalidArgumentException
@@ -138,5 +140,11 @@ class Register implements AnnotationInterface
         return $this->topicStateHandlerFor;
     }
 
-
+    /**
+     * @return mixed
+     */
+    public function getTopicStateHandlerOptions()
+    {
+        return $this->topicStateHandlerOptions;
+    }
 }
