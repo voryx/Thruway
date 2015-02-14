@@ -11,6 +11,10 @@ Basically, we like the WAMP idea, but we wanted to be able to work with it in PH
 
 Please feel free to ask us what is going on or make suggests or fork it and make a pull request.
 
+Requirements
+------------
+
+Thruway is only supported on PHP 5.4 and up.
 
 ### Quick Start with Composer
 
