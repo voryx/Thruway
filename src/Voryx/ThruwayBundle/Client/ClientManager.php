@@ -5,9 +5,9 @@ namespace Voryx\ThruwayBundle\Client;
 
 use React\Promise\Deferred;
 use Symfony\Component\DependencyInjection\Container;
-use Symfony\Component\Security\Core\User\User;
 use Thruway\ClientSession;
 use Thruway\Peer\Client;
+use Thruway\Transport\PawlTransportProvider;
 use Thruway\Transport\TransportInterface;
 
 /**
@@ -160,18 +160,11 @@ class ClientManager
     private function getShortClient()
     {
 
-        /* @var $user \Symfony\Component\Security\Core\User\User */
-        $user   = $this->container->get('security.context')->getToken()->getUser();
         $client = new Client($this->config['realm']);
         $client->setAttemptRetry(false);
         $client->addTransportProvider(
-            new \Thruway\Transport\PawlTransportProvider("ws://{$this->config['server']}:{$this->config['port']}")
+            new PawlTransportProvider($this->config['trusted_uri'])
         );
-
-        if ($user instanceof User) {
-            $client->setAuthId($user->getUsername());
-            $client->addClientAuthenticator(new \Thruway\ClientWampCraAuthenticator($user->getUsername(), $user->getPassword()));
-        }
 
         return $client;
 

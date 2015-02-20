@@ -148,7 +148,7 @@ voryx_thruway:
     public function publish($value)
     {
         $client = $this->container->get('thruway.client');
-        $client->publish("com.myapp.helloPubSub", [$value]);
+        $client->publish("com.myapp.hello_pubsub", [$value]);
     }
 ```
 
