@@ -1,19 +1,19 @@
 <?php
 
-namespace Voryx\ThruwayBundle\Supervisor;
+namespace Voryx\ThruwayBundle\Process;
 
 
 use Symfony\Component\DependencyInjection\Container;
 use Thruway\ClientSession;
 use Thruway\Peer\Client;
+use Voryx\ThruwayBundle\Process\Process;
 
 /**
  * Long running thruway client that handles congestion related events from the router.
  *
  * Class ProcessManager
- * @package Voryx\ThruwayBundle\Supervisor
  */
-class ProcessManager extends Client
+class CongestionManager extends Client
 {
 
     /**
@@ -44,19 +44,19 @@ class ProcessManager extends Client
     {
 
         try {
-            $supervisor = $this->container->get('voryx.thruway.supervisor');
-            $workerName = $this->container->get('voryx.thruway.resource.mapper')->findWorker($args[0]->name);
+            $worker    = $this->container->get('voryx.thruway.resource.mapper')->findWorker($args[0]->name);
+            $env       = $this->container->get('kernel')->getEnvironment();
+            $phpBinary = PHP_BINARY;
+            $loop      = $this->container->get('voryx.thruway.loop');
 
-            $processes = $supervisor->getAllProcessInfo();
+            $cmd = "{$phpBinary} {$this->container->get('kernel')->getRootDir()}/console --env={$env} thruway:process add {$worker}";
 
-            foreach ($processes as $process) {
-                if (strpos($process['name'], $workerName) === 0 && $process['statename'] !== "RUNNING") {
-                    $supervisor->startProcess("thruway:{$process['name']}");
-                    break;
-                }
-            }
+            $process = new Process($cmd);
+            $process->start($loop);
+
         } catch (\Exception $e) {
             echo $e->getMessage();
         }
     }
+
 }

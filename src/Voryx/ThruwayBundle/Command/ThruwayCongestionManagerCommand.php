@@ -6,13 +6,13 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Thruway\Transport\PawlTransportProvider;
-use Voryx\ThruwayBundle\Supervisor\ProcessManager;
+use Voryx\ThruwayBundle\Process\CongestionManager;
 
 /**
  * Class ThruwayWorkerCommand
  * @package Voryx\ThruwayBundle\Command
  */
-class ThruwayManagerCommand extends ContainerAwareCommand
+class ThruwayCongestionManagerCommand extends ContainerAwareCommand
 {
     /**
      * {@inheritdoc}
@@ -21,7 +21,7 @@ class ThruwayManagerCommand extends ContainerAwareCommand
     {
         $this
             ->setName('thruway:manager:start')
-            ->setDescription('Start Thruway Process Manager for supervisord')
+            ->setDescription('Start Thruway congestion manager')
             ->setHelp("The <info>%command.name%</info> starts the process manager");
     }
 
@@ -36,7 +36,7 @@ class ThruwayManagerCommand extends ContainerAwareCommand
 
             $config    = $this->getContainer()->getParameter('voryx_thruway');
             $loop      = $this->getContainer()->get('voryx.thruway.loop');
-            $client    = new ProcessManager($config['realm'], $loop, $this->getContainer());
+            $client    = new CongestionManager($config['realm'], $loop, $this->getContainer());
             $transport = new PawlTransportProvider($config['trusted_uri']);
 
             $client->addTransportProvider($transport);
@@ -49,4 +49,5 @@ class ThruwayManagerCommand extends ContainerAwareCommand
             $output->writeln("Error... see log for more info");
         }
     }
+
 }

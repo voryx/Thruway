@@ -18,8 +18,8 @@ class ThruwayRouterCommand extends ContainerAwareCommand
     {
         $this
             ->setName('thruway:router:start')
-            ->setDescription('Start Thruway WAMP client')
-            ->setHelp("The <info>%command.name%</info> starts the Thruway WAMP client.");
+            ->setDescription('Start the default Thruway WAMP router')
+            ->setHelp("The <info>%command.name%</info> starts the Thruway WAMP router.");
     }
 
     /**

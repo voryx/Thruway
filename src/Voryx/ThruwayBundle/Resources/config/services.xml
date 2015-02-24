@@ -121,20 +121,6 @@
         </service>
 
 
-        <!--Supervisor Client-->
-        <service id="voryx.thruway.supervisor"
-                 class="SupervisorClient\SupervisorClient">
-            <argument type="expression">parameter('voryx_thruway')['supervisor']['hostname']</argument>
-            <argument type="expression">parameter('voryx_thruway')['supervisor']['port']</argument>
-            <call method="setAuth">
-                <argument type="expression">parameter('voryx_thruway')['supervisor']['username']</argument>
-                <argument type="expression">parameter('voryx_thruway')['supervisor']['password']</argument>
-            </call>
-            <call method="setTimeout">
-                <argument type="expression">parameter('voryx_thruway')['supervisor']['timeout']</argument>
-            </call>
-        </service>
-
         <service id="voryx.thruway.stdClass_handler" class="Voryx\ThruwayBundle\Serialization\StdClassHandler">
             <tag name="jms_serializer.subscribing_handler"/>
         </service>

@@ -31,7 +31,7 @@ class Configuration implements ConfigurationInterface
             ->end();
 
         $this->addLocationsSection($rootNode);
-        $this->addSupervisorSection($rootNode);
+        $this->addWorkersSection($rootNode);
         $this->addRouterSection($rootNode);
 
         return $treeBuilder;
@@ -62,25 +62,16 @@ class Configuration implements ConfigurationInterface
     /**
      * @param ArrayNodeDefinition $rootNode
      */
-    private function addSupervisorSection(ArrayNodeDefinition $rootNode)
+    private function addWorkersSection(ArrayNodeDefinition $rootNode)
     {
         $rootNode
             ->children()
-                ->arrayNode('supervisor')
+                ->arrayNode('workers')
                     ->addDefaultsIfNotSet()
-                    ->info('supervisor configuration')
+                    ->info('additional worker configuration')
                     ->children()
-                        ->scalarNode('hostname')->defaultValue('unix:///tmp/supervisor.sock')->end()
-                        ->scalarNode('executable')->defaultValue('supervisord')->end()
-                        ->scalarNode('config')->defaultValue('@VoryxThruwayBundle/Resources/config/supervisord.conf')->end()
-                        ->scalarNode('pidfile')->defaultValue('/tmp/supervisord.pid')->end()
-                        ->scalarNode('logfile')->defaultValue('supervisord.log')->end()
-                        ->scalarNode('workers')->defaultValue(5)->end()
-                        ->scalarNode('port')->defaultValue(-1)->end()
-                        ->scalarNode('timeout')->defaultNull()->end()
-                        ->scalarNode('username')->defaultNull()->end()
-                        ->scalarNode('password')->defaultNull()->end()
-                        ->arrayNode('onetime_workers')->prototype('scalar')->end()->end()
+                        ->arrayNode('symfony_commands')->prototype('scalar')->end()->end()
+                        ->arrayNode('shell_commands')->prototype('scalar')->end()->end()
                     ->end()
                 ->end()
             ->end();
