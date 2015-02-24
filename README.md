@@ -171,45 +171,54 @@ It uses JMS Serializer, so it can serialize and deserialize Entities
     }
 ```
 
-Start up the the WAMP server
+#### Start the Thruway Process
+
+You can start the default Thruway workers (router and client workers), without any additional configuration.
 
     $ nohup php app/console thruway:process start &
-The Thruway bundle will start up a separate process for the router and each defined worker.  If you haven't defined any workers, all of the annotated calls and subscriptions will be started within the `default` worker.
+    
+By default, the router starts on ws://127.0.0.1:8080
+    
      
+##Workers
 
-There are two main ways to break your application apart into multiple workers:
+The Thruway bundle will start up a separate process for the router and each defined worker.  If you haven't defined any workers, all of the annotated calls and subscriptions will be started within the `default` worker.
+
+There are two main ways to break your application apart into multiple workers.
 
 1.  Use the `worker` property on the `Register` and `Subscribe` annotations.  The following RPC will be added to the `posts` worker.
      
     ```PHP
-         /**
-          * @Register("com.example.addrpc", serializerEnableMaxDepthChecks=true, worker="posts")
-          */
-         public function addAction(Post $post)
+      /**
+      * @Register("com.example.addrpc", serializerEnableMaxDepthChecks=true, worker="posts")
+      */
+      public function addAction(Post $post)
     ```
 2.  Use the `@Worker` annotation on the class.  The following annotation will create a worker called `chat` that can have a max of 5 instances.
      
     ```PHP
-     /**
+      /**
       * @Worker("chat", maxProcesses="5")
       */
-     class ChatController
+      class ChatController
     ```
-     
-To see a list of running processes (workers)
+ 
+If a worker is shut down with anything other than `SIGTERM`, it will automatically be restarted.
+  
+##More Commands
+
+#####To see a list of running processes (workers)
      
     $ php app/console thruway:process status
     
-Stop a process, i.e. `default`
+#####Stop a process, i.e. `default`
 
     $ php app/console thruway:process stop default
     
-Start a process, i.e. `default`
+#####Start a process, i.e. `default`
     
     $ php app/console thruway:process start default
     
-
-By default, the server starts on ws://127.0.0.1:8080
 
 ### Javascript Client
 
