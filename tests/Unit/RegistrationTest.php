@@ -37,7 +37,9 @@ class RegistrationTest extends PHPUnit_Framework_TestCase
             'test_procedure'
         );
 
-        $call = new \Thruway\Call($mockSession, $callMsg);
+
+        $procedure = $this->getMockBuilder('\Thruway\Procedure')->disableOriginalConstructor()->getMock();
+        $call = new \Thruway\Call($mockSession, $callMsg, $procedure);
 
         $this->_registration->processCall($call);
 

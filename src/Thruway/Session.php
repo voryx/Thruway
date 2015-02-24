@@ -7,6 +7,7 @@ use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Common\Utils;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
+use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Transport\TransportInterface;
 
@@ -48,6 +49,11 @@ class Session extends AbstractSession
      * @var \stdClass|null
      */
     private $roleFeatures;
+
+    /**
+     * @var HelloMessage
+     */
+    private $helloMessage;
 
     /**
      * Constructor
@@ -264,5 +270,21 @@ class Session extends AbstractSession
     public function setRoleFeatures($roleFeatures)
     {
         $this->roleFeatures = $roleFeatures;
+    }
+
+    /**
+     * @return HelloMessage
+     */
+    public function getHelloMessage()
+    {
+        return $this->helloMessage;
+    }
+
+    /**
+     * @param HelloMessage $helloMessage
+     */
+    public function setHelloMessage($helloMessage)
+    {
+        $this->helloMessage = $helloMessage;
     }
 }

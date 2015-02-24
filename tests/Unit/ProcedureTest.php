@@ -290,7 +290,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         // call the proc enough to get a backlog
         // should be 2,2,2,1,1 for call depth now (only if not queuing)
         for ($i = 0; $i < 8; $i++) {
-            $call = new \Thruway\Call($s[0], $callMsg);
+            $call = new \Thruway\Call($s[0], $callMsg, $this->_proc);
             $this->_proc->processCall($s[0], $call);
         }
 
@@ -311,7 +311,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals(0, $s[2]->getPendingCallCount());
 
-        $call = new \Thruway\Call($s[0], $callMsg);
+        $call = new \Thruway\Call($s[0], $callMsg, $this->_proc);
         $this->_proc->processCall($s[0], $call);
     }
 
@@ -419,7 +419,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             'test_procedure'
         );
 
-        $call = new \Thruway\Call($session, $callMsg);
+        $call = new \Thruway\Call($session, $callMsg, $this->_proc);
         $this->_proc->processCall($session, $call);
     }
 
@@ -498,7 +498,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
             "test_procedure"
         );
 
-        $call = new \Thruway\Call($session, $callMsg);
+        $call = new \Thruway\Call($session, $callMsg, $this->_proc);
         $this->_proc->processCall($session, $call);
 
         $this->assertInstanceOf('\Thruway\Message\InvocationMessage', $invocationMsg);
@@ -588,4 +588,4 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($reg);
     }
-} 
+}
