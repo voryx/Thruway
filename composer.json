@@ -28,7 +28,8 @@
         "php": ">=5.4",
         "symfony/finder": ">=2.4",
         "voryx/thruway": "0.3.*@dev",
-        "jms/serializer-bundle": "0.13.*"
+        "jms/serializer-bundle": "0.13.*",
+        "react/child-process": "~0.4"
     }
 
 }
