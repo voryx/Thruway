@@ -20,8 +20,6 @@ use Thruway\Message\PublishMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
-use Thruway\Topic\TopicStateManagerDummy;
-use Thruway\Topic\TopicStateManagerInterface;
 use Thruway\Transport\DummyTransport;
 
 /**

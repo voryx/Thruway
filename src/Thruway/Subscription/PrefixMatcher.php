@@ -38,6 +38,7 @@ class PrefixMatcher implements MatcherInterface
      */
     public function matches($eventUri, $subscriptionUri, $subscriptionOptions)
     {
+        $subscriptionUri = $this->fixupUri($subscriptionUri);
         $matchingPart = substr($eventUri, 0, strlen($subscriptionUri));
 
         return $matchingPart == $subscriptionUri;
@@ -50,8 +51,24 @@ class PrefixMatcher implements MatcherInterface
      */
     public function uriIsValid($uri, $options)
     {
+        $uri = $this->fixupUri($uri);
+
+        // if the uri is empty - then match everything
+        if ($uri == "") return true;
+
+        // if there is a trailing . then remove it and run it through the
+        // regular validator
+        if (substr($uri, strlen($uri) - 1) == ".") $uri = substr($uri, 0, strlen($uri) - 1);
+
         // allow matches to a normal URI or one with a trailing dot
         return Utils::uriIsValid($uri) || Utils::uriIsValid($uri . ".");
+    }
+
+    private function fixupUri($uri) {
+        // a single "." matches everything
+        if ($uri == ".") return "";
+
+        return $uri;
     }
 
     /**

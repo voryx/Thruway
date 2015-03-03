@@ -119,6 +119,7 @@ class Router extends AbstractPeer implements RouterInterface
             }
             // hopefully this is a HelloMessage or we have no place for this message to go
             if ($msg instanceof HelloMessage) {
+                $session->setHelloMessage($msg);
                 try {
                     $realm = $this->realmManager->getRealm($msg->getRealm());
 

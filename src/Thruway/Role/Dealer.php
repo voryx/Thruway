@@ -10,6 +10,7 @@ use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\CallMessage;
+use Thruway\Message\CancelMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\RegisterMessage;
@@ -27,9 +28,9 @@ use Thruway\Session;
 class Dealer extends AbstractRole
 {
     /**
-     * @var array
+     * @var Procedure[]
      */
-    private $procedures;
+    private $procedures = [];
 
     /**
      * @var \Thruway\Manager\ManagerInterface
@@ -38,9 +39,24 @@ class Dealer extends AbstractRole
 
 
     /**
-     * @var array
+     * @var Call[]
      */
-    private $callIndex;
+    private $callInvocationIndex = [];
+
+    /**
+     * @var Call[]
+     */
+    private $callRequestIndex = [];
+
+    /**
+     * @var Call[]
+     */
+    private $callCancelIndex = [];
+
+    /**
+     * @var Call[]
+     */
+    private $callInterruptIndex = [];
 
     /**
      * @var \SplObjectStorage
@@ -54,9 +70,7 @@ class Dealer extends AbstractRole
      */
     public function __construct(ManagerInterface $manager = null)
     {
-        $this->procedures = [];
-        $this->callIndex  = [];
-        $manager          = $manager === null ? $manager : new ManagerDummy();
+        $manager = $manager === null ? $manager : new ManagerDummy();
 
         $this->setManager($manager);
 
@@ -92,7 +106,8 @@ class Dealer extends AbstractRole
             $this->processCall($session, $msg);
         elseif ($msg instanceof ErrorMessage):
             $this->processError($session, $msg);
-        //elseif ($msg instanceof CancelMessage): //Advanced
+        elseif ($msg instanceof CancelMessage):
+            $this->processCancel($session, $msg);
 
         else:
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
@@ -195,15 +210,14 @@ class Dealer extends AbstractRole
         /* @var $procedure \Thruway\Procedure */
         $procedure = $this->procedures[$msg->getProcedureName()];
 
-        $call = new Call($session, $msg);
+        $call = new Call($session, $msg, $procedure);
 
-        $this->callIndex[$call->getInvocationRequestId()] = $call;
+        $this->callInvocationIndex[$call->getInvocationRequestId()] = $call;
+        $this->callRequestIndex[$msg->getRequestId()] = $call;
 
         $keepIndex = $procedure->processCall($session, $call);
 
-        if (!$keepIndex) {
-            unset($this->callIndex[$call->getInvocationRequestId()]);
-        }
+        if (!$keepIndex) $this->removeCall($call);
     }
 
     /**
@@ -216,7 +230,7 @@ class Dealer extends AbstractRole
     {
 
         /* @var $call Call */
-        $call = isset($this->callIndex[$msg->getRequestId()]) ? $this->callIndex[$msg->getRequestId()] : null;
+        $call = isset($this->callInvocationIndex[$msg->getRequestId()]) ? $this->callInvocationIndex[$msg->getRequestId()] : null;
 
         if (!$call) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
@@ -227,7 +241,7 @@ class Dealer extends AbstractRole
         $keepIndex = $call->processYield($session, $msg);
 
         if (!$keepIndex) {
-            unset($this->callIndex[$msg->getRequestId()]);
+            unset($this->callInvocationIndex[$msg->getRequestId()]);
         }
 
         /* @var $procedure \Thruway\Procedure */
@@ -273,7 +287,44 @@ class Dealer extends AbstractRole
             case Message::MSG_INVOCATION:
                 $this->processInvocationError($session, $msg);
                 break;
+            case Message::MSG_INTERRUPT:
+                $this->processInterruptError($session, $msg);
+                break;
         }
+    }
+
+    /**
+     * @param Session $session
+     * @param CancelMessage $msg
+     */
+    private function processCancel(Session $session, CancelMessage $msg) {
+        $call = $this->getCallByRequestId($msg->getRequestId());
+
+        if ($call->getCallerSession() !== $session) {
+            Logger::warning($this, "Attempt to cancel call by non-owner");
+            return;
+        }
+
+        if (!$call) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $errorMsg->setErrorURI("wamp.error.no_such_call");
+            $session->sendMessage($errorMsg);
+            Logger::error($this, "wamp.error.no_such_call");
+            return;
+        }
+
+        if ($call->getInterruptMessage()) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $errorMsg->setErrorURI("wamp.error.canceling");
+            Logger::warning($this, "There was an attempt to cancel a message that is already in the process of being canceled");
+            return;
+        }
+        $removeCall = $call->processCancel($session, $msg);
+        if ($call->getInterruptMessage()) {
+            $this->callInterruptIndex[$call->getInterruptMessage()->getRequestId()] = $call;
+        }
+
+        if ($removeCall) $this->removeCall($call);
     }
 
     /**
@@ -284,7 +335,8 @@ class Dealer extends AbstractRole
      */
     private function processInvocationError(Session $session, ErrorMessage $msg)
     {
-        $call = $this->getCallByRequestId($msg->getRequestId());
+        //$call = $this->getCallByRequestId($msg->getRequestId());
+        $call = $this->callInvocationIndex[$msg->getRequestId()];
 
         if (!$call) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
@@ -309,6 +361,41 @@ class Dealer extends AbstractRole
     }
 
     /**
+     * @param Session $session
+     * @param ErrorMessage $msg
+     */
+    private function processInterruptError(Session $session, ErrorMessage $msg) {
+        $call = isset($this->callInterruptIndex[$msg->getRequestId()]) ? $this->callInterruptIndex[$msg->getRequestId()] : null;
+
+        if (!$call) {
+            Logger::warning($this, "Interrupt error with no corresponding interrupt index");
+            return;
+        }
+
+        $errorMsgToCaller = ErrorMessage::createErrorMessageFromMessage($call->getCancelMessage());
+        $errorMsgToCaller->setErrorURI($msg->getErrorURI());
+
+        $callerSession = $call->getCallerSession();
+
+        $callerSession->sendMessage($errorMsgToCaller);
+
+        $this->removeCall($call);
+    }
+
+    /**
+     * This removes all references to calls so they can be GCed
+     *
+     * @param Call $call
+     */
+    protected function removeCall(Call $call) {
+        $call->getProcedure()->removeCall($call);
+        unset($this->callInvocationIndex[$call->getInvocationRequestId()]);
+        unset($this->callRequestIndex[$call->getCallMessage()->getRequestId()]);
+        if ($call->getCancelMessage()) unset($this->callCancelIndex[$call->getCancelMessage()->getRequestId()]);
+        if ($call->getInterruptMessage()) unset($this->callInterruptIndex[$call->getInterruptMessage()->getRequestId()]);
+    }
+
+    /**
      * Get Call by requestID
      *
      * @param int $requestId
@@ -316,15 +403,9 @@ class Dealer extends AbstractRole
      */
     public function getCallByRequestId($requestId)
     {
-        /** @var Procedure $procedure */
-        foreach ($this->procedures as $procedure) {
-            $call = $procedure->getCallByRequestId($requestId);
-            if ($call) {
-                return $call;
-            }
-        }
+        $call = isset($this->callRequestIndex[$requestId]) ? $this->callRequestIndex[$requestId] : false;
 
-        return false;
+        return $call;
     }
 
     /**
@@ -340,12 +421,15 @@ class Dealer extends AbstractRole
             Message::MSG_CANCEL,
             Message::MSG_REGISTER,
             Message::MSG_UNREGISTER,
-            Message::MSG_YIELD
+            Message::MSG_YIELD,
+            Message::MSG_INTERRUPT
         ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
             return true;
         } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_INVOCATION) {
+            return true;
+        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_INTERRUPT) {
             return true;
         } else {
             return false;

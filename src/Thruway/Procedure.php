@@ -28,7 +28,7 @@ class Procedure
     private $procedureName;
 
     /**
-     * @var array
+     * @var Registration[]
      */
     private $registrations;
 
@@ -211,8 +211,7 @@ class Procedure
 
                 array_splice($this->registrations, $i, 1);
 
-                // TODO: need to error out any calls that are hanging around
-                // from this registration
+                // TODO: need to handle any calls that are hanging around
 
                 $session->sendMessage(UnregisteredMessage::createFromUnregisterMessage($msg));
                 return true;
@@ -296,6 +295,28 @@ class Procedure
             $call = $this->callQueue->dequeue();
 
             $bestRegistration->processCall($call);
+        }
+    }
+
+    /**
+     * Remove all references to Call to it can be GCed
+     *
+     * @param Call $call
+     */
+    public function removeCall(Call $call) {
+        $newQueue = new \SplQueue();
+        while (!$this->callQueue->isEmpty()) {
+            $c = $this->callQueue->dequeue();
+
+            if ($c === $call) continue;
+
+            $newQueue->enqueue($c);
+        }
+        $this->callQueue = $newQueue;
+
+        $registration = $call->getRegistration();
+        if ($registration) {
+            $registration->removeCall($call);
         }
     }
 

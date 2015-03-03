@@ -3,14 +3,49 @@
 Thruway
 ===========
 
-Thruway is a Client and Server Library that aims to be compatible with the [Autobahn project](http://autobahn.ws/) 
-and [WAMP v2](http://wamp.ws/)  (Web Application Messaging Protocol).
+Thruway is an open source client and router implementation of [WAMP (Web Application Messaging Protocol)](http://wamp.ws/), for PHP.  Thruway uses an event-driven, non-blocking I/O model ([reactphp](http://reactphp.org/)), perfect for modern real-time applications.  
 
-Basically, we like the WAMP idea, but we wanted to be able to work with it in PHP.
+### <a name="features"></a>Supported WAMP Features
+
+**Basic Spec** [read more](https://github.com/tavendo/WAMP/blob/master/spec/basic.md)
+* Publish and Subscribe
+* Remote Procedure Calls
+* Websocket Transport
+* Internal Transport\*
+* JSON serialization
 
 
-Please feel free to ask us what is going on or make suggests or fork it and make a pull request.
 
+**Advanced Spec** [read more](https://github.com/tavendo/WAMP/blob/master/spec/advanced.md)
+* RawSocket Transport
+* Authentication
+ * WAMP Challenge-Response Authentication
+ * Custom Authentication Methods
+* Authorization
+* Publish & Subscribe
+ * Subscriber Black and Whitelisting
+ * Publisher Exclusion
+ * Publisher Identification
+ * Subscriber Meta Events
+ * Event History\*
+ * Subscription Matching
+  * Prefix matching
+* Remote Procedure Calls
+ * Caller Identification
+ * Progressive Call Results
+ * Distributed Registrations & Calls\*
+ * Caller Exclusion
+ * Canceling Calls
+
+
+\* _Thruway specific features_
+
+
+
+Requirements
+------------
+
+Thruway is only supported on PHP 5.4 and up.
 
 ### Quick Start with Composer
 
