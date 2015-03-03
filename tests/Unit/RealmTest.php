@@ -119,17 +119,18 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $realm->setAuthorizationManager($authorizationManager);
 
         $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_topic");
-        $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_topic");
+        $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), (object)["acknowledge"=>true], "some_topic");
         $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], 'some_procedure');
         $callMsg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_procedure");
 
-        $authorizationManager->expects($this->exactly(4))
+        $authorizationManager->expects($this->exactly(5))
             ->method("isAuthorizedTo")
             ->withConsecutive(
                 [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\SubscribeMessage')],
                 [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\PublishMessage')],
                 [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\RegisterMessage')],
-                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\CallMessage')]
+                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\CallMessage')],
+                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\PublishMessage')]
             )
             ->willReturn(false);;
 
@@ -158,6 +159,10 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $realm->onMessage($session, $publishMsg);
         $realm->onMessage($session, $registerMsg);
         $realm->onMessage($session, $callMsg);
+
+        // make sure publish doesn't send error back when ack is false
+        $publishMsg2 = $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_topic");;
+        $realm->onMessage($session, $publishMsg2);
     }
 
     public function testImmediateAbort() {

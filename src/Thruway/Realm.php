@@ -146,6 +146,13 @@ class Realm
             if (!$this->getAuthorizationManager()->isAuthorizedTo($session, $msg)) {
                 Logger::alert($this,
                     "Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
+
+                // we are not to send messages in response to publish messages unless
+                // they set acknowledge = true
+                if ($msg instanceof PublishMessage) {
+                    if (!$msg->acknowledge()) return;
+                }
+
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
 
                 return;
