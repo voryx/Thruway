@@ -127,6 +127,7 @@ class AuthenticationDetails
         $authDetails = new AuthenticationDetails();
         $authDetails->setAuthId("anonymous");
         $authDetails->setAuthMethod("anonymous");
+        $authDetails->addAuthRole("anonymous");
 
         return $authDetails;
     }
