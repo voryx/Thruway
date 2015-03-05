@@ -8,10 +8,10 @@ use React\EventLoop\LoopInterface;
 use Thruway\Peer\RouterInterface;
 
 /**
- * Interface ModuleInterface
- * @package Thruway\Module
+ * Interface RouterModuleInterface
+ * @package Thruway\RouterModule
  */
-interface ModuleInterface
+interface RouterModuleInterface
 {
     /**
      * Called by the router when it is added

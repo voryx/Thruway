@@ -15,7 +15,7 @@ use Thruway\Manager\ManagerInterface;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
-use Thruway\Module\ModuleInterface;
+use Thruway\Module\RouterModuleInterface;
 use Thruway\RealmManager;
 use Thruway\Session;
 use Thruway\Transport\InternalClientTransportProvider;
@@ -67,7 +67,7 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
     /** @var EventDispatcherInterface */
     private $eventDispather;
 
-    /** @var ModuleInterface[]  */
+    /** @var RouterModuleInterface[]  */
     private $modules= [];
 
     /**
@@ -412,11 +412,11 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
     }
 
     /**
-     * Registers a Module
+     * Registers a RouterModule
      *
-     * @param ModuleInterface $module
+     * @param RouterModuleInterface $module
      */
-    public function registerModule(ModuleInterface $module)
+    public function registerModule(RouterModuleInterface $module)
     {
         $module->initModule($this, $this->getLoop());
     }

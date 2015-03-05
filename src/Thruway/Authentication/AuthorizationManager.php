@@ -8,7 +8,7 @@ use Ratchet\Wamp\Exception;
 use React\EventLoop\LoopInterface;
 use Thruway\Common\Utils;
 use Thruway\Message\ActionMessageInterface;
-use Thruway\Module\ModuleClient;
+use Thruway\Module\RouterModuleClient;
 use Thruway\Peer\RouterInterface;
 use Thruway\Result;
 use Thruway\Session;
@@ -18,7 +18,7 @@ use Thruway\Session;
  * Class AuthorizationManager
  * @package Thruway\Authentication
  */
-class AuthorizationManager extends ModuleClient implements AuthorizationManagerInterface
+class AuthorizationManager extends RouterModuleClient implements AuthorizationManagerInterface
 {
     /**
      * @var bool

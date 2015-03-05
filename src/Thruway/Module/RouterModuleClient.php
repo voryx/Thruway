@@ -8,7 +8,7 @@ use React\EventLoop\LoopInterface;
 use Thruway\Peer\Client;
 use Thruway\Peer\RouterInterface;
 
-class ModuleClient extends Client implements ModuleInterface {
+class RouterModuleClient extends Client implements RouterModuleInterface {
     /** @var  RouterInterface */
     protected $router;
 

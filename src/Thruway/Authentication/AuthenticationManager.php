@@ -9,7 +9,7 @@ use Thruway\Message\ChallengeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\WelcomeMessage;
-use Thruway\Module\ModuleClient;
+use Thruway\Module\RouterModuleClient;
 use Thruway\Peer\RouterInterface;
 use Thruway\Realm;
 use Thruway\Session;
@@ -20,7 +20,7 @@ use Thruway\Session;
  *
  * @package Thruway\Authentication
  */
-class AuthenticationManager extends ModuleClient implements AuthenticationManagerInterface
+class AuthenticationManager extends RouterModuleClient implements AuthenticationManagerInterface
 {
     /**
      * List authentication methods

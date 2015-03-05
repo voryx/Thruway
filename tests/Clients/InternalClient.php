@@ -2,7 +2,7 @@
 
 /**
  */
-class InternalClient extends \Thruway\Module\ModuleClient
+class InternalClient extends \Thruway\Module\RouterModuleClient
 {
 
     public function onSessionStart($session, $transport)

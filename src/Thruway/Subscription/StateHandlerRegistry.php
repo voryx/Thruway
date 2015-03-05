@@ -7,7 +7,7 @@ namespace Thruway\Subscription;
 use React\EventLoop\LoopInterface;
 use Thruway\Logging\Logger;
 use Thruway\Message\SubscribeMessage;
-use Thruway\Module\ModuleClient;
+use Thruway\Module\RouterModuleClient;
 use Thruway\Peer\RouterInterface;
 use Thruway\Realm;
 use Thruway\Role\Broker;
@@ -16,7 +16,7 @@ use Thruway\Role\Broker;
  * Class StateHandlerRegistry
  * @package Thruway\Subscription
  */
-class StateHandlerRegistry extends ModuleClient
+class StateHandlerRegistry extends RouterModuleClient
 {
     /**
      * @var boolean
