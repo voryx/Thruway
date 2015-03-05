@@ -87,4 +87,11 @@ interface RouterInterface
      * @return \Thruway\Session|boolean
      */
     public function getSessionBySessionId($sessionId);
+
+    /**
+     * Add a client that uses the internal transport provider
+     *
+     * @param ClientInterface $client
+     */
+    public function addInternalClient(ClientInterface $client);
 }

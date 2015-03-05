@@ -22,5 +22,7 @@ class ModuleClient extends Client implements ModuleInterface {
     {
         $this->router = $router;
         $this->setLoop($loop);
+
+        $this->router->addInternalClient($this);
     }
 }

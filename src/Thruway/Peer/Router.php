@@ -31,6 +31,9 @@ use React\EventLoop\LoopInterface;
  */
 class Router extends AbstractPeer implements RouterInterface, EventSubscriberInterface
 {
+    /** @var bool  */
+    protected $started = false;
+
     /**
      * @var \Thruway\Transport\TransportProviderInterface[]
      */
@@ -190,6 +193,7 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
 
         $this->setupManager();
 
+        $this->started = true;
         if ($runLoop) {
             Logger::info($this, "Starting loop");
             $this->loop->run();
@@ -414,7 +418,6 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
      */
     public function registerModule(ModuleInterface $module)
     {
-        $this->addInternalClient($module);
         $module->initModule($this, $this->getLoop());
     }
 
