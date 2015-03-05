@@ -6,12 +6,11 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthorizationManagerInterface;
+use Thruway\Common\Utils;
 use Thruway\Event\EventSubscriberInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
@@ -29,7 +28,7 @@ use React\EventLoop\LoopInterface;
  *
  * @package Thruway\Peer
  */
-class Router extends AbstractPeer implements RouterInterface, EventSubscriberInterface
+class Router implements RouterInterface, EventSubscriberInterface
 {
     /** @var bool  */
     protected $started = false;
@@ -74,15 +73,13 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
      * Constructor
      *
      * @param \React\EventLoop\LoopInterface $loop
-     * @param \Thruway\Manager\ManagerInterface $manager
      */
-    public function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
+    public function __construct(LoopInterface $loop = null)
     {
-        $this->checkPrecision();
+        Utils::checkPrecision();
 
         $this->loop               = $loop ? $loop : Factory::create();
-        $this->manager            = $manager ? $manager : new ManagerDummy();
-        $this->realmManager       = new RealmManager($this->manager);
+        $this->realmManager       = new RealmManager();
         $this->sessions           = new \SplObjectStorage();
         $this->eventDispather     = new EventDispatcher();
 
@@ -98,7 +95,7 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
      */
     public function onOpen(TransportInterface $transport)
     {
-        $session = new Session($transport, $this->manager);
+        $session = new Session($transport);
 
         // give the session the loop, just in case it wants to set a timer or something
         $session->setLoop($this->getLoop());
@@ -183,15 +180,12 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
 
         foreach ($this->transportProviders as $transportProvider) {
             Logger::info($this, "Starting transport provider " . get_class($transportProvider));
-            $transportProvider->setManager($this->manager);
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
         foreach ($this->modules as $module) {
             $module->initModule($this, $this->loop);
         }
-
-        $this->setupManager();
 
         $this->started = true;
         if ($runLoop) {
@@ -256,30 +250,6 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
     }
 
     /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     * @throws \Exception
-     */
-    public function setManager($manager)
-    {
-//        $this->manager = $manager;
-        throw new \Exception('Manager needs to be set in the constructor');
-    }
-
-    /**
-     * Setting up manger
-     */
-    public function setupManager()
-    {
-        // setup the config for the manager
-        $this->manager->addCallable("sessions.count", [$this, "managerGetSessionCount"]);
-        //$this->manager->addCallable("sessions.list", array($this, "managerGetSessionList"));
-        $this->manager->addCallable("sessions.get", [$this, "managerGetSessions"]);
-        $this->manager->addCallable("realms.get", [$this, "managerGetRealms"]);
-    }
-
-    /**
      * Get loop
      *
      * @return \React\EventLoop\LoopInterface
@@ -287,16 +257,6 @@ class Router extends AbstractPeer implements RouterInterface, EventSubscriberInt
     public function getLoop()
     {
         return $this->loop;
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
     }
 
     /**

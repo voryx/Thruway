@@ -6,6 +6,8 @@ namespace Thruway\Transport;
 use React\EventLoop\LoopInterface;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
+use Thruway\Peer\PeerInterface;
+use Thruway\Peer\RouterInterface;
 
 /**
  * class DummyTransportProvider
@@ -18,10 +20,10 @@ class DummyTransportProvider extends AbstractTransportProvider
     /**
      * Start transport provider
      *
-     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \Thruway\Peer\PeerInterface $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
+    public function startTransportProvider(PeerInterface $peer, LoopInterface $loop)
     {
     }
 

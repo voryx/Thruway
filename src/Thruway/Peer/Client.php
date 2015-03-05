@@ -4,6 +4,7 @@ namespace Thruway\Peer;
 
 use Thruway\Authentication\ClientAuthenticationInterface;
 use Thruway\ClientSession;
+use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
@@ -30,7 +31,7 @@ use React\EventLoop\LoopInterface;
  *
  * @package Thruway\Peer
  */
-class Client extends AbstractPeer implements EventEmitterInterface, ClientInterface
+class Client implements EventEmitterInterface, ClientInterface
 {
 
     /**
@@ -134,7 +135,7 @@ class Client extends AbstractPeer implements EventEmitterInterface, ClientInterf
      */
     public function __construct($realm, LoopInterface $loop = null)
     {
-        $this->checkPrecision();
+        Utils::checkPrecision();
 
         $this->realm                = $realm;
         $this->loop                 = $loop ? $loop : Factory::create();

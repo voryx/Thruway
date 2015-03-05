@@ -45,11 +45,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('\React\EventLoop\LoopInterface', $this->router->getLoop());
     }
 
-    public function testDummyManager()
-    {
-        $this->assertInstanceOf('Thruway\Manager\ManagerDummy', $this->router->getManager());
-    }
-
     public function testNullAuthenticationManager()
     {
         $this->assertNull($this->router->getAuthenticationManager());

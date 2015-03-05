@@ -6,6 +6,9 @@ namespace Thruway\Transport;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
+use Thruway\Peer\ClientInterface;
+use Thruway\Peer\PeerInterface;
+use Thruway\Peer\RouterInterface;
 
 /**
  * Class InternalClientTransportProvider
@@ -23,12 +26,11 @@ class InternalClientTransportProvider extends AbstractTransportProvider
     /**
      * Constructor
      *
-     * @param \Thruway\Peer\AbstractPeer $internalClient
+     * @param \Thruway\Peer\ClientInterface $internalClient
      */
-    public function __construct(AbstractPeer $internalClient)
+    public function __construct(ClientInterface $internalClient)
     {
         $this->internalClient = $internalClient;
-        $this->manager        = new ManagerDummy();
         $this->trusted        = true;
 
         $this->internalClient->addTransportProvider(new DummyTransportProvider());
@@ -38,10 +40,10 @@ class InternalClientTransportProvider extends AbstractTransportProvider
     /**
      * Start transport provider
      *
-     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \Thruway\Peer\PeerInterface $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
+    public function startTransportProvider(PeerInterface $peer, LoopInterface $loop)
     {
         // the peer that is passed into here is the server that our internal client connects to
         $this->peer = $peer;

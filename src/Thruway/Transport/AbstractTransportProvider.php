@@ -2,24 +2,17 @@
 
 namespace Thruway\Transport;
 
+use Thruway\Module\RouterModule;
 
-use Thruway\Manager\ManagerInterface;
-
-abstract class AbstractTransportProvider implements TransportProviderInterface
+abstract class AbstractTransportProvider extends RouterModule implements TransportProviderInterface
 {
-
     /**
      * @var boolean
      */
     protected $trusted;
 
     /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
-    protected $manager;
-
-    /**
-     * @var \Thruway\Peer\AbstractPeer
+     * @var \Thruway\Peer\PeerInterface
      */
     protected $peer;
 
@@ -40,25 +33,5 @@ abstract class AbstractTransportProvider implements TransportProviderInterface
     public function setTrusted($trusted)
     {
         $this->trusted = $trusted;
-    }
-
-    /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     */
-    public function setManager(ManagerInterface $manager)
-    {
-        $this->manager = $manager;
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
     }
 }

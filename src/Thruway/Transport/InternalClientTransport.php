@@ -4,7 +4,7 @@ namespace Thruway\Transport;
 
 use React\EventLoop\LoopInterface;
 use Thruway\Message\Message;
-use Thruway\Peer\AbstractPeer;
+use Thruway\Peer\PeerInterface;
 
 /**
  * Class InternalClientTransport
@@ -15,7 +15,7 @@ class InternalClientTransport extends AbstractTransport
 {
 
     /**
-     * @var \Thruway\Peer\AbstractPeer
+     * @var \Thruway\Peer\RouterInterface
      */
     private $farPeer;
 
@@ -27,10 +27,10 @@ class InternalClientTransport extends AbstractTransport
     /**
      * Constructor
      *
-     * @param \Thruway\Peer\AbstractPeer $farPeer
+     * @param PeerInterface $farPeer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function __construct(AbstractPeer $farPeer, LoopInterface $loop)
+    public function __construct(PeerInterface $farPeer, LoopInterface $loop)
     {
         $this->farPeer = $farPeer;
         $this->loop    = $loop;

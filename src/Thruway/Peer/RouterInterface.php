@@ -13,7 +13,7 @@ use Thruway\Transport\TransportProviderInterface;
  * Interface RouterInterface
  * @package Thruway\Peer
  */
-interface RouterInterface
+interface RouterInterface extends PeerInterface
 {
 
     /**

@@ -35,4 +35,14 @@ class RouterModule implements RouterModuleInterface
     public function getLoop() {
         return $this->loop;
     }
+
+    /**
+     * If people don't want to implement this
+     *
+     * @inheritdoc
+     */
+    public static function getSubscribedEvents()
+    {
+        return [];
+    }
 }

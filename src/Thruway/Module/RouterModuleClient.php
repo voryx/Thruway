@@ -25,4 +25,14 @@ class RouterModuleClient extends Client implements RouterModuleInterface {
 
         $this->router->addInternalClient($this);
     }
+
+    /**
+     * If people don't want to implement this
+     *
+     * @inheritdoc
+     */
+    public static function getSubscribedEvents()
+    {
+        return [];
+    }
 }

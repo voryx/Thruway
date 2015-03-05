@@ -9,6 +9,7 @@ use Thruway\Manager\ManagerDummy;
 use Thruway\Peer\AbstractPeer;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
+use Thruway\Peer\PeerInterface;
 use Thruway\Serializer\JsonSerializer;
 
 /**
@@ -44,10 +45,10 @@ class PawlTransportProvider extends AbstractTransportProvider
     /**
      * Start transport provider
      *
-     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \Thruway\Peer\PeerInterface $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
+    public function startTransportProvider(PeerInterface $peer, LoopInterface $loop)
     {
         Logger::info($this, "Starting Transport");
 

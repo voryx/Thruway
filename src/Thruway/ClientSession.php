@@ -6,6 +6,7 @@ namespace Thruway;
 use React\Promise\Promise;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
+use Thruway\Peer\ClientInterface;
 use Thruway\Transport\TransportInterface;
 
 /**
@@ -25,9 +26,9 @@ class ClientSession extends AbstractSession
      * Constructor
      *
      * @param \Thruway\Transport\TransportInterface $transport
-     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param ClientInterface $peer
      */
-    public function __construct(TransportInterface $transport, AbstractPeer $peer)
+    public function __construct(TransportInterface $transport, ClientInterface $peer)
     {
         $this->transport = $transport;
         $this->peer      = $peer;

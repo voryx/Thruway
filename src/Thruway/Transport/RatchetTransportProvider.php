@@ -5,8 +5,8 @@ namespace Thruway\Transport;
 use Ratchet\WebSocket\Version\RFC6455\Frame;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManagerDummy;
-use Thruway\Peer\AbstractPeer;
+use Thruway\Peer\PeerInterface;
+use Thruway\Peer\RouterInterface;
 use Thruway\Serializer\JsonSerializer;
 use Ratchet\ConnectionInterface;
 use Ratchet\Http\HttpServer;
@@ -57,16 +57,19 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
         $this->port       = $port;
         $this->address    = $address;
         $this->transports = new \SplObjectStorage();
-        $this->manager    = new ManagerDummy();
+    }
+
+    public function initModule(RouterInterface $router, LoopInterface $loop) {
+
     }
 
     /**
      * Start transportprovider
      *
-     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \Thruway\Peer\PeerInterface $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
+    public function startTransportProvider(PeerInterface $peer, LoopInterface $loop)
     {
         $this->peer = $peer;
         $this->loop = $loop;
@@ -76,6 +79,8 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
         $socket = new Reactor($this->loop);
         $socket->listen($this->port, $this->address);
+
+        Logger::info($this, "Listening on " . $this->address . ":" . $this->port);
 
         $this->server = new IoServer(new HttpServer($ws), $socket, $this->loop);
     }

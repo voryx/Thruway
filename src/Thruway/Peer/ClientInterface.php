@@ -12,7 +12,7 @@ use Thruway\Transport\TransportProviderInterface;
  * Interface ClientInterface
  * @package Thruway\Peer
  */
-interface ClientInterface
+interface ClientInterface extends PeerInterface
 {
     /**
      * This is meant to be overridden so that the client can do its

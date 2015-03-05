@@ -3,6 +3,8 @@
 
 namespace Thruway\Common;
 
+use Thruway\Logging\Logger;
+
 /**
  * Class Utils for common methods
  * @package Thruway\Util
@@ -149,5 +151,14 @@ class Utils
         return $derivedKey;
     }
 
-
+    /**
+     * Changes the Precision for PHP configs that default to less than 16
+     */
+    static public function checkPrecision()
+    {
+        if (ini_get('precision') < 16) {
+            Logger::notice(null, 'Changing PHP precision from ' . ini_get('precision') . ' to 16');
+            ini_set('precision', 16);
+        }
+    }
 }

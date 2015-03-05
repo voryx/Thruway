@@ -90,5 +90,4 @@ abstract class AbstractTransport implements TransportInterface
     {
         throw new PingNotSupportedException();
     }
-
 }
