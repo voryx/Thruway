@@ -2,6 +2,7 @@
 
 namespace Thruway\Message;
 
+use Thruway\Message\Traits\OptionsMatchTypeTrait;
 use Thruway\Message\Traits\OptionsTrait;
 use Thruway\Message\Traits\RequestTrait;
 
@@ -17,6 +18,7 @@ class SubscribeMessage extends Message implements ActionMessageInterface
 
     use RequestTrait;
     use OptionsTrait;
+    use OptionsMatchTypeTrait;
 
     /**
      *
@@ -100,5 +102,17 @@ class SubscribeMessage extends Message implements ActionMessageInterface
         return "subscribe";
     }
 
+    /**
+     * @param $options
+     * @return string
+     */
+    static public function getMatchTypeFromOption($options)
+    {
+        if (is_object($options) && isset($options->match) && is_scalar($options->match)) {
+            return $options->match;
+        }
+
+        return "exact";
+    }
 
 }

@@ -19,7 +19,7 @@ $password = "secret2";
 
 $client->setAuthId($user);
 
-$client->addClientAuthenticator(new \Thruway\ClientWampCraAuthenticator($user, $password));
+$client->addClientAuthenticator(new \Thruway\Authentication\ClientWampCraAuthenticator($user, $password));
 
 $client->addTransportProvider(new \Thruway\Transport\PawlTransportProvider("ws://127.0.0.1:8080/ws"));
 

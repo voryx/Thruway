@@ -5,7 +5,6 @@ require_once __DIR__ . '/Clients/InternalClient.php';
 require_once __DIR__ . '/Clients/SimpleAuthProviderClient.php';
 require_once __DIR__ . '/Clients/AbortAfterHelloAuthProviderClient.php';
 require_once __DIR__ . '/Clients/DisclosePublisherClient.php';
-require_once __DIR__ . '/Clients/TopicStateClient.php';
 require_once __DIR__ . '/UserDb.php';
 
 use Thruway\Logging\Logger;
@@ -14,67 +13,36 @@ use Thruway\Transport\RatchetTransportProvider;
 
 //Logger::set(new \Psr\Log\NullLogger());
 
-
 $timeout = isset($argv[1]) ? $argv[1] : 0;
 $router  = new Router();
 $loop    = $router->getLoop();
-$authMgr = new \Thruway\Authentication\AuthenticationManager();
 
-$router->setAuthenticationManager($authMgr);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
+//Create a WebSocket connection that listens on localhost port 8090
+$router->addTransportProvider(new RatchetTransportProvider("127.0.0.1", 8090));
+
+$router->registerModules([
+
+    // Create Authentication Manager
+    new \Thruway\Authentication\AuthenticationManager(),
+    // Test stuff for Authorization
+    new \Thruway\Authentication\AuthorizationManager('authorizing_realm'),
+    // Create a realm with Authentication also to test some stuff
+    new \Thruway\Authentication\AuthorizationManager("authful_realm"),
+    // Client for End-to-End testing
+    new InternalClient('testRealm'),
+    // Client for Disclose Publisher Test
+    new DisclosePublisherClient('testSimpleAuthRealm'),
+    // State Handler Testing
+    new \Thruway\Subscription\StateHandlerRegistry('state.test.realm'),
+
+]);
 
 //Provide authentication for the realm: 'testSimpleAuthRealm'
-$authProvClient = new SimpleAuthProviderClient(["testSimpleAuthRealm", "authful_realm"]);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
+$router->addInternalClient(new SimpleAuthProviderClient(["testSimpleAuthRealm", "authful_realm"]));
+
 
 // provide aborting auth provider
-$authAbortAfterHello = new AbortAfterHelloAuthProviderClient(["abortafterhello"]);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authAbortAfterHello));
-
-////////////////////
-// Test stuff for Authorization
-$authorizationManager = new \Thruway\Authentication\AuthorizationManager('authorizing_realm');
-$authorizingRealm     = new \Thruway\Realm('authorizing_realm');
-$authorizingRealm->setAuthorizationManager($authorizationManager);
-$router->getRealmManager()->addRealm($authorizingRealm);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authorizationManager));
-// Create a realm with Authentication also
-// to test some stuff
-$authAndAuthAuthorizer = new \Thruway\Authentication\AuthorizationManager("authful_realm");
-$authAndAuthRealm      = new \Thruway\Realm("authful_realm");
-$authAndAuthRealm->setAuthorizationManager($authAndAuthAuthorizer);
-$authAndAuthRealm->setAuthenticationManager($authMgr);
-$router->getRealmManager()->addRealm($authAndAuthRealm);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authAndAuthAuthorizer));
-////////////////////
-
-$transportProvider = new RatchetTransportProvider("127.0.0.1", 8090);
-
-$router->addTransportProvider($transportProvider);
-
-$theInternalClient = new InternalClient('testRealm', $loop);
-$theInternalClient->setRouter($router);
-$internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider($theInternalClient);
-$router->addTransportProvider($internalTransportProvider);
-
-//Client for Disclose Publisher Test
-$dpClient                  = new DisclosePublisherClient('testSimpleAuthRealm', $loop);
-$internalTransportProvider = new Thruway\Transport\InternalClientTransportProvider($dpClient);
-$router->addTransportProvider($internalTransportProvider);
-/////////
-
-/////////////////////////
-//Topic State Testing
-$topicStateManager = new \Thruway\Topic\TopicStateManager('topic.state.test.realm', $loop);
-$topicStateRealm   = new \Thruway\Realm('topic.state.test.realm');
-$topicStateRealm->setTopicStateManager($topicStateManager);
-$router->getRealmManager()->addRealm($topicStateRealm);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($topicStateManager));
-
-//Add the State Handler Client
-$topicStateClient = new TopicStateClient('topic.state.test.realm', $loop);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($topicStateClient));
-////////////////////////
+$router->addInternalClient(new AbortAfterHelloAuthProviderClient(["abortafterhello"]));
 
 
 ////////////////////////
@@ -83,20 +51,17 @@ $router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProv
 $userDb = new UserDb();
 $userDb->add('peter', 'secret1', 'salt123');
 $userDb->add('joe', 'secret2', "mmm...salt");
+
 //Add the WAMP-CRA Auth Provider
 $authProvClient = new \Thruway\Authentication\WampCraAuthProvider(["test.wampcra.auth"], $loop);
 $authProvClient->setUserDb($userDb);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
+$router->addInternalClient($authProvClient);
 ///////////////////////
 
 if ($timeout) {
     $loop->addTimer($timeout, function () use ($loop) {
-            $loop->stop();
-        }
-    );
+        $loop->stop();
+    });
 }
 
 $router->start();
-
-
-

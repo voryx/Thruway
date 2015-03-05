@@ -8,12 +8,9 @@ $client = new \Thruway\Peer\Client("realm1");
 $client->on(
     'open',
     function (ClientSession $session) {
-        $session->subscribe(
-            "com.myapp.hello",
-            function ($msg) {
-                echo $msg[0];
-            }
-        );
+        $session->subscribe("com.myapp.hello", function ($msg) {
+            echo $msg[0];
+        });
     }
 );
 

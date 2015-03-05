@@ -7,6 +7,7 @@ namespace Thruway\Authentication;
 use Ratchet\Wamp\Exception;
 use Thruway\Common\Utils;
 use Thruway\Message\ActionMessageInterface;
+use Thruway\Module\Module;
 use Thruway\Peer\Client;
 use Thruway\Result;
 use Thruway\Session;
@@ -16,7 +17,7 @@ use Thruway\Session;
  * Class AuthorizationManager
  * @package Thruway\Authentication
  */
-class AuthorizationManager extends Client implements AuthorizationManagerInterface
+class AuthorizationManager extends Module implements AuthorizationManagerInterface
 {
     /**
      * @var bool
@@ -43,6 +44,17 @@ class AuthorizationManager extends Client implements AuthorizationManagerInterfa
         $this->flushAuthorizationRules();
     }
 
+    /**
+     * Gets called when the module is initialized in the router
+     */
+    public function onInitialize()
+    {
+        $authorizingRealm     = new \Thruway\Realm($this->getRealm());
+        $authorizingRealm->setAuthorizationManager($this);
+        $authorizingRealm->setAuthenticationManager($this->router->getAuthenticationManager());
+        $this->router->getRealmManager()->addRealm($authorizingRealm);
+
+    }
 
     /**
      * Check to see if an action is authorized on a specific uri given the

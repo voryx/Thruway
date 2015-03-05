@@ -1,6 +1,6 @@
 <?php
 
-require "../bootstrap.php";
+require __DIR__ . "/../bootstrap.php";
 
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;
@@ -15,9 +15,7 @@ $router = new Router($loop, $manager);
 
 $transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
 
-$internalClientTransportProvider = new \Thruway\Transport\InternalClientTransportProvider($manager);
-
 $router->addTransportProvider($transportProvider);
-$router->addTransportProvider($internalClientTransportProvider);
+$router->addInternalClient($manager);
 
 $router->start();

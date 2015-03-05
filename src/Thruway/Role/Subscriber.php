@@ -47,7 +47,7 @@ class Subscriber extends AbstractRole
     public function getFeatures() {
         $features = new \stdClass();
 
-        $features->subscriber_metaevents = true;
+//        $features->subscriber_metaevents = true;
 
         return $features;
     }

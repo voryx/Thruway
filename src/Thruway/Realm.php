@@ -20,8 +20,6 @@ use Thruway\Message\PublishMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
-use Thruway\Topic\TopicStateManagerDummy;
-use Thruway\Topic\TopicStateManagerInterface;
 use Thruway\Transport\DummyTransport;
 
 /**
@@ -95,8 +93,6 @@ class Realm
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
         $this->setManager(new ManagerDummy());
-        $this->setTopicStateManager(new TopicStateManagerDummy());
-
     }
 
     /**
@@ -150,6 +146,13 @@ class Realm
             if (!$this->getAuthorizationManager()->isAuthorizedTo($session, $msg)) {
                 Logger::alert($this,
                     "Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
+
+                // we are not to send messages in response to publish messages unless
+                // they set acknowledge = true
+                if ($msg instanceof PublishMessage) {
+                    if (!$msg->acknowledge()) return;
+                }
+
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
 
                 return;
@@ -335,8 +338,8 @@ class Realm
 
         $manager->addCallable(
             "realm.{$this->getRealmName()}.registrations", function () {
-                return $this->dealer->managerGetRegistrations();
-            }
+            return $this->dealer->managerGetRegistrations();
+        }
         );
     }
 
@@ -384,22 +387,6 @@ class Realm
     public function setAuthorizationManager($authorizationManager)
     {
         $this->authorizationManager = $authorizationManager;
-    }
-
-    /**
-     * @return topicStateManagerInterface
-     */
-    public function getTopicStateManager()
-    {
-        return $this->getBroker()->getTopicStateManager();
-    }
-
-    /**
-     * @param topicStateManagerInterface $topicStateManager
-     */
-    public function setTopicStateManager($topicStateManager)
-    {
-        $this->getBroker()->setTopicStateManager($topicStateManager);
     }
 
     /**

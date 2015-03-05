@@ -4,7 +4,12 @@ namespace Thruway;
 
 
 use Thruway\Common\Utils;
+use Thruway\Logging\Logger;
 use Thruway\Message\CallMessage;
+use Thruway\Message\CancelMessage;
+use Thruway\Message\ErrorMessage;
+use Thruway\Message\HelloMessage;
+use Thruway\Message\InterruptMessage;
 use Thruway\Message\InvocationMessage;
 use Thruway\Message\ResultMessage;
 use Thruway\Message\YieldMessage;
@@ -38,9 +43,19 @@ class Call
     private $invocationMessage;
 
     /**
+     * @var InterruptMessage
+     */
+    private $interruptMessage;
+
+    /**
+     * @var CancelMessage
+     */
+    private $cancelMessage;
+
+    /**
      * @var boolean
      */
-    private $isProgressive;
+    private $isProgressive = false;
 
     /**
      * @var Registration
@@ -52,6 +67,20 @@ class Call
      */
     private $callStart;
 
+    /**
+     * @var bool
+     */
+    private $canceling = false;
+
+    /**
+     * @var bool
+     */
+    private $discard_result = false;
+
+    /**
+     * @var Procedure
+     */
+    private $procedure;
 
     private $invocationRequestId;
 
@@ -65,14 +94,11 @@ class Call
     public function __construct(
         Session $callerSession,
         CallMessage $callMessage,
-        Registration $registration = null
+        Procedure $procedure
     ) {
         $this->callMessage       = $callMessage;
         $this->callerSession     = $callerSession;
-        $this->invocationMessage = null;
-        $this->calleeSession     = null;
-        $this->isProgressive     = false;
-        $this->setRegistration($registration);
+        $this->procedure         = $procedure;
 
         $this->callStart = microtime(true);
         $this->invocationRequestId = Utils::getUniqueId();
@@ -123,6 +149,67 @@ class Call
         $this->getCallerSession()->sendMessage($resultMessage);
 
         return $keepIndex;
+    }
+
+    /**
+     * processCancel processes cancel message from the caller.
+     * Return true if the Call should be removed from active calls
+     *
+     * @param Session $session
+     * @param CancelMessage $msg
+     * @return bool
+     */
+    public function processCancel(Session $session, CancelMessage $msg) {
+        if ($this->getCallerSession() !== $session) {
+            Logger::warning($this, "session attempted to cancel call they did not own.");
+            return false;
+        }
+
+        if ($this->getCalleeSession() === null) {
+            // this call has not been sent to a callee yet (it is in a queue)
+            // we can just kill it and say it was canceled
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.canceled");
+            $details = $errorMsg->getDetails() ?: (object)[];
+            $details->_thruway_removed_from_queue = true;
+            $session->sendMessage($errorMsg);
+            return true;
+        }
+
+        $details = (object)[];
+        if ($this->getCalleeSession()->getHelloMessage() instanceof HelloMessage) {
+            $details = $this->getCalleeSession()->getHelloMessage()->getDetails();
+        }
+        $calleeSupportsCancel = false;
+        if (isset($details->roles->callee->features->call_canceling)
+            && is_scalar($details->roles->callee->features->call_canceling)) {
+            $calleeSupportsCancel = (bool)$details->roles->callee->features->call_canceling;
+        }
+
+        if (!$calleeSupportsCancel) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $errorMsg->setErrorURI('wamp.error.not_supported');
+            $session->sendMessage($errorMsg);
+            return false;
+        }
+
+        $this->setCancelMessage($msg);
+
+        $this->canceling = true;
+
+        $calleeSession = $this->getCalleeSession();
+
+        $interruptMessage = new InterruptMessage($this->getInvocationRequestId(), (object)[]);
+        $calleeSession->sendMessage($interruptMessage);
+        $this->setInterruptMessage($interruptMessage);
+
+        if (isset($msg->getOptions()->mode) && is_scalar($msg->getOptions()->mode) && $msg->getOptions()->mode == "killnowait") {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.canceled");
+            $session->sendMessage($errorMsg);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -313,5 +400,43 @@ class Call
         return $this->invocationRequestId;
     }
 
+    /**
+     * @return CancelMessage
+     */
+    public function getCancelMessage()
+    {
+        return $this->cancelMessage;
+    }
 
+    /**
+     * @param CancelMessage $cancelMessage
+     */
+    public function setCancelMessage($cancelMessage)
+    {
+        $this->cancelMessage = $cancelMessage;
+    }
+
+    /**
+     * @return InterruptMessage
+     */
+    public function getInterruptMessage()
+    {
+        return $this->interruptMessage;
+    }
+
+    /**
+     * @param InterruptMessage $interruptMessage
+     */
+    public function setInterruptMessage($interruptMessage)
+    {
+        $this->interruptMessage = $interruptMessage;
+    }
+
+    /**
+     * @return Procedure
+     */
+    public function getProcedure()
+    {
+        return $this->procedure;
+    }
 }

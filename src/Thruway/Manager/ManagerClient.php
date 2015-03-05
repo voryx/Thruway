@@ -29,9 +29,10 @@ class ManagerClient extends Client implements ManagerInterface
     use LoggerTrait;
 
     /**
-     * @var boolean
+     * @var array
      */
-    private $loggingPublish = true;
+    private $callables;
+
 
     /**
      * Constructor
@@ -43,22 +44,6 @@ class ManagerClient extends Client implements ManagerInterface
         $this->callables = [];
         $this->setLogger(new NullLogger);
     }
-
-    /**
-     * Override start because we are not your typical client
-     * We have no transport provider and we do not start a loop
-     * (although we may want a loop later on if we want to setup
-     * outgoing connections or timers or something)
-     */
-    public function start()
-    {
-
-    }
-
-    /**
-     * @var array
-     */
-    private $callables;
 
     /**
      * Add callable

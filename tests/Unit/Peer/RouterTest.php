@@ -403,7 +403,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->onMessage($transport, $helloMessage);
 
         //Publish Message
-        $msg = new \Thruway\Message\PublishMessage('999654321', new stdClass(), 'test.topic', ["hello world"]);
+        $msg = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), new stdClass(), 'test.topic', ["hello world"]);
+        $msg->setPublicationId('999654321');
         $router->onMessage($transport, $msg);
 
     }
@@ -465,14 +466,15 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 )
             )->will($this->returnValue(null));
 
-        $this->assertInstanceOf('\Thruway\Subscription',
+        $this->assertInstanceOf('\Thruway\Subscription\Subscription',
             $router->getRealmManager()->getRealm('test.realm2')->getBroker()->getSubscriptionById($subscriptionId)
         );
 
         $msg = new \Thruway\Message\UnsubscribeMessage('888888', $subscriptionId);
         $router->onMessage($transport, $msg);
 
-        $this->assertFalse($router->getRealmManager()->getRealm('test.realm2')->getBroker()->getSubscriptionById($subscriptionId));
+        $broker = $router->getRealmManager()->getRealm('test.realm2')->getBroker();
+        $this->assertFalse($broker->getSubscriptionById($subscriptionId));
 
     }
 
@@ -715,4 +717,419 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->onMessage($transportPublisher, $publishMsg);
     }
 
+    /**
+     * Creates a Transport Mock object using a fluent interface.
+     *
+     * @return PHPUnit_Framework_MockObject_MockObject
+     */
+    private function createTransportMock() {
+        return $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+            ->getMock();
+    }
+
+    private function assertEventMessageWithArgument0($arg0, $msg) {
+        $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
+        $this->assertEquals($arg0, $msg->getArguments()[0]);
+    }
+
+    public function testStateHandlerStuff() {
+        $router = new \Thruway\Peer\Router();
+
+        $stateHandlerRegistry = new \Thruway\Subscription\StateHandlerRegistry('state.test.realm');
+
+        $router->registerModule($stateHandlerRegistry);
+
+        $router->start(false);
+
+        $transportStateHandler = $this->createTransportMock();
+
+        $registrationId = 0;
+        $invocationReqId = 0;
+        $subscriptionId = 0;
+
+        $transportStateHandler->expects($this->exactly(7))
+            ->method('sendMessage')
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(function (\Thruway\Message\RegisteredMessage $msg) use (&$registrationId) {
+                    $registrationId = $msg->getRegistrationId();
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No handler uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ResultMessage $msg) {
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\InvocationMessage $msg) use (&$registrationId, &$invocationReqId) {
+                    $this->assertEquals($registrationId, $msg->getRegistrationId());
+                    $invocationReqId = $msg->getRequestId();
+                    return true;
+                })]
+            );
+
+        $transportSubscriber = $this->createTransportMock();
+
+        $transportSubscriber->expects($this->exactly(6))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(function (\Thruway\Message\SubscribedMessage $msg) use (&$subscriptionId) {
+                    $subscriptionId = $msg->getSubscriptionId();
+                    return true;
+                })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(2, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(3, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(4, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(5, $msg); return true; })]
+            );
+
+        $router->onOpen($transportStateHandler);
+        $router->onOpen($transportSubscriber);
+
+        $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
+
+        $router->onMessage($transportStateHandler, $hello);
+        $router->onMessage($transportSubscriber, $hello);
+
+        $register = new \Thruway\Message\RegisterMessage(12345, (object)[], 'my_state_handler');
+
+        $router->onMessage($transportStateHandler, $register);
+
+        $call = new \Thruway\Message\CallMessage(2, (object)[], 'add_state_handler', [[]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["uri" => "test.stateful.uri"]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["handler_uri" => "my_state_handler"]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["uri" => "test.stateful.uri", "handler_uri" => "my_state_handler"]]);
+        $router->onMessage($transportStateHandler, $call);
+
+        $subscribe = new \Thruway\Message\SubscribeMessage(2, (object)[], "test.stateful.uri");
+        $router->onMessage($transportSubscriber, $subscribe);
+
+        for ($i = 0; $i < 3; $i++) {
+            $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
+            $publish->setPublicationId($i);
+            $router->onMessage($transportStateHandler, $publish);
+        }
+
+        $yield = new \Thruway\Message\YieldMessage($invocationReqId, (object)[], [1]);
+        $router->onMessage($transportStateHandler, $yield);
+
+        for ($i = 3; $i < 6; $i++) {
+            $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
+            $publish->setPublicationId($i);
+            $router->onMessage($transportStateHandler, $publish);
+        }
+    }
+
+    public function testStateRestoreWithQueuePubIdNotInQueue() {
+        $router = new \Thruway\Peer\Router();
+
+        $stateHandlerRegistry = new \Thruway\Subscription\StateHandlerRegistry('state.test.realm');
+
+        $router->registerModule($stateHandlerRegistry);
+
+        $router->start(false);
+
+        $transportStateHandler = $this->createTransportMock();
+
+        $registrationId = 0;
+        $invocationReqId = 0;
+        $subscriptionId = 0;
+
+        $transportStateHandler->expects($this->exactly(7))
+            ->method('sendMessage')
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(function (\Thruway\Message\RegisteredMessage $msg) use (&$registrationId) {
+                    $registrationId = $msg->getRegistrationId();
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No handler uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ResultMessage $msg) {
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\InvocationMessage $msg) use (&$registrationId, &$invocationReqId) {
+                    $this->assertEquals($registrationId, $msg->getRegistrationId());
+                    $invocationReqId = $msg->getRequestId();
+                    return true;
+                })]
+            );
+
+        $transportSubscriber = $this->createTransportMock();
+
+        $transportSubscriber->expects($this->exactly(8))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(function (\Thruway\Message\SubscribedMessage $msg) use (&$subscriptionId) {
+                    $subscriptionId = $msg->getSubscriptionId();
+                    return true;
+                })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(0, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(1, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(2, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(3, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(4, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(5, $msg); return true; })]
+            );
+
+        $router->onOpen($transportStateHandler);
+        $router->onOpen($transportSubscriber);
+
+        $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
+
+        $router->onMessage($transportStateHandler, $hello);
+        $router->onMessage($transportSubscriber, $hello);
+
+        $register = new \Thruway\Message\RegisterMessage(12345, (object)[], 'my_state_handler');
+
+        $router->onMessage($transportStateHandler, $register);
+
+        $call = new \Thruway\Message\CallMessage(2, (object)[], 'add_state_handler', [[]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["uri" => "test.stateful.uri"]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["handler_uri" => "my_state_handler"]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["uri" => "test.stateful.uri", "handler_uri" => "my_state_handler"]]);
+        $router->onMessage($transportStateHandler, $call);
+
+        $subscribe = new \Thruway\Message\SubscribeMessage(2, (object)[], "test.stateful.uri");
+        $router->onMessage($transportSubscriber, $subscribe);
+
+        for ($i = 0; $i < 3; $i++) {
+            $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
+            $publish->setPublicationId($i);
+            $router->onMessage($transportStateHandler, $publish);
+        }
+
+        $yield = new \Thruway\Message\YieldMessage($invocationReqId, (object)[], [1234]);
+        $router->onMessage($transportStateHandler, $yield);
+
+        for ($i = 3; $i < 6; $i++) {
+            $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
+            $publish->setPublicationId($i);
+            $router->onMessage($transportStateHandler, $publish);
+        }
+    }
+
+    public function testStateRestoreWithQueueNullPubId() {
+        $router = new \Thruway\Peer\Router();
+
+        $stateHandlerRegistry = new \Thruway\Subscription\StateHandlerRegistry('state.test.realm');
+
+        $router->registerModule($stateHandlerRegistry);
+
+        $router->start(false);
+
+        $transportStateHandler = $this->createTransportMock();
+
+        $registrationId = 0;
+        $invocationReqId = 0;
+        $subscriptionId = 0;
+
+        $transportStateHandler->expects($this->exactly(7))
+            ->method('sendMessage')
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(function (\Thruway\Message\RegisteredMessage $msg) use (&$registrationId) {
+                    $registrationId = $msg->getRegistrationId();
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No handler uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ResultMessage $msg) {
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\InvocationMessage $msg) use (&$registrationId, &$invocationReqId) {
+                    $this->assertEquals($registrationId, $msg->getRegistrationId());
+                    $invocationReqId = $msg->getRequestId();
+                    return true;
+                })]
+            );
+
+        $transportSubscriber = $this->createTransportMock();
+
+        $transportSubscriber->expects($this->exactly(8))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(function (\Thruway\Message\SubscribedMessage $msg) use (&$subscriptionId) {
+                    $subscriptionId = $msg->getSubscriptionId();
+                    return true;
+                })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(0, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(1, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(2, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(3, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(4, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(5, $msg); return true; })]
+            );
+
+        $router->onOpen($transportStateHandler);
+        $router->onOpen($transportSubscriber);
+
+        $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
+
+        $router->onMessage($transportStateHandler, $hello);
+        $router->onMessage($transportSubscriber, $hello);
+
+        $register = new \Thruway\Message\RegisterMessage(12345, (object)[], 'my_state_handler');
+
+        $router->onMessage($transportStateHandler, $register);
+
+        $call = new \Thruway\Message\CallMessage(2, (object)[], 'add_state_handler', [[]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["uri" => "test.stateful.uri"]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["handler_uri" => "my_state_handler"]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["uri" => "test.stateful.uri", "handler_uri" => "my_state_handler"]]);
+        $router->onMessage($transportStateHandler, $call);
+
+        $subscribe = new \Thruway\Message\SubscribeMessage(2, (object)[], "test.stateful.uri");
+        $router->onMessage($transportSubscriber, $subscribe);
+
+        for ($i = 0; $i < 3; $i++) {
+            $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
+            $publish->setPublicationId($i);
+            $router->onMessage($transportStateHandler, $publish);
+        }
+
+        $yield = new \Thruway\Message\YieldMessage($invocationReqId, (object)[]);
+        $router->onMessage($transportStateHandler, $yield);
+
+        for ($i = 3; $i < 6; $i++) {
+            $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
+            $publish->setPublicationId($i);
+            $router->onMessage($transportStateHandler, $publish);
+        }
+    }
+
+    public function testStateRestoreWithNoQueue() {
+        $router = new \Thruway\Peer\Router();
+
+        $stateHandlerRegistry = new \Thruway\Subscription\StateHandlerRegistry('state.test.realm');
+
+        $router->registerModule($stateHandlerRegistry);
+
+        $router->start(false);
+
+        $transportStateHandler = $this->createTransportMock();
+
+        $registrationId = 0;
+        $invocationReqId = 0;
+        $subscriptionId = 0;
+
+        $transportStateHandler->expects($this->exactly(7))
+            ->method('sendMessage')
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(function (\Thruway\Message\RegisteredMessage $msg) use (&$registrationId) {
+                    $registrationId = $msg->getRegistrationId();
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No handler uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ErrorMessage $msg) {
+                    $this->assertEquals("No uri set for state handler registration.", $msg->getArguments()[0]);
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\ResultMessage $msg) {
+                    return true;
+                })],
+                [$this->callback(function (\Thruway\Message\InvocationMessage $msg) use (&$registrationId, &$invocationReqId) {
+                    $this->assertEquals($registrationId, $msg->getRegistrationId());
+                    $invocationReqId = $msg->getRequestId();
+                    return true;
+                })]
+            );
+
+        $transportSubscriber = $this->createTransportMock();
+
+        $transportSubscriber->expects($this->exactly(5))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(function (\Thruway\Message\SubscribedMessage $msg) use (&$subscriptionId) {
+                    $subscriptionId = $msg->getSubscriptionId();
+                    return true;
+                })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(3, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(4, $msg); return true; })],
+                [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(5, $msg); return true; })]
+            );
+
+        $router->onOpen($transportStateHandler);
+        $router->onOpen($transportSubscriber);
+
+        $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
+
+        $router->onMessage($transportStateHandler, $hello);
+        $router->onMessage($transportSubscriber, $hello);
+
+        $register = new \Thruway\Message\RegisterMessage(12345, (object)[], 'my_state_handler');
+
+        $router->onMessage($transportStateHandler, $register);
+
+        $call = new \Thruway\Message\CallMessage(2, (object)[], 'add_state_handler', [[]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["uri" => "test.stateful.uri"]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["handler_uri" => "my_state_handler"]]);
+        $router->onMessage($transportStateHandler, $call);
+        $call->setArguments([(object)["uri" => "test.stateful.uri", "handler_uri" => "my_state_handler"]]);
+        $router->onMessage($transportStateHandler, $call);
+
+        $subscribe = new \Thruway\Message\SubscribeMessage(2, (object)[], "test.stateful.uri");
+        $router->onMessage($transportSubscriber, $subscribe);
+
+        $yield = new \Thruway\Message\YieldMessage($invocationReqId, (object)[]);
+        $router->onMessage($transportStateHandler, $yield);
+
+        for ($i = 3; $i < 6; $i++) {
+            $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
+            $publish->setPublicationId($i);
+            $router->onMessage($transportStateHandler, $publish);
+        }
+    }
 }

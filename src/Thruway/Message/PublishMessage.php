@@ -53,6 +53,11 @@ class PublishMessage extends Message implements ActionMessageInterface
     private $eligible;
 
     /**
+     * @var int
+     */
+    private $publicationId;
+
+    /**
      * Constructor
      *
      * @param int $requestId
@@ -204,5 +209,22 @@ class PublishMessage extends Message implements ActionMessageInterface
         return in_array($sessionId, $this->getExclude());
     }
 
+    /**
+     * @return int
+     */
+    public function getPublicationId()
+    {
+        return $this->publicationId;
+    }
+
+    /**
+     * @param int $publicationId
+     */
+    public function setPublicationId($publicationId)
+    {
+        $this->publicationId = $publicationId;
+    }
+
 }
+
 

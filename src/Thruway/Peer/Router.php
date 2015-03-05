@@ -12,8 +12,10 @@ use Thruway\Manager\ManagerInterface;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
+use Thruway\Module\ModuleInterface;
 use Thruway\RealmManager;
 use Thruway\Session;
+use Thruway\Transport\InternalClientTransportProvider;
 use Thruway\Transport\TransportProviderInterface;
 use Thruway\Transport\TransportInterface;
 use React\EventLoop\Factory;
@@ -24,7 +26,7 @@ use React\EventLoop\LoopInterface;
  *
  * @package Thruway\Peer
  */
-class Router extends AbstractPeer
+class Router extends AbstractPeer implements RouterInterface
 {
 
     /**
@@ -65,6 +67,8 @@ class Router extends AbstractPeer
      */
     public function __construct(LoopInterface $loop = null, ManagerInterface $manager = null)
     {
+        $this->checkPrecision();
+
         $this->loop               = $loop ? $loop : Factory::create();
         $this->manager            = $manager ? $manager : new ManagerDummy();
         $this->realmManager       = new RealmManager($this->manager);
@@ -115,6 +119,7 @@ class Router extends AbstractPeer
             }
             // hopefully this is a HelloMessage or we have no place for this message to go
             if ($msg instanceof HelloMessage) {
+                $session->setHelloMessage($msg);
                 try {
                     $realm = $this->realmManager->getRealm($msg->getRealm());
 
@@ -140,7 +145,7 @@ class Router extends AbstractPeer
 
     /**
      * Add transport provider
-     * 
+     *
      * @param \Thruway\Transport\TransportProviderInterface $transportProvider
      */
     public function addTransportProvider(TransportProviderInterface $transportProvider)
@@ -151,9 +156,10 @@ class Router extends AbstractPeer
     /**
      * Start router
      *
+     * @param bool $runLoop
      * @throws \Exception
      */
-    public function start()
+    public function start($runLoop = true)
     {
         Logger::info($this, "Starting router");
         if ($this->loop === null) {
@@ -173,7 +179,9 @@ class Router extends AbstractPeer
         $this->setupManager();
 
         Logger::info($this, "Starting loop");
-        $this->loop->run();
+        if ($runLoop) {
+            $this->loop->run();
+        }
     }
 
     /**
@@ -195,7 +203,7 @@ class Router extends AbstractPeer
 
     /**
      * Set authentication manager
-     * 
+     *
      * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager)
@@ -206,7 +214,7 @@ class Router extends AbstractPeer
 
     /**
      * Get authentication manager
-     * 
+     *
      * @return \Thruway\Authentication\AuthenticationManagerInterface
      */
     public function getAuthenticationManager()
@@ -233,7 +241,7 @@ class Router extends AbstractPeer
 
     /**
      * Set manager
-     * 
+     *
      * @param \Thruway\Manager\ManagerInterface $manager
      * @throws \Exception
      */
@@ -257,7 +265,7 @@ class Router extends AbstractPeer
 
     /**
      * Get loop
-     * 
+     *
      * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
@@ -267,7 +275,7 @@ class Router extends AbstractPeer
 
     /**
      * Get manager
-     * 
+     *
      * @return \Thruway\Manager\ManagerInterface
      */
     public function getManager()
@@ -297,7 +305,7 @@ class Router extends AbstractPeer
 
     /**
      * Set realm manager
-     * 
+     *
      * @param \Thruway\RealmManager $realmManager
      */
     public function setRealmManager($realmManager)
@@ -307,7 +315,7 @@ class Router extends AbstractPeer
 
     /**
      * Get realm manager
-     * 
+     *
      * @return \Thruway\RealmManager
      */
     public function getRealmManager()
@@ -388,22 +396,40 @@ class Router extends AbstractPeer
     }
 
     /**
-     * Get list transports
+     * Registers a Module
      *
-     * @return array
+     * @param ModuleInterface $module
      */
-    public function managerGetTransports()
+    public function registerModule(ModuleInterface $module)
     {
-
+        $module->setLoop($this->getLoop());
+        $module->setRouter($this);
+        $this->addInternalClient($module);
+        $module->onInitialize();
     }
 
     /**
+     * Register Multiple Modules
      *
-     * @param array $args
+     * @param array $modules
      */
-    public function managerPruneSession($args)
+    public function registerModules(Array $modules)
     {
+        foreach ($modules as $module) {
+            $this->registerModule($module);
+        }
+    }
 
+    /**
+     * Add a client that uses the internal transport provider
+     *
+     * @param ClientInterface $client
+     */
+    public function addInternalClient(ClientInterface $client)
+    {
+        $internalTransport = new InternalClientTransportProvider($client);
+        $this->addTransportProvider($internalTransport);
     }
 
 }
+

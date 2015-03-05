@@ -51,23 +51,16 @@ class RealmManager
      */
     public function __construct(ManagerInterface $manager = null)
     {
-        $this->realms                       = [];
+        $this->realms                      = [];
+        $this->manager                     = $manager ?: new ManagerDummy();
+        $this->allowRealmAutocreate        = true;
+        $this->defaultAuthorizationManager = new AllPermissiveAuthorizationManager();
 
-        $this->setAllowRealmAutocreate(true);
-        $this->setDefaultAuthenticationManager(null);
-
-        if ($manager === null) {
-            $manager = new ManagerDummy();
-        }
-
-        $this->manager                      = $manager;
-
-        $this->setDefaultAuthorizationManager(new AllPermissiveAuthorizationManager());
     }
 
     /**
-     * Get Realm bu realm name
-     * 
+     * Get Realm by realm name
+     *
      * @param string $realmName
      * @throws \Thruway\Exception\InvalidRealmNameException
      * @throws \Thruway\Exception\RealmNotFoundException
@@ -94,7 +87,7 @@ class RealmManager
 
     /**
      * Add new realm
-     * 
+     *
      * @param \Thruway\Realm $realm
      * @throws \Thruway\Exception\InvalidRealmNameException
      * @throws \Exception
@@ -146,7 +139,7 @@ class RealmManager
 
     /**
      * Get list realms
-     * 
+     *
      * @return array
      */
     public function getRealms()
@@ -156,7 +149,7 @@ class RealmManager
 
     /**
      * Set option allow auto create realm if not exist
-     * 
+     *
      * @param boolean $allowRealmAutocreate
      */
     public function setAllowRealmAutocreate($allowRealmAutocreate)
@@ -166,7 +159,7 @@ class RealmManager
 
     /**
      * Get option allow auto create realm
-     * 
+     *
      * @return boolean
      */
     public function getAllowRealmAutocreate()
@@ -176,7 +169,7 @@ class RealmManager
 
     /**
      * Set default authentication manager
-     * 
+     *
      * @param \Thruway\Authentication\AuthenticationManagerInterface $defaultAuthenticationManager
      */
     public function setDefaultAuthenticationManager($defaultAuthenticationManager)
@@ -186,7 +179,7 @@ class RealmManager
 
     /**
      * Get default authentication manager
-     * 
+     *
      * @return \Thruway\Authentication\AuthenticationManagerInterface
      */
     public function getDefaultAuthenticationManager()

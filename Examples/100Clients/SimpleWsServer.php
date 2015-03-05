@@ -11,6 +11,4 @@ $transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
 
 $router->addTransportProvider($transportProvider);
 
-$router->getManager()->setQuiet(true);
-
 $router->start();

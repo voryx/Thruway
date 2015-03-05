@@ -6,12 +6,8 @@
  * For more information go to:
  * http://voryx.net/creating-internal-client-thruway/
  */
-class   DisclosePublisherClient extends Thruway\Peer\Client
+class   DisclosePublisherClient extends \Thruway\Module\Module
 {
-    /**
-     * @var \Thruway\Peer\Router
-     */
-    private $router;
 
     public function onSessionStart($session, $transport)
     {
