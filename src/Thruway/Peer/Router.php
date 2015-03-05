@@ -2,8 +2,11 @@
 
 namespace Thruway\Peer;
 
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthorizationManagerInterface;
+use Thruway\Event\EventSubscriberInterface;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Logging\Logger;
@@ -26,13 +29,12 @@ use React\EventLoop\LoopInterface;
  *
  * @package Thruway\Peer
  */
-class Router extends AbstractPeer implements RouterInterface
+class Router extends AbstractPeer implements RouterInterface, EventSubscriberInterface
 {
-
     /**
      * @var \Thruway\Transport\TransportProviderInterface[]
      */
-    private $transportProviders;
+    private $transportProviders = [];
 
     /**
      * @var \Thruway\RealmManager
@@ -59,6 +61,12 @@ class Router extends AbstractPeer implements RouterInterface
      */
     private $loop;
 
+    /** @var EventDispatcherInterface */
+    private $eventDispather;
+
+    /** @var ModuleInterface[]  */
+    private $modules= [];
+
     /**
      * Constructor
      *
@@ -72,8 +80,8 @@ class Router extends AbstractPeer implements RouterInterface
         $this->loop               = $loop ? $loop : Factory::create();
         $this->manager            = $manager ? $manager : new ManagerDummy();
         $this->realmManager       = new RealmManager($this->manager);
-        $this->transportProviders = [];
         $this->sessions           = new \SplObjectStorage();
+        $this->eventDispather     = new EventDispatcher();
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
 
@@ -176,10 +184,14 @@ class Router extends AbstractPeer implements RouterInterface
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
+        foreach ($this->modules as $module) {
+            $module->initModule($this, $this->loop);
+        }
+
         $this->setupManager();
 
-        Logger::info($this, "Starting loop");
         if ($runLoop) {
+            Logger::info($this, "Starting loop");
             $this->loop->run();
         }
     }
@@ -402,10 +414,8 @@ class Router extends AbstractPeer implements RouterInterface
      */
     public function registerModule(ModuleInterface $module)
     {
-        $module->setLoop($this->getLoop());
-        $module->setRouter($this);
         $this->addInternalClient($module);
-        $module->onInitialize();
+        $module->initModule($this, $this->getLoop());
     }
 
     /**
@@ -431,5 +441,20 @@ class Router extends AbstractPeer implements RouterInterface
         $this->addTransportProvider($internalTransport);
     }
 
+    /**
+     * @return EventDispatcherInterface
+     */
+    public function getEventDispather()
+    {
+        return $this->eventDispather;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getSubscribedEvents()
+    {
+        return [];
+    }
 }
 

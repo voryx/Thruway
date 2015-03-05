@@ -646,5 +646,11 @@ class Client extends AbstractPeer implements EventEmitterInterface, ClientInterf
         return $this->realm;
     }
 
+    /**
+     * @param LoopInterface $loop
+     */
+    public function setLoop(LoopInterface $loop) {
+        $this->loop = $loop;
+    }
 }
 

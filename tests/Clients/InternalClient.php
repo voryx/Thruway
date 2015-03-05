@@ -2,7 +2,7 @@
 
 /**
  */
-class InternalClient extends \Thruway\Module\Module
+class InternalClient extends \Thruway\Module\ModuleClient
 {
 
     public function onSessionStart($session, $transport)
@@ -76,7 +76,7 @@ class InternalClient extends \Thruway\Module\Module
 
     public function callGetHelloDetails($args, $argsKw, $details)
     {
-        $callingSession = $this->getRouter()->getSessionBySessionId($details->caller);
+        $callingSession = $this->router->getSessionBySessionId($details->caller);
 
         $roleFeatures = $callingSession->getRoleFeatures();
 
@@ -110,7 +110,7 @@ class InternalClient extends \Thruway\Module\Module
         if (is_object($details) && isset($details->caller)) {
             $sessionIdToPing = $details->caller;
 
-            $theSession = $this->getRouter()->getSessionBySessionId($sessionIdToPing);
+            $theSession = $this->router->getSessionBySessionId($sessionIdToPing);
 
             // ping returns a promise - we can just return it
             return $theSession->getTransport()->ping(2);

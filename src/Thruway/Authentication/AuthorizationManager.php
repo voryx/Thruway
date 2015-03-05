@@ -5,10 +5,11 @@ namespace Thruway\Authentication;
 
 
 use Ratchet\Wamp\Exception;
+use React\EventLoop\LoopInterface;
 use Thruway\Common\Utils;
 use Thruway\Message\ActionMessageInterface;
-use Thruway\Module\Module;
-use Thruway\Peer\Client;
+use Thruway\Module\ModuleClient;
+use Thruway\Peer\RouterInterface;
 use Thruway\Result;
 use Thruway\Session;
 
@@ -17,7 +18,7 @@ use Thruway\Session;
  * Class AuthorizationManager
  * @package Thruway\Authentication
  */
-class AuthorizationManager extends Module implements AuthorizationManagerInterface
+class AuthorizationManager extends ModuleClient implements AuthorizationManagerInterface
 {
     /**
      * @var bool
@@ -46,14 +47,16 @@ class AuthorizationManager extends Module implements AuthorizationManagerInterfa
 
     /**
      * Gets called when the module is initialized in the router
+     *
+     * @inheritdoc
      */
-    public function onInitialize()
+    public function initModule(RouterInterface $router, LoopInterface $loop)
     {
-        $authorizingRealm     = new \Thruway\Realm($this->getRealm());
+        parent::initModule($router, $loop);
+
+        $authorizingRealm     = $router->getRealmManager()->getRealm($this->getRealm());
         $authorizingRealm->setAuthorizationManager($this);
         $authorizingRealm->setAuthenticationManager($this->router->getAuthenticationManager());
-        $this->router->getRealmManager()->addRealm($authorizingRealm);
-
     }
 
     /**

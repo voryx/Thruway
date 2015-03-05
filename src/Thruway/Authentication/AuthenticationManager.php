@@ -2,13 +2,15 @@
 
 namespace Thruway\Authentication;
 
+use React\EventLoop\LoopInterface;
 use Thruway\Logging\Logger;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\WelcomeMessage;
-use Thruway\Module\Module;
+use Thruway\Module\ModuleClient;
+use Thruway\Peer\RouterInterface;
 use Thruway\Realm;
 use Thruway\Session;
 
@@ -18,7 +20,7 @@ use Thruway\Session;
  *
  * @package Thruway\Authentication
  */
-class AuthenticationManager extends Module implements AuthenticationManagerInterface
+class AuthenticationManager extends ModuleClient implements AuthenticationManagerInterface
 {
     /**
      * List authentication methods
@@ -47,9 +49,12 @@ class AuthenticationManager extends Module implements AuthenticationManagerInter
 
     /**
      * Gets called when the module is initialized in the router
+     *
+     * @inheritdoc
      */
-    public function onInitialize()
+    public function initModule(RouterInterface $router, LoopInterface $loop)
     {
+        parent::initModule($router, $loop);
         $this->router->setAuthenticationManager($this);
     }
 

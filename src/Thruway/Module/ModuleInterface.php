@@ -13,31 +13,16 @@ use Thruway\Peer\RouterInterface;
  */
 interface ModuleInterface
 {
-
     /**
-     * @return RouterInterface
-     */
-    public function getRouter();
-
-    /**
+     * Called by the router when it is added
+     *
      * @param RouterInterface $router
+     * @param LoopInterface $loop
      */
-    public function setRouter(RouterInterface $router);
+    public function initModule(RouterInterface $router, LoopInterface $loop);
 
     /**
      * @return LoopInterface
      */
     public function getLoop();
-
-    /**
-     * @param LoopInterface $loop
-     */
-    public function setLoop(LoopInterface $loop);
-
-    /**
-     * Gets called when the module is initialized in the router
-     *
-     */
-    public function onInitialize();
-
 }

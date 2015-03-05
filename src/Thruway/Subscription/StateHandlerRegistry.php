@@ -7,7 +7,8 @@ namespace Thruway\Subscription;
 use React\EventLoop\LoopInterface;
 use Thruway\Logging\Logger;
 use Thruway\Message\SubscribeMessage;
-use Thruway\Module\Module;
+use Thruway\Module\ModuleClient;
+use Thruway\Peer\RouterInterface;
 use Thruway\Realm;
 use Thruway\Role\Broker;
 
@@ -15,7 +16,7 @@ use Thruway\Role\Broker;
  * Class StateHandlerRegistry
  * @package Thruway\Subscription
  */
-class StateHandlerRegistry extends Module
+class StateHandlerRegistry extends ModuleClient
 {
     /**
      * @var boolean
@@ -57,10 +58,14 @@ class StateHandlerRegistry extends Module
 
     /**
      * Gets called when the module is initialized in the router
+     *
+     * @inheritdoc
      */
-    public function onInitialize()
+    public function initModule(RouterInterface $router, LoopInterface $loop)
     {
-        $this->routerRealm = $this->getRouter()->getRealmManager()->getRealm($this->getRealm());
+        parent::initModule($router, $loop);
+
+        $this->routerRealm = $router->getRealmManager()->getRealm($this->getRealm());
         $this->broker      = $this->routerRealm->getBroker();
         $this->broker->setStateHandlerRegistry($this);
     }

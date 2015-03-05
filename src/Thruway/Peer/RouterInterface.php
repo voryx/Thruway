@@ -57,4 +57,34 @@ interface RouterInterface
      */
     public function start();
 
+    /////////
+    // Should be removed because they will be modular
+    /**
+     * Set authentication manager
+     *
+     * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
+     */
+    public function setAuthenticationManager($authenticationManager);
+
+    /**
+     * Get realm manager
+     *
+     * @return \Thruway\RealmManager
+     */
+    public function getRealmManager();
+
+    /**
+     * Get authentication manager
+     *
+     * @return \Thruway\Authentication\AuthenticationManagerInterface
+     */
+    public function getAuthenticationManager();
+
+    /**
+     * Get session by session ID
+     *
+     * @param int $sessionId
+     * @return \Thruway\Session|boolean
+     */
+    public function getSessionBySessionId($sessionId);
 }

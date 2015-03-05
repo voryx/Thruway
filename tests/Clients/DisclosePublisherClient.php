@@ -6,7 +6,7 @@
  * For more information go to:
  * http://voryx.net/creating-internal-client-thruway/
  */
-class   DisclosePublisherClient extends \Thruway\Module\Module
+class   DisclosePublisherClient extends \Thruway\Module\ModuleClient
 {
 
     public function onSessionStart($session, $transport)
