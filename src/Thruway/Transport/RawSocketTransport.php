@@ -7,6 +7,7 @@ use React\Stream\Stream;
 use Thruway\Logging\Logger;
 use Thruway\Message\Message;
 use Thruway\Peer\AbstractPeer;
+use Thruway\Peer\PeerInterface;
 
 /**
  * Class RawSocketTransport
@@ -52,9 +53,9 @@ class RawSocketTransport extends AbstractTransport
      *
      * @param \React\Stream\Stream $conn
      * @param \React\EventLoop\LoopInterface $loop
-     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \Thruway\Peer\PeerInterface $peer
      */
-    public function __construct(Stream $conn, LoopInterface $loop, AbstractPeer $peer)
+    public function __construct(Stream $conn, LoopInterface $loop, PeerInterface $peer)
     {
         $this->conn = $conn;
         $this->loop = $loop;

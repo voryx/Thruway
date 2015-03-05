@@ -6,6 +6,7 @@ use React\EventLoop\LoopInterface;
 use React\SocketClient\Connector;
 use React\Stream\Stream;
 use Thruway\Peer\AbstractPeer;
+use Thruway\Peer\PeerInterface;
 use Thruway\Serializer\JsonSerializer;
 
 /**
@@ -45,10 +46,10 @@ class RawSocketClientTransportProvider extends AbstractTransportProvider
     /**
      * Start transport provider
      *
-     * @param \Thruway\Peer\AbstractPeer $peer
+     * @param \Thruway\Peer\PeerInterface $peer
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
+    public function startTransportProvider(PeerInterface $peer, LoopInterface $loop)
     {
         $this->peer = $peer;
         $this->loop = $loop;

@@ -3,9 +3,12 @@
 namespace Thruway\Transport;
 
 use Ratchet\WebSocket\Version\RFC6455\Frame;
+use Thruway\Event\NewConnectionEvent;
+use Thruway\Event\RouterStartEvent;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Thruway\Peer\PeerInterface;
+use Thruway\Peer\Router;
 use Thruway\Peer\RouterInterface;
 use Thruway\Serializer\JsonSerializer;
 use Ratchet\ConnectionInterface;
@@ -60,7 +63,8 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     }
 
     public function initModule(RouterInterface $router, LoopInterface $loop) {
-
+        $this->peer = $router;
+        $this->loop = $loop;
     }
 
     /**
@@ -121,11 +125,12 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
         $this->transports->attach($conn, $transport);
 
-        $this->peer->onOpen($transport);
+        /** @var Router $router */
+        $router = $this->peer;
 
-//        $session = new Session($conn);
-//
-//        $this->sessions->attach($conn, $session);
+        $router->getEventDispather()->dispatch("new_connection", new NewConnectionEvent($transport));
+
+        //$this->peer->onOpen($transport);
     }
 
     /**
@@ -198,5 +203,17 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
             $transport->onPong($frame);
         }
     }
+
+    public function handleRouterStart(RouterStartEvent $event) {
+        $this->startTransportProvider($this->peer, $this->loop);
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            "router.start" => ["handleRouterStart", 10]
+        ];
+    }
+
 
 }

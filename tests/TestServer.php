@@ -18,7 +18,7 @@ $router  = new Router();
 $loop    = $router->getLoop();
 
 //Create a WebSocket connection that listens on localhost port 8090
-$router->addTransportProvider(new RatchetTransportProvider("127.0.0.1", 8090));
+//$router->addTransportProvider(new RatchetTransportProvider("127.0.0.1", 8090));
 
 $router->registerModules([
 
@@ -34,6 +34,9 @@ $router->registerModules([
     new DisclosePublisherClient('testSimpleAuthRealm'),
     // State Handler Testing
     new \Thruway\Subscription\StateHandlerRegistry('state.test.realm'),
+
+    new RatchetTransportProvider("127.0.0.1", 8090),
+    new \Thruway\Transport\RawSocketTransportProvider()
 
 ]);
 

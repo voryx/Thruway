@@ -8,6 +8,8 @@ use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Common\Utils;
 use Thruway\Event\EventSubscriberInterface;
+use Thruway\Event\NewConnectionEvent;
+use Thruway\Event\RouterStartEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Logging\Logger;
@@ -82,6 +84,7 @@ class Router implements RouterInterface, EventSubscriberInterface
         $this->realmManager       = new RealmManager();
         $this->sessions           = new \SplObjectStorage();
         $this->eventDispather     = new EventDispatcher();
+        $this->eventDispather->addSubscriber($this);
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
 
@@ -183,11 +186,10 @@ class Router implements RouterInterface, EventSubscriberInterface
             $transportProvider->startTransportProvider($this, $this->loop);
         }
 
-        foreach ($this->modules as $module) {
-            $module->initModule($this, $this->loop);
-        }
-
         $this->started = true;
+
+        $this->eventDispather->dispatch("router.start", new RouterStartEvent());
+
         if ($runLoop) {
             Logger::info($this, "Starting loop");
             $this->loop->run();
@@ -379,6 +381,7 @@ class Router implements RouterInterface, EventSubscriberInterface
     public function registerModule(RouterModuleInterface $module)
     {
         $module->initModule($this, $this->getLoop());
+        $this->eventDispather->addSubscriber($module);
     }
 
     /**
@@ -412,12 +415,18 @@ class Router implements RouterInterface, EventSubscriberInterface
         return $this->eventDispather;
     }
 
+    public function handleNewConnection(NewConnectionEvent $event) {
+        $this->onOpen($event->transport);
+    }
+
     /**
      * @inheritdoc
      */
     public static function getSubscribedEvents()
     {
-        return [];
+        return [
+            "new_connection" => ['handleNewConnection', 10]
+        ];
     }
 }
 

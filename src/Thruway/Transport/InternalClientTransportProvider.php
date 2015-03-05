@@ -3,12 +3,12 @@
 namespace Thruway\Transport;
 
 
-use Thruway\Manager\ManagerDummy;
-use Thruway\Peer\AbstractPeer;
+use Thruway\Event\NewConnectionEvent;
 use React\EventLoop\LoopInterface;
+use Thruway\Module\RouterModule;
 use Thruway\Peer\ClientInterface;
 use Thruway\Peer\PeerInterface;
-use Thruway\Peer\RouterInterface;
+use Thruway\Peer\Router;
 
 /**
  * Class InternalClientTransportProvider
@@ -62,7 +62,9 @@ class InternalClientTransportProvider extends AbstractTransportProvider
 
 
         // connect the transport to the Router/Peer
-        $this->peer->onOpen($transport);
+        /** @var Router $router */
+        $router = $this->peer;
+        $router->getEventDispather()->dispatch("new_connection", new NewConnectionEvent($transport));
 
         // open the client side
         $this->internalClient->onOpen($clientTransport);
