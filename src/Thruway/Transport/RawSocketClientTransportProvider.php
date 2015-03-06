@@ -5,8 +5,7 @@ namespace Thruway\Transport;
 use React\EventLoop\LoopInterface;
 use React\SocketClient\Connector;
 use React\Stream\Stream;
-use Thruway\Peer\AbstractPeer;
-use Thruway\Peer\PeerInterface;
+use Thruway\Peer\ClientInterface;
 use Thruway\Serializer\JsonSerializer;
 
 /**
@@ -16,9 +15,8 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class RawSocketClientTransportProvider extends AbstractTransportProvider
+class RawSocketClientTransportProvider extends AbstractClientTransportProvider
 {
-
     /**
      * @var string
      */
@@ -46,12 +44,12 @@ class RawSocketClientTransportProvider extends AbstractTransportProvider
     /**
      * Start transport provider
      *
-     * @param \Thruway\Peer\PeerInterface $peer
+     * @param \Thruway\Peer\ClientInterface $client
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function startTransportProvider(PeerInterface $peer, LoopInterface $loop)
+    public function startTransportProvider(ClientInterface $client, LoopInterface $loop)
     {
-        $this->peer = $peer;
+        $this->client = $client;
         $this->loop = $loop;
 
         $dnsResolverFactory = new \React\Dns\Resolver\Factory();
@@ -75,13 +73,11 @@ class RawSocketClientTransportProvider extends AbstractTransportProvider
     {
         //$this->getManager()->debug("Raw socket opened");
 
-        $this->transport = new RawSocketTransport($conn, $this->loop, $this->peer);
+        $this->transport = new RawSocketTransport($conn, $this->loop, $this->client);
 
         $this->transport->setSerializer(new JsonSerializer());
 
-        $this->transport->setTrusted($this->trusted);
-
-        $this->peer->onOpen($this->transport);
+        $this->client->onOpen($this->transport);
     }
 
     /**
@@ -102,8 +98,6 @@ class RawSocketClientTransportProvider extends AbstractTransportProvider
      */
     public function handleClose(Stream $conn)
     {
-        //$this->getManager()->debug("Raw socket closed " . $conn->getRemoteAddress());
-
-        $this->peer->onClose($this->transport);
+        $this->client->onClose($this->transport);
     }
 }

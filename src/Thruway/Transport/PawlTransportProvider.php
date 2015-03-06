@@ -6,10 +6,9 @@ use Ratchet\Client\Factory;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
-use Thruway\Peer\AbstractPeer;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
-use Thruway\Peer\PeerInterface;
+use Thruway\Peer\ClientInterface;
 use Thruway\Serializer\JsonSerializer;
 
 /**
@@ -17,7 +16,7 @@ use Thruway\Serializer\JsonSerializer;
  *
  * @package Thruway\Transport
  */
-class PawlTransportProvider extends AbstractTransportProvider
+class PawlTransportProvider extends AbstractClientTransportProvider
 {
 
     /**
@@ -37,7 +36,6 @@ class PawlTransportProvider extends AbstractTransportProvider
      */
     function __construct($URL = "ws://127.0.0.1:9090/")
     {
-        $this->peer    = null;
         $this->URL     = $URL;
         $this->manager = new ManagerDummy();
     }
@@ -45,14 +43,14 @@ class PawlTransportProvider extends AbstractTransportProvider
     /**
      * Start transport provider
      *
-     * @param \Thruway\Peer\PeerInterface $peer
+     * @param \Thruway\Peer\ClientInterface $client
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function startTransportProvider(PeerInterface $peer, LoopInterface $loop)
+    public function startTransportProvider(ClientInterface $client, LoopInterface $loop)
     {
         Logger::info($this, "Starting Transport");
 
-        $this->peer      = $peer;
+        $this->client    = $client;
         $this->loop      = $loop;
         $this->connector = new Factory($this->loop);
 
@@ -63,16 +61,15 @@ class PawlTransportProvider extends AbstractTransportProvider
 
                 $transport = new PawlTransport($conn, $this->loop);
                 $transport->setSerializer(new JsonSerializer());
-                $transport->setTrusted($this->trusted);
 
-                $this->peer->onOpen($transport);
+                $this->client->onOpen($transport);
 
                 $conn->on(
                     'message',
                     function ($msg) use ($transport) {
                         Logger::debug($this, "Received: {$msg}");
                         try {
-                            $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
+                            $this->client->onMessage($transport, $transport->getSerializer()->deserialize($msg));
                         } catch (DeserializationException $e) {
                             Logger::warning($this, "Deserialization exception occurred.");
                         } catch (\Exception $e) {
@@ -85,7 +82,7 @@ class PawlTransportProvider extends AbstractTransportProvider
                     'close',
                     function ($conn) {
                         Logger::info($this, "Pawl has closed");
-                        $this->peer->onClose('close');
+                        $this->client->onClose('close');
                     }
                 );
 
@@ -97,31 +94,10 @@ class PawlTransportProvider extends AbstractTransportProvider
                 );
             },
             function ($e) {
-                $this->peer->onClose('unreachable');
+                $this->client->onClose('unreachable');
                 Logger::info($this, "Could not connect: {$e->getMessage()}");
                 // $this->loop->stop();
             }
         );
     }
-
-    /**
-     * Get peer
-     *
-     * @return \Thruway\Peer\AbstractPeer
-     */
-    public function getPeer()
-    {
-        return $this->peer;
-    }
-
-    /**
-     * Set peer
-     *
-     * @param \Thruway\Peer\AbstractPeer $peer
-     */
-    public function setPeer(AbstractPeer $peer)
-    {
-        $this->peer = $peer;
-    }
-
 }

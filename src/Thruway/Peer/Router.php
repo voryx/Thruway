@@ -20,7 +20,6 @@ use Thruway\Module\RouterModuleInterface;
 use Thruway\RealmManager;
 use Thruway\Session;
 use Thruway\Transport\InternalClientTransportProvider;
-use Thruway\Transport\TransportProviderInterface;
 use Thruway\Transport\TransportInterface;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
@@ -34,11 +33,6 @@ class Router implements RouterInterface, EventSubscriberInterface
 {
     /** @var bool  */
     protected $started = false;
-
-    /**
-     * @var \Thruway\Transport\TransportProviderInterface[]
-     */
-    private $transportProviders = [];
 
     /**
      * @var \Thruway\RealmManager
@@ -66,7 +60,7 @@ class Router implements RouterInterface, EventSubscriberInterface
     private $loop;
 
     /** @var EventDispatcherInterface */
-    private $eventDispather;
+    private $eventDispatcher;
 
     /** @var RouterModuleInterface[]  */
     private $modules= [];
@@ -83,8 +77,8 @@ class Router implements RouterInterface, EventSubscriberInterface
         $this->loop               = $loop ? $loop : Factory::create();
         $this->realmManager       = new RealmManager();
         $this->sessions           = new \SplObjectStorage();
-        $this->eventDispather     = new EventDispatcher();
-        $this->eventDispather->addSubscriber($this);
+        $this->eventDispatcher     = new EventDispatcher();
+        $this->eventDispatcher->addSubscriber($this);
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
 
@@ -111,7 +105,7 @@ class Router implements RouterInterface, EventSubscriberInterface
     }
 
     /**
-     * Handle transport recived message
+     * Handle transport received message
      *
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Message\Message $msg
@@ -155,16 +149,6 @@ class Router implements RouterInterface, EventSubscriberInterface
     }
 
     /**
-     * Add transport provider
-     *
-     * @param \Thruway\Transport\TransportProviderInterface $transportProvider
-     */
-    public function addTransportProvider(TransportProviderInterface $transportProvider)
-    {
-        array_push($this->transportProviders, $transportProvider);
-    }
-
-    /**
      * Start router
      *
      * @param bool $runLoop
@@ -177,18 +161,9 @@ class Router implements RouterInterface, EventSubscriberInterface
             throw new \Exception("Loop is null");
         }
 
-        if (count($this->transportProviders) == 0) {
-            throw new \Exception("No transport providers specified.");
-        }
-
-        foreach ($this->transportProviders as $transportProvider) {
-            Logger::info($this, "Starting transport provider " . get_class($transportProvider));
-            $transportProvider->startTransportProvider($this, $this->loop);
-        }
-
         $this->started = true;
 
-        $this->eventDispather->dispatch("router.start", new RouterStartEvent());
+        $this->eventDispatcher->dispatch("router.start", new RouterStartEvent());
 
         if ($runLoop) {
             Logger::info($this, "Starting loop");
@@ -381,7 +356,7 @@ class Router implements RouterInterface, EventSubscriberInterface
     public function registerModule(RouterModuleInterface $module)
     {
         $module->initModule($this, $this->getLoop());
-        $this->eventDispather->addSubscriber($module);
+        $this->eventDispatcher->addSubscriber($module);
     }
 
     /**
@@ -404,15 +379,15 @@ class Router implements RouterInterface, EventSubscriberInterface
     public function addInternalClient(ClientInterface $client)
     {
         $internalTransport = new InternalClientTransportProvider($client);
-        $this->addTransportProvider($internalTransport);
+        $this->registerModule($internalTransport);
     }
 
     /**
      * @return EventDispatcherInterface
      */
-    public function getEventDispather()
+    public function getEventDispatcher()
     {
-        return $this->eventDispather;
+        return $this->eventDispatcher;
     }
 
     public function handleNewConnection(NewConnectionEvent $event) {

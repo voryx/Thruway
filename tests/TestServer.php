@@ -35,7 +35,9 @@ $router->registerModules([
     // State Handler Testing
     new \Thruway\Subscription\StateHandlerRegistry('state.test.realm'),
 
+    // Websocket listener
     new RatchetTransportProvider("127.0.0.1", 8090),
+    // Rawsocket listener
     new \Thruway\Transport\RawSocketTransportProvider()
 
 ]);

@@ -5,8 +5,8 @@ namespace Thruway\Peer;
 
 
 use Thruway\Message\Message;
+use Thruway\Transport\ClientTransportProviderInterface;
 use Thruway\Transport\TransportInterface;
-use Thruway\Transport\TransportProviderInterface;
 
 /**
  * Interface ClientInterface
@@ -55,7 +55,7 @@ interface ClientInterface extends PeerInterface
      * @param \Thruway\Transport\TransportProviderInterface $transportProvider
      * @throws \Exception
      */
-    public function addTransportProvider(TransportProviderInterface $transportProvider);
+    public function addTransportProvider(ClientTransportProviderInterface $transportProvider);
 
 
     /**

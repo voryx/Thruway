@@ -4,9 +4,9 @@
 namespace Thruway\Peer;
 
 
+use Thruway\Event\EventDispatcher;
 use Thruway\Message\Message;
 use Thruway\Transport\TransportInterface;
-use Thruway\Transport\TransportProviderInterface;
 
 
 /**
@@ -40,22 +40,15 @@ interface RouterInterface extends PeerInterface
      */
     public function onClose(TransportInterface $transport);
 
-
-    /**
-     * Add transport provider
-     *
-     * @param \Thruway\Transport\TransportProviderInterface $transportProvider
-     * @throws \Exception
-     */
-    public function addTransportProvider(TransportProviderInterface $transportProvider);
-
-
     /**
      * Start the transport
      *
      * @throws \Exception
      */
     public function start();
+
+    /** @return EventDispatcher */
+    public function getEventDispatcher();
 
     /////////
     // Should be removed because they will be modular

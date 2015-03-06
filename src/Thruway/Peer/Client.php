@@ -19,7 +19,7 @@ use Thruway\Role\Caller;
 use Thruway\Role\Publisher;
 use Thruway\Role\Subscriber;
 use Thruway\Session;
-use Thruway\Transport\TransportProviderInterface;
+use Thruway\Transport\ClientTransportProviderInterface;
 use Thruway\Transport\TransportInterface;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
@@ -185,10 +185,10 @@ class Client implements EventEmitterInterface, ClientInterface
     /**
      * Add transport provider
      *
-     * @param \Thruway\Transport\TransportProviderInterface $transportProvider
+     * @param \Thruway\Transport\ClientTransportProviderInterface $transportProvider
      * @throws \Exception
      */
-    public function addTransportProvider(TransportProviderInterface $transportProvider)
+    public function addTransportProvider(ClientTransportProviderInterface $transportProvider)
     {
         if ($this->transportProvider !== null) {
             throw new \Exception("You can only have one transport provider for a client");

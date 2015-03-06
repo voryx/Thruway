@@ -7,9 +7,6 @@ use Thruway\Event\NewConnectionEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
-use Thruway\Peer\PeerInterface;
-use Thruway\Peer\Router;
-use Thruway\Peer\RouterInterface;
 use Thruway\Serializer\JsonSerializer;
 use Ratchet\ConnectionInterface;
 use Ratchet\Http\HttpServer;
@@ -17,7 +14,6 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
 use Ratchet\WebSocket\WsServerInterface;
-use React\EventLoop\LoopInterface;
 use React\Socket\Server as Reactor;
 
 /**
@@ -25,9 +21,8 @@ use React\Socket\Server as Reactor;
  *
  * @package Thruway\Transport
  */
-class RatchetTransportProvider extends AbstractTransportProvider implements MessageComponentInterface, WsServerInterface
+class RatchetTransportProvider extends AbstractRouterTransportProvider implements MessageComponentInterface, WsServerInterface
 {
-
     /**
      * @var string
      */
@@ -56,39 +51,10 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
      */
     public function __construct($address = "127.0.0.1", $port = 8080)
     {
-        $this->peer       = null;
         $this->port       = $port;
         $this->address    = $address;
         $this->transports = new \SplObjectStorage();
     }
-
-    public function initModule(RouterInterface $router, LoopInterface $loop) {
-        $this->peer = $router;
-        $this->loop = $loop;
-    }
-
-    /**
-     * Start transportprovider
-     *
-     * @param \Thruway\Peer\PeerInterface $peer
-     * @param \React\EventLoop\LoopInterface $loop
-     */
-    public function startTransportProvider(PeerInterface $peer, LoopInterface $loop)
-    {
-        $this->peer = $peer;
-        $this->loop = $loop;
-
-        $ws = new WsServer($this);
-        $ws->disableVersion(0);
-
-        $socket = new Reactor($this->loop);
-        $socket->listen($this->port, $this->address);
-
-        Logger::info($this, "Listening on " . $this->address . ":" . $this->port);
-
-        $this->server = new IoServer(new HttpServer($ws), $socket, $this->loop);
-    }
-
 
     /**
      * Interface stuff
@@ -125,12 +91,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
         $this->transports->attach($conn, $transport);
 
-        /** @var Router $router */
-        $router = $this->peer;
-
-        $router->getEventDispather()->dispatch("new_connection", new NewConnectionEvent($transport));
-
-        //$this->peer->onOpen($transport);
+        $this->router->getEventDispatcher()->dispatch("new_connection", new NewConnectionEvent($transport));
     }
 
     /**
@@ -147,7 +108,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
 
         $this->transports->detach($conn);
 
-        $this->peer->onClose($transport);
+        $this->router->onClose($transport);
 
         Logger::info($this, "Ratchet has closed");
     }
@@ -181,7 +142,7 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
         $transport = $this->transports[$from];
 
         try {
-            $this->peer->onMessage($transport, $transport->getSerializer()->deserialize($msg));
+            $this->router->onMessage($transport, $transport->getSerializer()->deserialize($msg));
         } catch (DeserializationException $e) {
             Logger::alert($this, "Deserialization exception occurred.");
         } catch (\Exception $e) {
@@ -205,7 +166,15 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
     }
 
     public function handleRouterStart(RouterStartEvent $event) {
-        $this->startTransportProvider($this->peer, $this->loop);
+        $ws = new WsServer($this);
+        $ws->disableVersion(0);
+
+        $socket = new Reactor($this->loop);
+        $socket->listen($this->port, $this->address);
+
+        Logger::info($this, "Listening on " . $this->address . ":" . $this->port);
+
+        $this->server = new IoServer(new HttpServer($ws), $socket, $this->loop);
     }
 
     public static function getSubscribedEvents()

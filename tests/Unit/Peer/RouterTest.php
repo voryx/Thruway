@@ -12,11 +12,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     private $router;
 
     /**
-     * @var \Thruway\Transport\RatchetTransportProvider
-     */
-    private $transportProviderMock;
-
-    /**
      * @var \Thruway\Transport\TransportInterface
      */
 //    private $transportMock;
@@ -33,11 +28,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         \Thruway\Logging\Logger::set(new \Psr\Log\NullLogger());
 
         $this->router = new \Thruway\Peer\Router();
-
-
-        // Create a stub for the Transport Provider class.
-        $this->transportProviderMock = $this->getMock('\Thruway\Transport\TransportProviderInterface');
-
     }
 
     public function testLoopCreated()
@@ -51,16 +41,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * If you start the router without a transport provider, it should throw an exception
-     *
-     * @expectedException Exception
-     */
-    public function testTransportProvidersException()
-    {
-        $this->router->start();
-    }
-
-    /**
      * Test router start
      *
      * @return \Thruway\Peer\Router
@@ -68,12 +48,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testStart()
     {
-        $this->router->addTransportProvider($this->transportProviderMock);
-
         $this->router->start();
 
         return $this->router;
-
     }
 
     /**
@@ -413,7 +390,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function testUnSubscribeMessage()
     {
         $router = $this->router;
-        $router->addTransportProvider($this->transportProviderMock);
         $router->start();
         $transport = $this->getMock('Thruway\Transport\TransportInterface');
 
