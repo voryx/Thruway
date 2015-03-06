@@ -19,15 +19,12 @@ $router = new Router($loop);
 $authMgr = new \Thruway\Authentication\AuthenticationManager();
 
 $router->setAuthenticationManager($authMgr);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
+$router->addInternalClient($authMgr);
 
 $authProvClient = new GithubCallbackAuthProvider(["*"], $http, "[YOUR-CLIENT_ID]", "[YOUR-CLIENT-SECRET]");
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
+$router->addInternalClient($authProvClient);
 
 //WAMP Server
-$transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
-
-$router->addTransportProvider($transportProvider);
-
+$router->registerModule(new RatchetTransportProvider("127.0.0.1", 9090));
 
 $router->start();

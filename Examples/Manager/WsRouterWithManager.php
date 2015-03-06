@@ -13,9 +13,8 @@ $loop = \React\EventLoop\Factory::create();
 
 $router = new Router($loop, $manager);
 
-$transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
+$router->registerModule(new RatchetTransportProvider("127.0.0.1", 9090));
 
-$router->addTransportProvider($transportProvider);
 $router->addInternalClient($manager);
 
 $router->start();

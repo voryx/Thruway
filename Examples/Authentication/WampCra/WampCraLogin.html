@@ -50,14 +50,14 @@
         console.log("authenticated using method '" + details.authmethod + "' and provider '" + details.authprovider + "'");
         console.log("authenticated with authid '" + details.authid + "' and authrole '" + details.authrole + "'");
 
-        session.call('com.timeservice.now').then(
-                function (now) {
-                    console.log("call result", now);
-                },
-                function (error) {
-                    console.log("call error", error);
-                }
-        );
+//        session.call('com.timeservice.now').then(
+//                function (now) {
+//                    console.log("call result", now);
+//                },
+//                function (error) {
+//                    console.log("call error", error);
+//                }
+//        );
     };
 
     connection.onclose = function () {

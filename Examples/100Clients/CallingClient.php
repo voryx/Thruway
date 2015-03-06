@@ -35,7 +35,8 @@ class CallingClient extends \Thruway\Peer\Client
         $this->thePromise->then(function () use ($session) {
             $session->call('com.example.thefunction0', [])
                 ->then(function ($res) {
-                    var_dump($res);
+                    echo "Done.\n";
+                    exit;
                 });
         });
     }

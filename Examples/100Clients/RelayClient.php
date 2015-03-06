@@ -42,8 +42,10 @@ class RelayClient extends \Thruway\Peer\Client
 
         $this->session->call('com.example.thefunction' . ($this->number + 1), [])
             ->then(function ($res) use ($futureResult) {
-                $res[0] = $res[0] . ".";
-                $futureResult->resolve($res);
+                if (is_scalar($res[0])) {
+                    $res[0] = $res[0] . ".";
+                }
+                $futureResult->resolve($res[0]);
             });
 
         return $futureResult->promise();

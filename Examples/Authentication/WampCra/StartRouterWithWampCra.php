@@ -28,14 +28,12 @@ $userDb->add('joe', 'secret2', "mmm...salt");
 $authMgr = new \Thruway\Authentication\AuthenticationManager();
 
 $router->setAuthenticationManager($authMgr);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authMgr));
+$router->addInternalClient($authMgr);
 
 $authProvClient = new WampCraAuthProvider(["realm1"]);
 $authProvClient->setUserDb($userDb);
-$router->addTransportProvider(new \Thruway\Transport\InternalClientTransportProvider($authProvClient));
+$router->addInternalClient($authProvClient);
 
-$transportProvider = new RatchetTransportProvider("127.0.0.1", 9090);
-
-$router->addTransportProvider($transportProvider);
+$router->registerModule(new RatchetTransportProvider("127.0.0.1", 9090));
 
 $router->start();
