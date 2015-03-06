@@ -65,9 +65,9 @@ Download Thruway and dependencies
 
       $ php composer.phar require "voryx/thruway":"0.3.*"
 
-Start the WAMP server
+Start the WAMP router
 
-      $ php vendor/voryx/thruway/Examples/SimpleWsServer.php
+      $ php vendor/voryx/thruway/Examples/SimpleWsRouter.php
     
 Thruway is now running on 127.0.0.1 port 9090 
 
@@ -140,7 +140,7 @@ You can also use [AutobahnJS](https://github.com/tavendo/AutobahnJS) or any othe
 
 Here are some [examples] (https://github.com/tavendo/AutobahnJS#show-me-some-code)
 
-Here's a [plunker](http://plnkr.co/edit/8vcBDUzIhp48JtuTGIaj?p=info) that will allow you to run some tests against a local server 
+Here's a [plunker](http://plnkr.co/edit/8vcBDUzIhp48JtuTGIaj?p=info) that will allow you to run some tests against a local router
 
 For AngularJS on the frontend, use the [Angular WAMP](https://github.com/voryx/angular-wamp) wrapper.
 
