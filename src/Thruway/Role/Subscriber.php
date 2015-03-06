@@ -207,10 +207,10 @@ class Subscriber extends AbstractRole
      * @param $options
      * @return Promise
      */
-    public function subscribe(ClientSession $session, $topicName, $callback, $options)
+    public function subscribe(ClientSession $session, $topicName, $callback, $options = null)
     {
         $requestId = Utils::getUniqueId();
-        $options   = (object)$options;
+        $options   = $options ? (object)$options : (object)[];
         $deferred  = new Deferred();
 
         $subscription = [
