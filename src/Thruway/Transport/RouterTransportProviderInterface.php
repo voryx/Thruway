@@ -4,7 +4,9 @@
 namespace Thruway\Transport;
 
 
-interface RouterTransportProviderInterface extends TransportProviderInterface {
+use Thruway\Module\RouterModuleInterface;
+
+interface RouterTransportProviderInterface extends TransportProviderInterface, RouterModuleInterface {
     /**
      * @param boolean $trusted
      */

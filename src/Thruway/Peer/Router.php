@@ -20,6 +20,7 @@ use Thruway\Module\RouterModuleInterface;
 use Thruway\RealmManager;
 use Thruway\Session;
 use Thruway\Transport\InternalClientTransportProvider;
+use Thruway\Transport\RouterTransportProviderInterface;
 use Thruway\Transport\TransportInterface;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
@@ -31,7 +32,7 @@ use React\EventLoop\LoopInterface;
  */
 class Router implements RouterInterface, EventSubscriberInterface
 {
-    /** @var bool  */
+    /** @var bool */
     protected $started = false;
 
     /**
@@ -62,8 +63,8 @@ class Router implements RouterInterface, EventSubscriberInterface
     /** @var EventDispatcherInterface */
     private $eventDispatcher;
 
-    /** @var RouterModuleInterface[]  */
-    private $modules= [];
+    /** @var RouterModuleInterface[] */
+    private $modules = [];
 
     /**
      * Constructor
@@ -74,10 +75,10 @@ class Router implements RouterInterface, EventSubscriberInterface
     {
         Utils::checkPrecision();
 
-        $this->loop               = $loop ? $loop : Factory::create();
-        $this->realmManager       = new RealmManager();
-        $this->sessions           = new \SplObjectStorage();
-        $this->eventDispatcher     = new EventDispatcher();
+        $this->loop            = $loop ? $loop : Factory::create();
+        $this->realmManager    = new RealmManager();
+        $this->sessions        = new \SplObjectStorage();
+        $this->eventDispatcher = new EventDispatcher();
         $this->eventDispatcher->addSubscriber($this);
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
@@ -120,6 +121,7 @@ class Router implements RouterInterface, EventSubscriberInterface
         if ($session->getRealm() === null) {
             if ($msg instanceof AbortMessage) {
                 $session->shutdown();
+
                 return;
             }
             // hopefully this is a HelloMessage or we have no place for this message to go
@@ -253,6 +255,7 @@ class Router implements RouterInterface, EventSubscriberInterface
             }
             $this->sessions->next();
         }
+
         return false;
     }
 
@@ -372,6 +375,16 @@ class Router implements RouterInterface, EventSubscriberInterface
     }
 
     /**
+     * Add a transport provider
+     *
+     * @param RouterTransportProviderInterface $transportProvider
+     */
+    public function addTransportProvider(RouterTransportProviderInterface $transportProvider)
+    {
+        $this->registerModule($transportProvider);
+    }
+
+    /**
      * Add a client that uses the internal transport provider
      *
      * @param ClientInterface $client
@@ -390,7 +403,8 @@ class Router implements RouterInterface, EventSubscriberInterface
         return $this->eventDispatcher;
     }
 
-    public function handleNewConnection(NewConnectionEvent $event) {
+    public function handleNewConnection(NewConnectionEvent $event)
+    {
         $this->onOpen($event->transport);
     }
 
