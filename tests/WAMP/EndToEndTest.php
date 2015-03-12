@@ -399,7 +399,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                     });
                 });
 
-                $this->_conn2->open();
+                $this->_conn2->open(false);
             }, function () use ($session) {
                 $session->close();
                 $this->fail("Subscribe failed");
