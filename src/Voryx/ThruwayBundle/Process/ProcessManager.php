@@ -4,6 +4,7 @@
 namespace Voryx\ThruwayBundle\Process;
 
 
+use React\Promise\Deferred;
 use Thruway\Peer\Client;
 
 /**
@@ -57,8 +58,15 @@ class ProcessManager extends Client
         $status = [];
 
         foreach ($this->commands as $command) {
+
+            $processes = $command->getProcesses();
+
+            if (!$processes) {
+                continue;
+            }
+
             /** @var  $process Process */
-            foreach ($command->getProcesses() as $process) {
+            foreach ($processes as $process) {
 
                 $runningStatus = null;
 
@@ -92,25 +100,40 @@ class ProcessManager extends Client
 
     /**
      * @param $args
+     * @return \React\Promise\Promise
      */
     public function startProcess($args)
     {
+
+        $deffer = new Deferred();
+
         $name = $args[0];
         if (isset($this->commands[$name])) {
-            $this->commands[$name]->startProcess();
+            $deffer->resolve($this->commands[$name]->startProcess());
+        } else {
+            $deffer->reject("Can't find process {$name}");
         };
+
+        return $deffer->promise();
     }
 
     /**
      * @param $args
+     * @return \React\Promise\Promise
      */
     public function stopProcess($args)
     {
+        $deffer = new Deferred();
+
         $name = $args[0];
 
         if (isset($this->commands[$name])) {
-            $this->commands[$name]->stopProcess();
+            $deffer->resolve($this->commands[$name]->stopProcess());
+        } else {
+            $deffer->reject("Unable to find process '{$name}'");
         };
+
+        return $deffer->promise();
     }
 
     /**
@@ -118,11 +141,17 @@ class ProcessManager extends Client
      */
     public function restartProcess($args)
     {
+
         $name = $args[0];
 
         if (isset($this->commands[$name])) {
-            $this->stopProcess([$name]);
-            $this->startProcess([$name]);
+            $this->stopProcess([$name])->then(function () use ($name) {
+                echo "Stopped all process instances for {$name}" . PHP_EOL;
+                $this->startProcess([$name])->then(function () use ($name) {
+                    echo "Started all process instances for {$name}" . PHP_EOL;
+                });
+            });
+
         };
     }
 

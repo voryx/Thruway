@@ -61,7 +61,7 @@ class Worker implements AnnotationInterface
      */
     public function getMaxProcesses()
     {
-        return $this->maxProcesses;
+        return $this->maxProcesses ?: 1;
     }
 
     /**

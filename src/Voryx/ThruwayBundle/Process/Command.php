@@ -5,6 +5,7 @@ namespace Voryx\ThruwayBundle\Process;
 
 
 use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
 use Voryx\ThruwayBundle\Process\Process;
 
 /**
@@ -128,37 +129,50 @@ class Command
     public function startProcess()
     {
 
+        $promises = [];
+
         for ($x = 0; $x < $this->minInstances; $x++) {
+            $deffer = new Deferred();
 
             //Check to see if the process is already running
             if (isset($this->processes[$x])) {
-                $this->startInstance($x);
+                $deffer->resolve($this->startInstance($x));
             } else {
-                $this->addInstance($x);
+                $deffer->resolve($this->addInstance($x));
             }
 
+            $promises[] = $deffer->promise();
+
         }
+
+        return \React\Promise\all($promises);
 
     }
 
     /**
+     * Add a new instance to the Command
      *
+     * @return null|\React\Promise\FulfilledPromise|\React\Promise\Promise
      */
     public function addInstance()
     {
-        if (count($this->processes) >= $this->maxInstances) {
-            return;
+        if (count($this->processes) >= (int)$this->maxInstances) {
+            return \React\Promise\resolve();
         }
 
         $nextInstanceNumber = count($this->processes);
-        $this->startInstance($nextInstanceNumber);
+
+        return $this->startInstance($nextInstanceNumber);
     }
 
     /**
      * @param int $processNumber
+     * @return \React\Promise\Promise
      */
     public function startInstance($processNumber = 0)
     {
+        $deffer = new Deferred();
+
         $process = isset($this->processes[$processNumber]) ? $this->processes[$processNumber] : null;
 
         if (!$process) {
@@ -171,15 +185,19 @@ class Command
 
         if (!$process->isRunning()) {
             $process->start($this->loop);
-            $process->stdout->on('data', function ($output) use ($process) {
+            $process->stdout->on('data', function ($output) use ($process, $deffer) {
+                $deffer->resolve($output);
                 echo "[{$process->getName()} {$process->getProcessNumber()} {$process->getPid()}] {$output}";
             });
-            $process->stdout->on('error', function ($output) use ($process) {
+            $process->stdout->on('error', function ($output) use ($process, $deffer) {
+                $deffer->reject($output);
                 echo "[{$process->getName()} {$process->getProcessNumber()} {$process->getPid()}] {$output}";
             });
         } else {
-            //throw an already running exception
+            $deffer->reject("Process {$this->name} is already running");
         }
+
+        return $deffer->promise();
     }
 
     /**
@@ -199,13 +217,26 @@ class Command
      */
     public function stopProcess()
     {
+        $promises = [];
+
+        if (count($this->processes) < 1){
+            return \React\Promise\reject("No Process to stop");
+        }
 
         foreach ($this->processes as $process) {
+            $deffer = new Deferred();
             if ($process->isRunning()) {
                 $process->terminate();
             }
+
+            $process->on('exit', function () use ($deffer) {
+                $deffer->resolve();
+            });
+
+            $promises[] = $deffer->promise();
         }
 
+        return \React\Promise\all($promises);
     }
 
     /**
