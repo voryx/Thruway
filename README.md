@@ -156,7 +156,7 @@ It uses JMS Serializer, so it can serialize and deserialize Entities
 
 ```php
     
-    use Voryx\ThruwayBundle\Annotation\RPC;
+    use Voryx\ThruwayBundle\Annotation\Register;
 
     /**
      *
@@ -189,6 +189,8 @@ There are two main ways to break your application apart into multiple workers.
 1.  Use the `worker` property on the `Register` and `Subscribe` annotations.  The following RPC will be added to the `posts` worker.
      
     ```PHP
+      use Voryx\ThruwayBundle\Annotation\Register;
+    
       /**
       * @Register("com.example.addrpc", serializerEnableMaxDepthChecks=true, worker="posts")
       */
@@ -197,6 +199,8 @@ There are two main ways to break your application apart into multiple workers.
 2.  Use the `@Worker` annotation on the class.  The following annotation will create a worker called `chat` that can have a max of 5 instances.
      
     ```PHP
+      use Voryx\ThruwayBundle\Annotation\Worker;
+    
       /**
       * @Worker("chat", maxProcesses="5")
       */
