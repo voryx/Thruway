@@ -267,4 +267,186 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         $broker->onMessage($session, new \Thruway\Message\SubscribeMessage(1, new stdClass(), 'test.topic'));
     }
+
+    public function testEligibleAuthroles() {
+        $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+            ->getMock();
+
+        $transport->method("getTransportDetails")->will($this->returnValue(""));
+
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->setMethods(["sendMessage","getAuthenticationDetails"])
+            ->setConstructorArgs([$transport])
+            ->getMock();
+
+        $authDetails = new \Thruway\Authentication\AuthenticationDetails();
+        $authDetails->addAuthRole("test_role1");
+        $authDetails->addAuthRole("test_role2");
+        $authDetails->setAuthId("test_authid");
+
+        $session->expects($this->any())->method("getAuthenticationDetails")->willReturn($authDetails);
+
+        $broker = new \Thruway\Role\Broker();
+
+        $session->expects($this->exactly(4))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')], // response to subscribe
+                [$this->callback(function ($msg) {
+                    $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
+                    $this->assertEquals("first publish", $msg->getArguments()[0]);
+                    return true;
+                })], // response to publish with no options
+                // no message when we are not included in authroles
+                [$this->callback(function ($msg) {
+                    $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
+                    $this->assertEquals("third publish", $msg->getArguments()[0]);
+                    return true;
+                })], // when the first authrole is included
+                [$this->callback(function ($msg) {
+                    $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
+                    $this->assertEquals("fourth publish", $msg->getArguments()[0]);
+                    return true;
+                })] // when the second authrole is included
+                // nothing on empty array
+                // nothing on invalid non-array option
+            );
+
+        $subscribeMessage = new \Thruway\Message\SubscribeMessage(1, (object)[], "a.b.c");
+
+        $broker->onMessage($session, $subscribeMessage);
+
+        $pubSession = $this->getMockBuilder('\Thruway\Session')
+            ->setMethods(["sendMessage"])
+            ->setConstructorArgs([$transport])
+            ->getMock();
+
+        $pubSession->expects($this->never())
+            ->method("sendMessage");
+
+        // test regular publish
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[], "a.b.c", ["first publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to authrole that is not us
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authroles" => ["alpha", "bravo", "charlie"]
+        ], "a.b.c", ["second publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to our first authrole
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authroles" => ["alpha", "bravo", "test_role1", "charlie"]
+        ], "a.b.c", ["third publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to our second authrole
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authroles" => ["test_role2"]
+        ], "a.b.c", ["fourth publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to empty authrole
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authroles" => []
+        ], "a.b.c", ["fifth publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to invalid authrole
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authroles" => "test_authrole2"
+        ], "a.b.c", ["sixth publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+    }
+
+    public function testEligibleAuthids() {
+        $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+            ->getMock();
+
+        $transport->method("getTransportDetails")->will($this->returnValue(""));
+
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->setMethods(["sendMessage","getAuthenticationDetails"])
+            ->setConstructorArgs([$transport])
+            ->getMock();
+
+        $authDetails = new \Thruway\Authentication\AuthenticationDetails();
+        $authDetails->addAuthRole("test_role1");
+        $authDetails->addAuthRole("test_role2");
+        $authDetails->setAuthId("test_authid");
+
+        $session->expects($this->any())->method("getAuthenticationDetails")->willReturn($authDetails);
+
+        $broker = new \Thruway\Role\Broker();
+
+        $session->expects($this->exactly(4))
+            ->method("sendMessage")
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')], // response to subscribe
+                [$this->callback(function ($msg) {
+                    $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
+                    $this->assertEquals("first publish", $msg->getArguments()[0]);
+                    return true;
+                })], // response to publish with no options
+                // no message when we are not included in authroles
+                [$this->callback(function ($msg) {
+                    $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
+                    $this->assertEquals("third publish", $msg->getArguments()[0]);
+                    return true;
+                })], // when the first authrole is included
+                [$this->callback(function ($msg) {
+                    $this->assertInstanceOf('\Thruway\Message\EventMessage', $msg);
+                    $this->assertEquals("fourth publish", $msg->getArguments()[0]);
+                    return true;
+                })] // when the second authrole is included
+            // nothing on empty array
+            // nothing on invalid non-array option
+            );
+
+        $subscribeMessage = new \Thruway\Message\SubscribeMessage(1, (object)[], "a.b.c");
+
+        $broker->onMessage($session, $subscribeMessage);
+
+        $pubSession = $this->getMockBuilder('\Thruway\Session')
+            ->setMethods(["sendMessage"])
+            ->setConstructorArgs([$transport])
+            ->getMock();
+
+        $pubSession->expects($this->never())
+            ->method("sendMessage");
+
+        // test regular publish
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[], "a.b.c", ["first publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to authrole that is not us
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authids" => ["alpha", "bravo", "charlie"]
+        ], "a.b.c", ["second publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to our first authrole
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authids" => ["alpha", "bravo", "test_authid", "charlie"]
+        ], "a.b.c", ["third publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to our second authrole
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authids" => ["test_authid"]
+        ], "a.b.c", ["fourth publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to empty authrole
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authids" => []
+        ], "a.b.c", ["fifth publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+
+        // test publish to invalid authrole
+        $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
+            "_thruway_eligible_authids" => "test_authid"
+        ], "a.b.c", ["sixth publish"]);
+        $broker->onMessage($pubSession, $pubMessage);
+    }
 }

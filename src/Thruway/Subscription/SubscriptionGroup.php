@@ -112,10 +112,19 @@ class SubscriptionGroup
     private function sendEventMessage(Session $session, PublishMessage $msg, Subscription $subscription)
     {
         $sessionId = $subscription->getSession()->getSessionId();
+        $authroles = [];
+        $authid = "";
+        $authenticationDetails = $subscription->getSession()->getAuthenticationDetails();
+        if ($authenticationDetails) {
+            $authroles = $authenticationDetails->getAuthRoles();
+            $authid = $authenticationDetails->getAuthId();
+        }
 
         if ((!$msg->excludeMe() || $subscription->getSession() != $session)
             && !$msg->isExcluded($sessionId)
             && $msg->isWhiteListed($sessionId)
+            && $msg->hasEligibleAuthrole($authroles)
+            && $msg->hasEligibleAuthid($authid)
         ) {
             $eventMsg = EventMessage::createFromPublishMessage($msg, $subscription->getId());
             if ($subscription->isDisclosePublisher() === true) {
