@@ -101,6 +101,9 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
     public function handleRouterStart(RouterStartEvent $event) {
         $socket = new Server($this->loop);
         $socket->on('connection', [$this, "handleConnection"]);
+
+        Logger::info($this, "Raw socket listening on " . $this->address . ":" . $this->port);
+
         $socket->listen($this->port, $this->address);
     }
 
