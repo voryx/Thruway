@@ -6,8 +6,6 @@
  * @see http://voryx.net/creating-internal-client-thruway/
  */
 
-require "../bootstrap.php";
-
 /**
  * Class InternalClient
  */

@@ -39,7 +39,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], "test.procedure");
 
-        $dealer->onMessage($calleeSession, $registerMsg);
+        $dealer->handleRegisterMessage(new \Thruway\Event\MessageEvent($calleeSession, $registerMsg));
 
         $callerSession = $this->getMockBuilder('\Thruway\Session')
             ->disableOriginalConstructor()
@@ -47,9 +47,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         $callMsg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "test.procedure");
 
-        $dealer->onMessage($callerSession, $callMsg);
-
-        //$yieldMsg = new \Thruway\Message\YieldMessage()
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($callerSession, $callMsg));
     }
 
     public function testQueueProcessAfterNonMultiYield() {
@@ -130,40 +128,43 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $registerMsg = new \Thruway\Message\RegisterMessage(
             \Thruway\Common\Utils::getUniqueId(), ["thruway_multiregister" => true], "qpanmy_proc0");
 
-        $dealer->onMessage($callee0Session, $registerMsg);
+        $dealer->handleRegisterMessage(new \Thruway\Event\MessageEvent($callee0Session, $registerMsg));
 
         $callMsg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "qpanmy_proc0");
 
-        $dealer->onMessage($callerSession, $callMsg);
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($callerSession, $callMsg));
         $callMsg->setRequestId(\Thruway\Common\Utils::getUniqueId());
-        $dealer->onMessage($callerSession, $callMsg);
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($callerSession, $callMsg));
 
-        $dealer->onMessage($callee0Session, new \Thruway\Message\YieldMessage(
+
+        $yieldMsg = new \Thruway\Message\YieldMessage(
             $invocationIDs[0], []
-        ));
+        );
+        $dealer->handleYieldMessage(new \Thruway\Event\MessageEvent($callee0Session, $yieldMsg));
 
-        $dealer->onMessage($callee0Session, new \Thruway\Message\YieldMessage(
+        $yieldMsg = new \Thruway\Message\YieldMessage(
             $invocationIDs[1], []
-        ));
+        );
+        $dealer->handleYieldMessage(new \Thruway\Event\MessageEvent($callee0Session, $yieldMsg));
 
         // there are now zero calls on proc0
         $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], "qpanmy_proc1");
 
         $callProc1Msg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "qpanmy_proc1");
 
-        $dealer->onMessage($callee0Session, $registerMsg);
+        $dealer->handleRegisterMessage(new \Thruway\Event\MessageEvent($callee0Session, $registerMsg));
 
-        $dealer->onMessage($callerSession, $callProc1Msg);
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($callerSession, $callProc1Msg));
 
         // this should cause congestion and queuing because it should be busy with proc1
         $callMsg->setRequestId(\Thruway\Common\Utils::getUniqueId());
-        $dealer->onMessage($callerSession, $callMsg);
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($callerSession, $callMsg));
 
         // yield on proc1 - this should cause proc0 to process queue
-        $dealer->onMessage($callee0Session, new \Thruway\Message\YieldMessage(
+        $yieldMsg = new \Thruway\Message\YieldMessage(
             $invocationIDs[2], []
-        ));
-
+        );
+        $dealer->handleYieldMessage(new \Thruway\Event\MessageEvent($callee0Session, $yieldMsg));
     }
 
     public function testCallCancelNoOptions() {
@@ -202,23 +203,23 @@ class DealerTest extends PHPUnit_Framework_TestCase {
             );
 
         $registerMsg = new \Thruway\Message\RegisterMessage(12345, (object)[], 'test.procedure');
-        $dealer->onMessage($eeSession, $registerMsg);
+        $dealer->handleRegisterMessage(new \Thruway\Event\MessageEvent($eeSession, $registerMsg));
 
         $callMsg = new \Thruway\Message\CallMessage(1, (object)[], 'test.procedure');
-        $dealer->onMessage($erSession, $callMsg);
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($erSession, $callMsg));
 
         $this->assertEquals(1, $eeSession->getPendingCallCount());
 
         $cancelMsg = new \Thruway\Message\CancelMessage(1, (object)[]);
-        $dealer->onMessage($erSession, $cancelMsg); // this will send back not supported message
+        $dealer->handleCancelMessage(new \Thruway\Event\MessageEvent($erSession, $cancelMsg));
 
         $eeSession->setHelloMessage($this->_helloMessage);
 
-        $dealer->onMessage($erSession, $cancelMsg); // this gets interrupt sent through to ee
+        $dealer->handleCancelMessage(new \Thruway\Event\MessageEvent($erSession, $cancelMsg));
 
         $errorMsgFromEe = \Thruway\Message\ErrorMessage::createErrorMessageFromMessage($interruptMessage);
         $errorMsgFromEe->setErrorURI("wamp.error.canceled");
-        $dealer->onMessage($eeSession, $errorMsgFromEe);
+        $dealer->handleErrorMessage(new \Thruway\Event\MessageEvent($eeSession, $errorMsgFromEe));
 
         /** @var \Thruway\Session $eeSession */
         $this->assertEquals(0, $eeSession->getPendingCallCount());
@@ -252,16 +253,16 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $dealer = new \Thruway\Role\Dealer();
 
         $registerMsg = new \Thruway\Message\RegisterMessage(1, (object)["thruway_multiregister" => true], "cancel_queued_call_procedure");
-        $dealer->onMessage($eeSession, $registerMsg);
+        $dealer->handleRegisterMessage(new \Thruway\Event\MessageEvent($eeSession, $registerMsg));
 
         $callMessage = new \Thruway\Message\CallMessage(2, (object)[], 'cancel_queued_call_procedure');
-        $dealer->onMessage($erSession, $callMessage); // this should get through to callee
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($erSession, $callMessage)); // this should get through to callee
         $callMessage->setRequestId(3);
-        $dealer->onMessage($erSession, $callMessage); // this should be in the queue now
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($erSession, $callMessage)); // this should be in the queue now
 
         $cancelMessage = new \Thruway\Message\CancelMessage(3, (object)[]);
 
-        $dealer->onMessage($erSession, $cancelMessage);
+        $dealer->handleCancelMessage(new \Thruway\Event\MessageEvent($erSession, $cancelMessage));
 
     }
 
@@ -297,21 +298,21 @@ class DealerTest extends PHPUnit_Framework_TestCase {
             );
 
         $registerMsg = new \Thruway\Message\RegisterMessage(12345, (object)[], 'test.procedure');
-        $dealer->onMessage($eeSession, $registerMsg);
+        $dealer->handleRegisterMessage(new \Thruway\Event\MessageEvent($eeSession, $registerMsg));
 
         $callMsg = new \Thruway\Message\CallMessage(1, (object)[], 'test.procedure');
-        $dealer->onMessage($erSession, $callMsg);
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($erSession, $callMsg));
 
         $this->assertEquals(1, $eeSession->getPendingCallCount());
 
         $cancelMsg = new \Thruway\Message\CancelMessage(1, (object)["mode" => "killnowait"]);
         $eeSession->setHelloMessage($this->_helloMessage);
 
-        $dealer->onMessage($erSession, $cancelMsg);
+        $dealer->handleCancelMessage(new \Thruway\Event\MessageEvent($erSession, $cancelMsg));
 
         $errorMsgFromEe = \Thruway\Message\ErrorMessage::createErrorMessageFromMessage($interruptMessage);
         $errorMsgFromEe->setErrorURI("wamp.error.canceled");
-        $dealer->onMessage($eeSession, $errorMsgFromEe);
+        $dealer->handleErrorMessage(new \Thruway\Event\MessageEvent($eeSession, $errorMsgFromEe));
 
         /** @var \Thruway\Session $eeSession */
         $this->assertEquals(0, $eeSession->getPendingCallCount());

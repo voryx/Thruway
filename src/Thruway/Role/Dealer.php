@@ -6,6 +6,8 @@ namespace Thruway\Role;
 use Thruway\AbstractSession;
 use Thruway\Call;
 use Thruway\Common\Utils;
+use Thruway\Event\LeaveRealmEvent;
+use Thruway\Event\MessageEvent;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
@@ -16,6 +18,7 @@ use Thruway\Message\Message;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\UnregisterMessage;
 use Thruway\Message\YieldMessage;
+use Thruway\Module\RealmModuleInterface;
 use Thruway\Procedure;
 use Thruway\Registration;
 use Thruway\Session;
@@ -25,7 +28,7 @@ use Thruway\Session;
  *
  * @package Thruway\Role
  */
-class Dealer extends AbstractRole
+class Dealer extends AbstractRole implements RealmModuleInterface
 {
     /**
      * @var Procedure[]
@@ -95,6 +98,7 @@ class Dealer extends AbstractRole
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
+        throw new \Exception("Should not be here.");
 
         if ($msg instanceof RegisterMessage):
             $this->processRegister($session, $msg);
@@ -500,5 +504,50 @@ class Dealer extends AbstractRole
 
         return [$theRegistrations];
     }
+
+    public function handleCallMessage(MessageEvent $event) {
+        $this->processCall($event->session, $event->message);
+    }
+
+    public function handleCancelMessage(MessageEvent $event) {
+        $this->processCancel($event->session, $event->message);
+    }
+
+    public function handleRegisterMessage(MessageEvent $event) {
+        $this->processRegister($event->session, $event->message);
+    }
+
+    public function handleUnregisterMessage(MessageEvent $event) {
+        $this->processUnregister($event->session, $event->message);
+    }
+
+    public function handleYieldMessage(MessageEvent $event) {
+        $this->processYield($event->session, $event->message);
+    }
+
+    public function handleErrorMessage(MessageEvent $event) {
+        if ($this->handlesMessage($event->message)) {
+            $this->processError($event->session, $event->message);
+        }
+    }
+
+    public function handleLeaveRealm(LeaveRealmEvent $event) {
+        $this->leave($event->session);
+    }
+
+    /** @return array */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+            "CallMessageEvent" => ["handleCallMessage", 10],
+            "CancelMessageEvent" => ["handleCancelMessage", 10],
+            "RegisterMessageEvent" => ["handleRegisterMessage", 10],
+            "UnregisterMessageEvent" => ["handleUnregisterMessage", 10],
+            "YieldMessageEvent" => ["handleYieldMessage", 10],
+            "ErrorMessageEvent" => ["handleErrorMessage", 10],
+            "LeaveRealm" => ["handleLeaveRealm", 10],
+        ];
+    }
+
 
 }

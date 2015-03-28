@@ -4,6 +4,8 @@ namespace Thruway\Role;
 
 use Thruway\AbstractSession;
 use Thruway\Common\Utils;
+use Thruway\Event\LeaveRealmEvent;
+use Thruway\Event\MessageEvent;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManageableInterface;
 use Thruway\Manager\ManageableTrait;
@@ -13,6 +15,7 @@ use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\SubscribeMessage;
 use Thruway\Message\UnsubscribeMessage;
+use Thruway\Module\RealmModuleInterface;
 use Thruway\Session;
 use Thruway\Subscription\ExactMatcher;
 use Thruway\Subscription\MatcherInterface;
@@ -25,7 +28,7 @@ use Thruway\Subscription\SubscriptionGroup;
  * Class Broker
  * @package Thruway\Role
  */
-class Broker implements ManageableInterface
+class Broker implements ManageableInterface, RealmModuleInterface
 {
     use ManageableTrait;
 
@@ -314,4 +317,40 @@ class Broker implements ManageableInterface
     {
         return $this->subscriptionGroups;
     }
+
+    public function handlePublishMessage(MessageEvent $event) {
+        $this->processPublish($event->session, $event->message);
+    }
+
+    public function handleSubscribeMessage(MessageEvent $event) {
+        $this->processSubscribe($event->session, $event->message);
+    }
+
+    public function handleUnsubscribeMessage(MessageEvent $event) {
+        $this->processUnsubscribe($event->session, $event->message);
+    }
+
+//    public function handleErrorMessage(MessageEvent $event) {
+//        if ($this->handlesMessage($event->message)) {
+//
+//        }
+//    }
+
+    public function handleLeaveRealm(LeaveRealmEvent $event) {
+        $this->leave($event->session);
+    }
+
+    /** @return array */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+            "PublishMessageEvent" => ["handlePublishMessage", 10],
+            "SubscribeMessageEvent" => ["handleSubscribeMessage", 10],
+            "UnsubscribeMessageEvent" => ["handleUnsubscribeMessage", 10],
+            //"ErrorMessageEvent" => ["handleErrorMessage", 10],
+            "LeaveRealm" => ["handleLeaveRealm", 10],
+        ];
+    }
+
+
 }

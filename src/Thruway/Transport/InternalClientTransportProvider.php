@@ -3,9 +3,10 @@
 namespace Thruway\Transport;
 
 
-use Thruway\Event\NewConnectionEvent;
+use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Peer\ClientInterface;
+use Thruway\Session;
 
 /**
  * Class InternalClientTransportProvider
@@ -33,21 +34,25 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
     }
 
     public function handleRouterStart(RouterStartEvent $event) {
-        // create a new transport for the router side to use
-        $transport = new InternalClientTransport($this->internalClient, $this->loop);
-        $transport->setTrusted($this->trusted);
+        /** @var Session $session */
+        $session = null;
 
         // create a new transport for the client side to use
-        $clientTransport = new InternalClientTransport($this->router, $this->loop);
+        $clientTransport = new InternalClientTransport(function ($msg) use (&$session) {
+            $session->dispatchMessage($msg);
+        }, $this->loop);
 
-        // give the transports each other because they are going to call directly into the
-        // other side
-        $transport->setFarPeerTransport($clientTransport);
-        $clientTransport->setFarPeerTransport($transport);
 
+        // create a new transport for the router side to use
+        $transport = new InternalClientTransport(function ($msg) use ($clientTransport) {
+            $this->internalClient->onMessage($clientTransport, $msg);
+        }, $this->loop);
+        $transport->setTrusted($this->trusted);
+
+        $session = $this->router->createNewSession($transport);
 
         // connect the transport to the Router/Peer
-        $this->router->getEventDispatcher()->dispatch("new_connection", new NewConnectionEvent($transport));
+        $this->router->getEventDispatcher()->dispatch("connection_open", new ConnectionOpenEvent($session));
 
         // open the client side
         $this->internalClient->onOpen($clientTransport);

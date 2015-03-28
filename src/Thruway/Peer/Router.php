@@ -7,8 +7,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Common\Utils;
+use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\EventSubscriberInterface;
-use Thruway\Event\NewConnectionEvent;
+use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
@@ -41,9 +42,9 @@ class Router implements RouterInterface, EventSubscriberInterface
     private $realmManager;
 
     /**
-     * @var \SplObjectStorage
+     * @var array
      */
-    private $sessions;
+    private $sessions = [];
 
     /**
      * @var \Thruway\Authentication\AuthenticationManagerInterface
@@ -77,9 +78,10 @@ class Router implements RouterInterface, EventSubscriberInterface
 
         $this->loop            = $loop ? $loop : Factory::create();
         $this->realmManager    = new RealmManager();
-        $this->sessions        = new \SplObjectStorage();
         $this->eventDispatcher = new EventDispatcher();
         $this->eventDispatcher->addSubscriber($this);
+
+        $this->registerModule($this->realmManager);
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
 
@@ -87,22 +89,13 @@ class Router implements RouterInterface, EventSubscriberInterface
     }
 
     /**
-     * Handle open transport
-     *
-     * @param \Thruway\Transport\TransportInterface $transport
+     * @inheritdoc
      */
-    public function onOpen(TransportInterface $transport)
-    {
+    public function createNewSession(TransportInterface $transport) {
         $session = new Session($transport);
-
-        // give the session the loop, just in case it wants to set a timer or something
         $session->setLoop($this->getLoop());
 
-        // TODO: add a little more detail to this (what kind and address maybe?)
-        Logger::info($this, "New Session started " . json_encode($transport->getTransportDetails()) . "");
-
-        $this->sessions->attach($transport, $session);
-
+        return $session;
     }
 
     /**
@@ -114,6 +107,7 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function onMessage(TransportInterface $transport, Message $msg)
     {
+        return;
         /* @var $session \Thruway\Session */
         $session = $this->sessions[$transport];
 
@@ -185,7 +179,7 @@ class Router implements RouterInterface, EventSubscriberInterface
         /* @var  $session \Thruway\Session */
         $session = $this->sessions[$transport];
 
-        $session->onClose();
+
 
         $this->sessions->detach($transport);
     }
@@ -246,17 +240,9 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function getSessionBySessionId($sessionId)
     {
-        /** @var Session $session */
-        $this->sessions->rewind();
-        while ($this->sessions->valid()) {
-            $session = $this->sessions->getInfo();
-            if ($session->getSessionId() == $sessionId) {
-                return $session;
-            }
-            $this->sessions->next();
-        }
+        if (!is_scalar($sessionId)) return false;
 
-        return false;
+        return isset($this->sessions[$sessionId]) ? $this->sessions[$sessionId] : false;
     }
 
     /**
@@ -403,9 +389,15 @@ class Router implements RouterInterface, EventSubscriberInterface
         return $this->eventDispatcher;
     }
 
-    public function handleNewConnection(NewConnectionEvent $event)
+    public function handleConnectionOpen(ConnectionOpenEvent $event)
     {
-        $this->onOpen($event->transport);
+        $this->sessions[$event->session->getSessionId()] = $event->session;
+    }
+
+    public function handleConnectionClose(ConnectionCloseEvent $event) {
+        unset($this->sessions[$event->session->getSessionId()]);
+        // TODO: should this be a message dispatched from the Transport?
+        $event->session->onClose();
     }
 
     /**
@@ -414,7 +406,8 @@ class Router implements RouterInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            "new_connection" => ['handleNewConnection', 10]
+            "connection_open" => ['handleConnectionOpen', 10],
+            "connection_close" => ['handleConnectionClose', 10]
         ];
     }
 }

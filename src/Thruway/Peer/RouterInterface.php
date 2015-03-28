@@ -6,6 +6,7 @@ namespace Thruway\Peer;
 
 use Thruway\Event\EventDispatcher;
 use Thruway\Message\Message;
+use Thruway\Session;
 use Thruway\Transport\TransportInterface;
 
 
@@ -15,14 +16,6 @@ use Thruway\Transport\TransportInterface;
  */
 interface RouterInterface extends PeerInterface
 {
-
-    /**
-     * Handle open transport
-     *
-     * @param TransportInterface $transport
-     */
-    public function onOpen(TransportInterface $transport);
-
     /**
      * Handle process message
      *
@@ -87,4 +80,10 @@ interface RouterInterface extends PeerInterface
      * @param ClientInterface $client
      */
     public function addInternalClient(ClientInterface $client);
+
+    /**
+     * @param TransportInterface $transport
+     * @return Session
+     */
+    public function createNewSession(TransportInterface $transport);
 }

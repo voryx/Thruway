@@ -5,18 +5,23 @@ namespace Thruway;
 
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthorizationManagerInterface;
+use Thruway\Event\ConnectionCloseEvent;
+use Thruway\Event\ConnectionOpenEvent;
+use Thruway\Event\MessageEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
+use Thruway\Message\HelloMessage;
+use Thruway\Module\RealmModuleInterface;
 
 /**
  * Class Realm Manager
  *
  * @package Thruway
  */
-class RealmManager
+class RealmManager extends Module\RouterModule implements RealmModuleInterface
 {
 
     /**
@@ -201,5 +206,51 @@ class RealmManager
     public function setDefaultAuthorizationManager($defaultAuthorizationManager)
     {
         $this->defaultAuthorizationManager = $defaultAuthorizationManager;
+    }
+
+    public function handleConnectionOpen(ConnectionOpenEvent $event) {
+        $event->session->dispatcher->addRealmSubscriber($this);
+    }
+
+    public function handleConnectionClose(ConnectionCloseEvent $event) {
+
+    }
+
+    public function handlePreHelloMessage(MessageEvent $event) {
+        Logger::info($this, "Got prehello...");
+        /** @var HelloMessage $msg */
+        $msg = $event->message;
+        $session = $event->session;
+
+        $session->setHelloMessage($msg);
+        try {
+            $realm = $this->getRealm($msg->getRealm());
+
+            $realm->addSession($session);
+        } catch (\Exception $e) {
+            // TODO: Test this
+            $errorUri    = "wamp.error.unknown";
+            $description = $e->getMessage();
+            if ($e instanceof InvalidRealmNameException || $e instanceof RealmNotFoundException) {
+                $errorUri = "wamp.error.no_such_realm";
+            }
+            $session->abort(['description' => $description], $errorUri);
+        }
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            "connection_open" => ['handleConnectionOpen', 10],
+            "connection_close" => ['handleConnectionClose', 10]
+        ];
+    }
+
+    /** @return array */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+            "PreHelloMessageEvent" => ["handlePreHelloMessage", 10]
+        ];
     }
 }

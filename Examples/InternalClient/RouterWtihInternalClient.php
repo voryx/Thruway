@@ -6,8 +6,8 @@
  * http://voryx.net/creating-internal-client-thruway/
  */
 
-require "../bootstrap.php";
-require 'InternalClient.php';
+require __DIR__ . "/../bootstrap.php";
+require __DIR__ . '/InternalClient.php';
 
 use Thruway\Peer\Router;
 use Thruway\Transport\RatchetTransportProvider;

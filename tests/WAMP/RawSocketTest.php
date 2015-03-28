@@ -1,6 +1,10 @@
 <?php
 
-
+/**
+ * Class RawSocketTest
+ *
+ *
+ */
 class RawSocketTest extends PHPUnit_Framework_TestCase {
     private $_result;
 

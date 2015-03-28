@@ -13,45 +13,16 @@ use Thruway\Peer\PeerInterface;
  */
 class InternalClientTransport extends AbstractTransport
 {
-
-    /**
-     * @var \Thruway\Peer\RouterInterface
-     */
-    private $farPeer;
-
-    /**
-     * @var \Thruway\Transport\TransportInterface
-     */
-    private $farPeerTransport;
-
     /**
      * Constructor
      *
-     * @param PeerInterface $farPeer
+     * @param callable $sendMessage
      * @param \React\EventLoop\LoopInterface $loop
      */
-    public function __construct(PeerInterface $farPeer, LoopInterface $loop)
+    public function __construct(callable $sendMessage, LoopInterface $loop)
     {
-        $this->farPeer = $farPeer;
-        $this->loop    = $loop;
-    }
-
-    /**
-     * Set FarPeerTransport
-     *
-     * @param \Thruway\Transport\TransportInterface $farPeerTransport
-     */
-    public function setFarPeerTransport($farPeerTransport)
-    {
-        $this->farPeerTransport = $farPeerTransport;
-    }
-
-    /**
-     * @return \Thruway\Transport\TransportInterface
-     */
-    public function getFarPeerTransport()
-    {
-        return $this->farPeerTransport;
+        $this->sendMessageFunction = $sendMessage;
+        $this->loop                = $loop;
     }
 
     /**
@@ -62,11 +33,9 @@ class InternalClientTransport extends AbstractTransport
      */
     public function sendMessage(Message $msg)
     {
-        if ($this->getFarPeerTransport() === null) {
-            throw new \Exception("You must set the farPeerTransport on internal client transports");
+        if (is_callable($this->sendMessageFunction)) {
+            call_user_func_array($this->sendMessageFunction, [$msg]);
         }
-
-        $this->farPeer->onMessage($this->getFarPeerTransport(), $msg);
     }
 
     /**

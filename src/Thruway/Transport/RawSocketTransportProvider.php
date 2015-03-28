@@ -4,7 +4,7 @@ namespace Thruway\Transport;
 
 use React\Socket\Connection;
 use React\Socket\Server;
-use Thruway\Event\NewConnectionEvent;
+use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Logging\Logger;
 use Thruway\Serializer\JsonSerializer;
@@ -32,7 +32,7 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
     /**
      * @var \SplObjectStorage
      */
-    private $transports;
+    private $sessions;
 
     /**
      * Constructor
@@ -45,7 +45,7 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
         $this->address = $address;
         $this->port    = $port;
 
-        $this->transports = new \SplObjectStorage();
+        $this->sessions = new \SplObjectStorage();
     }
 
     /**
@@ -59,13 +59,14 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
 
         $transport = new RawSocketTransport($conn, $this->loop, $this->router);
 
-        $this->transports->attach($conn, $transport);
-
         $transport->setSerializer(new JsonSerializer());
 
         $transport->setTrusted($this->trusted);
 
-        $this->router->getEventDispatcher()->dispatch("new_connection", new NewConnectionEvent($transport));
+        $session = $this->router->createNewSession($transport);
+        $this->sessions->attach($conn, $session);
+
+        $this->router->getEventDispatcher()->dispatch("connection_open", new ConnectionOpenEvent($session));
 
         $conn->on('data', [$this, "handleData"]);
         $conn->on('close', [$this, "handleClose"]);
@@ -79,9 +80,9 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
      */
     public function handleData($data, Connection $conn)
     {
-        $transport = $this->transports[$conn];
+        $session = $this->sessions[$conn];
 
-        $transport->handleData($data);
+        $session->handleData($data);
     }
 
     /**
@@ -92,8 +93,8 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
     public function handleClose(Connection $conn)
     {
         Logger::debug($this, "Raw socket closed " . $conn->getRemoteAddress());
-        $transport = $this->transports[$conn];
-        $this->transports->detach($conn);
+        $transport = $this->sessions[$conn];
+        $this->sessions->detach($conn);
 
         $this->router->onClose($transport);
     }

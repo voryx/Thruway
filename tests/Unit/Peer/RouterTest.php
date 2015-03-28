@@ -11,18 +11,6 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     private $router;
 
-    /**
-     * @var \Thruway\Transport\TransportInterface
-     */
-//    private $transportMock;
-
-
-    /**
-     * @var \Thruway\Transport\TransportInterface
-     */
-    private $msg;
-
-
     public function setup()
     {
         \Thruway\Logging\Logger::set(new \Psr\Log\NullLogger());
@@ -54,13 +42,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test onOpen
+     * Test ConnectionOpen
      *
      * @depends testStart
      * @param \Thruway\Peer\Router $router
      * @return array
      */
-    public function testOnOpen(\Thruway\Peer\Router $router)
+    public function testConnectionOpen(\Thruway\Peer\Router $router)
     {
         $transport = $this->getMock('Thruway\Transport\TransportInterface');
 
@@ -69,25 +57,61 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->method('getTransportDetails')
             ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
 
-        $router->onOpen($transport);
+        $session = new \Thruway\Session($transport);
+
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
 
         $this->assertGreaterThan(0, count($router->managerGetSessionCount()));
 
-        return ['router' => $router, 'transport' => $transport];
+        return ['router' => $router, 'session' => $session];
+    }
+
+    /**
+     * This is to help bridge a gap between 0.3 and 0.4 testing
+     *
+     */
+    private function getNewRouterAndSession() {
+        $router = new \Thruway\Peer\Router();
+        $router->start(false);
+        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+
+        // Configure the stub.
+        $transport->expects($this->any())
+            ->method('getTransportDetails')
+            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+
+        $session = new \Thruway\Session($transport);
+
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+
+        return ['router' => $router, 'session' => $session];
+    }
+
+    /**
+     * This also is a helper to help preserve some original tests
+     */
+    private function getActiveRouterAndSession() {
+        $rt = $this->getNewRouterAndSession();
+
+        $helloMessage = new \Thruway\Message\HelloMessage("test.realm", []);
+        $rt['session']->dispatchMessage($helloMessage);
+
+        return $rt;
     }
 
     /**
      * Test Hello message
      *
-     * @depends testOnOpen
-     * @param $rt array
      * @return array
      *
      * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#hello-1
      */
-    public function testHelloMessage($rt)
+    public function testHelloMessage()
     {
-        $rt['transport']->expects($this->at(0))
+        $rt = $this->getNewRouterAndSession();
+        /** @var \Thruway\Session $session */
+        $session = $rt['session'];
+        $session->getTransport()->expects($this->once())
             ->method('sendMessage')
             ->with(
                 $this->callback(
@@ -100,7 +124,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             )->will($this->returnValue(null));
 
         $helloMessage = new \Thruway\Message\HelloMessage("test.realm", []);
-        $rt['router']->onMessage($rt['transport'], $helloMessage);
+        $session->dispatchMessage($helloMessage);
 
         return $rt;
     }
@@ -108,15 +132,16 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test Subscribe message
      *
-     * @depends testHelloMessage
-     * @param $rt array
      * @return array
      *
      * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#subscribe-1
      */
-    public function testSubscribeMessage($rt)
+    public function testSubscribeMessage()
     {
-        $rt['transport']->expects($this->at(1))
+        $rt = $this->getActiveRouterAndSession();
+        /** @var \Thruway\Session $session */
+        $session = $rt["session"];
+        $session->getTransport()->expects($this->once())
             ->method('sendMessage')
             ->with(
                 $this->callback(
@@ -133,7 +158,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
         $msg = new \Thruway\Message\SubscribeMessage('1111111', [], 'test.topic');
-        $rt['router']->onMessage($rt['transport'], $msg);
+        $session->dispatchMessage($msg);
 
         return $rt;
     }
@@ -149,10 +174,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testSubscribeEmptyTopicMessage($rt)
     {
-        $rt['transport']->expects($this->at(1))
+        /** @var \Thruway\Session $session */
+        $session = $rt["session"];
+        $session->getTransport()->expects($this->exactly(1))
             ->method('sendMessage')
-            ->with(
-                $this->callback(
+            ->withConsecutive(
+                [$this->callback(
                     function ($msg) {
                         $this->assertInstanceOf(
                             '\Thruway\Message\ErrorMessage',
@@ -164,12 +191,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
                         return $msg instanceof Thruway\Message\ErrorMessage;
                     }
-                )
-            )->will($this->returnValue(null));
+                )]
+            );
 
 
         $msg = new \Thruway\Message\SubscribeMessage('222222', [], '');
-        $rt['router']->onMessage($rt['transport'], $msg);
+        $session->dispatchMessage($msg);
 
         return $rt;
     }
@@ -177,16 +204,26 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test Duplicate Subscription from the same session
      *
-     * @depends testHelloMessage
-     * @param $rt array
      * @return array
      */
-    public function testSubscribeDuplicateTopic($rt)
+    public function testSubscribeDuplicateTopic()
     {
-        $rt['transport']->expects($this->at(1))
+        $rt = $this->getActiveRouterAndSession();
+        /** @var \Thruway\Session $session */
+        $session = $rt['session'];
+        $session->getTransport()->expects($this->exactly(2))
             ->method('sendMessage')
-            ->with(
-                $this->callback(
+            ->withConsecutive(
+                [$this->callback(
+                    function ($msg) {
+                        $this->assertInstanceOf('\Thruway\Message\SubscribedMessage', $msg);
+                        $this->assertEquals('1111111', $msg->getRequestId());
+
+                        return $msg instanceof Thruway\Message\SubscribedMessage;
+
+                    }
+                )],
+                [$this->callback(
                     function ($msg) {
 
                         $this->assertInstanceOf(
@@ -199,11 +236,15 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
                         return $msg instanceof Thruway\Message\SubscribedMessage;
                     }
-                )
+                )]
             )->will($this->returnValue(null));
 
+        $msg = new \Thruway\Message\SubscribeMessage('1111111', [], 'test.topic');
+        $session->dispatchMessage($msg);
+
+
         $msg = new \Thruway\Message\SubscribeMessage('333333', [], 'test.topic');
-        $rt['router']->onMessage($rt['transport'], $msg);
+        $session->dispatchMessage($msg);
 
         /* @var $router \Thruway\Peer\Router */
         $router        = $rt['router'];
@@ -218,13 +259,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test Subscribe with an invalid URI
      *
-     * @depends testHelloMessage
-     * @param $rt array
      * @return array
      */
-    public function testSubscribeInvalidURI($rt)
+    public function testSubscribeInvalidURI()
     {
-        $rt['transport']->expects($this->at(1))
+        $rt = $this->getActiveRouterAndSession();
+        /** @var \Thruway\Session $session */
+        $session = $rt['session'];
+        $session->getTransport()->expects($this->once())
             ->method('sendMessage')
             ->with(
                 $this->callback(
@@ -246,7 +288,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
         $msg = new \Thruway\Message\SubscribeMessage('55555', [], 'test.topic1$$$');
-        $rt['router']->onMessage($rt['transport'], $msg);
+        $session->dispatchMessage($msg);
 
 
         return $rt;
@@ -264,7 +306,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testPublishMessageSameSession($rt)
     {
-        $rt['transport']->expects($this->at(1))
+        /** @var \Thruway\Session $session */
+        $session = $rt['session'];
+        $session->getTransport()->expects($this->at(1))
             ->method('sendMessage')
             ->with(
                 $this->callback(
@@ -281,7 +325,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
         $msg = new \Thruway\Message\PublishMessage('654321', new stdClass(), 'test.topic', ["hello world"]);
-        $rt['router']->onMessage($rt['transport'], $msg);
+        $session->dispatchMessage($msg);
 
         return $rt;
     }
@@ -289,15 +333,16 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test Publish with Acknowledge flag
      *
-     * @depends testHelloMessage
-     * @param $rt array
      * @return array
      *
      * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#published-1
      */
-    public function testPublishAcknowledgeMessage($rt)
+    public function testPublishAcknowledgeMessage()
     {
-        $rt['transport']->expects($this->at(1))
+        $rt = $this->getActiveRouterAndSession();
+        /** @var \Thruway\Session $session */
+        $session = $rt['session'];
+        $session->getTransport()->expects($this->once())
             ->method('sendMessage')
             ->with(
                 $this->callback(
@@ -312,7 +357,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
         $msg = new \Thruway\Message\PublishMessage('78654321', ['acknowledge' => true], 'test.topic', ["hello world"]);
-        $rt['router']->onMessage($rt['transport'], $msg);
+        $session->dispatchMessage($msg);
 
         return $rt;
     }
@@ -329,7 +374,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testEventMessages($rt)
     {
-        $rt['transport']->expects($this->atMost(2))
+        /** @var \Thruway\Session $session */
+        $session = $rt['session'];
+        $session->getTransport()->expects($this->atMost(2))
             ->method('sendMessage')
             ->with(
                 $this->callback(
@@ -361,6 +408,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
 
         $transport = $this->getMock('Thruway\Transport\TransportInterface');
+        $session = new \Thruway\Session($transport);
 
         // Configure the stub.
         $transport->expects($this->any())
@@ -368,16 +416,16 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
 
         //Simulate onOpen
-        $router->onOpen($transport);
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
 
         //Simulate a HelloMessage
         $helloMessage = new \Thruway\Message\HelloMessage("test.realm", []);
-        $router->onMessage($transport, $helloMessage);
+        $session->dispatchMessage($helloMessage);
 
         //Publish Message
         $msg = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), new stdClass(), 'test.topic', ["hello world"]);
         $msg->setPublicationId('999654321');
-        $router->onMessage($transport, $msg);
+        $session->dispatchMessage($msg);
 
     }
 
@@ -398,101 +446,53 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->method('getTransportDetails')
             ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
 
-        //Simulate onOpen
-        $router->onOpen($transport);
-
-        //Simulate HelloMessage
-        $helloMessage = new \Thruway\Message\HelloMessage("test.realm2", []);
-        $router->onMessage($transport, $helloMessage);
-
         //Subscribe to a topic
         $subscriptionId = null;
-        $transport->expects($this->at(1))
+        $transport->expects($this->any())
             ->method('sendMessage')
-            ->with(
-                $this->callback(
+            ->withConsecutive(
+                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+                [$this->callback(
                     function ($msg) use (&$subscriptionId) {
                         $this->assertInstanceOf('\Thruway\Message\SubscribedMessage', $msg);
                         $this->assertEquals('7777777', $msg->getRequestId());
                         $subscriptionId = $msg->getSubscriptionId();
                         return $msg instanceof Thruway\Message\SubscribedMessage;
                     }
-                )
-            )->will($this->returnValue(null));
-
-        $msg = new \Thruway\Message\SubscribeMessage('7777777', [], 'test.topic123');
-        $router->onMessage($transport, $msg);
-
-        //Unsubscribe
-        $transport->expects($this->at(1))
-            ->method('sendMessage')
-            ->with(
-                $this->callback(
+                )],
+                [$this->callback(
                     function ($msg) {
                         $this->assertInstanceOf('\Thruway\Message\UnsubscribedMessage', $msg);
                         $this->assertEquals('888888', $msg->getRequestId());
 
                         return $msg instanceof Thruway\Message\UnsubscribedMessage;
                     }
-                )
-            )->will($this->returnValue(null));
+                )]
+            );
+
+        $session = new \Thruway\Session($transport);
+
+        //Simulate onOpen
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+
+        //Simulate HelloMessage
+        $helloMessage = new \Thruway\Message\HelloMessage("test.realm2", []);
+        $session->dispatchMessage($helloMessage);
+
+        $msg = new \Thruway\Message\SubscribeMessage('7777777', [], 'test.topic123');
+        $session->dispatchMessage($msg);
 
         $this->assertInstanceOf('\Thruway\Subscription\Subscription',
             $router->getRealmManager()->getRealm('test.realm2')->getBroker()->getSubscriptionById($subscriptionId)
         );
 
         $msg = new \Thruway\Message\UnsubscribeMessage('888888', $subscriptionId);
-        $router->onMessage($transport, $msg);
+        $session->dispatchMessage($msg);
 
         $broker = $router->getRealmManager()->getRealm('test.realm2')->getBroker();
         $this->assertFalse($broker->getSubscriptionById($subscriptionId));
 
     }
-
-    /**
-     * Test onClose
-     *
-     * @depends testHelloMessage
-     * @param $rt array
-     * @return array
-     */
-    public function testOnClose($rt)
-    {
-
-        //Get the sessions before close
-        $sessions = $rt['router']->managerGetSessions()[0];
-
-        $rt['router']->onClose($rt['transport']);
-
-        $this->assertEquals(count($sessions) - 1, count($rt['router']->managerGetSessions()[0]),
-            "There should be one less session");
-
-    }
-
-    /**
-     * Test Get Session By Session Id
-     *
-     * @depends testHelloMessage
-     * @param $rt array
-     * @return array
-     */
-    public function testGetSessionBySessionId($rt)
-    {
-        //Get the sessions
-        $sessions = $rt['router']->managerGetSessions()[0];
-
-        $this->assertCount(1, $sessions);
-
-        foreach ($sessions as $s) {
-            /* @var $session \Thruway\Session */
-            $session = $rt['router']->getSessionBySessionId($s['id']);
-
-            $this->assertInstanceOf('\Thruway\Session', $session);
-            $this->assertEquals($session->getSessionId(), $s['id']);
-
-        }
-    }
-
 
     /**
      * Test Try Get Session By Session Id - Id Does not exist
@@ -532,12 +532,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $transport->expects($this->never())
             ->method('sendMessage');
 
+        $session = new \Thruway\Session($transport);
+
         //Simulate onOpen
-        $router->onOpen($transport);
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
 
         //Simulate a AbortMessage
         $abortMessage = new \Thruway\Message\AbortMessage(["message" => "Client is shutting down"], "wamp.error.system_shutdown");
-        $router->onMessage($transport, $abortMessage);
+        $session->dispatchMessage($abortMessage);
 
     }
 
@@ -548,8 +550,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      * @param \Thruway\Peer\Router $router
      * @return array
      */
-    public function testUnhandledMessage(\Thruway\Peer\Router $router)
+    public function xtestUnhandledMessage(\Thruway\Peer\Router $router)
     {
+        $this->markTestSkipped();
 
         $transport = $this->getMock('Thruway\Transport\TransportInterface');
 
@@ -571,13 +574,15 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 )
             )->will($this->returnValue(null));
 
+        $session = new \Thruway\Session($transport);
+
         //Simulate onOpen
-        $router->onOpen($transport);
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
 
         //Simulate a GoodbyeMessage
         $goodbyeMessage = new \Thruway\Message\GoodbyeMessage(["message" => "Client is shutting down"],
             "wamp.error.system_shutdown");
-        $router->onMessage($transport, $goodbyeMessage);
+        $session->dispatchMessage($goodbyeMessage);
 
     }
 
@@ -612,12 +617,14 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 )
             )->will($this->returnValue(null));
 
+        $session = new \Thruway\Session($transport);
+
         //Simulate onOpen
-        $router->onOpen($transport);
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
 
         //Simulate a HelloMessage with an empty Realm
         $helloMessage = new \Thruway\Message\HelloMessage("", []);
-        $router->onMessage($transport, $helloMessage);
+        $session->dispatchMessage($helloMessage);
     }
 
     /**
@@ -664,28 +671,31 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $transportPublisher = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
             ->getMock();
 
+        $session1 = new \Thruway\Session($transport1);
+        $session2 = new \Thruway\Session($transport2);
+        $sessionPublisher = new \Thruway\Session($transportPublisher);
 
-        $router->onOpen($transport1);
-        $router->onOpen($transport2);
-        $router->onOpen($transportPublisher);
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session1));
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session2));
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionPublisher));
 
         // send in a few hellos
         $helloMsg = new \Thruway\Message\HelloMessage("realm_issue53", (object)[]);
 
-        $router->onMessage($transport1, $helloMsg);
-        $router->onMessage($transport2, $helloMsg);
-        $router->onMessage($transportPublisher, $helloMsg);
+        $session1->dispatchMessage($helloMsg);
+        $session2->dispatchMessage($helloMsg);
+        $sessionPublisher->dispatchMessage($helloMsg);
 
         // subscribe
         $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Common\Utils::getUniqueId(), (object)[], "com.example.issue53");
 
-        $router->onMessage($transport1, $subscribeMsg);
-        $router->onMessage($transport2, $subscribeMsg);
+        $session1->dispatchMessage($subscribeMsg);
+        $session2->dispatchMessage($subscribeMsg);
 
         // publish to the topic from the publishing transport
         $publishMsg = new \Thruway\Message\PublishMessage(12345, (object)[], 'com.example.issue53');
 
-        $router->onMessage($transportPublisher, $publishMsg);
+        $sessionPublisher->dispatchMessage($publishMsg);
     }
 
     /**
@@ -764,43 +774,47 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(5, $msg); return true; })]
             );
 
-        $router->onOpen($transportStateHandler);
-        $router->onOpen($transportSubscriber);
+        $sessionStateHandler = new \Thruway\Session($transportStateHandler);
+        $sessionSubscriber = new \Thruway\Session($transportSubscriber);
+
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler));
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber));
 
         $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
 
-        $router->onMessage($transportStateHandler, $hello);
-        $router->onMessage($transportSubscriber, $hello);
+        $sessionStateHandler->dispatchMessage($hello);
+        $sessionSubscriber->dispatchMessage($hello);
 
         $register = new \Thruway\Message\RegisterMessage(12345, (object)[], 'my_state_handler');
 
-        $router->onMessage($transportStateHandler, $register);
+        $sessionStateHandler->dispatchMessage($register);
 
         $call = new \Thruway\Message\CallMessage(2, (object)[], 'add_state_handler', [[]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["uri" => "test.stateful.uri"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["handler_uri" => "my_state_handler"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["uri" => "test.stateful.uri", "handler_uri" => "my_state_handler"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
 
         $subscribe = new \Thruway\Message\SubscribeMessage(2, (object)[], "test.stateful.uri");
-        $router->onMessage($transportSubscriber, $subscribe);
+        $sessionSubscriber->dispatchMessage($subscribe);
+
 
         for ($i = 0; $i < 3; $i++) {
             $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
             $publish->setPublicationId($i);
-            $router->onMessage($transportStateHandler, $publish);
+            $sessionStateHandler->dispatchMessage($publish);
         }
 
         $yield = new \Thruway\Message\YieldMessage($invocationReqId, (object)[], [1]);
-        $router->onMessage($transportStateHandler, $yield);
+        $sessionStateHandler->dispatchMessage($yield);
 
         for ($i = 3; $i < 6; $i++) {
             $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
             $publish->setPublicationId($i);
-            $router->onMessage($transportStateHandler, $publish);
+            $sessionStateHandler->dispatchMessage($publish);
         }
     }
 
@@ -867,43 +881,46 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(5, $msg); return true; })]
             );
 
-        $router->onOpen($transportStateHandler);
-        $router->onOpen($transportSubscriber);
+        $sessionStateHandler = new \Thruway\Session($transportStateHandler);
+        $sessionSubscriber = new \Thruway\Session($transportSubscriber);
+
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler));
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber));
 
         $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
 
-        $router->onMessage($transportStateHandler, $hello);
-        $router->onMessage($transportSubscriber, $hello);
+        $sessionStateHandler->dispatchMessage($hello);
+        $sessionSubscriber->dispatchMessage($hello);
 
         $register = new \Thruway\Message\RegisterMessage(12345, (object)[], 'my_state_handler');
 
-        $router->onMessage($transportStateHandler, $register);
+        $sessionStateHandler->dispatchMessage($register);
 
         $call = new \Thruway\Message\CallMessage(2, (object)[], 'add_state_handler', [[]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["uri" => "test.stateful.uri"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["handler_uri" => "my_state_handler"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["uri" => "test.stateful.uri", "handler_uri" => "my_state_handler"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
 
         $subscribe = new \Thruway\Message\SubscribeMessage(2, (object)[], "test.stateful.uri");
-        $router->onMessage($transportSubscriber, $subscribe);
+        $sessionSubscriber->dispatchMessage($subscribe);
 
         for ($i = 0; $i < 3; $i++) {
             $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
             $publish->setPublicationId($i);
-            $router->onMessage($transportStateHandler, $publish);
+            $sessionStateHandler->dispatchMessage($publish);
         }
 
         $yield = new \Thruway\Message\YieldMessage($invocationReqId, (object)[], [1234]);
-        $router->onMessage($transportStateHandler, $yield);
+        $sessionStateHandler->dispatchMessage($yield);
 
         for ($i = 3; $i < 6; $i++) {
             $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
             $publish->setPublicationId($i);
-            $router->onMessage($transportStateHandler, $publish);
+            $sessionStateHandler->dispatchMessage($publish);
         }
     }
 
@@ -970,43 +987,46 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(5, $msg); return true; })]
             );
 
-        $router->onOpen($transportStateHandler);
-        $router->onOpen($transportSubscriber);
+        $sessionStateHandler = new \Thruway\Session($transportStateHandler);
+        $sessionSubscriber = new \Thruway\Session($transportSubscriber);
+
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler));
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber));
 
         $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
 
-        $router->onMessage($transportStateHandler, $hello);
-        $router->onMessage($transportSubscriber, $hello);
+        $sessionStateHandler->dispatchMessage($hello);
+        $sessionSubscriber->dispatchMessage($hello);
 
         $register = new \Thruway\Message\RegisterMessage(12345, (object)[], 'my_state_handler');
 
-        $router->onMessage($transportStateHandler, $register);
+        $sessionStateHandler->dispatchMessage($register);
 
         $call = new \Thruway\Message\CallMessage(2, (object)[], 'add_state_handler', [[]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["uri" => "test.stateful.uri"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["handler_uri" => "my_state_handler"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["uri" => "test.stateful.uri", "handler_uri" => "my_state_handler"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
 
         $subscribe = new \Thruway\Message\SubscribeMessage(2, (object)[], "test.stateful.uri");
-        $router->onMessage($transportSubscriber, $subscribe);
+        $sessionSubscriber->dispatchMessage($subscribe);
 
         for ($i = 0; $i < 3; $i++) {
             $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
             $publish->setPublicationId($i);
-            $router->onMessage($transportStateHandler, $publish);
+            $sessionStateHandler->dispatchMessage($publish);
         }
 
         $yield = new \Thruway\Message\YieldMessage($invocationReqId, (object)[]);
-        $router->onMessage($transportStateHandler, $yield);
+        $sessionStateHandler->dispatchMessage($yield);
 
         for ($i = 3; $i < 6; $i++) {
             $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
             $publish->setPublicationId($i);
-            $router->onMessage($transportStateHandler, $publish);
+            $sessionStateHandler->dispatchMessage($publish);
         }
     }
 
@@ -1070,37 +1090,40 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 [$this->callback(function ($msg) { $this->assertEventMessageWithArgument0(5, $msg); return true; })]
             );
 
-        $router->onOpen($transportStateHandler);
-        $router->onOpen($transportSubscriber);
+        $sessionStateHandler = new \Thruway\Session($transportStateHandler);
+        $sessionSubscriber = new \Thruway\Session($transportSubscriber);
+
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler));
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber));
 
         $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
 
-        $router->onMessage($transportStateHandler, $hello);
-        $router->onMessage($transportSubscriber, $hello);
+        $sessionStateHandler->dispatchMessage($hello);
+        $sessionSubscriber->dispatchMessage($hello);
 
         $register = new \Thruway\Message\RegisterMessage(12345, (object)[], 'my_state_handler');
 
-        $router->onMessage($transportStateHandler, $register);
+        $sessionStateHandler->dispatchMessage($register);
 
         $call = new \Thruway\Message\CallMessage(2, (object)[], 'add_state_handler', [[]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["uri" => "test.stateful.uri"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["handler_uri" => "my_state_handler"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
         $call->setArguments([(object)["uri" => "test.stateful.uri", "handler_uri" => "my_state_handler"]]);
-        $router->onMessage($transportStateHandler, $call);
+        $sessionStateHandler->dispatchMessage($call);
 
         $subscribe = new \Thruway\Message\SubscribeMessage(2, (object)[], "test.stateful.uri");
-        $router->onMessage($transportSubscriber, $subscribe);
+        $sessionSubscriber->dispatchMessage($subscribe);
 
         $yield = new \Thruway\Message\YieldMessage($invocationReqId, (object)[]);
-        $router->onMessage($transportStateHandler, $yield);
+        $sessionStateHandler->dispatchMessage($yield);
 
         for ($i = 3; $i < 6; $i++) {
             $publish = new \Thruway\Message\PublishMessage($i, (object)[], "test.stateful.uri", [$i]);
             $publish->setPublicationId($i);
-            $router->onMessage($transportStateHandler, $publish);
+            $sessionStateHandler->dispatchMessage($publish);
         }
     }
 }

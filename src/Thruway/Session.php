@@ -5,6 +5,9 @@ namespace Thruway;
 
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Common\Utils;
+use Thruway\Event\EventDispatcher;
+use Thruway\Event\LeaveRealmEvent;
+use Thruway\Event\MessageEvent;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\HelloMessage;
@@ -55,6 +58,9 @@ class Session extends AbstractSession
      */
     private $helloMessage;
 
+    /** @var EventDispatcher */
+    public $dispatcher;
+
     /**
      * Constructor
      *
@@ -71,6 +77,7 @@ class Session extends AbstractSession
         $this->sessionStart          = new \DateTime();
         $this->authenticationDetails = null;
         $this->pendingCallCount      = 0;
+        $this->dispatcher            = new EventDispatcher();
 
         if ($manager === null) {
             $manager = new ManagerDummy();
@@ -104,7 +111,7 @@ class Session extends AbstractSession
                 // metaevent
                 $this->getRealm()->publishMeta('wamp.metaevent.session.on_leave', [$this->getMetaInfo()]);
             }
-            $this->realm->leave($this);
+            $this->dispatcher->dispatch("LeaveRealm", new LeaveRealmEvent($this->realm, $this));
             $this->realm = null;
         }
     }
@@ -286,5 +293,15 @@ class Session extends AbstractSession
     public function setHelloMessage($helloMessage)
     {
         $this->helloMessage = $helloMessage;
+    }
+
+    public function dispatchMessage(Message $message) {
+        // this could probably become a constant inside the message itself
+        $r = new \ReflectionClass($message);
+        $shortName = $r->getShortName();
+        if ($message instanceof HelloMessage) {
+            $this->dispatcher->dispatch("Pre" . $shortName . "Event", new MessageEvent($this, $message));
+        }
+        $this->dispatcher->dispatch($shortName . "Event", new MessageEvent($this, $message));
     }
 }

@@ -6,6 +6,8 @@ use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Common\Utils;
+use Thruway\Event\LeaveRealmEvent;
+use Thruway\Event\MessageEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
@@ -18,6 +20,7 @@ use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\WelcomeMessage;
+use Thruway\Module\RealmModuleInterface;
 use Thruway\Role\Broker;
 use Thruway\Role\Dealer;
 use Thruway\Transport\DummyTransport;
@@ -27,8 +30,10 @@ use Thruway\Transport\DummyTransport;
  *
  * @package Thruway
  */
-class Realm
+class Realm implements RealmModuleInterface
 {
+    /** @var RealmModuleInterface[] */
+    private $modules = [];
 
     /**
      * @var string
@@ -91,6 +96,9 @@ class Realm
         $this->roles                 = [$this->broker, $this->dealer];
         $this->authenticationManager = null;
 
+        $this->addModule($this->broker);
+        $this->addModule($this->dealer);
+
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
         $this->setManager(new ManagerDummy());
     }
@@ -103,11 +111,10 @@ class Realm
      */
     public function onMessage(Session $session, Message $msg)
     {
+        throw new \Exception("Should not be here");
 
         if ($msg instanceof GoodByeMessage):
-            Logger::info($this, "Received a GoodBye, so shutting the session down");
-            $session->sendMessage(new GoodbyeMessage(new \stdClass(), "wamp.error.goodbye_and_out"));
-            $session->shutdown();
+            $this->processGoodbye($session, $msg);
         elseif ($session->isAuthenticated()):
             $this->processAuthenticated($session, $msg);
         elseif ($msg instanceof AbortMessage):
@@ -120,6 +127,12 @@ class Realm
             Logger::error($this, "Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
             $session->abort(new \stdClass(), "wamp.error.not_authorized");
         endif;
+    }
+
+    public function processGoodbye(Session $session, Message $msg) {
+        Logger::info($this, "Received a GoodBye, so shutting the session down");
+        $session->sendMessage(new GoodbyeMessage(new \stdClass(), "wamp.error.goodbye_and_out"));
+        $session->shutdown();
     }
 
     /**
@@ -186,49 +199,40 @@ class Realm
             throw new InvalidRealmNameException();
         }
         Logger::debug($this, "Got Hello");
-        // send welcome message
-        if ($this->sessions->contains($session)) {
-            Logger::error($this,
-                "Connection tried to rejoin realm when it is already joined to the realm."
-            );
-            // shutdown session here because it is obvious we are just on a different
-            // page than the client - maybe we should send abort?
-            $session->shutdown();
+
+        $this->sessions->attach($session);
+        $session->setRealm($this);
+
+        $details = $msg->getDetails();
+
+        if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
+            $session->setRoleFeatures($details->roles);
+        }
+
+        $session->setState(Session::STATE_UP); // this should probably be after authentication
+
+        if ($this->getAuthenticationManager() !== null) {
+            try {
+                $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
+            } catch (\Exception $e) {
+
+            }
         } else {
-            $this->sessions->attach($session);
-            $session->setRealm($this);
+            $session->setAuthenticated(true);
 
-            $details = $msg->getDetails();
-
-            if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
-                $session->setRoleFeatures($details->roles);
+            // still set admin on trusted transports
+            $authDetails = AuthenticationDetails::createAnonymous();
+            if ($session->getTransport() !== null && $session->getTransport()->isTrusted()) {
+                $authDetails->addAuthRole('admin');
             }
+            $session->setAuthenticationDetails($authDetails);
 
-            $session->setState(Session::STATE_UP); // this should probably be after authentication
-
-            if ($this->getAuthenticationManager() !== null) {
-                try {
-                    $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
-                } catch (\Exception $e) {
-
-                }
-            } else {
-                $session->setAuthenticated(true);
-
-                // still set admin on trusted transports
-                $authDetails = AuthenticationDetails::createAnonymous();
-                if ($session->getTransport() !== null && $session->getTransport()->isTrusted()) {
-                    $authDetails->addAuthRole('admin');
-                }
-                $session->setAuthenticationDetails($authDetails);
-
-                // the broker and dealer should give us this information
-                $details = new \stdClass();
-                $this->addRolesToDetails($details);
-                $session->sendMessage(
-                    new WelcomeMessage($session->getSessionId(), $details)
-                );
-            }
+            // the broker and dealer should give us this information
+            $details = new \stdClass();
+            $this->addRolesToDetails($details);
+            $session->sendMessage(
+                new WelcomeMessage($session->getSessionId(), $details)
+            );
         }
     }
 
@@ -314,13 +318,15 @@ class Realm
 
         Logger::debug($this, "Leaving realm {$session->getRealm()->getRealmName()}");
 
+        // TODO: move to module
         if ($this->getAuthenticationManager() !== null) {
             $this->getAuthenticationManager()->onSessionClose($session);
         }
 
-        foreach ($this->roles as $role) {
-            $role->leave($session);
-        }
+        // Roles should just listen to the LeaveRealmEvent now
+//        foreach ($this->roles as $role) {
+//            $role->leave($session);
+//        }
         $this->sessions->detach($session);
     }
 
@@ -467,5 +473,49 @@ class Realm
                 $arguments,
                 $argumentsKw
             ));
+    }
+
+    public function addModule(RealmModuleInterface $module) {
+        $this->modules[] = $module;
+    }
+
+    public function addSession(Session $session) {
+        $this->sessions->attach($session);
+        $session->dispatcher->addRealmSubscriber($this);
+        foreach($this->modules as $module) {
+            $session->dispatcher->addRealmSubscriber($module);
+        }
+    }
+
+    public function handleHelloMessage(MessageEvent $event) {
+        $this->processHello($event->session, $event->message);
+    }
+
+    public function handleGoodbyeMessage(MessageEvent $event) {
+        $this->processGoodbye($event->session, $event->message);
+    }
+
+    public function handleAbortMessage(MessageEvent $event) {
+        $this->processAbort($event->session, $event->message);
+    }
+
+    public function handleAuthenticateMessage(MessageEvent $event) {
+        $this->processAuthenticate($event->session, $event->message);
+    }
+
+    public function handleLeaveRealm(LeaveRealmEvent $event) {
+        $this->leave($event->session);
+    }
+
+    /** @return array */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+            "HelloMessageEvent" => ["handleHelloMessage", 10],
+            "GoodbyeMessageEvent" => ["handleGoodbyeMessage", 10],
+            "AbortMessageEvent" => ["handleAbortMessage", 10],
+            "AuthenticateMessageEvent" => ["handleAuthenticateMessage", 10],
+            "LeaveRealm" => ["handleLeaveRealm", 10],
+        ];
     }
 }

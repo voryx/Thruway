@@ -3,10 +3,13 @@
 namespace Thruway\Transport;
 
 use Ratchet\WebSocket\Version\RFC6455\Frame;
-use Thruway\Event\NewConnectionEvent;
+use Thruway\Event\ConnectionCloseEvent;
+use Thruway\Event\ConnectionOpenEvent;
+use Thruway\Event\MessageEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
+use Thruway\Message\HelloMessage;
 use Thruway\Serializer\JsonSerializer;
 use Ratchet\ConnectionInterface;
 use Ratchet\Http\HttpServer;
@@ -15,6 +18,7 @@ use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
 use Ratchet\WebSocket\WsServerInterface;
 use React\Socket\Server as Reactor;
+use Thruway\Session;
 
 /**
  * Class RatchetTransportProvider
@@ -41,7 +45,7 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     /**
      * @var \SplObjectStorage
      */
-    private $transports;
+    private $sessions;
 
     /**
      * Constructor
@@ -53,7 +57,7 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     {
         $this->port       = $port;
         $this->address    = $address;
-        $this->transports = new \SplObjectStorage();
+        $this->sessions = new \SplObjectStorage();
     }
 
     /**
@@ -79,20 +83,22 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
 
         $transport->setTrusted($this->trusted);
 
-        $this->transports->attach($conn, $transport);
+        $session = $this->router->createNewSession($transport);
 
-        $this->router->getEventDispatcher()->dispatch("new_connection", new NewConnectionEvent($transport));
+        $this->sessions->attach($conn, $session);
+
+        $this->router->getEventDispatcher()->dispatch("connection_open", new ConnectionOpenEvent($session));
     }
 
     /** @inheritdoc */
     public function onClose(ConnectionInterface $conn)
     {
-        /* @var $transport RatchetTransport */
-        $transport = $this->transports[$conn];
+        /** @var Session $session */
+        $session = $this->sessions[$conn];
 
-        $this->transports->detach($conn);
+        $this->sessions->detach($conn);
 
-        $this->router->onClose($transport);
+        $this->router->getEventDispatcher()->dispatch('connection_close', new ConnectionCloseEvent($session));
 
         Logger::info($this, "Ratchet has closed");
     }
@@ -108,11 +114,14 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     public function onMessage(ConnectionInterface $from, $msg)
     {
         Logger::debug($this, "onMessage: ({$msg})");
-        /** @var TransportInterface $transport */
-        $transport = $this->transports[$from];
+        /** @var Session $session */
+        $session = $this->sessions[$from];
 
         try {
-            $this->router->onMessage($transport, $transport->getSerializer()->deserialize($msg));
+            //$this->router->onMessage($transport, $transport->getSerializer()->deserialize($msg));
+            $msg = $session->getTransport()->getSerializer()->deserialize($msg);
+
+            $session->dispatchMessage($msg);
         } catch (DeserializationException $e) {
             Logger::alert($this, "Deserialization exception occurred.");
         } catch (\Exception $e) {
@@ -128,7 +137,7 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
      */
     public function onPong(ConnectionInterface $from, Frame $frame)
     {
-        $transport = $this->transports[$from];
+        $transport = $this->sessions[$from];
 
         if (method_exists($transport, 'onPong')) {
             $transport->onPong($frame);
