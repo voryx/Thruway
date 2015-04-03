@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Core\User\User;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Thruway\CallResult;
 use Thruway\ClientSession;
@@ -196,7 +197,9 @@ class WampKernel implements HttpKernelInterface
             //Inject the User object if the UserAware trait in in use
             if (isset($traits['Voryx\ThruwayBundle\DependencyInjection\UserAwareTrait'])) {
                 $user = $this->authenticateAuthId($details->authid);
-                if ($user) $controller->setUser($user);
+                if ($user) {
+                    $controller->setUser($user);
+                }
             }
 
             // Disabled this for now since it conflicts with the deserializeArgs
@@ -360,25 +363,25 @@ class WampKernel implements HttpKernelInterface
                 );
             }
 
+            /* @var $params \ReflectionParameter[] */
             $params = $mapping->getmethod()->getParameters();
 
-            /* @var $param \ReflectionParameter */
-            foreach ($params as $key => $param) {
+            foreach ($args as $key => $arg) {
 
                 $className = null;
-                if ($param->getClass() && $param->getClass()->getName()) {
-                    if (!$param->getClass()->isInstantiable()) {
+                if (isset($params[$key]) && $params[$key]->getClass() && $params[$key]->getClass()->getName()) {
+                    if (!$params[$key]->getClass()->isInstantiable()) {
 
                         throw new \Exception(
-                            "Can't deserialize to '{$param->getClass()->getName()}', because it is not instantiable."
+                            "Can't deserialize to '{$params[$key]->getClass()->getName()}', because it is not instantiable."
                         );
                     }
 
-                    $className          = $param->getClass()->getName();
-                    $deserializedArgs[] = $this->serializer->deserialize(json_encode($args[$key]), $className, "json");
+                    $className          = $params[$key]->getClass()->getName();
+                    $deserializedArgs[] = $this->serializer->deserialize(json_encode($arg), $className, "json");
 
                 } else {
-                    $deserializedArgs[] = $args[$key];
+                    $deserializedArgs[] = $arg;
                 }
 
             }
@@ -395,21 +398,22 @@ class WampKernel implements HttpKernelInterface
 
     /**
      * @param $authid
-     * @return bool | UserInterface
+     * @return UserInterface
      */
     private function authenticateAuthId($authid)
     {
-        if ($authid !== "anonymous") {
-            $config = $this->container->getParameter('voryx_thruway');
+        $user   = null;
+        $config = $this->container->getParameter('voryx_thruway');
 
-            if ($this->container->has($config['user_provider'])) {
-                $user = $this->container->get($config['user_provider'])->findUserByUsernameOrEmail($authid);
+        if ($authid !== "anonymous" && $this->container->has($config['user_provider'])) {
+            $user = $this->container->get($config['user_provider'])->findUserByUsernameOrEmail($authid);
+
+            if ($user) {
                 $this->authenticateUser($user);
-                return $user;
             }
         }
 
-        return false;
+        return $user ?: new User('anonymous', null);
     }
 
     /**

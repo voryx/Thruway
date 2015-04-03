@@ -5,6 +5,7 @@ namespace Voryx\ThruwayBundle\Authentication;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Thruway\Authentication\WampCraUserDbInterface;
+use Thruway\Logging\Logger;
 
 class UserDB implements WampCraUserDbInterface
 {
@@ -30,18 +31,24 @@ class UserDB implements WampCraUserDbInterface
      */
     public function get($authid)
     {
-        $userProvider = $this->container->getParameter('voryx_thruway')['user_provider'];
+        try {
+            $userProvider = $this->container->getParameter('voryx_thruway')['user_provider'];
 
-        if(null === $userProvider) {
-            throw new \Exception('voryx_thruway.user_provider must be set.');
+            if (null === $userProvider) {
+                throw new \Exception('voryx_thruway.user_provider must be set.');
+            }
+
+            $user = $this->container->get($userProvider)->loadUserByUsername($authid);
+            if (!$user) {
+                throw new \Exception("Can't log in, bad credentials");
+            }
+
+            return ["user" => $user->getUsername(), "key" => $user->getPassword(), "salt" => $user->getSalt()];
+
+        } catch (\Exception $e) {
+
+            Logger::error($this, $e->getMessage());
+            return false;
         }
-
-        $user = $this->container->get($userProvider)->loadUserByUsername($authid);
-        if (!$user) {
-            //@todo replace this with an exception that thruway can handle
-            throw new \Exception("Can't log in, bad credentials");
-        }
-
-        return ["user" => $user->getUsername(), "key" => $user->getPassword(), "salt" => $user->getSalt()];
     }
 }
