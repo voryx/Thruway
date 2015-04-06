@@ -4,6 +4,7 @@ namespace Thruway\Transport;
 
 use React\Socket\Connection;
 use React\Socket\Server;
+use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Logging\Logger;
@@ -66,23 +67,14 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
         $session = $this->router->createNewSession($transport);
         $this->sessions->attach($conn, $session);
 
+        $transport->on('message', function ($transport, $msg) use ($session) {
+            $session->dispatchMessage($msg);
+        });
+
         $this->router->getEventDispatcher()->dispatch("connection_open", new ConnectionOpenEvent($session));
 
-        $conn->on('data', [$this, "handleData"]);
+        $conn->on('data', [$transport, "handleData"]);
         $conn->on('close', [$this, "handleClose"]);
-    }
-
-    /**
-     * Handle process reveiced data
-     *
-     * @param mixed $data
-     * @param \React\Socket\Connection $conn
-     */
-    public function handleData($data, Connection $conn)
-    {
-        $session = $this->sessions[$conn];
-
-        $session->handleData($data);
     }
 
     /**
@@ -93,10 +85,10 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
     public function handleClose(Connection $conn)
     {
         Logger::debug($this, "Raw socket closed " . $conn->getRemoteAddress());
-        $transport = $this->sessions[$conn];
+        $session = $this->sessions[$conn];
         $this->sessions->detach($conn);
 
-        $this->router->onClose($transport);
+        $this->router->getEventDispatcher()->dispatch('connection_close', new ConnectionCloseEvent($session));
     }
 
     public function handleRouterStart(RouterStartEvent $event) {

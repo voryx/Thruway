@@ -77,6 +77,10 @@ class RawSocketClientTransportProvider extends AbstractClientTransportProvider
 
         $this->transport->setSerializer(new JsonSerializer());
 
+        $this->transport->on('message', function ($transport, $msg) {
+            $this->client->onMessage($transport, $msg);
+        });
+
         $this->client->onOpen($this->transport);
     }
 

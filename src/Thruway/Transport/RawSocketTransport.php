@@ -2,6 +2,8 @@
 
 namespace Thruway\Transport;
 
+use Evenement\EventEmitterInterface;
+use Evenement\EventEmitterTrait;
 use React\EventLoop\LoopInterface;
 use React\Stream\Stream;
 use Thruway\Logging\Logger;
@@ -16,8 +18,9 @@ use Thruway\Peer\PeerInterface;
  *
  * @package Thruway\Transport
  */
-class RawSocketTransport extends AbstractTransport
+class RawSocketTransport extends AbstractTransport implements EventEmitterInterface
 {
+    use EventEmitterTrait;
 
     /**
      * @var \React\Stream\Stream
@@ -104,7 +107,8 @@ class RawSocketTransport extends AbstractTransport
             if ($bufferLen >= $this->msgLen) {
                 $msg = $this->getSerializer()->deserialize(substr($this->buffer, 0, $this->msgLen));
 
-                $this->peer->onMessage($this, $msg);
+                //$this->peer->onMessage($this, $msg);
+                $this->emit("message", [$this, $msg]);
 
                 if ($bufferLen == $this->msgLen) {
                     $this->buffer = "";

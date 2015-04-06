@@ -18,7 +18,6 @@
             <exclude>tests/Crossbar/CrossbarTest.php</exclude>
 
             <!-- tests that need to be reworked for 0.4 or support hasn't been ported over yet -->
-            <exclude>tests/WAMP/RawSocketTest.php</exclude>
             <exclude>tests/WAMP/SessionMetaTest.php</exclude>
             <exclude>tests/WAMP/AuthorizingRealmTest.php</exclude>
         </testsuite>
