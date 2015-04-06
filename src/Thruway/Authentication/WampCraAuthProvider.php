@@ -92,7 +92,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
             $challengeDetails = array_merge($challengeDetails, $saltInfo);
         }
 
-        return ["CHALLENGE", $challengeDetails];
+        return ["CHALLENGE", (object)$challengeDetails];
 
     }
 

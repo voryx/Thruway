@@ -50,7 +50,7 @@ abstract class AbstractAuthProviderClient extends Client
     public function processHello(array $args)
     {
 
-        return ["CHALLENGE", ["challenge" => new \stdClass(), "challenge_method" => $this->getMethodName()]];
+        return ["CHALLENGE", (object)["challenge" => new \stdClass(), "challenge_method" => $this->getMethodName()]];
     }
 
     /**

@@ -129,6 +129,7 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
 
         if (!$this->readyToAuthenticate()) {
             $session->abort(new \stdClass(), 'thruway.authenticator.not_ready');
+
             return;
         }
 
@@ -181,6 +182,7 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
         // If no authentication providers are registered for this realm send an abort message
         if ($this->realmHasAuthProvider($realm->getRealmName())) {
             $session->abort(new \stdClass(), "wamp.error.not_authorized");
+
             return;
         }
 
@@ -224,19 +226,21 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
 
             if (isset($res[0]) && $res[0] == "FAILURE") {
                 $session->abort(new \stdClass(), "thruway.error.authentication_failure");
+
                 return;
             }
 
             if (count($res) < 2) {
                 $session->abort(new \stdClass(), "thruway.auth.invalid_response_to_hello");
+
                 return;
             }
 
             switch ($res[0]) {
                 case "CHALLENGE":
                     // TODO: validate challenge message
-                    $authMethod = $res[1]['challenge_method'];
-                    $challenge  = $res[1]['challenge'];
+                    $authMethod = $res[1]->challenge_method;
+                    $challenge  = $res[1]->challenge;
 
                     $session->getAuthenticationDetails()->setChallenge($challenge);
                     $session->getAuthenticationDetails()->setChallengeDetails($res[1]);
@@ -313,6 +317,7 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
 
             if (count($res) < 1) {
                 $session->abort(new \stdClass(), "thruway.error.authentication_failure");
+
                 return;
             }
 
