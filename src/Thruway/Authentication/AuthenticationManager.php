@@ -327,27 +327,27 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
             if ($res[0] == "SUCCESS") {
                 $welcomeDetails = new \stdClass();
 
-                if (isset($res[1]) && isset($res[1]['authid'])) {
-                    $session->getAuthenticationDetails()->setAuthId($res[1]['authid']);
+                if (isset($res[1]) && isset($res[1]->authid)) {
+                    $session->getAuthenticationDetails()->setAuthId($res[1]->authid);
                 } else {
                     $session->getAuthenticationDetails()->setAuthId('authenticated_user');
-                    $res[1]['authid'] = $session->getAuthenticationDetails()->getAuthId();
+                    $res[1]->authid = $session->getAuthenticationDetails()->getAuthId();
                 }
 
                 $authRole = 'authenticated_user';
                 $session->getAuthenticationDetails()->addAuthRole($authRole);
-                if (isset($res[1]) && isset($res[1]['authroles'])) {
-                    $session->getAuthenticationDetails()->addAuthRole($res[1]['authroles']);
+                if (isset($res[1]) && isset($res[1]->authroles)) {
+                    $session->getAuthenticationDetails()->addAuthRole($res[1]->authroles);
                 }
 
-                if (isset($res[1]) && isset($res[1]['authrole'])) {
-                    $session->getAuthenticationDetails()->addAuthRole($res[1]['authrole']);
+                if (isset($res[1]) && isset($res[1]->authrole)) {
+                    $session->getAuthenticationDetails()->addAuthRole($res[1]->authrole);
                 }
 
                 if (isset($res[1])) {
-                    $res[1]['authrole']  = $session->getAuthenticationDetails()->getAuthRole();
-                    $res[1]['authroles'] = $session->getAuthenticationDetails()->getAuthRoles();
-                    $res[1]['authid']    = $session->getAuthenticationDetails()->getAuthId();
+                    $res[1]->authrole  = $session->getAuthenticationDetails()->getAuthRole();
+                    $res[1]->authroles = $session->getAuthenticationDetails()->getAuthRoles();
+                    $res[1]->authid    = $session->getAuthenticationDetails()->getAuthId();
                     if (is_array($res[1])) {
                         foreach ($res[1] as $k => $v) {
                             $welcomeDetails->$k = $v;
