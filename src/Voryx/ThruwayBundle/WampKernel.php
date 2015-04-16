@@ -405,15 +405,14 @@ class WampKernel implements HttpKernelInterface
         $user   = null;
         $config = $this->container->getParameter('voryx_thruway');
 
-        if ($authid !== "anonymous" && $this->container->has($config['user_provider'])) {
-            $user = $this->container->get($config['user_provider'])->findUserByUsernameOrEmail($authid);
-
-            if ($user) {
-                $this->authenticateUser($user);
-            }
+        if ($this->container->has($config['user_provider'])) {
+            $user = $this->container->get($config['user_provider'])->loadUserByUsername($authid);
         }
 
-        return $user ?: new User('anonymous', null);
+        $user = $user ?: new User($authid, null);
+        $this->authenticateUser($user);
+
+        return $user;
     }
 
     /**
