@@ -48,7 +48,7 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
                 $url   = $config['url'];
             }
 
-            $transport = new PawlTransportProvider($uri);
+            $transport = new PawlTransportProvider($url);
             $client    = new Client($realm, $loop);
 
             $client->addTransportProvider($transport);
