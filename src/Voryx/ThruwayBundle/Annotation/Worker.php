@@ -9,7 +9,7 @@ use Doctrine\Common\Annotations\Annotation\Required;
  *
  * How to use:
  *   '@Worker("worker_name")'
- *   '@Worker("worker_name", realm = "realm1", uri = "ws://127.0.0.1:8080")'
+ *   '@Worker("worker_name", realm = "realm1", url = "ws://127.0.0.1:8080")'
  *   '@Worker("worker_name", maxProcesses = 10)'
  *
  * @Annotation
@@ -28,7 +28,7 @@ class Worker implements AnnotationInterface
 
     protected $realm;
 
-    protected $uri;
+    protected $url;
 
     /**
      * @param $options
@@ -75,9 +75,9 @@ class Worker implements AnnotationInterface
     /**
      * @return mixed
      */
-    public function getUri()
+    public function getUrl()
     {
-        return $this->uri;
+        return $this->url;
     }
 
 

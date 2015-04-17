@@ -42,10 +42,10 @@ class ThruwayWorkerCommand extends ContainerAwareCommand
 
             if ($workerAnnotation) {
                 $realm = $workerAnnotation->getRealm() ?: $config['realm'];
-                $uri   = $workerAnnotation->getUri() ?: $config['uri'];
+                $url   = $workerAnnotation->getUrl() ?: $config['url'];
             } else {
                 $realm = $config['realm'];
-                $uri   = $config['uri'];
+                $url   = $config['url'];
             }
 
             $transport = new PawlTransportProvider($uri);
