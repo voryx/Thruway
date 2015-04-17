@@ -37,7 +37,7 @@ class ThruwayCongestionManagerCommand extends ContainerAwareCommand
             $config    = $this->getContainer()->getParameter('voryx_thruway');
             $loop      = $this->getContainer()->get('voryx.thruway.loop');
             $client    = new CongestionManager($config['realm'], $loop, $this->getContainer());
-            $transport = new PawlTransportProvider($config['trusted_uri']);
+            $transport = new PawlTransportProvider($config['trusted_url']);
 
             $client->addTransportProvider($transport);
             $client->setAuthId('trusted_worker');

@@ -121,7 +121,7 @@ class ThruwayProcessCommand extends ContainerAwareCommand
             $loop = $this->getContainer()->get('voryx.thruway.loop');
 
             $this->processManager = new ProcessManager("process_manager", $loop);
-            $this->processManager->addTransportProvider(new PawlTransportProvider($this->config['trusted_uri']));
+            $this->processManager->addTransportProvider(new PawlTransportProvider($this->config['trusted_url']));
 
             $this->output->writeln("Starting Thruway Workers...");
             $this->output->writeln("The environment is: {$env}");
@@ -158,7 +158,7 @@ class ThruwayProcessCommand extends ContainerAwareCommand
         $result = null;
         $realm  = 'process_manager';
 
-        $connection = new Connection(['realm' => $realm, 'url' => $this->config['trusted_uri'], "max_retries" => 0]);
+        $connection = new Connection(['realm' => $realm, 'url' => $this->config['trusted_url'], "max_retries" => 0]);
         $connection->on('open', function (ClientSession $session) use ($uri, $args, $connection, &$result) {
             $session->call($uri, $args)->then(
                 function ($res) use ($connection, &$result) {

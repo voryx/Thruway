@@ -24,7 +24,7 @@ class VoryxThruwayExtension extends Extension
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = new Configuration();
-        $config        = $this->processConfiguration($configuration, $configs);
+        $config = $this->processConfiguration($configuration, $configs);
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
@@ -51,9 +51,15 @@ class VoryxThruwayExtension extends Extension
             );
         }
 
-        if (!isset($config['uri'])) {
+        if (isset($config['uri'])) {
             throw new \InvalidArgumentException(
-                'The "uri" option must be set within voryx_thruway'
+                'The "uri" config option has been deprecated, please use "url" instead'
+            );
+        }
+
+        if (isset($config['trusted_uri'])) {
+            throw new \InvalidArgumentException(
+                'The "trusted_uri" config option has been deprecated, please use "trusted_url" instead'
             );
         }
 

@@ -163,7 +163,7 @@ class ClientManager
         $client = new Client($this->config['realm']);
         $client->setAttemptRetry(false);
         $client->addTransportProvider(
-            new PawlTransportProvider($this->config['trusted_uri'])
+            new PawlTransportProvider($this->config['trusted_url'])
         );
 
         return $client;
