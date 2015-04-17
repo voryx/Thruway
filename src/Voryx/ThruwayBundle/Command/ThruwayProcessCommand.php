@@ -129,6 +129,9 @@ class ThruwayProcessCommand extends ContainerAwareCommand
             //Add processes for Symfony Command Workers
             $this->addSymfonyCmdWorkers($env);
 
+            //Add external guest Workers
+            $this->addShellCmdWorkers();
+
             //Add processes for regular Workers defined by annotations
             $this->addWorkers($env);
 
@@ -274,10 +277,33 @@ class ThruwayProcessCommand extends ContainerAwareCommand
                 continue;
             }
 
-            $this->output->writeln("Adding onetime worker: {$workerName}");
+            $this->output->writeln("Adding onetime Symfony worker: {$workerName}");
 
             $cmd     = "{$phpBinary} {$this->getContainer()->get('kernel')->getRootDir()}/console --env={$env} {$command}";
             $command = new Command($workerName, $cmd);
+
+            $this->processManager->addCommand($command);
+
+        }
+    }
+
+
+    /**
+     * Add regular shell command workers.
+     */
+    protected function addShellCmdWorkers()
+    {
+
+        $shellWorkers = $this->config['workers']['shell_commands'];
+
+        foreach ($shellWorkers as $workerName => $command) {
+
+            if (!$command) {
+                continue;
+            }
+
+            $this->output->writeln("Adding onetime shell worker: {$workerName}");
+            $command = new Command($workerName, $command);
 
             $this->processManager->addCommand($command);
 
