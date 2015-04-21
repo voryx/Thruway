@@ -3,9 +3,11 @@
 namespace Voryx\ThruwayBundle\Client;
 
 
+use Psr\Log\NullLogger;
 use React\Promise\Deferred;
 use Symfony\Component\DependencyInjection\Container;
 use Thruway\ClientSession;
+use Thruway\Logging\Logger;
 use Thruway\Peer\Client;
 use Thruway\Transport\PawlTransportProvider;
 use Thruway\Transport\TransportInterface;
@@ -66,9 +68,19 @@ class ClientManager
             return $session->publish($topicName, $arguments, $argumentsKw, $options);
         }
 
+	if (is_array($options)) {
+            $options = (object)$options;
+        }
+
+        if (!is_object($options)) {
+            $options = (object)[];
+        }
+        
+        Logger::set(new NullLogger());
+
         //If we don't already have a long running client, get a short lived one.
         $client                 = $this->getShortClient();
-        $options['acknowledge'] = true;
+        $options->acknowledge   = true;
         $deferrer               = new Deferred();
 
         $client->on("open", function (ClientSession $session, TransportInterface $transport) use (
