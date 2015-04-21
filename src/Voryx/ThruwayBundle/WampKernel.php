@@ -228,8 +228,9 @@ class WampKernel implements HttpKernelInterface
 
         } catch (\Exception $e) {
             $this->cleanup();
-            $this->container->get('logger')->critical($e->getMessage());
-            throw new \Exception("Unable to make the call: {$mapping->getAnnotation()->getName()}");
+            $message = "Unable to make the call: {$mapping->getAnnotation()->getName()} \n Message:  {$e->getMessage()}";
+            $this->container->get('logger')->critical($message);
+            throw new \Exception($message);
         }
     }
 
@@ -273,8 +274,9 @@ class WampKernel implements HttpKernelInterface
 
         } catch (\Exception $e) {
             $this->cleanup();
-            $this->container->get('logger')->critical($e->getMessage());
-            throw new \Exception("Unable to publish to: {$mapping->getAnnotation()->getName()}");
+            $message = "Unable to publish to: {$mapping->getAnnotation()->getName()} \n Message:  {$e->getMessage()}";
+            $this->container->get('logger')->critical($message);
+            throw new \Exception($message);
         }
     }
 
@@ -498,8 +500,17 @@ class WampKernel implements HttpKernelInterface
 
         //Clear out any stuff that doctrine has cached
         if ($this->container->has('doctrine')) {
+            if (!$this->container->get('doctrine')->getManager()->isOpen()) {
+                $this->container->get('doctrine')->resetManager();
+                $config = $this->container->getParameter('voryx_thruway');
+
+                if ($this->container->has($config['user_provider'])) {
+                    $this->container->set($config['user_provider'], null);
+                }
+            }
             $this->container->get('doctrine')->getManager()->clear();
         }
+
 
 //        //Remove any listeners for the kernel.controller event
 //        $listeners = $this->dispatcher->getListeners("kernel.controller");
