@@ -205,16 +205,21 @@ class Session extends AbstractSession
         if ($this->getAuthenticationDetails() instanceof AuthenticationDetails) {
             $authId     = $this->getAuthenticationDetails()->getAuthId();
             $authMethod = $this->getAuthenticationDetails()->getAuthMethod();
+            $authRole   = $this->getAuthenticationDetails()->getAuthRole();
+            $authRoles  = $this->getAuthenticationDetails()->getAuthRoles();
         } else {
             $authId     = "anonymous";
             $authMethod = "anonymous";
+            $authRole   = "anonymous";
+            $authRoles  = [];
         }
 
         return [
             "realm"         => $this->getRealm()->getRealmName(),
             "authprovider"  => null,
             "authid"        => $authId,
-            "authrole"      => "none",
+            "authrole"      => $authRole,
+            "authroles"     => $authRoles,
             "authmethod"    => $authMethod,
             "session"       => $this->getSessionId(),
             "role_features" => $this->getRoleFeatures()
