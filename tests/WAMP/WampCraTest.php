@@ -63,9 +63,9 @@ class WampCraTest extends PHPUnit_Framework_TestCase
         $conn = new \Thruway\Connection($this->getOptions());
 
         $conn->on('open', function (ClientSession $session, $transport, $details) {
+            $session->close();
             $this->_result = "logged in";
             $this->_authid = $details->authid;
-            $session->close();
         });
 
         $conn->on('error', function ($reason) {

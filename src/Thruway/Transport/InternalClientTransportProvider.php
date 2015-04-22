@@ -6,6 +6,7 @@ namespace Thruway\Transport;
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Event\RouterStopEvent;
+use Thruway\Message\Message;
 use Thruway\Peer\ClientInterface;
 use Thruway\Session;
 
@@ -45,13 +46,14 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
 
         // create a new transport for the client side to use
         $clientTransport = new InternalClientTransport(function ($msg) use (&$session) {
-            $session->dispatchMessage($msg);
+            $session->dispatchMessage(Message::createMessageFromArray(json_decode(json_encode($msg))));
         }, $this->loop);
 
 
         // create a new transport for the router side to use
         $transport = new InternalClientTransport(function ($msg) use ($clientTransport) {
-            $this->internalClient->onMessage($clientTransport, $msg);
+            $this->internalClient->onMessage($clientTransport,
+                Message::createMessageFromArray(json_decode(json_encode($msg))));
         }, $this->loop);
         $transport->setTrusted($this->trusted);
 
