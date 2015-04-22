@@ -5,6 +5,7 @@ namespace Thruway\Transport;
 use React\EventLoop\LoopInterface;
 use React\SocketClient\Connector;
 use React\Stream\Stream;
+use Thruway\Logging\Logger;
 use Thruway\Peer\AbstractPeer;
 use Thruway\Serializer\JsonSerializer;
 
@@ -105,4 +106,17 @@ class RawSocketClientTransportProvider extends AbstractTransportProvider
 
         $this->peer->onClose($this->transport);
     }
+
+    /**
+     * Shut down the transport provider
+     *
+     * @param bool $gracefully
+     *
+     */
+    public function stop($gracefully = true)
+    {
+        Logger::alert($this, "stop not implemented on RawSocketClientTransportProvider");
+    }
+
+
 }

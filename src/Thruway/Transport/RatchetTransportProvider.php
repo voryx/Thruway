@@ -194,4 +194,27 @@ class RatchetTransportProvider extends AbstractTransportProvider implements Mess
         }
     }
 
+    /**
+     * Shut down the transport provider
+     *
+     * @param bool $gracefully
+     *
+     */
+    public function stop($gracefully = true)
+    {
+        // stop listening
+        $this->server->socket->shutdown();
+
+        if ($gracefully) {
+            Logger::alert($this, "Gracefulness in stopping not implemented in RatchetTransportProvider");
+        }
+
+        // shutdown other sockets
+        /** @var RatchetTransport $transport */
+        foreach ($this->transports as $transport) {
+            $transport->close();
+        }
+    }
+
+
 }

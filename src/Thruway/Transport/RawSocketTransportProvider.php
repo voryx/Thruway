@@ -36,6 +36,11 @@ class RawSocketTransportProvider extends AbstractTransportProvider
     private $transports;
 
     /**
+     * @var Server
+     */
+    private $server;
+
+    /**
      * Constructor
      *
      * @param string $address
@@ -65,6 +70,8 @@ class RawSocketTransportProvider extends AbstractTransportProvider
         $socket = new Server($loop);
         $socket->on('connection', [$this, "handleConnection"]);
         $socket->listen($this->port, $this->address);
+
+        $this->server = $socket;
     }
 
     /**
@@ -116,5 +123,28 @@ class RawSocketTransportProvider extends AbstractTransportProvider
 
         $this->peer->onClose($transport);
     }
+
+    /**
+     * Shut down the transport provider
+     *
+     * @param bool $gracefully
+     *
+     */
+    public function stop($gracefully = true)
+    {
+        // stop listening
+        $this->server->shutdown();
+
+        if ($gracefully) {
+            Logger::alert($this, "Grace in stopping not implemented in RawSocketTransportProvider");
+        }
+
+        // shutdown other sockets
+        /** @var RatchetTransport $transport */
+        foreach ($this->transports as $transport) {
+            $transport->close();
+        }
+    }
+
 
 }

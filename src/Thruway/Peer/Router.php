@@ -431,5 +431,26 @@ class Router extends AbstractPeer implements RouterInterface
         $this->addTransportProvider($internalTransport);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function stop($gracefully = true)
+    {
+        foreach ($this->transportProviders as $transportProvider) {
+            $transportProvider->stop($gracefully);
+        }
+    }
+
+    public function removeInternalClient($client) {
+
+        foreach ($this->transportProviders as $key => $transportProvider) {
+            if ($transportProvider instanceof InternalClientTransportProvider) {
+                if ($transportProvider->getInternalClient() === $client) {
+                    $transportProvider->stop();
+                    unset($this->transportProviders[$key]);
+                }
+            }
+        }
+    }
 }
 

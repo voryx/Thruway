@@ -41,4 +41,11 @@ interface TransportProviderInterface
      */
     public function setTrusted($trusted);
 
+    /**
+     * Shut down the transport provider
+     *
+     * @param bool $gracefully
+     *
+     */
+    public function stop($gracefully = true);
 }

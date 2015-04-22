@@ -4,6 +4,7 @@ namespace Thruway\Transport;
 
 
 use React\EventLoop\LoopInterface;
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Peer\AbstractPeer;
 
@@ -24,5 +25,17 @@ class DummyTransportProvider extends AbstractTransportProvider
     public function startTransportProvider(AbstractPeer $peer, LoopInterface $loop)
     {
     }
+
+    /**
+     * Shut down the transport provider
+     *
+     * @param bool $gracefully
+     *
+     */
+    public function stop($gracefully = true)
+    {
+        Logger::alert($this, "stop not implemented on DummyTransportProvider");
+    }
+
 
 }

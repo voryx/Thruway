@@ -57,4 +57,17 @@ interface RouterInterface
      */
     public function start();
 
+    /**
+     * This is to stop the router.
+     *
+     * Note that this should bring down all connections and timers associated with the router
+     * which will cause the loop to exit once there is nothing being watched.
+     *
+     * If there are other things added to the loop through clients or otherwise, the loop
+     * will continue running.
+     *
+     * @param bool $gracefully
+     */
+    public function stop($gracefully = true);
+
 }

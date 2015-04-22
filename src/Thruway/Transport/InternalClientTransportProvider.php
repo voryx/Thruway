@@ -3,9 +3,12 @@
 namespace Thruway\Transport;
 
 
+use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
 use Thruway\Peer\AbstractPeer;
 use React\EventLoop\LoopInterface;
+use Thruway\Peer\Client;
+use Thruway\Peer\ClientInterface;
 
 /**
  * Class InternalClientTransportProvider
@@ -16,20 +19,23 @@ class InternalClientTransportProvider extends AbstractTransportProvider
 {
 
     /**
-     * @var \Thruway\Peer\AbstractPeer
+     * @var \Thruway\Peer\ClientInterface
      */
     private $internalClient;
 
     /**
      * Constructor
      *
-     * @param \Thruway\Peer\AbstractPeer $internalClient
+     * @param \Thruway\Peer\ClientInterface $internalClient
      */
-    public function __construct(AbstractPeer $internalClient)
+    public function __construct(ClientInterface $internalClient)
     {
         $this->internalClient = $internalClient;
         $this->manager        = new ManagerDummy();
         $this->trusted        = true;
+
+        // internal clients shouldn't retry if they are killed
+        $internalClient->setAttemptRetry(false);
 
         $this->internalClient->addTransportProvider(new DummyTransportProvider());
 
@@ -69,5 +75,26 @@ class InternalClientTransportProvider extends AbstractTransportProvider
         // tell the internal client to start up
         $this->internalClient->start(false);
     }
+
+    /**
+     * Shut down the transport provider
+     *
+     * @param bool $gracefully
+     *
+     */
+    public function stop($gracefully = true)
+    {
+        $this->internalClient->onClose("transport stopped");
+        Logger::alert($this, "stop not implemented on InternalClientTransportProvider");
+    }
+
+    /**
+     * @return ClientInterface
+     */
+    public function getInternalClient()
+    {
+        return $this->internalClient;
+    }
+
 
 }
