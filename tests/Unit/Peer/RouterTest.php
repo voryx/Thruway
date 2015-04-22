@@ -1126,4 +1126,100 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             $sessionStateHandler->dispatchMessage($publish);
         }
     }
+
+    public function testRouterStop() {
+        $loop = \React\EventLoop\Factory::create();
+        $router = new \Thruway\Peer\Router($loop);
+        $router->addTransportProvider(new \Thruway\Transport\RatchetTransportProvider("127.0.0.1", 18080));
+        $loop->addTimer(.1, function () use ($router) {
+            $router->stop();
+            $this->_result = "Stop was called";
+        });
+        $router->start();
+        // if the execution makes it here, stop worked
+        $this->assertEquals("Stop was called", $this->_result);
+    }
+
+    public function testRouterStopWithLiveSession() {
+        $loop = \React\EventLoop\Factory::create();
+        $router = new \Thruway\Peer\Router($loop);
+        $router->addTransportProvider(new \Thruway\Transport\RatchetTransportProvider("127.0.0.1", 18080));
+        $client = new \Thruway\Peer\Client("some_realm", $loop);
+        $client->on('open', function () use ($loop, $router) {
+            $router->stop();
+            $this->_result = "Stop was called";
+        });
+        $client->setAttemptRetry(false); // we are running on the same loop so if we allow retry, we will hang
+        $client->addTransportProvider(new \Thruway\Transport\PawlTransportProvider("ws://127.0.0.1:18080"));
+        $loop->addTimer(0.1, function () use ($client) {
+            $client->start(false); // don't start loop yet
+        });
+        $router->start();
+        // if the execution makes it here, stop worked
+        $this->assertEquals("Stop was called", $this->_result);
+    }
+    public function testRouterStopWithRawSocketLiveSession() {
+        $loop = \React\EventLoop\Factory::create();
+        $router = new \Thruway\Peer\Router($loop);
+        $router->addTransportProvider(new \Thruway\Transport\RawSocketTransportProvider("127.0.0.1", 18080));
+        $client = new \Thruway\Peer\Client("some_realm", $loop);
+        $client->on('open', function () use ($loop, $router) {
+            $router->stop();
+            $this->_result = "Stop was called";
+        });
+        $client->setAttemptRetry(false); // we are running on the same loop so if we allow retry, we will hang
+        $client->addTransportProvider(new \Thruway\Transport\RawSocketClientTransportProvider("127.0.0.1", 18080));
+        $loop->addTimer(0.1, function () use ($client) {
+            $client->start(false); // don't start loop yet
+        });
+        $router->start();
+        // if the execution makes it here, stop worked
+        $this->assertEquals("Stop was called", $this->_result);
+    }
+    public function testRouterStopWithInternalClientLiveSession() {
+        $loop = \React\EventLoop\Factory::create();
+        $router = new \Thruway\Peer\Router($loop);
+        // just so we have another transport
+        $router->addTransportProvider(new \Thruway\Transport\RawSocketTransportProvider("127.0.0.1", 18080));
+        $client = new \Thruway\Peer\Client("some_realm", $loop);
+        $client->on('open', function () use ($loop, $router) {
+            $router->stop();
+            $this->_result = "Stop was called";
+        });
+        $client->setAttemptRetry(false); // we are running on the same loop so if we allow retry, we will hang
+        $router->addInternalClient($client);
+        $loop->addTimer(0.1, function () use ($client) {
+            $client->start(false); // don't start loop yet
+        });
+        $router->start();
+        // if the execution makes it here, stop worked
+        $this->assertEquals("Stop was called", $this->_result);
+    }
+
+    // This came over from 0.3 but things work differently now
+    // still should implement removeModule or something for the same type of thing
+//    public function testRemoveInternalClient() {
+//        $clientRemovalDeferred = new \React\Promise\Deferred();
+//        $loop = \React\EventLoop\Factory::create();
+//        $router = new \Thruway\Peer\Router($loop);
+//        $client = new \Thruway\Peer\Client("some_realm", $loop);
+//        $client->on('open', function (\Thruway\ClientSession $session, $transport, $details) use ($client, $loop, $router) {
+//            $session->register('internal_echo', function ($args) {
+//                return $args;
+//            })->then(function () use ($client, $loop, $router) {
+//                $loop->addTimer(0.001, function () use ($client, $router) {
+//                    $router->removeInternalClient($client);
+//                });
+//            });
+//        });
+//        $client->on('close', function () use ($router) {
+//            $this->_result = "Client closed";
+//            $router->stop();
+//        });
+//        $router->addInternalClient($client);
+//        // setup a real listening thing
+//        $router->addTransportProvider(new \Thruway\Transport\RatchetTransportProvider());
+//        $router->start();
+//        $this->assertEquals("Client closed", $this->_result);
+//    }
 }

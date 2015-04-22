@@ -7,6 +7,7 @@ use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\MessageEvent;
 use Thruway\Event\RouterStartEvent;
+use Thruway\Event\RouterStopEvent;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Thruway\Message\HelloMessage;
@@ -157,10 +158,21 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
         $this->server = new IoServer(new HttpServer($ws), $socket, $this->loop);
     }
 
+    public function handleRouterStop(RouterStopEvent $event) {
+        if ($this->server) {
+            $this->server->socket->shutdown();
+        }
+
+        foreach ($this->sessions as $k) {
+            $this->sessions[$k]->shutdown();
+        }
+    }
+
     public static function getSubscribedEvents()
     {
         return [
-            "router.start" => ["handleRouterStart", 10]
+            "router.start" => ["handleRouterStart", 10],
+            "router.stop" => ["handleRouterStop", 10]
         ];
     }
 }

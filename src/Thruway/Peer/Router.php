@@ -2,15 +2,16 @@
 
 namespace Thruway\Peer;
 
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Common\Utils;
 use Thruway\Event\ConnectionCloseEvent;
+use Thruway\Event\EventDispatcher;
+use Thruway\Event\EventDispatcherInterface;
 use Thruway\Event\EventSubscriberInterface;
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
+use Thruway\Event\RouterStopEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Logging\Logger;
@@ -165,6 +166,14 @@ class Router implements RouterInterface, EventSubscriberInterface
             Logger::info($this, "Starting loop");
             $this->loop->run();
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function stop($gracefully = true)
+    {
+        $this->getEventDispatcher()->dispatch('router.stop', new RouterStopEvent());
     }
 
     /**

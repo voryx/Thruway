@@ -5,6 +5,7 @@ namespace Thruway\Transport;
 
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
+use Thruway\Event\RouterStopEvent;
 use Thruway\Peer\ClientInterface;
 use Thruway\Session;
 
@@ -19,6 +20,11 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
      * @var \Thruway\Peer\AbstractPeer
      */
     private $internalClient;
+
+    /**
+     * @var Session
+     */
+    private $session;
 
     /**
      * Constructor
@@ -50,6 +56,7 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
         $transport->setTrusted($this->trusted);
 
         $session = $this->router->createNewSession($transport);
+        $this->session = $session;
 
         // connect the transport to the Router/Peer
         $this->router->getEventDispatcher()->dispatch("connection_open", new ConnectionOpenEvent($session));
@@ -57,14 +64,24 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
         // open the client side
         $this->internalClient->onOpen($clientTransport);
 
+        // internal client shouldn't retry
+        $this->internalClient->setAttemptRetry(false);
+
         // tell the internal client to start up
         $this->internalClient->start(false);
+    }
+
+    public function handleRouterStop(RouterStopEvent $event) {
+        if ($this->session) {
+            $this->session->shutdown();
+        }
     }
 
     public static function getSubscribedEvents()
     {
         return [
-            "router.start" => ['handleRouterStart', 10]
+            "router.start" => ['handleRouterStart', 10],
+            "router.stop" => ['handleRouterStop', 10]
         ];
     }
 

@@ -7,7 +7,7 @@ class WampErrorExceptionTest extends PHPUnit_Framework_TestCase {
 
         $router = new \Thruway\Peer\Router($loop);
 
-        $router->addTransportProvider(new \Thruway\Transport\RawSocketTransportProvider());
+        //$router->addTransportProvider(new \Thruway\Transport\RawSocketTransportProvider());
 
         $client = new \Thruway\Peer\Client("realm1", $loop);
         $client->setAttemptRetry(false);

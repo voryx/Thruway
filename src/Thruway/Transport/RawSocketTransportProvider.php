@@ -7,6 +7,7 @@ use React\Socket\Server;
 use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
+use Thruway\Event\RouterStopEvent;
 use Thruway\Logging\Logger;
 use Thruway\Serializer\JsonSerializer;
 
@@ -34,6 +35,11 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
      * @var \SplObjectStorage
      */
     private $sessions;
+
+    /**
+     * @var Server
+     */
+    private $server;
 
     /**
      * Constructor
@@ -98,12 +104,25 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
         Logger::info($this, "Raw socket listening on " . $this->address . ":" . $this->port);
 
         $socket->listen($this->port, $this->address);
+
+        $this->server = $socket;
+    }
+
+    public function handleRouterStop(RouterStopEvent $event) {
+        if ($this->server) {
+            $this->server->shutdown();
+        }
+
+        foreach ($this->sessions as $k) {
+            $this->sessions[$k]->shutdown();
+        }
     }
 
     public static function getSubscribedEvents()
     {
         return [
-            "router.start" => ['handleRouterStart', 10]
+            "router.start" => ['handleRouterStart', 10],
+            "router.stop" => ['handleRouterStop', 10]
         ];
     }
 
