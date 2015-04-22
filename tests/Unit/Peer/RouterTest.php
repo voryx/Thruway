@@ -1256,7 +1256,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $router->addInternalClient($client);
 
         // setup a real listening thing
-        $router->addTransportProvider(new \Thruway\Transport\RatchetTransportProvider());
+        $router->addTransportProvider(new \Thruway\Transport\RatchetTransportProvider('127.0.0.1', 18080));
 
         $router->start();
 

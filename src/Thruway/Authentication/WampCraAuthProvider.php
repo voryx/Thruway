@@ -4,6 +4,7 @@ namespace Thruway\Authentication;
 
 
 use Thruway\Message\HelloMessage;
+use Thruway\Message\Message;
 
 /**
  * Class WampCraAuthProvider
@@ -40,6 +41,16 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
         $helloMsg    = array_shift($args);
         $sessionInfo = array_shift($args);
 
+        if (!is_array($helloMsg)) {
+            return ["ERROR"];
+        }
+
+        if (!is_object($sessionInfo)) {
+            return ["ERROR"];
+        }
+
+        $helloMsg = Message::createMessageFromArray($helloMsg);
+
         if (!$helloMsg instanceof HelloMessage
             || !$sessionInfo
             || !isset($helloMsg->getDetails()->authid)
@@ -62,7 +73,11 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
         $authProvider = "userdb";
         $now          = new \DateTime();
         $timeStamp    = $now->format($now::ISO8601);
-        $sessionId    = $sessionInfo['sessionId'];
+        if (!isset($sessionInfo->sessionId)) {
+            return ["ERROR"];
+        }
+        $sessionId    = $sessionInfo->sessionId;
+
 
         $challenge = [
             "authid"       => $authid,

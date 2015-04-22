@@ -66,7 +66,8 @@ class InternalClientTransport extends AbstractTransport
             throw new \Exception("You must set the farPeerTransport on internal client transports");
         }
 
-        $this->farPeer->onMessage($this->getFarPeerTransport(), $msg);
+        $this->farPeer->onMessage($this->getFarPeerTransport(),
+            Message::createMessageFromArray(json_decode(json_encode($msg))));
     }
 
     /**

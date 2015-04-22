@@ -343,7 +343,7 @@ class AuthenticationManager extends Module implements AuthenticationManagerInter
                     $res[1]->authrole  = $session->getAuthenticationDetails()->getAuthRole();
                     $res[1]->authroles = $session->getAuthenticationDetails()->getAuthRoles();
                     $res[1]->authid    = $session->getAuthenticationDetails()->getAuthId();
-                    if (is_array($res[1])) {
+                    if (is_object($res[1])) {
                         foreach ($res[1] as $k => $v) {
                             $welcomeDetails->$k = $v;
                         }
