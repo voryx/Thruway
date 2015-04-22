@@ -7,6 +7,7 @@ use React\Promise\Promise;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
 use Thruway\Common\Utils;
+use Thruway\Exception\WampErrorException;
 use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\InvocationMessage;
@@ -156,6 +157,14 @@ class Callee extends AbstractRole
                             $this->processResultAsArray($results, $msg, $session);
                         }
 
+                    } catch (WampErrorException $e) {
+                        $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+                        $errorMsg->setErrorURI($e->getErrorUri());
+                        $errorMsg->setArguments($e->getArguments());
+                        $errorMsg->setArgumentsKw($e->getArgumentsKw());
+                        $errorMsg->setDetails($e->getDetails());
+
+                        $session->sendMessage($errorMsg);
                     } catch (\Exception $e) {
                         $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
                         $errorMsg->setErrorURI($registration['procedure_name'] . '.error');

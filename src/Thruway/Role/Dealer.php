@@ -357,6 +357,9 @@ class Dealer extends AbstractRole
         $errorMsg->setArguments($msg->getArguments());
         $errorMsg->setArgumentsKw($msg->getArgumentsKw());
 
+        // not sure if this detail should pass through
+        $errorMsg->setDetails($msg->getDetails());
+
         $call->getCallerSession()->sendMessage($errorMsg);
     }
 
