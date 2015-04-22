@@ -66,4 +66,10 @@ interface ClientInterface extends PeerInterface
      */
     public function start($startLoop = true);
 
+    /**
+     * Set attempt retry
+     *
+     * @param boolean $attemptRetry
+     */
+    public function setAttemptRetry($attemptRetry);
 }
