@@ -24,29 +24,19 @@ use Thruway\Module\RealmModuleInterface;
 class RealmManager extends Module\RouterModule implements RealmModuleInterface
 {
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $realms;
 
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
+    /** @var \Thruway\Manager\ManagerInterface */
     private $manager;
 
-    /**
-     * @var boolean
-     */
+    /** @var boolean */
     private $allowRealmAutocreate;
 
-    /**
-     * @var \Thruway\Authentication\AuthenticationManagerInterface
-     */
+    /** @var \Thruway\Authentication\AuthenticationManagerInterface */
     private $defaultAuthenticationManager;
 
-    /**
-     * @var AuthorizationManagerInterface
-     */
+    /** @var AuthorizationManagerInterface */
     private $defaultAuthorizationManager;
 
     /**
@@ -64,6 +54,75 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     }
 
     /**
+     * Events on the Router's dispatcher
+     *
+     * @return array
+     */
+    public static function getSubscribedEvents()
+    {
+        return [
+          "connection_open"  => ['handleConnectionOpen', 10],
+          "connection_close" => ['handleConnectionClose', 10]
+        ];
+    }
+
+    /**
+     * Events on the Session's dispatcher
+     *
+     * @return array
+     */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+          "PreHelloMessageEvent" => ["handlePreHelloMessage", 10]
+        ];
+    }
+
+    /**
+     * @param \Thruway\Event\ConnectionOpenEvent $event
+     */
+    public function handleConnectionOpen(ConnectionOpenEvent $event)
+    {
+        $event->session->dispatcher->addRealmSubscriber($this);
+    }
+
+    /**
+     * @param \Thruway\Event\ConnectionCloseEvent $event
+     */
+    public function handleConnectionClose(ConnectionCloseEvent $event)
+    {
+
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     * @throws \Exception
+     */
+    public function handlePreHelloMessage(MessageEvent $event)
+    {
+        Logger::info($this, "Got prehello...");
+        /** @var HelloMessage $msg */
+        $msg     = $event->message;
+        $session = $event->session;
+
+        $session->setHelloMessage($msg);
+        try {
+            $realm = $this->getRealm($msg->getRealm());
+
+            $realm->addSession($session);
+        } catch (\Exception $e) {
+            // TODO: Test this
+            $errorUri    = "wamp.error.unknown";
+            $description = $e->getMessage();
+            if ($e instanceof InvalidRealmNameException || $e instanceof RealmNotFoundException) {
+                $errorUri = "wamp.error.no_such_realm";
+            }
+            $session->abort(['description' => $description], $errorUri);
+        }
+    }
+
+
+    /**
      * Get Realm by realm name
      *
      * @param string $realmName
@@ -75,7 +134,7 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     {
         if (!array_key_exists($realmName, $this->realms)) {
             if ($this->getAllowRealmAutocreate()) {
-                Logger::debug($this, "Creating new realm \"" . $realmName . "\"");
+                Logger::debug($this, "Creating new realm \"".$realmName."\"");
                 $realm = new Realm($realmName);
                 $realm->setAuthenticationManager($this->getDefaultAuthenticationManager());
                 $realm->setAuthorizationManager($this->getDefaultAuthorizationManager());
@@ -106,15 +165,15 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
         }
 
         if (array_key_exists($realm->getRealmName(), $this->realms)) {
-            throw new \Exception("There is already a realm \"" . $realm->getRealmName() . "\"");
+            throw new \Exception("There is already a realm \"".$realm->getRealmName()."\"");
         }
 
-        Logger::debug($this, "Adding realm \"" . $realmName . "\"");
+        Logger::debug($this, "Adding realm \"".$realmName."\"");
 
         if ($realm->getManager() instanceof ManagerDummy) {
             /** remind people that we don't setup the manager for them if they
              * are creating their own realms */
-            Logger::info($this, "Realm \"" . $realmName . "\" is using ManagerDummy");
+            Logger::info($this, "Realm \"".$realmName."\" is using ManagerDummy");
         }
 
         $this->realms[$realm->getRealmName()] = $realm;
@@ -137,6 +196,7 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
         if ($name == "WAMP1") {
             return false;
         }
+
         //throw new \UnexpectedValueException("Realm name \"WAMP1\" is reserved.");
 
         return true;
@@ -208,49 +268,4 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
         $this->defaultAuthorizationManager = $defaultAuthorizationManager;
     }
 
-    public function handleConnectionOpen(ConnectionOpenEvent $event) {
-        $event->session->dispatcher->addRealmSubscriber($this);
-    }
-
-    public function handleConnectionClose(ConnectionCloseEvent $event) {
-
-    }
-
-    public function handlePreHelloMessage(MessageEvent $event) {
-        Logger::info($this, "Got prehello...");
-        /** @var HelloMessage $msg */
-        $msg = $event->message;
-        $session = $event->session;
-
-        $session->setHelloMessage($msg);
-        try {
-            $realm = $this->getRealm($msg->getRealm());
-
-            $realm->addSession($session);
-        } catch (\Exception $e) {
-            // TODO: Test this
-            $errorUri    = "wamp.error.unknown";
-            $description = $e->getMessage();
-            if ($e instanceof InvalidRealmNameException || $e instanceof RealmNotFoundException) {
-                $errorUri = "wamp.error.no_such_realm";
-            }
-            $session->abort(['description' => $description], $errorUri);
-        }
-    }
-
-    public static function getSubscribedEvents()
-    {
-        return [
-            "connection_open" => ['handleConnectionOpen', 10],
-            "connection_close" => ['handleConnectionClose', 10]
-        ];
-    }
-
-    /** @return array */
-    public function getSubscribedRealmEvents()
-    {
-        return [
-            "PreHelloMessageEvent" => ["handlePreHelloMessage", 10]
-        ];
-    }
 }

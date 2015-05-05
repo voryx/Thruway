@@ -23,40 +23,25 @@ use Thruway\Transport\TransportInterface;
 class Session extends AbstractSession implements RealmModuleInterface
 {
 
-    /**
-     * @var \Thruway\Authentication\AuthenticationDetails
-     */
+    /** @var \Thruway\Authentication\AuthenticationDetails */
     private $authenticationDetails;
 
-
-    /**
-     * @var int
-     */
+    /** @var int */
     private $messagesSent;
 
-    /**
-     * @var \DateTime
-     */
+    /** @var \DateTime */
     private $sessionStart;
 
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
+    /** @var \Thruway\Manager\ManagerInterface */
     private $manager;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $pendingCallCount;
 
-    /**
-     * @var \stdClass|null
-     */
+    /** @var \stdClass|null */
     private $roleFeatures;
 
-    /**
-     * @var HelloMessage
-     */
+    /** @var HelloMessage */
     private $helloMessage;
 
     /** @var EventDispatcher */
@@ -91,6 +76,40 @@ class Session extends AbstractSession implements RealmModuleInterface
     }
 
     /**
+     * Events that we'll be listening on
+     *
+     * @return array
+     */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+          "SendAbortMessageEvent"        => ["handleSendMessage", 10],
+          "SendAuthenticateMessageEvent" => ["handleSendMessage", 10],
+          "SendChallengeMessageEvent"    => ["handleSendMessage", 10],
+          "SendErrorMessageEvent"        => ["handleSendMessage", 10],
+          "SendEventMessageEvent"        => ["handleSendMessage", 10],
+          "SendGoodbyeMessageEvent"      => ["handleSendMessage", 10],
+          "SendInterruptMessageEvent"    => ["handleSendMessage", 10],
+          "SendInvocationMessageEvent"   => ["handleSendMessage", 10],
+          "SendPublishedMessageEvent"    => ["handleSendMessage", 10],
+          "SendRegisteredMessageEvent"   => ["handleSendMessage", 10],
+          "SendResultMessageEvent"       => ["handleSendMessage", 10],
+          "SendSubscribedMessageEvent"   => ["handleSendMessage", 10],
+          "SendUnregisteredMessageEvent" => ["handleSendMessage", 10],
+          "SendUnsubscribedMessageEvent" => ["handleSendMessage", 10],
+          "SendWelcomeMessageEvent"      => ["handleSendMessage", 10]
+        ];
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleSendMessage(MessageEvent $event)
+    {
+        $this->sendMessageToTransport($event->message);
+    }
+
+    /**
      * Send message
      *
      * @param \Thruway\Message\Message $msg
@@ -101,11 +120,14 @@ class Session extends AbstractSession implements RealmModuleInterface
         $this->dispatchMessage($msg, "Send");
     }
 
-    private function sendMessageToTransport(Message $msg) {
+    /**
+     * @param \Thruway\Message\Message $msg
+     */
+    private function sendMessageToTransport(Message $msg)
+    {
         $this->messagesSent++;
         $this->transport->sendMessage($msg);
     }
-
 
     /**
      * Handle close session
@@ -206,7 +228,6 @@ class Session extends AbstractSession implements RealmModuleInterface
         }
         parent::setAuthenticated($authenticated);
 
-
     }
 
     /**
@@ -229,14 +250,14 @@ class Session extends AbstractSession implements RealmModuleInterface
         }
 
         return [
-            "realm"         => $this->getRealm()->getRealmName(),
-            "authprovider"  => null,
-            "authid"        => $authId,
-            "authrole"      => $authRole,
-            "authroles"     => $authRoles,
-            "authmethod"    => $authMethod,
-            "session"       => $this->getSessionId(),
-            "role_features" => $this->getRoleFeatures()
+          "realm"         => $this->getRealm()->getRealmName(),
+          "authprovider"  => null,
+          "authid"        => $authId,
+          "authrole"      => $authRole,
+          "authroles"     => $authRoles,
+          "authmethod"    => $authMethod,
+          "session"       => $this->getSessionId(),
+          "role_features" => $this->getRoleFeatures()
         ];
     }
 
@@ -259,19 +280,23 @@ class Session extends AbstractSession implements RealmModuleInterface
     /**
      * @return int
      */
-    public function incPendingCallCount() {
+    public function incPendingCallCount()
+    {
         return $this->pendingCallCount++;
     }
 
     /**
      * @return int
      */
-    public function decPendingCallCount() {
+    public function decPendingCallCount()
+    {
         // if we are already at zero - something is wrong
         if ($this->pendingCallCount == 0) {
             $this->getManager()->alert('Session pending call count wants to go negative.');
+
             return 0;
         }
+
         return $this->pendingCallCount--;
     }
 
@@ -307,39 +332,20 @@ class Session extends AbstractSession implements RealmModuleInterface
         $this->helloMessage = $helloMessage;
     }
 
-    public function dispatchMessage(Message $message, $eventNamePrefix = "") {
-        // this could probably become a constant inside the message itself
-        $r = new \ReflectionClass($message);
-        $shortName = $r->getShortName();
-        if ($message instanceof HelloMessage) {
-            $this->dispatcher->dispatch("Pre" . $shortName . "Event", new MessageEvent($this, $message));
-        }
-        $this->dispatcher->dispatch($eventNamePrefix . $shortName . "Event", new MessageEvent($this, $message));
-    }
-
-    public function handleSendMessage(MessageEvent $event) {
-        $this->sendMessageToTransport($event->message);
-    }
-
-    /** @return array */
-    public function getSubscribedRealmEvents()
+    /**
+     * @param \Thruway\Message\Message $message
+     * @param string $eventNamePrefix
+     */
+    public function dispatchMessage(Message $message, $eventNamePrefix = "")
     {
-        return [
-            "SendAbortMessageEvent" => ["handleSendMessage", 10],
-            "SendAuthenticateMessageEvent" => ["handleSendMessage", 10],
-            "SendChallengeMessageEvent" => ["handleSendMessage", 10],
-            "SendErrorMessageEvent" => ["handleSendMessage", 10],
-            "SendEventMessageEvent" => ["handleSendMessage", 10],
-            "SendGoodbyeMessageEvent" => ["handleSendMessage", 10],
-            "SendInterruptMessageEvent" => ["handleSendMessage", 10],
-            "SendInvocationMessageEvent" => ["handleSendMessage", 10],
-            "SendPublishedMessageEvent" => ["handleSendMessage", 10],
-            "SendRegisteredMessageEvent" => ["handleSendMessage", 10],
-            "SendResultMessageEvent" => ["handleSendMessage", 10],
-            "SendSubscribedMessageEvent" => ["handleSendMessage", 10],
-            "SendUnregisteredMessageEvent" => ["handleSendMessage", 10],
-            "SendUnsubscribedMessageEvent" => ["handleSendMessage", 10],
-            "SendWelcomeMessageEvent" => ["handleSendMessage", 10]
-        ];
+        // this could probably become a constant inside the message itself
+        $r         = new \ReflectionClass($message);
+        $shortName = $r->getShortName();
+
+        if ($message instanceof HelloMessage) {
+            $this->dispatcher->dispatch("Pre".$shortName."Event", new MessageEvent($this, $message));
+        }
+        $this->dispatcher->dispatch($eventNamePrefix.$shortName."Event", new MessageEvent($this, $message));
     }
+
 }

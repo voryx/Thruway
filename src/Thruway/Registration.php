@@ -231,7 +231,7 @@ class Registration
                 // add this call time into the total
                 $this->completedCallTimeTotal += $callEnd - $call->getCallStart();
                 $callsInAverage++;
-                $this->invocationAverageTime = ((float)$this->completedCallTimeTotal) / $callsInAverage;
+                $this->invocationAverageTime = ((float) $this->completedCallTimeTotal) / $callsInAverage;
 
                 if (count($this->calls) == 0) {
                     $this->lastIdledAt = new \DateTime();
@@ -312,15 +312,15 @@ class Registration
     public function getStatistics()
     {
         return [
-            'currentCallCount'       => count($this->calls),
-            'registeredAt'           => $this->registeredAt,
-            'invocationCount'        => $this->invocationCount,
-            'invocationAverageTime'  => $this->invocationAverageTime,
-            'busyTime'               => $this->busyTime,
-            'busyStart'              => $this->busyStart,
-            'lastIdledAt'            => $this->lastIdledAt,
-            'lastCallStartedAt'      => $this->lastCallStartedAt,
-            'completedCallTimeTotal' => $this->completedCallTimeTotal
+          'currentCallCount'       => count($this->calls),
+          'registeredAt'           => $this->registeredAt,
+          'invocationCount'        => $this->invocationCount,
+          'invocationAverageTime'  => $this->invocationAverageTime,
+          'busyTime'               => $this->busyTime,
+          'busyStart'              => $this->busyStart,
+          'lastIdledAt'            => $this->lastIdledAt,
+          'lastCallStartedAt'      => $this->lastCallStartedAt,
+          'completedCallTimeTotal' => $this->completedCallTimeTotal
 
         ];
     }

@@ -11,7 +11,6 @@ use Thruway\Event\MessageEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
-use Thruway\Message\AbortMessage;
 use Thruway\Message\ActionMessageInterface;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ErrorMessage;
@@ -35,44 +34,28 @@ class Realm implements RealmModuleInterface
     /** @var RealmModuleInterface[] */
     private $modules = [];
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $realmName;
 
-    /**
-     * @var \SplObjectStorage
-     */
+    /** @var \SplObjectStorage */
     private $sessions;
 
-    /**
-     * @var \Thruway\Role\AbstractRole[]
-     */
+    /** @var \Thruway\Role\AbstractRole[] */
     private $roles;
 
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
+    /** @var \Thruway\Manager\ManagerInterface */
     private $manager;
 
-    /**
-     * @var \Thruway\Role\Broker
-     */
+    /** @var \Thruway\Role\Broker */
     private $broker;
 
-    /**
-     * @var \Thruway\Role\Dealer
-     */
+    /** @var \Thruway\Role\Dealer */
     private $dealer;
 
-    /**
-     * @var \Thruway\Authentication\AuthenticationManagerInterface
-     */
+    /** @var \Thruway\Authentication\AuthenticationManagerInterface */
     private $authenticationManager;
 
-    /**
-     * @var AuthorizationManagerInterface
-     */
+    /** @var AuthorizationManagerInterface */
     private $authorizationManager;
 
     /**
@@ -104,29 +87,60 @@ class Realm implements RealmModuleInterface
     }
 
     /**
-     * Handle process received message
+     * Events that we'll be listening on
      *
-     * @param \Thruway\Session $session
-     * @param \Thruway\Message\Message $msg
+     * @return array
      */
-    public function onMessage(Session $session, Message $msg)
+    public function getSubscribedRealmEvents()
     {
-        throw new \Exception("Should not be here");
+        return [
+          "HelloMessageEvent"        => ["handleHelloMessage", 10],
+          "GoodbyeMessageEvent"      => ["handleGoodbyeMessage", 10],
+          "AbortMessageEvent"        => ["handleAbortMessage", 10],
+          "AuthenticateMessageEvent" => ["handleAuthenticateMessage", 10],
+          "LeaveRealm"               => ["handleLeaveRealm", 10],
+        ];
+    }
 
-        if ($msg instanceof GoodByeMessage):
-            $this->processGoodbye($session, $msg);
-        elseif ($session->isAuthenticated()):
-            $this->processAuthenticated($session, $msg);
-        elseif ($msg instanceof AbortMessage):
-            $this->processAbort($session, $msg);
-        elseif ($msg instanceof HelloMessage):
-            $this->processHello($session, $msg);
-        elseif ($msg instanceof AuthenticateMessage):
-            $this->processAuthenticate($session, $msg);
-        else:
-            Logger::error($this, "Unhandled message sent to unauthenticated realm: ".$msg->getMsgCode());
-            $session->abort(new \stdClass(), "wamp.error.not_authorized");
-        endif;
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     * @throws \Thruway\Exception\InvalidRealmNameException
+     */
+    public function handleHelloMessage(MessageEvent $event)
+    {
+        $this->processHello($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleGoodbyeMessage(MessageEvent $event)
+    {
+        $this->processGoodbye($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleAbortMessage(MessageEvent $event)
+    {
+        $this->processAbort($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleAuthenticateMessage(MessageEvent $event)
+    {
+        $this->processAuthenticate($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\LeaveRealmEvent $event
+     */
+    public function handleLeaveRealm(LeaveRealmEvent $event)
+    {
+        $this->leave($event->session);
     }
 
     /**
@@ -330,10 +344,6 @@ class Realm implements RealmModuleInterface
             $this->getAuthenticationManager()->onSessionClose($session);
         }
 
-        // Roles should just listen to the LeaveRealmEvent now
-//        foreach ($this->roles as $role) {
-//            $role->leave($session);
-//        }
         $this->sessions->detach($session);
     }
 
@@ -499,60 +509,5 @@ class Realm implements RealmModuleInterface
         foreach ($this->modules as $module) {
             $session->dispatcher->addRealmSubscriber($module);
         }
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     * @throws \Thruway\Exception\InvalidRealmNameException
-     */
-    public function handleHelloMessage(MessageEvent $event)
-    {
-        $this->processHello($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleGoodbyeMessage(MessageEvent $event)
-    {
-        $this->processGoodbye($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleAbortMessage(MessageEvent $event)
-    {
-        $this->processAbort($event->session, $event->message);
-    }
-    
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleAuthenticateMessage(MessageEvent $event)
-    {
-        $this->processAuthenticate($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\LeaveRealmEvent $event
-     */
-    public function handleLeaveRealm(LeaveRealmEvent $event)
-    {
-        $this->leave($event->session);
-    }
-
-    /**
-     * @return array
-     */
-    public function getSubscribedRealmEvents()
-    {
-        return [
-          "HelloMessageEvent"        => ["handleHelloMessage", 10],
-          "GoodbyeMessageEvent"      => ["handleGoodbyeMessage", 10],
-          "AbortMessageEvent"        => ["handleAbortMessage", 10],
-          "AuthenticateMessageEvent" => ["handleAuthenticateMessage", 10],
-          "LeaveRealm"               => ["handleLeaveRealm", 10],
-        ];
     }
 }
