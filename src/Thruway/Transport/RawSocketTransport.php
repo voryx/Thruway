@@ -8,7 +8,6 @@ use React\EventLoop\LoopInterface;
 use React\Stream\Stream;
 use Thruway\Logging\Logger;
 use Thruway\Message\Message;
-use Thruway\Peer\AbstractPeer;
 use Thruway\Peer\PeerInterface;
 
 /**
@@ -47,7 +46,7 @@ class RawSocketTransport extends AbstractTransport implements EventEmitterInterf
     private $handshakeByte;
 
     /**
-     * @var \Thruway\Peer\AbstractPeer
+     * @var PeerInterface
      */
     private $peer;
 

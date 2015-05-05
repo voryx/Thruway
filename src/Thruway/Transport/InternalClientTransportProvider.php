@@ -18,7 +18,7 @@ use Thruway\Session;
 class InternalClientTransportProvider extends AbstractRouterTransportProvider
 {
     /**
-     * @var \Thruway\Peer\AbstractPeer
+     * @var ClientInterface
      */
     private $internalClient;
 

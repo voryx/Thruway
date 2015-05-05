@@ -5,7 +5,6 @@ namespace Thruway;
 
 use React\Promise\Promise;
 use Thruway\Message\Message;
-use Thruway\Peer\AbstractPeer;
 use Thruway\Peer\ClientInterface;
 use Thruway\Transport\TransportInterface;
 
