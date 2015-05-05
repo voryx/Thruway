@@ -21,6 +21,7 @@ interface RouterInterface extends PeerInterface
      *
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Message\Message $msg
+     * @return mixed
      */
     public function onMessage(TransportInterface $transport, Message $msg);
 

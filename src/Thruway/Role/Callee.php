@@ -18,7 +18,6 @@ use Thruway\Message\UnregisteredMessage;
 use Thruway\Message\UnregisterMessage;
 use Thruway\Message\YieldMessage;
 use Thruway\Result;
-use Thruway\Session;
 
 /**
  * Class Callee
@@ -48,10 +47,11 @@ class Callee extends AbstractRole
      *
      * @return \stdClass
      */
-    public function getFeatures() {
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
-        $features->caller_identification = true;
+        $features->caller_identification    = true;
         $features->progressive_call_results = true;
 
         return $features;
@@ -89,7 +89,7 @@ class Callee extends AbstractRole
     {
         foreach ($this->registrations as $key => $registration) {
             if ($registration["request_id"] === $msg->getRequestId()) {
-                Logger::info($this, "Setting registration_id for " . $registration['procedure_name'] . " (" . $key . ")");
+                Logger::info($this, "Setting registration_id for ".$registration['procedure_name']." (".$key.")");
                 $this->registrations[$key]['registration_id'] = $msg->getRegistrationId();
 
                 if ($this->registrations[$key]['futureResult'] instanceof Deferred) {
@@ -97,6 +97,7 @@ class Callee extends AbstractRole
                     $futureResult = $this->registrations[$key]['futureResult'];
                     $futureResult->resolve();
                 }
+
                 return;
             }
         }
@@ -118,6 +119,7 @@ class Callee extends AbstractRole
                     $deferred->resolve();
 
                     unset($this->registrations[$key]);
+
                     return;
                 }
             }
@@ -135,7 +137,7 @@ class Callee extends AbstractRole
     {
         foreach ($this->registrations as $key => $registration) {
             if (!isset($registration["registration_id"])) {
-                Logger::info($this, "Registration_id not set for " . $registration['procedure_name']);
+                Logger::info($this, "Registration_id not set for ".$registration['procedure_name']);
             } else {
                 if ($registration["registration_id"] === $msg->getRegistrationId()) {
 
@@ -167,7 +169,7 @@ class Callee extends AbstractRole
                         $session->sendMessage($errorMsg);
                     } catch (\Exception $e) {
                         $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-                        $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
+                        $errorMsg->setErrorURI($registration['procedure_name'].'.error');
                         $errorMsg->setArguments([$e->getMessage()]);
                         $errorMsg->setArgumentsKw($e);
 
@@ -193,41 +195,41 @@ class Callee extends AbstractRole
     {
 
         $promise->then(
-            function ($promiseResults) use ($msg, $session) {
-                $options = new \stdClass();
-                if ($promiseResults instanceof Result) {
-                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options,
-                        $promiseResults->getArguments(), $promiseResults->getArgumentsKw());
-                } else {
-                    $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
-                    $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults] : $promiseResults;
+          function ($promiseResults) use ($msg, $session) {
+              $options = new \stdClass();
+              if ($promiseResults instanceof Result) {
+                  $yieldMsg = new YieldMessage($msg->getRequestId(), $options,
+                    $promiseResults->getArguments(), $promiseResults->getArgumentsKw());
+              } else {
+                  $promiseResults = is_array($promiseResults) ? $promiseResults : [$promiseResults];
+                  $promiseResults = !$this::is_list($promiseResults) ? [$promiseResults] : $promiseResults;
 
-                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
-                }
+                  $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $promiseResults);
+              }
 
-                $session->sendMessage($yieldMsg);
-            },
-            function () use ($msg, $session, $registration) {
-                $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-                $errorMsg->setErrorURI($registration['procedure_name'] . '.error');
+              $session->sendMessage($yieldMsg);
+          },
+          function () use ($msg, $session, $registration) {
+              $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+              $errorMsg->setErrorURI($registration['procedure_name'].'.error');
 
-                $session->sendMessage($errorMsg);
-            },
-            function ($results) use ($msg, $session, $registration) {
-                $options = new \stdClass();
-                $options->progress = true;
-                if ($results instanceof Result) {
-                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
-                        $results->getArgumentsKw());
-                } else {
-                    $results = is_array($results) ? $results : [$results];
-                    $results = !$this::is_list($results) ? [$results] : $results;
+              $session->sendMessage($errorMsg);
+          },
+          function ($results) use ($msg, $session, $registration) {
+              $options           = new \stdClass();
+              $options->progress = true;
+              if ($results instanceof Result) {
+                  $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
+                    $results->getArgumentsKw());
+              } else {
+                  $results = is_array($results) ? $results : [$results];
+                  $results = !$this::is_list($results) ? [$results] : $results;
 
-                    $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
-                }
+                  $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results);
+              }
 
-                $session->sendMessage($yieldMsg);
-            }
+              $session->sendMessage($yieldMsg);
+          }
         );
     }
 
@@ -243,7 +245,7 @@ class Callee extends AbstractRole
         $options = new \stdClass();
         if ($results instanceof Result) {
             $yieldMsg = new YieldMessage($msg->getRequestId(), $options, $results->getArguments(),
-                $results->getArgumentsKw());
+              $results->getArgumentsKw());
         } else {
             $results = is_array($results) ? $results : [$results];
             $results = !$this::is_list($results) ? [$results] : $results;
@@ -267,7 +269,7 @@ class Callee extends AbstractRole
         } elseif ($msg->getErrorMsgCode() == Message::MSG_UNREGISTER) {
             $this->handleErrorUnregister($session, $msg);
         } else {
-            Logger::error($this, "Unhandled error message: " . json_encode($msg));
+            Logger::error($this, "Unhandled error message: ".json_encode($msg));
         }
 
     }
@@ -326,10 +328,10 @@ class Callee extends AbstractRole
     {
 
         $handledMsgCodes = [
-            Message::MSG_REGISTERED,
-            Message::MSG_UNREGISTERED,
-            Message::MSG_INVOCATION,
-            Message::MSG_REGISTER
+          Message::MSG_REGISTERED,
+          Message::MSG_UNREGISTERED,
+          Message::MSG_INVOCATION,
+          Message::MSG_REGISTER
         ];
 
         $codeToCheck = $msg->getMsgCode();
@@ -362,11 +364,11 @@ class Callee extends AbstractRole
         $requestId    = Utils::getUniqueId();
         $options      = isset($options) ? (object) $options : new \stdClass();
         $registration = [
-            "procedure_name" => $procedureName,
-            "callback"       => $callback,
-            "request_id"     => $requestId,
-            'options'        => $options,
-            'futureResult'   => $futureResult
+          "procedure_name" => $procedureName,
+          "callback"       => $callback,
+          "request_id"     => $requestId,
+          'options'        => $options,
+          'futureResult'   => $futureResult
         ];
 
         array_push($this->registrations, $registration);
@@ -402,7 +404,8 @@ class Callee extends AbstractRole
         }
 
         if ($registration === null) {
-            Logger::warning($this, "registration not found: " . $Uri);
+            Logger::warning($this, "registration not found: ".$Uri);
+
             return false;
         }
 
@@ -415,7 +418,7 @@ class Callee extends AbstractRole
         if (!isset($registration["registration_id"])) {
             // this would happen if the registration was never acknowledged by the router
             // we should remove the registration and resolve any pending deferreds
-            Logger::error($this, "Registration ID is not set while attempting to unregister " . $Uri);
+            Logger::error($this, "Registration ID is not set while attempting to unregister ".$Uri);
 
             // reject the pending registration
             $registration['futureResult']->reject();

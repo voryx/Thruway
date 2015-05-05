@@ -70,7 +70,7 @@ class Broker implements ManageableInterface, RealmModuleInterface
         throw new \Exception("Should not be here");
 
         Logger::debug($this,
-            "Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . json_encode($msg)
+          "Broker onMessage for ".json_encode($session->getTransport()->getTransportDetails()).": ".json_encode($msg)
         );
 
         if ($msg instanceof PublishMessage):
@@ -80,7 +80,7 @@ class Broker implements ManageableInterface, RealmModuleInterface
         elseif ($msg instanceof UnsubscribeMessage):
             $this->processUnsubscribe($session, $msg);
         else:
-            throw new \Exception("Unhandled message type sent to broker: " . get_class($msg));
+            throw new \Exception("Unhandled message type sent to broker: ".get_class($msg));
         endif;
     }
 
@@ -94,9 +94,9 @@ class Broker implements ManageableInterface, RealmModuleInterface
     public function handlesMessage(Message $msg)
     {
         $handledMsgCodes = [
-            Message::MSG_SUBSCRIBE,
-            Message::MSG_UNSUBSCRIBE,
-            Message::MSG_PUBLISH
+          Message::MSG_SUBSCRIBE,
+          Message::MSG_UNSUBSCRIBE,
+          Message::MSG_PUBLISH
         ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
@@ -137,7 +137,8 @@ class Broker implements ManageableInterface, RealmModuleInterface
         $matcher = $this->getMatcherForMatchType($msg->getMatchType());
         if ($matcher === null) {
             Logger::alert($this,
-                "no matching match type for \"" . $msg->getMatchType() . "\" for URI \"" . $msg->getUri() . "\"");
+              "no matching match type for \"".$msg->getMatchType()."\" for URI \"".$msg->getUri()."\"");
+
             return;
         }
 
@@ -320,15 +321,27 @@ class Broker implements ManageableInterface, RealmModuleInterface
         return $this->subscriptionGroups;
     }
 
-    public function handlePublishMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handlePublishMessage(MessageEvent $event)
+    {
         $this->processPublish($event->session, $event->message);
     }
 
-    public function handleSubscribeMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleSubscribeMessage(MessageEvent $event)
+    {
         $this->processSubscribe($event->session, $event->message);
     }
 
-    public function handleUnsubscribeMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleUnsubscribeMessage(MessageEvent $event)
+    {
         $this->processUnsubscribe($event->session, $event->message);
     }
 
@@ -338,7 +351,11 @@ class Broker implements ManageableInterface, RealmModuleInterface
 //        }
 //    }
 
-    public function handleLeaveRealm(LeaveRealmEvent $event) {
+    /**
+     * @param \Thruway\Event\LeaveRealmEvent $event
+     */
+    public function handleLeaveRealm(LeaveRealmEvent $event)
+    {
         $this->leave($event->session);
     }
 
@@ -346,11 +363,11 @@ class Broker implements ManageableInterface, RealmModuleInterface
     public function getSubscribedRealmEvents()
     {
         return [
-            "PublishMessageEvent" => ["handlePublishMessage", 10],
-            "SubscribeMessageEvent" => ["handleSubscribeMessage", 10],
-            "UnsubscribeMessageEvent" => ["handleUnsubscribeMessage", 10],
+          "PublishMessageEvent"     => ["handlePublishMessage", 10],
+          "SubscribeMessageEvent"   => ["handleSubscribeMessage", 10],
+          "UnsubscribeMessageEvent" => ["handleUnsubscribeMessage", 10],
             //"ErrorMessageEvent" => ["handleErrorMessage", 10],
-            "LeaveRealm" => ["handleLeaveRealm", 10],
+          "LeaveRealm"              => ["handleLeaveRealm", 10],
         ];
     }
 

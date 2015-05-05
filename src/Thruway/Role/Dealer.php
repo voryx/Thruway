@@ -80,10 +80,14 @@ class Dealer extends AbstractRole implements RealmModuleInterface
         $this->registrationsBySession = new \SplObjectStorage();
     }
 
-    public function getFeatures() {
+    /**
+     * @return \stdClass
+     */
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
-        $features->caller_identification = true;
+        $features->caller_identification    = true;
         $features->progressive_call_results = true;
 
         return $features;
@@ -130,6 +134,7 @@ class Dealer extends AbstractRole implements RealmModuleInterface
         // check for valid URI
         if (!Utils::uriIsValid($msg->getProcedureName())) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.invalid_uri'));
+
             return;
         }
 
@@ -178,12 +183,13 @@ class Dealer extends AbstractRole implements RealmModuleInterface
                     // Unregistration was successful - remove from this sessions
                     // list of registrations
                     if ($this->registrationsBySession->contains($session) &&
-                        in_array($procedure, $this->registrationsBySession[$session])
+                      in_array($procedure, $this->registrationsBySession[$session])
                     ) {
                         $registrationsInSession = $this->registrationsBySession[$session];
                         array_splice($registrationsInSession, array_search($procedure, $registrationsInSession), 1);
                     }
                 }
+
                 return;
             }
         }
@@ -203,11 +209,13 @@ class Dealer extends AbstractRole implements RealmModuleInterface
     {
         if (!Utils::uriIsValid($msg->getProcedureName())) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.invalid_uri'));
+
             return;
         }
 
         if (!isset($this->procedures[$msg->getProcedureName()])) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_procedure'));
+
             return;
         }
 
@@ -217,11 +225,13 @@ class Dealer extends AbstractRole implements RealmModuleInterface
         $call = new Call($session, $msg, $procedure);
 
         $this->callInvocationIndex[$call->getInvocationRequestId()] = $call;
-        $this->callRequestIndex[$msg->getRequestId()] = $call;
+        $this->callRequestIndex[$msg->getRequestId()]               = $call;
 
         $keepIndex = $procedure->processCall($session, $call);
 
-        if (!$keepIndex) $this->removeCall($call);
+        if (!$keepIndex) {
+            $this->removeCall($call);
+        }
     }
 
     /**
@@ -239,6 +249,7 @@ class Dealer extends AbstractRole implements RealmModuleInterface
         if (!$call) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
             Logger::error($this, "Was expecting a call");
+
             return;
         }
 
@@ -301,11 +312,13 @@ class Dealer extends AbstractRole implements RealmModuleInterface
      * @param Session $session
      * @param CancelMessage $msg
      */
-    private function processCancel(Session $session, CancelMessage $msg) {
+    private function processCancel(Session $session, CancelMessage $msg)
+    {
         $call = $this->getCallByRequestId($msg->getRequestId());
 
         if ($call->getCallerSession() !== $session) {
             Logger::warning($this, "Attempt to cancel call by non-owner");
+
             return;
         }
 
@@ -314,6 +327,7 @@ class Dealer extends AbstractRole implements RealmModuleInterface
             $errorMsg->setErrorURI("wamp.error.no_such_call");
             $session->sendMessage($errorMsg);
             Logger::error($this, "wamp.error.no_such_call");
+
             return;
         }
 
@@ -321,6 +335,7 @@ class Dealer extends AbstractRole implements RealmModuleInterface
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
             $errorMsg->setErrorURI("wamp.error.canceling");
             Logger::warning($this, "There was an attempt to cancel a message that is already in the process of being canceled");
+
             return;
         }
         $removeCall = $call->processCancel($session, $msg);
@@ -328,7 +343,9 @@ class Dealer extends AbstractRole implements RealmModuleInterface
             $this->callInterruptIndex[$call->getInterruptMessage()->getRequestId()] = $call;
         }
 
-        if ($removeCall) $this->removeCall($call);
+        if ($removeCall) {
+            $this->removeCall($call);
+        }
     }
 
     /**
@@ -344,7 +361,7 @@ class Dealer extends AbstractRole implements RealmModuleInterface
 
         if (!$call) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            Logger::error($this, 'No call for invocation error message: ' . $msg->getRequestId());
+            Logger::error($this, 'No call for invocation error message: '.$msg->getRequestId());
 
             // TODO: do we send a message back to the callee?
             $errorMsg->setErrorURI('wamp.error.no_such_procedure');
@@ -371,11 +388,13 @@ class Dealer extends AbstractRole implements RealmModuleInterface
      * @param Session $session
      * @param ErrorMessage $msg
      */
-    private function processInterruptError(Session $session, ErrorMessage $msg) {
+    private function processInterruptError(Session $session, ErrorMessage $msg)
+    {
         $call = isset($this->callInterruptIndex[$msg->getRequestId()]) ? $this->callInterruptIndex[$msg->getRequestId()] : null;
 
         if (!$call) {
             Logger::warning($this, "Interrupt error with no corresponding interrupt index");
+
             return;
         }
 
@@ -394,12 +413,17 @@ class Dealer extends AbstractRole implements RealmModuleInterface
      *
      * @param Call $call
      */
-    protected function removeCall(Call $call) {
+    protected function removeCall(Call $call)
+    {
         $call->getProcedure()->removeCall($call);
         unset($this->callInvocationIndex[$call->getInvocationRequestId()]);
         unset($this->callRequestIndex[$call->getCallMessage()->getRequestId()]);
-        if ($call->getCancelMessage()) unset($this->callCancelIndex[$call->getCancelMessage()->getRequestId()]);
-        if ($call->getInterruptMessage()) unset($this->callInterruptIndex[$call->getInterruptMessage()->getRequestId()]);
+        if ($call->getCancelMessage()) {
+            unset($this->callCancelIndex[$call->getCancelMessage()->getRequestId()]);
+        }
+        if ($call->getInterruptMessage()) {
+            unset($this->callInterruptIndex[$call->getInterruptMessage()->getRequestId()]);
+        }
     }
 
     /**
@@ -424,12 +448,12 @@ class Dealer extends AbstractRole implements RealmModuleInterface
     public function handlesMessage(Message $msg)
     {
         $handledMsgCodes = [
-            Message::MSG_CALL,
-            Message::MSG_CANCEL,
-            Message::MSG_REGISTER,
-            Message::MSG_UNREGISTER,
-            Message::MSG_YIELD,
-            Message::MSG_INTERRUPT
+          Message::MSG_CALL,
+          Message::MSG_CANCEL,
+          Message::MSG_REGISTER,
+          Message::MSG_UNREGISTER,
+          Message::MSG_YIELD,
+          Message::MSG_INTERRUPT
         ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
@@ -497,10 +521,10 @@ class Dealer extends AbstractRole implements RealmModuleInterface
             /* @var $registration \Thruway\Registration */
             foreach ($procedure->getRegistrations() as $registration) {
                 $theRegistrations[] = [
-                    "id"         => $registration->getId(),
-                    "name"       => $registration->getProcedureName(),
-                    "session"    => $registration->getSession()->getSessionId(),
-                    "statistics" => $registration->getStatistics()
+                  "id"         => $registration->getId(),
+                  "name"       => $registration->getProcedureName(),
+                  "session"    => $registration->getSession()->getSessionId(),
+                  "statistics" => $registration->getStatistics()
                 ];
             }
         }
@@ -508,33 +532,61 @@ class Dealer extends AbstractRole implements RealmModuleInterface
         return [$theRegistrations];
     }
 
-    public function handleCallMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleCallMessage(MessageEvent $event)
+    {
         $this->processCall($event->session, $event->message);
     }
 
-    public function handleCancelMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleCancelMessage(MessageEvent $event)
+    {
         $this->processCancel($event->session, $event->message);
     }
 
-    public function handleRegisterMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleRegisterMessage(MessageEvent $event)
+    {
         $this->processRegister($event->session, $event->message);
     }
 
-    public function handleUnregisterMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleUnregisterMessage(MessageEvent $event)
+    {
         $this->processUnregister($event->session, $event->message);
     }
 
-    public function handleYieldMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleYieldMessage(MessageEvent $event)
+    {
         $this->processYield($event->session, $event->message);
     }
 
-    public function handleErrorMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleErrorMessage(MessageEvent $event)
+    {
         if ($this->handlesMessage($event->message)) {
             $this->processError($event->session, $event->message);
         }
     }
 
-    public function handleLeaveRealm(LeaveRealmEvent $event) {
+    /**
+     * @param \Thruway\Event\LeaveRealmEvent $event
+     */
+    public function handleLeaveRealm(LeaveRealmEvent $event)
+    {
         $this->leave($event->session);
     }
 
@@ -542,15 +594,13 @@ class Dealer extends AbstractRole implements RealmModuleInterface
     public function getSubscribedRealmEvents()
     {
         return [
-            "CallMessageEvent" => ["handleCallMessage", 10],
-            "CancelMessageEvent" => ["handleCancelMessage", 10],
-            "RegisterMessageEvent" => ["handleRegisterMessage", 10],
-            "UnregisterMessageEvent" => ["handleUnregisterMessage", 10],
-            "YieldMessageEvent" => ["handleYieldMessage", 10],
-            "ErrorMessageEvent" => ["handleErrorMessage", 10],
-            "LeaveRealm" => ["handleLeaveRealm", 10],
+          "CallMessageEvent"       => ["handleCallMessage", 10],
+          "CancelMessageEvent"     => ["handleCancelMessage", 10],
+          "RegisterMessageEvent"   => ["handleRegisterMessage", 10],
+          "UnregisterMessageEvent" => ["handleUnregisterMessage", 10],
+          "YieldMessageEvent"      => ["handleYieldMessage", 10],
+          "ErrorMessageEvent"      => ["handleErrorMessage", 10],
+          "LeaveRealm"             => ["handleLeaveRealm", 10],
         ];
     }
-
-
 }

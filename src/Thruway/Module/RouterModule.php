@@ -29,10 +29,14 @@ class RouterModule implements RouterModuleInterface
     public function initModule(RouterInterface $router, LoopInterface $loop)
     {
         $this->router = $router;
-        $this->loop = $loop;
+        $this->loop   = $loop;
     }
 
-    public function getLoop() {
+    /**
+     * @return \React\EventLoop\LoopInterface
+     */
+    public function getLoop()
+    {
         return $this->loop;
     }
 

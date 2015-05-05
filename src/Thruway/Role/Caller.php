@@ -42,10 +42,11 @@ class Caller extends AbstractRole
      *
      * @return \stdClass
      */
-    public function getFeatures() {
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
-        $features->caller_identification = true;
+        $features->caller_identification    = true;
         $features->progressive_call_results = true;
 
         return $features;
@@ -125,7 +126,7 @@ class Caller extends AbstractRole
     {
 
         $handledMsgCodes = [
-            Message::MSG_RESULT,
+          Message::MSG_RESULT,
         ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
@@ -155,12 +156,12 @@ class Caller extends AbstractRole
         $requestId = Utils::getUniqueId();
 
         $this->callRequests[$requestId] = [
-            "procedure_name" => $procedureName,
-            "future_result"  => $futureResult
+          "procedure_name" => $procedureName,
+          "future_result"  => $futureResult
         ];
 
         if (is_array($options)) {
-            $options = (object)$options;
+            $options = (object) $options;
         }
 
         if (!is_object($options)) {

@@ -92,7 +92,8 @@ class Router implements RouterInterface, EventSubscriberInterface
     /**
      * @inheritdoc
      */
-    public function createNewSession(TransportInterface $transport) {
+    public function createNewSession(TransportInterface $transport)
+    {
         $session = new Session($transport);
         $session->setLoop($this->getLoop());
 
@@ -183,11 +184,10 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function onClose(TransportInterface $transport)
     {
-        Logger::debug($this, "onClose from " . json_encode($transport->getTransportDetails()));
+        Logger::debug($this, "onClose from ".json_encode($transport->getTransportDetails()));
 
         /* @var  $session \Thruway\Session */
         $session = $this->sessions[$transport];
-
 
 
         $this->sessions->detach($transport);
@@ -249,7 +249,9 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function getSessionBySessionId($sessionId)
     {
-        if (!is_scalar($sessionId)) return false;
+        if (!is_scalar($sessionId)) {
+            return false;
+        }
 
         return isset($this->sessions[$sessionId]) ? $this->sessions[$sessionId] : false;
     }
@@ -307,20 +309,20 @@ class Router implements RouterInterface, EventSubscriberInterface
             if ($session->getAuthenticationDetails() !== null) {
                 $authDetails = $session->getAuthenticationDetails();
                 $auth        = [
-                    "authid"     => $authDetails->getAuthId(),
-                    "authmethod" => $authDetails->getAuthMethod()
+                  "authid"     => $authDetails->getAuthId(),
+                  "authmethod" => $authDetails->getAuthMethod()
                 ];
             } else {
                 $auth = new \stdClass();
             }
 
             $theSessions[] = [
-                "id"           => $session->getSessionId(),
-                "transport"    => $session->getTransport()->getTransportDetails(),
-                "messagesSent" => $session->getMessagesSent(),
-                "sessionStart" => $session->getSessionStart(),
-                "realm"        => $sessionRealm,
-                "auth"         => $auth
+              "id"           => $session->getSessionId(),
+              "transport"    => $session->getTransport()->getTransportDetails(),
+              "messagesSent" => $session->getMessagesSent(),
+              "sessionStart" => $session->getSessionStart(),
+              "realm"        => $sessionRealm,
+              "auth"         => $auth
             ];
         }
 
@@ -339,7 +341,7 @@ class Router implements RouterInterface, EventSubscriberInterface
         foreach ($this->realmManager->getRealms() as $realm) {
             /* @var $realm \Thruway\Realm */
             $theRealms[] = [
-                "name" => $realm->getRealmName()
+              "name" => $realm->getRealmName()
             ];
         }
 
@@ -398,12 +400,19 @@ class Router implements RouterInterface, EventSubscriberInterface
         return $this->eventDispatcher;
     }
 
+    /**
+     * @param \Thruway\Event\ConnectionOpenEvent $event
+     */
     public function handleConnectionOpen(ConnectionOpenEvent $event)
     {
         $this->sessions[$event->session->getSessionId()] = $event->session;
     }
 
-    public function handleConnectionClose(ConnectionCloseEvent $event) {
+    /**
+     * @param \Thruway\Event\ConnectionCloseEvent $event
+     */
+    public function handleConnectionClose(ConnectionCloseEvent $event)
+    {
         unset($this->sessions[$event->session->getSessionId()]);
         // TODO: should this be a message dispatched from the Transport?
         $event->session->onClose();
@@ -415,8 +424,8 @@ class Router implements RouterInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            "connection_open" => ['handleConnectionOpen', 10],
-            "connection_close" => ['handleConnectionClose', 10]
+          "connection_open"  => ['handleConnectionOpen', 10],
+          "connection_close" => ['handleConnectionClose', 10]
         ];
     }
 }

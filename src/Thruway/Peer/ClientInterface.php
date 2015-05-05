@@ -37,6 +37,7 @@ interface ClientInterface extends PeerInterface
      *
      * @param \Thruway\Transport\TransportInterface $transport
      * @param \Thruway\Message\Message $msg
+     * @return mixed
      */
     public function onMessage(TransportInterface $transport, Message $msg);
 
@@ -52,8 +53,8 @@ interface ClientInterface extends PeerInterface
     /**
      * Add transport provider
      *
-     * @param \Thruway\Transport\TransportProviderInterface $transportProvider
-     * @throws \Exception
+     * @param \Thruway\Transport\ClientTransportProviderInterface
+     * @return
      */
     public function addTransportProvider(ClientTransportProviderInterface $transportProvider);
 

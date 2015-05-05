@@ -148,11 +148,11 @@ class Client implements EventEmitterInterface, ClientInterface
         $this->authId               = "anonymous";
 
         $this->reconnectOptions = [
-            "max_retries"         => 15,
-            "initial_retry_delay" => 1.5,
-            "max_retry_delay"     => 300,
-            "retry_delay_growth"  => 1.5,
-            "retry_delay_jitter"  => 0.1 //not implemented
+          "max_retries"         => 15,
+          "initial_retry_delay" => 1.5,
+          "max_retry_delay"     => 300,
+          "retry_delay_growth"  => 1.5,
+          "retry_delay_jitter"  => 0.1 //not implemented
         ];
 
         $this->on('open', [$this, 'onSessionStart']);
@@ -264,12 +264,12 @@ class Client implements EventEmitterInterface, ClientInterface
     public function startSession(ClientSession $session)
     {
         $this->addRole(new Callee())
-            ->addRole(new Caller())
-            ->addRole(new Publisher())
-            ->addRole(new Subscriber());
+          ->addRole(new Caller())
+          ->addRole(new Publisher())
+          ->addRole(new Subscriber());
 
-        $details = (object)[
-            "roles" => $this->getRoleInfoObject()
+        $details = (object) [
+          "roles" => $this->getRoleInfoObject()
         ];
 
         $details->authmethods = $this->authMethods;
@@ -285,11 +285,11 @@ class Client implements EventEmitterInterface, ClientInterface
      */
     public function getRoleInfoObject()
     {
-        return (object)[
-            "publisher"  => (object)["features" => $this->getPublisher()->getFeatures()],
-            "subscriber" => (object)["features" => $this->getSubscriber()->getFeatures()],
-            "caller"     => (object)["features" => $this->getCaller()->getFeatures()],
-            "callee"     => (object)["features" => $this->getCallee()->getFeatures()]
+        return (object) [
+          "publisher"  => (object) ["features" => $this->getPublisher()->getFeatures()],
+          "subscriber" => (object) ["features" => $this->getSubscriber()->getFeatures()],
+          "caller"     => (object) ["features" => $this->getCaller()->getFeatures()],
+          "callee"     => (object) ["features" => $this->getCallee()->getFeatures()]
         ];
     }
 
@@ -388,6 +388,7 @@ class Client implements EventEmitterInterface, ClientInterface
             if (in_array($authMethod, $ca->getAuthMethods())) {
                 $authenticateMsg = $ca->getAuthenticateFromChallenge($msg);
                 $session->sendMessage($authenticateMsg);
+
                 return;
             }
         }
@@ -488,10 +489,10 @@ class Client implements EventEmitterInterface, ClientInterface
         }
 
         $this->loop->addTimer(
-            $this->retryTimer,
-            function () {
-                $this->transportProvider->startTransportProvider($this, $this->loop);
-            }
+          $this->retryTimer,
+          function () {
+              $this->transportProvider->startTransportProvider($this, $this->loop);
+          }
         );
     }
 
@@ -650,7 +651,8 @@ class Client implements EventEmitterInterface, ClientInterface
     /**
      * @param LoopInterface $loop
      */
-    public function setLoop(LoopInterface $loop) {
+    public function setLoop(LoopInterface $loop)
+    {
         $this->loop = $loop;
     }
 }

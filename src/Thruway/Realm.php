@@ -124,12 +124,17 @@ class Realm implements RealmModuleInterface
         elseif ($msg instanceof AuthenticateMessage):
             $this->processAuthenticate($session, $msg);
         else:
-            Logger::error($this, "Unhandled message sent to unauthenticated realm: " . $msg->getMsgCode());
+            Logger::error($this, "Unhandled message sent to unauthenticated realm: ".$msg->getMsgCode());
             $session->abort(new \stdClass(), "wamp.error.not_authorized");
         endif;
     }
 
-    public function processGoodbye(Session $session, Message $msg) {
+    /**
+     * @param \Thruway\Session $session
+     * @param \Thruway\Message\Message $msg
+     */
+    public function processGoodbye(Session $session, Message $msg)
+    {
         Logger::info($this, "Received a GoodBye, so shutting the session down");
         $session->sendMessage(new GoodbyeMessage(new \stdClass(), "wamp.error.goodbye_and_out"));
         $session->shutdown();
@@ -158,12 +163,14 @@ class Realm implements RealmModuleInterface
         if ($msg instanceof ActionMessageInterface) {
             if (!$this->getAuthorizationManager()->isAuthorizedTo($session, $msg)) {
                 Logger::alert($this,
-                    "Permission denied: " . $msg->getActionName() . " " . $msg->getUri() . " for " . $session->getAuthenticationDetails()->getAuthId());
+                  "Permission denied: ".$msg->getActionName()." ".$msg->getUri()." for ".$session->getAuthenticationDetails()->getAuthId());
 
                 // we are not to send messages in response to publish messages unless
                 // they set acknowledge = true
                 if ($msg instanceof PublishMessage) {
-                    if (!$msg->acknowledge()) return;
+                    if (!$msg->acknowledge()) {
+                        return;
+                    }
                 }
 
                 $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
@@ -231,7 +238,7 @@ class Realm implements RealmModuleInterface
             $details = new \stdClass();
             $this->addRolesToDetails($details);
             $session->sendMessage(
-                new WelcomeMessage($session->getSessionId(), $details)
+              new WelcomeMessage($session->getSessionId(), $details)
             );
         }
     }
@@ -278,20 +285,20 @@ class Realm implements RealmModuleInterface
             if ($session->getAuthenticationDetails() !== null) {
                 $authDetails = $session->getAuthenticationDetails();
                 $auth        = [
-                    "authid"     => $authDetails->getAuthId(),
-                    "authmethod" => $authDetails->getAuthMethod()
+                  "authid"     => $authDetails->getAuthId(),
+                  "authmethod" => $authDetails->getAuthMethod()
                 ];
             } else {
                 $auth = new \stdClass();
             }
 
             $theSessions[] = [
-                "id"           => $session->getSessionId(),
-                "transport"    => $session->getTransport()->getTransportDetails(),
-                "messagesSent" => $session->getMessagesSent(),
-                "sessionStart" => $session->getSessionStart(),
-                "realm"        => $sessionRealm,
-                "auth"         => $auth
+              "id"           => $session->getSessionId(),
+              "transport"    => $session->getTransport()->getTransportDetails(),
+              "messagesSent" => $session->getMessagesSent(),
+              "sessionStart" => $session->getSessionStart(),
+              "realm"        => $sessionRealm,
+              "auth"         => $auth
             ];
         }
 
@@ -342,11 +349,9 @@ class Realm implements RealmModuleInterface
         $this->broker->setManager($manager);
         $this->dealer->setManager($manager);
 
-        $manager->addCallable(
-            "realm.{$this->getRealmName()}.registrations", function () {
+        $manager->addCallable("realm.{$this->getRealmName()}.registrations", function () {
             return $this->dealer->managerGetRegistrations();
-        }
-        );
+        });
     }
 
     /**
@@ -418,9 +423,9 @@ class Realm implements RealmModuleInterface
 
         // if details is not an object - we pass it through
         if (is_object($details)) {
-            $details->roles = (object)[
-                "broker" => (object)["features" => $this->getBroker()->getFeatures()],
-                "dealer" => (object)["features" => $this->getDealer()->getFeatures()]
+            $details->roles = (object) [
+              "broker" => (object) ["features" => $this->getBroker()->getFeatures()],
+              "dealer" => (object) ["features" => $this->getDealer()->getFeatures()]
             ];
         } else {
             Logger::warning($this, "non-object sent to addRolesToDetails - returning as is");
@@ -476,47 +481,78 @@ class Realm implements RealmModuleInterface
         $this->getBroker()->handlePublishMessage($messageEvent);
     }
 
-    public function addModule(RealmModuleInterface $module) {
+    /**
+     * @param \Thruway\Module\RealmModuleInterface $module
+     */
+    public function addModule(RealmModuleInterface $module)
+    {
         $this->modules[] = $module;
     }
 
-    public function addSession(Session $session) {
+    /**
+     * @param \Thruway\Session $session
+     */
+    public function addSession(Session $session)
+    {
         $this->sessions->attach($session);
         $session->dispatcher->addRealmSubscriber($this);
-        foreach($this->modules as $module) {
+        foreach ($this->modules as $module) {
             $session->dispatcher->addRealmSubscriber($module);
         }
     }
 
-    public function handleHelloMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     * @throws \Thruway\Exception\InvalidRealmNameException
+     */
+    public function handleHelloMessage(MessageEvent $event)
+    {
         $this->processHello($event->session, $event->message);
     }
 
-    public function handleGoodbyeMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleGoodbyeMessage(MessageEvent $event)
+    {
         $this->processGoodbye($event->session, $event->message);
     }
 
-    public function handleAbortMessage(MessageEvent $event) {
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleAbortMessage(MessageEvent $event)
+    {
         $this->processAbort($event->session, $event->message);
     }
-
-    public function handleAuthenticateMessage(MessageEvent $event) {
+    
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleAuthenticateMessage(MessageEvent $event)
+    {
         $this->processAuthenticate($event->session, $event->message);
     }
 
-    public function handleLeaveRealm(LeaveRealmEvent $event) {
+    /**
+     * @param \Thruway\Event\LeaveRealmEvent $event
+     */
+    public function handleLeaveRealm(LeaveRealmEvent $event)
+    {
         $this->leave($event->session);
     }
 
-    /** @return array */
+    /**
+     * @return array
+     */
     public function getSubscribedRealmEvents()
     {
         return [
-            "HelloMessageEvent" => ["handleHelloMessage", 10],
-            "GoodbyeMessageEvent" => ["handleGoodbyeMessage", 10],
-            "AbortMessageEvent" => ["handleAbortMessage", 10],
-            "AuthenticateMessageEvent" => ["handleAuthenticateMessage", 10],
-            "LeaveRealm" => ["handleLeaveRealm", 10],
+          "HelloMessageEvent"        => ["handleHelloMessage", 10],
+          "GoodbyeMessageEvent"      => ["handleGoodbyeMessage", 10],
+          "AbortMessageEvent"        => ["handleAbortMessage", 10],
+          "AuthenticateMessageEvent" => ["handleAuthenticateMessage", 10],
+          "LeaveRealm"               => ["handleLeaveRealm", 10],
         ];
     }
 }
