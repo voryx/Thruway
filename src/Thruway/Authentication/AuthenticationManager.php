@@ -68,15 +68,15 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
     public function onSessionStart($session, $transport)
     {
         $session->register('thruway.auth.registermethod', [$this, 'registerAuthMethod'], ['disclose_caller' => true])
-            ->then(
-                function () {
-                    $this->setReady(true);
-                },
-                function () {
-                    $this->setReady(false);
-                    Logger::error($this, "registration of registerAuthMethod failed.");
-                }
-            );
+          ->then(
+            function () {
+                $this->setReady(true);
+            },
+            function () {
+                $this->setReady(false);
+                Logger::error($this, "registration of registerAuthMethod failed.");
+            }
+          );
     }
 
     /**
@@ -120,8 +120,6 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
             $details->authrole   = $authDetails->getAuthRole();
             $details->authroles  = $authDetails->getAuthRoles();
 
-            $realm->addRolesToDetails($details);
-
             $session->sendMessage(new WelcomeMessage($session->getSessionId(), $details));
 
             return;
@@ -137,7 +135,7 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
             if ($session->getAuthenticationDetails() !== null) {
                 // Todo: probably shouldn't be so dramatic here
                 throw new \Exception(
-                    "Hello message sent to authentication manager when there is already authentication details attached."
+                  "Hello message sent to authentication manager when there is already authentication details attached."
                 );
             }
 
@@ -166,8 +164,8 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
         // Go through the authmethods and try to send a response message
         foreach ($this->authMethods as $authMethod => $authMethodInfo) {
             if (in_array($authMethod, $requestedMethods)
-                && (in_array($realm->getRealmName(), $authMethodInfo['auth_realms'])
-                    || in_array("*", $authMethodInfo['auth_realms']))
+              && (in_array($realm->getRealmName(), $authMethodInfo['auth_realms'])
+                || in_array("*", $authMethodInfo['auth_realms']))
             ) {
                 $this->onHelloAuthHandler($authMethod, $authMethodInfo, $realm, $session, $msg);
                 $sentMessage = true;
@@ -190,7 +188,6 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
         $session->setAuthenticationDetails(AuthenticationDetails::createAnonymous());
 
         $details = new \stdClass();
-        $realm->addRolesToDetails($details);
 
         $session->sendMessage(new WelcomeMessage($session->getSessionId(), $details));
         $session->setAuthenticated(true);
@@ -273,7 +270,7 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
 
         //Make the OnHello Call
         $this->session->call($onHelloAuthHandler, [$msg, $sessionInfo])
-            ->then($onHelloSuccess, $onHelloError);
+          ->then($onHelloSuccess, $onHelloError);
 
     }
 
@@ -356,9 +353,6 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
                 }
 
                 $session->setAuthenticated(true);
-
-                $realm->addRolesToDetails($welcomeDetails);
-
                 $session->sendMessage(new WelcomeMessage($session->getSessionId(), $welcomeDetails));
 
             } else {
@@ -385,7 +379,7 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
         $onAuthenticateHandler = $authMethodInfo['handlers']->onauthenticate;
 
         $this->session->call($onAuthenticateHandler, [$arguments])
-            ->then($onAuthenticateSuccess, $onAuthenticateError);
+          ->then($onAuthenticateSuccess, $onAuthenticateError);
 
     }
 
@@ -435,10 +429,10 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
 
 
         $this->authMethods[$authMethod] = [
-            'authMethod'  => $authMethod,
-            'handlers'    => $methodInfo,
-            'auth_realms' => $authRealms,
-            'session_id'  => $details->caller
+          'authMethod'  => $authMethod,
+          'handlers'    => $methodInfo,
+          'auth_realms' => $authRealms,
+          'session_id'  => $details->caller
         ];
 
         return ["SUCCESS"];
