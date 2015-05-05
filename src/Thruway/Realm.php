@@ -248,9 +248,6 @@ class Realm implements RealmModuleInterface
             }
             $session->setAuthenticationDetails($authDetails);
 
-            // the broker and dealer should give us this information
-            $details = new \stdClass();
-            $this->addRolesToDetails($details);
             $session->sendMessage(
               new WelcomeMessage($session->getSessionId(), $details)
             );
@@ -418,30 +415,6 @@ class Realm implements RealmModuleInterface
     public function getSessions()
     {
         return $this->sessions;
-    }
-
-    /**
-     * @param $details
-     * @return \stdClass
-     */
-    public function addRolesToDetails($details)
-    {
-        // if details is null - we will create it
-        if ($details === null) {
-            $details = new \stdClass();
-        }
-
-        // if details is not an object - we pass it through
-        if (is_object($details)) {
-            $details->roles = (object) [
-              "broker" => (object) ["features" => $this->getBroker()->getFeatures()],
-              "dealer" => (object) ["features" => $this->getDealer()->getFeatures()]
-            ];
-        } else {
-            Logger::warning($this, "non-object sent to addRolesToDetails - returning as is");
-        }
-
-        return $details;
     }
 
     /**

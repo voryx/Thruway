@@ -23,7 +23,7 @@ trait DetailsTrait
      */
     public function setDetails($details)
     {
-        $this->details = (object)$details;
+        $this->details = (object) $details;
     }
 
     /**
@@ -34,5 +34,17 @@ trait DetailsTrait
     public function getDetails()
     {
         return $this->details;
+    }
+
+    /**
+     * @param $name
+     * @param \stdClass $features
+     */
+    public function addFeatures($name, \stdClass $features)
+    {
+        $this->details        = isset($this->details) ? $this->details : new \stdClass();
+        $this->details->roles = isset($this->details->roles) ? $this->details->roles : new \stdClass();
+
+        $this->details->roles->$name = (object) ["features" => $features];
     }
 }

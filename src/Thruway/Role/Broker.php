@@ -15,6 +15,7 @@ use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\SubscribeMessage;
 use Thruway\Message\UnsubscribeMessage;
+use Thruway\Message\WelcomeMessage;
 use Thruway\Module\RealmModuleInterface;
 use Thruway\Session;
 use Thruway\Subscription\ExactMatcher;
@@ -67,6 +68,7 @@ class Broker implements ManageableInterface, RealmModuleInterface
           "SubscribeMessageEvent"   => ["handleSubscribeMessage", 10],
           "UnsubscribeMessageEvent" => ["handleUnsubscribeMessage", 10],
           "LeaveRealm"              => ["handleLeaveRealm", 10],
+          "SendWelcomeMessageEvent" => ["handleSendWelcomeMessage", 10]
         ];
     }
 
@@ -102,6 +104,18 @@ class Broker implements ManageableInterface, RealmModuleInterface
         $this->leave($event->session);
     }
 
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleSendWelcomeMessage(MessageEvent $event)
+    {
+        /** @var WelcomeMessage $welcomeMessage */
+        $welcomeMessage = $event->message;
+
+        //Tell the welcome message what features we support
+        $welcomeMessage->addFeatures('broker', $this->getFeatures());
+
+    }
 
     /**
      * Return supported features

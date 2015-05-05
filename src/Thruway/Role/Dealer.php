@@ -16,6 +16,7 @@ use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\UnregisterMessage;
+use Thruway\Message\WelcomeMessage;
 use Thruway\Message\YieldMessage;
 use Thruway\Module\RealmModuleInterface;
 use Thruway\Procedure;
@@ -90,6 +91,7 @@ class Dealer implements RealmModuleInterface
           "YieldMessageEvent"      => ["handleYieldMessage", 10],
           "ErrorMessageEvent"      => ["handleErrorMessage", 10],
           "LeaveRealm"             => ["handleLeaveRealm", 10],
+          "SendWelcomeMessageEvent" => ["handleSendWelcomeMessage", 10]
         ];
     }
 
@@ -149,6 +151,19 @@ class Dealer implements RealmModuleInterface
     public function handleLeaveRealm(LeaveRealmEvent $event)
     {
         $this->leave($event->session);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleSendWelcomeMessage(MessageEvent $event)
+    {
+        /** @var WelcomeMessage $welcomeMessage */
+        $welcomeMessage = $event->message;
+
+        //Tell the welcome message what features we support
+        $welcomeMessage->addFeatures('dealer', $this->getFeatures());
+
     }
 
     /**
