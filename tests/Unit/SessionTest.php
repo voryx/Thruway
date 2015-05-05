@@ -11,13 +11,11 @@ class SessionTest extends PHPUnit_Framework_TestCase {
         $transport->expects($this->exactly(2))
             ->method("sendMessage")
             ->withConsecutive(
-                [$this->isInstanceOf('\Thruway\Message\HelloMessage')],
-                [$this->isInstanceOf('\Thruway\Message\HelloMessage')]
+                [$this->isInstanceOf('\Thruway\Message\GoodbyeMessage')],
+                [$this->isInstanceOf('\Thruway\Message\GoodbyeMessage')]
             );
 
-        $session->sendMessage(new \Thruway\Message\HelloMessage("realm1", (object)[]));
-
-
-        $session->sendMessage(new \Thruway\Message\HelloMessage("realm1", (object)[]));
+        $session->sendMessage(new \Thruway\Message\GoodbyeMessage([], "test.message"));
+        $session->sendMessage(new \Thruway\Message\GoodbyeMessage([], "test.message"));
     }
 } 

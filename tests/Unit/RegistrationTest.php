@@ -25,9 +25,7 @@ class RegistrationTest extends PHPUnit_Framework_TestCase
 
     public function testMakingCallIncrementsCallCount()
     {
-        $mockSession = $this->getMockBuilder('\Thruway\Session')
-            ->setConstructorArgs([new \Thruway\Transport\DummyTransport()])
-            ->getMock();
+        $mockSession = new \Thruway\Session(new \Thruway\Transport\DummyTransport());
 
         $this->assertEquals(0, $this->_registration->getCurrentCallCount());
 

@@ -12,6 +12,7 @@ use Thruway\Manager\ManagerDummy;
 use Thruway\Manager\ManagerInterface;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
+use Thruway\Module\RealmModuleInterface;
 use Thruway\Transport\TransportInterface;
 
 /**
@@ -19,7 +20,7 @@ use Thruway\Transport\TransportInterface;
  *
  * @package Thruway
  */
-class Session extends AbstractSession
+class Session extends AbstractSession implements RealmModuleInterface
 {
 
     /**
@@ -79,6 +80,8 @@ class Session extends AbstractSession
         $this->pendingCallCount      = 0;
         $this->dispatcher            = new EventDispatcher();
 
+        $this->dispatcher->addRealmSubscriber($this);
+
         if ($manager === null) {
             $manager = new ManagerDummy();
         }
@@ -95,6 +98,10 @@ class Session extends AbstractSession
      */
     public function sendMessage(Message $msg)
     {
+        $this->dispatchMessage($msg, "Send");
+    }
+
+    private function sendMessageToTransport(Message $msg) {
         $this->messagesSent++;
         $this->transport->sendMessage($msg);
     }
@@ -300,13 +307,39 @@ class Session extends AbstractSession
         $this->helloMessage = $helloMessage;
     }
 
-    public function dispatchMessage(Message $message) {
+    public function dispatchMessage(Message $message, $eventNamePrefix = "") {
         // this could probably become a constant inside the message itself
         $r = new \ReflectionClass($message);
         $shortName = $r->getShortName();
         if ($message instanceof HelloMessage) {
             $this->dispatcher->dispatch("Pre" . $shortName . "Event", new MessageEvent($this, $message));
         }
-        $this->dispatcher->dispatch($shortName . "Event", new MessageEvent($this, $message));
+        $this->dispatcher->dispatch($eventNamePrefix . $shortName . "Event", new MessageEvent($this, $message));
+    }
+
+    public function handleSendMessage(MessageEvent $event) {
+        $this->sendMessageToTransport($event->message);
+    }
+
+    /** @return array */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+            "SendAbortMessageEvent" => ["handleSendMessage", 10],
+            "SendAuthenticateMessageEvent" => ["handleSendMessage", 10],
+            "SendChallengeMessageEvent" => ["handleSendMessage", 10],
+            "SendErrorMessageEvent" => ["handleSendMessage", 10],
+            "SendEventMessageEvent" => ["handleSendMessage", 10],
+            "SendGoodbyeMessageEvent" => ["handleSendMessage", 10],
+            "SendInterruptMessageEvent" => ["handleSendMessage", 10],
+            "SendInvocationMessageEvent" => ["handleSendMessage", 10],
+            "SendPublishedMessageEvent" => ["handleSendMessage", 10],
+            "SendRegisteredMessageEvent" => ["handleSendMessage", 10],
+            "SendResultMessageEvent" => ["handleSendMessage", 10],
+            "SendSubscribedMessageEvent" => ["handleSendMessage", 10],
+            "SendUnregisteredMessageEvent" => ["handleSendMessage", 10],
+            "SendUnsubscribedMessageEvent" => ["handleSendMessage", 10],
+            "SendWelcomeMessageEvent" => ["handleSendMessage", 10]
+        ];
     }
 }
