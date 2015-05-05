@@ -37,29 +37,19 @@ class Router implements RouterInterface, EventSubscriberInterface
     /** @var bool */
     protected $started = false;
 
-    /**
-     * @var \Thruway\RealmManager
-     */
+    /** @var \Thruway\RealmManager */
     private $realmManager;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $sessions = [];
 
-    /**
-     * @var \Thruway\Authentication\AuthenticationManagerInterface
-     */
+    /** @var \Thruway\Authentication\AuthenticationManagerInterface */
     private $authenticationManager;
 
-    /**
-     * @var AuthorizationManagerInterface
-     */
+    /** @var AuthorizationManagerInterface */
     private $authorizationManager;
 
-    /**
-     * @var \React\EventLoop\LoopInterface
-     */
+    /** @var \React\EventLoop\LoopInterface */
     private $loop;
 
     /** @var EventDispatcherInterface */
@@ -77,9 +67,10 @@ class Router implements RouterInterface, EventSubscriberInterface
     {
         Utils::checkPrecision();
 
-        $this->loop            = $loop ? $loop : Factory::create();
+        $this->loop            = $loop ?: Factory::create();
         $this->realmManager    = new RealmManager();
         $this->eventDispatcher = new EventDispatcher();
+
         $this->eventDispatcher->addSubscriber($this);
 
         $this->registerModule($this->realmManager);
@@ -90,6 +81,38 @@ class Router implements RouterInterface, EventSubscriberInterface
     }
 
     /**
+     * Register for events
+     *
+     * @inheritdoc
+     */
+    public static function getSubscribedEvents()
+    {
+        return [
+          "connection_open"  => ['handleConnectionOpen', 10],
+          "connection_close" => ['handleConnectionClose', 10]
+        ];
+    }
+
+    /**
+     * @param \Thruway\Event\ConnectionOpenEvent $event
+     */
+    public function handleConnectionOpen(ConnectionOpenEvent $event)
+    {
+        $this->sessions[$event->session->getSessionId()] = $event->session;
+    }
+
+    /**
+     * @param \Thruway\Event\ConnectionCloseEvent $event
+     */
+    public function handleConnectionClose(ConnectionCloseEvent $event)
+    {
+        unset($this->sessions[$event->session->getSessionId()]);
+        // TODO: should this be a message dispatched from the Transport?
+        $event->session->onClose();
+    }
+
+
+    /**
      * @inheritdoc
      */
     public function createNewSession(TransportInterface $transport)
@@ -98,52 +121,6 @@ class Router implements RouterInterface, EventSubscriberInterface
         $session->setLoop($this->getLoop());
 
         return $session;
-    }
-
-    /**
-     * Handle transport received message
-     *
-     * @param \Thruway\Transport\TransportInterface $transport
-     * @param \Thruway\Message\Message $msg
-     * @return void
-     */
-    public function onMessage(TransportInterface $transport, Message $msg)
-    {
-        return;
-        /* @var $session \Thruway\Session */
-        $session = $this->sessions[$transport];
-
-        // see if the session is in a realm
-        if ($session->getRealm() === null) {
-            if ($msg instanceof AbortMessage) {
-                $session->shutdown();
-
-                return;
-            }
-            // hopefully this is a HelloMessage or we have no place for this message to go
-            if ($msg instanceof HelloMessage) {
-                $session->setHelloMessage($msg);
-                try {
-                    $realm = $this->realmManager->getRealm($msg->getRealm());
-
-                    $realm->onMessage($session, $msg);
-                } catch (\Exception $e) {
-                    // TODO: Test this
-                    $errorUri    = "wamp.error.unknown";
-                    $description = $e->getMessage();
-                    if ($e instanceof InvalidRealmNameException || $e instanceof RealmNotFoundException) {
-                        $errorUri = "wamp.error.no_such_realm";
-                    }
-                    $session->abort(['description' => $description], $errorUri);
-                }
-            } else {
-                $session->abort(new \stdClass(), "wamp.error.unknown");
-            }
-        } else {
-            $realm = $session->getRealm();
-
-            $realm->onMessage($session, $msg);
-        }
     }
 
     /**
@@ -185,10 +162,6 @@ class Router implements RouterInterface, EventSubscriberInterface
     public function onClose(TransportInterface $transport)
     {
         Logger::debug($this, "onClose from ".json_encode($transport->getTransportDetails()));
-
-        /* @var  $session \Thruway\Session */
-        $session = $this->sessions[$transport];
-
 
         $this->sessions->detach($transport);
     }
@@ -401,32 +374,16 @@ class Router implements RouterInterface, EventSubscriberInterface
     }
 
     /**
-     * @param \Thruway\Event\ConnectionOpenEvent $event
+     * Handle transport received message
+     *
+     * @param \Thruway\Transport\TransportInterface $transport
+     * @param \Thruway\Message\Message $msg
+     * @return void
      */
-    public function handleConnectionOpen(ConnectionOpenEvent $event)
+    public function onMessage(TransportInterface $transport, Message $msg)
     {
-        $this->sessions[$event->session->getSessionId()] = $event->session;
+        //not used anymore
     }
 
-    /**
-     * @param \Thruway\Event\ConnectionCloseEvent $event
-     */
-    public function handleConnectionClose(ConnectionCloseEvent $event)
-    {
-        unset($this->sessions[$event->session->getSessionId()]);
-        // TODO: should this be a message dispatched from the Transport?
-        $event->session->onClose();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getSubscribedEvents()
-    {
-        return [
-          "connection_open"  => ['handleConnectionOpen', 10],
-          "connection_close" => ['handleConnectionClose', 10]
-        ];
-    }
 }
 
