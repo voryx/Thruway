@@ -56,56 +56,52 @@ class Broker implements ManageableInterface, RealmModuleInterface
         $this->addMatcher(new PrefixMatcher());
     }
 
-
     /**
-     * Handle received message
      *
-     * @param \Thruway\AbstractSession $session
-     * @param \Thruway\Message\Message $msg
-     * @throws \Exception
-     * @return mixed|void
+     * @return array
      */
-    public function onMessage(AbstractSession $session, Message $msg)
+    public function getSubscribedRealmEvents()
     {
-        throw new \Exception("Should not be here");
-
-        Logger::debug($this,
-          "Broker onMessage for ".json_encode($session->getTransport()->getTransportDetails()).": ".json_encode($msg)
-        );
-
-        if ($msg instanceof PublishMessage):
-            $this->processPublish($session, $msg);
-        elseif ($msg instanceof SubscribeMessage):
-            $this->processSubscribe($session, $msg);
-        elseif ($msg instanceof UnsubscribeMessage):
-            $this->processUnsubscribe($session, $msg);
-        else:
-            throw new \Exception("Unhandled message type sent to broker: ".get_class($msg));
-        endif;
-    }
-
-    /**
-     * Handle message
-     * Returns true if this role handles this message.
-     *
-     * @param \Thruway\Message\Message $msg
-     * @return boolean
-     */
-    public function handlesMessage(Message $msg)
-    {
-        $handledMsgCodes = [
-          Message::MSG_SUBSCRIBE,
-          Message::MSG_UNSUBSCRIBE,
-          Message::MSG_PUBLISH
+        return [
+          "PublishMessageEvent"     => ["handlePublishMessage", 10],
+          "SubscribeMessageEvent"   => ["handleSubscribeMessage", 10],
+          "UnsubscribeMessageEvent" => ["handleUnsubscribeMessage", 10],
+          "LeaveRealm"              => ["handleLeaveRealm", 10],
         ];
-
-        if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
-            return true;
-        } else {
-            return false;
-        }
-
     }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handlePublishMessage(MessageEvent $event)
+    {
+        $this->processPublish($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleSubscribeMessage(MessageEvent $event)
+    {
+        $this->processSubscribe($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleUnsubscribeMessage(MessageEvent $event)
+    {
+        $this->processUnsubscribe($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\LeaveRealmEvent $event
+     */
+    public function handleLeaveRealm(LeaveRealmEvent $event)
+    {
+        $this->leave($event->session);
+    }
+
 
     /**
      * Return supported features
@@ -320,56 +316,5 @@ class Broker implements ManageableInterface, RealmModuleInterface
     {
         return $this->subscriptionGroups;
     }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handlePublishMessage(MessageEvent $event)
-    {
-        $this->processPublish($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleSubscribeMessage(MessageEvent $event)
-    {
-        $this->processSubscribe($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleUnsubscribeMessage(MessageEvent $event)
-    {
-        $this->processUnsubscribe($event->session, $event->message);
-    }
-
-//    public function handleErrorMessage(MessageEvent $event) {
-//        if ($this->handlesMessage($event->message)) {
-//
-//        }
-//    }
-
-    /**
-     * @param \Thruway\Event\LeaveRealmEvent $event
-     */
-    public function handleLeaveRealm(LeaveRealmEvent $event)
-    {
-        $this->leave($event->session);
-    }
-
-    /** @return array */
-    public function getSubscribedRealmEvents()
-    {
-        return [
-          "PublishMessageEvent"     => ["handlePublishMessage", 10],
-          "SubscribeMessageEvent"   => ["handleSubscribeMessage", 10],
-          "UnsubscribeMessageEvent" => ["handleUnsubscribeMessage", 10],
-            //"ErrorMessageEvent" => ["handleErrorMessage", 10],
-          "LeaveRealm"              => ["handleLeaveRealm", 10],
-        ];
-    }
-
 
 }

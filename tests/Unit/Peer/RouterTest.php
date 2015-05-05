@@ -640,40 +640,43 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $transport1 = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
             ->getMock();
 
+        $transport2 = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+          ->getMock();
+
+        $transport2->expects($this->exactly(3))
+          ->method('sendMessage')
+          ->withConsecutive(
+            [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+            [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')],
+            [$this->isInstanceOf('\Thruway\Message\EventMessage')]
+          );
+
+        $transportPublisher = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+          ->getMock();
+
+        $session1 = new \Thruway\Session($transport1);
+        $session2 = new \Thruway\Session($transport2);
+        $sessionPublisher = new \Thruway\Session($transportPublisher);
+
         $transport1->expects($this->exactly(3))
             ->method('sendMessage')
             ->withConsecutive(
                 [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
                 [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')],
-                [$this->callback(function ($arg) use ($router, $transport1) {
+                [$this->callback(function ($arg) use ($router, $transport1, $session1) {
                     $this->assertInstanceOf('\Thruway\Message\EventMessage', $arg);
 
                     // publish while in the callback
                     $publishMsg = new \Thruway\Message\PublishMessage(12346, (object)[], 'com.example.nowhere');
-                    $router->onMessage($transport1, $publishMsg);
+
+                    $session1->dispatchMessage($publishMsg);
 
                     $this->_callCount = $this->_callCount + 1;
                     return true;
                 })]
             );
 
-        $transport2 = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
-            ->getMock();
 
-        $transport2->expects($this->exactly(3))
-            ->method('sendMessage')
-            ->withConsecutive(
-                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
-                [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')],
-                [$this->isInstanceOf('\Thruway\Message\EventMessage')]
-            );
-
-        $transportPublisher = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
-            ->getMock();
-
-        $session1 = new \Thruway\Session($transport1);
-        $session2 = new \Thruway\Session($transport2);
-        $sessionPublisher = new \Thruway\Session($transportPublisher);
 
         $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session1));
         $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session2));

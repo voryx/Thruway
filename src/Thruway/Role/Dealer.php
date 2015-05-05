@@ -3,7 +3,6 @@
 namespace Thruway\Role;
 
 
-use Thruway\AbstractSession;
 use Thruway\Call;
 use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
@@ -28,7 +27,7 @@ use Thruway\Session;
  *
  * @package Thruway\Role
  */
-class Dealer extends AbstractRole implements RealmModuleInterface
+class Dealer implements RealmModuleInterface
 {
     /**
      * @var Procedure[]
@@ -80,6 +79,78 @@ class Dealer extends AbstractRole implements RealmModuleInterface
         $this->registrationsBySession = new \SplObjectStorage();
     }
 
+    /** @return array */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+          "CallMessageEvent"       => ["handleCallMessage", 10],
+          "CancelMessageEvent"     => ["handleCancelMessage", 10],
+          "RegisterMessageEvent"   => ["handleRegisterMessage", 10],
+          "UnregisterMessageEvent" => ["handleUnregisterMessage", 10],
+          "YieldMessageEvent"      => ["handleYieldMessage", 10],
+          "ErrorMessageEvent"      => ["handleErrorMessage", 10],
+          "LeaveRealm"             => ["handleLeaveRealm", 10],
+        ];
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleCallMessage(MessageEvent $event)
+    {
+        $this->processCall($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleCancelMessage(MessageEvent $event)
+    {
+        $this->processCancel($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleRegisterMessage(MessageEvent $event)
+    {
+        $this->processRegister($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleUnregisterMessage(MessageEvent $event)
+    {
+        $this->processUnregister($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleYieldMessage(MessageEvent $event)
+    {
+        $this->processYield($event->session, $event->message);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleErrorMessage(MessageEvent $event)
+    {
+        if ($this->handlesMessage($event->message)) {
+            $this->processError($event->session, $event->message);
+        }
+    }
+
+    /**
+     * @param \Thruway\Event\LeaveRealmEvent $event
+     */
+    public function handleLeaveRealm(LeaveRealmEvent $event)
+    {
+        $this->leave($event->session);
+    }
+
     /**
      * @return \stdClass
      */
@@ -91,36 +162,6 @@ class Dealer extends AbstractRole implements RealmModuleInterface
         $features->progressive_call_results = true;
 
         return $features;
-    }
-
-    /**
-     * process message
-     *
-     * @param \Thruway\AbstractSession $session
-     * @param \Thruway\Message\Message $msg
-     * @return mixed|void
-     */
-    public function onMessage(AbstractSession $session, Message $msg)
-    {
-        throw new \Exception("Should not be here.");
-
-        if ($msg instanceof RegisterMessage):
-            $this->processRegister($session, $msg);
-        elseif ($msg instanceof UnregisterMessage):
-            $this->processUnregister($session, $msg);
-        elseif ($msg instanceof YieldMessage):
-            $this->processYield($session, $msg);
-        elseif ($msg instanceof CallMessage):
-            $this->processCall($session, $msg);
-        elseif ($msg instanceof ErrorMessage):
-            $this->processError($session, $msg);
-        elseif ($msg instanceof CancelMessage):
-            $this->processCancel($session, $msg);
-
-        else:
-            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-        endif;
-
     }
 
     /**
@@ -532,75 +573,5 @@ class Dealer extends AbstractRole implements RealmModuleInterface
         return [$theRegistrations];
     }
 
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleCallMessage(MessageEvent $event)
-    {
-        $this->processCall($event->session, $event->message);
-    }
 
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleCancelMessage(MessageEvent $event)
-    {
-        $this->processCancel($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleRegisterMessage(MessageEvent $event)
-    {
-        $this->processRegister($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleUnregisterMessage(MessageEvent $event)
-    {
-        $this->processUnregister($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleYieldMessage(MessageEvent $event)
-    {
-        $this->processYield($event->session, $event->message);
-    }
-
-    /**
-     * @param \Thruway\Event\MessageEvent $event
-     */
-    public function handleErrorMessage(MessageEvent $event)
-    {
-        if ($this->handlesMessage($event->message)) {
-            $this->processError($event->session, $event->message);
-        }
-    }
-
-    /**
-     * @param \Thruway\Event\LeaveRealmEvent $event
-     */
-    public function handleLeaveRealm(LeaveRealmEvent $event)
-    {
-        $this->leave($event->session);
-    }
-
-    /** @return array */
-    public function getSubscribedRealmEvents()
-    {
-        return [
-          "CallMessageEvent"       => ["handleCallMessage", 10],
-          "CancelMessageEvent"     => ["handleCancelMessage", 10],
-          "RegisterMessageEvent"   => ["handleRegisterMessage", 10],
-          "UnregisterMessageEvent" => ["handleUnregisterMessage", 10],
-          "YieldMessageEvent"      => ["handleYieldMessage", 10],
-          "ErrorMessageEvent"      => ["handleErrorMessage", 10],
-          "LeaveRealm"             => ["handleLeaveRealm", 10],
-        ];
-    }
 }
