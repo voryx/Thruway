@@ -465,14 +465,15 @@ class Realm implements RealmModuleInterface
             $this->metaSession = $s;
         }
 
-        $this->getBroker()->onMessage($this->metaSession,
-            new PublishMessage(
-                Utils::getUniqueId(),
-                $options,
-                $topicName,
-                $arguments,
-                $argumentsKw
-            ));
+        $messageEvent = new MessageEvent($this->metaSession,
+          new PublishMessage(
+            Utils::getUniqueId(),
+            $options,
+            $topicName,
+            $arguments,
+            $argumentsKw
+          ));
+        $this->getBroker()->handlePublishMessage($messageEvent);
     }
 
     public function addModule(RealmModuleInterface $module) {

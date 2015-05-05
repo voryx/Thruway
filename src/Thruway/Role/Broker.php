@@ -67,6 +67,8 @@ class Broker implements ManageableInterface, RealmModuleInterface
      */
     public function onMessage(AbstractSession $session, Message $msg)
     {
+        throw new \Exception("Should not be here");
+
         Logger::debug($this,
             "Broker onMessage for " . json_encode($session->getTransport()->getTransportDetails()) . ": " . json_encode($msg)
         );

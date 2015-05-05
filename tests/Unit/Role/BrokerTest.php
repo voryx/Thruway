@@ -23,7 +23,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         $unsubscribeMsg = new \Thruway\Message\UnsubscribeMessage(\Thruway\Common\Utils::getUniqueId(), 0);
 
-        $broker->onMessage($session, $unsubscribeMsg);
+        $messegeEvent = new \Thruway\Event\MessageEvent($session, $unsubscribeMsg);
+        $broker->handleUnsubscribeMessage($messegeEvent);
     }
 
     public function testDoNotExcludeMe()
@@ -62,7 +63,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
             );
 
-        $broker->onMessage($session, $subscribeMsg);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $subscribeMsg);
+        $broker->handleSubscribeMessage($messageEvent );
 
         $subscriptionId = $subscribedMsg->getSubscriptionId();
 
@@ -72,7 +74,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase
             'test_subscription'
         );
 
-        $broker->onMessage($session, $publishMsg);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $publishMsg);
+        $broker->handlePublishMessage($messageEvent);
     }
 
     public function testPrefixMatcherValidUris() {
@@ -154,7 +157,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
             );
 
-        $broker->onMessage($session, $subscribeMsg);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $subscribeMsg);
+        $broker->handleSubscribeMessage($messageEvent );
 
         $subscriptionId = $subscribedMsg->getSubscriptionId();
 
@@ -164,7 +168,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase
             'test_subscription'
         );
 
-        $broker->onMessage($session, $publishMsg);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $publishMsg);
+        $broker->handlePublishMessage($messageEvent);
 
         $publishMsg = new \Thruway\Message\PublishMessage(
             \Thruway\Common\Utils::getUniqueId(),
@@ -172,7 +177,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase
             'test_subscription.more.uri.parts'
         );
 
-        $broker->onMessage($session, $publishMsg);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $publishMsg);
+        $broker->handlePublishMessage($messageEvent);
 
         $publishMsg = new \Thruway\Message\PublishMessage(
             \Thruway\Common\Utils::getUniqueId(),
@@ -180,31 +186,32 @@ class BrokerTest extends PHPUnit_Framework_TestCase
             'some.non.matching.uri'
         );
 
-        $broker->onMessage($session, $publishMsg);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $publishMsg);
+        $broker->handlePublishMessage($messageEvent);
     }
 
-    /**
-     * @throws Exception
-     * @expectedException Exception
-     */
-    public function testBadMessageToOnMessage()
-    {
-        $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
-            ->getMock();
-
-        $transport->expects($this->any())->method("getTransportDetails")->will($this->returnValue(""));
-
-        $session = $this->getMockBuilder('\Thruway\Session')
-            ->setMethods(["sendMessage"])
-            ->setConstructorArgs([$transport])
-            ->getMock();
-
-        $broker = new \Thruway\Role\Broker();
-
-        $goodbyeMsg = new \Thruway\Message\GoodbyeMessage([], 'test_reason');
-
-        $broker->onMessage($session, $goodbyeMsg);
-    }
+//    /**
+//     * @throws Exception
+//     * @expectedException Exception
+//     */
+//    public function testBadMessageToOnMessage()
+//    {
+//        $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+//            ->getMock();
+//
+//        $transport->expects($this->any())->method("getTransportDetails")->will($this->returnValue(""));
+//
+//        $session = $this->getMockBuilder('\Thruway\Session')
+//            ->setMethods(["sendMessage"])
+//            ->setConstructorArgs([$transport])
+//            ->getMock();
+//
+//        $broker = new \Thruway\Role\Broker();
+//
+//        $goodbyeMsg = new \Thruway\Message\GoodbyeMessage([], 'test_reason');
+//
+//        $broker->onMessage($session, $goodbyeMsg);
+//    }
 
     public function testRemoveRegistration()
     {
@@ -224,14 +231,17 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Common\Utils::getUniqueId(), [], "test.topic");
 
-        $broker->onMessage($session, $subscribeMsg);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $subscribeMsg);
+        $broker->handleSubscribeMessage($messageEvent );
 
         $subscriptions = $broker->getSubscriptions();
         $this->assertTrue(count($subscriptions) === 1);
 
         $subscriptions = array_values($subscriptions);
 
-        $broker->onMessage($session, new \Thruway\Message\UnsubscribeMessage(\Thruway\Common\Utils::getUniqueId(), $subscriptions[0]->getId()));
+        $messageEvent = new \Thruway\Event\MessageEvent($session, new \Thruway\Message\UnsubscribeMessage(\Thruway\Common\Utils::getUniqueId(), $subscriptions[0]->getId()));
+
+        $broker->handleUnsubscribeMessage($messageEvent);
 
         $this->assertTrue(count($broker->getSubscriptions()) === 0);
 
@@ -265,7 +275,9 @@ class BrokerTest extends PHPUnit_Framework_TestCase
                 [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')]
             );
 
-        $broker->onMessage($session, new \Thruway\Message\SubscribeMessage(1, new stdClass(), 'test.topic'));
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(1, new stdClass(), 'test.topic');
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $subscribeMsg);
+        $broker->handleSubscribeMessage($messageEvent);
     }
 
     public function testEligibleAuthroles() {
@@ -314,7 +326,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         $subscribeMessage = new \Thruway\Message\SubscribeMessage(1, (object)[], "a.b.c");
 
-        $broker->onMessage($session, $subscribeMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $subscribeMessage);
+        $broker->handleSubscribeMessage($messageEvent );
 
         $pubSession = $this->getMockBuilder('\Thruway\Session')
             ->setMethods(["sendMessage"])
@@ -326,37 +339,43 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         // test regular publish
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[], "a.b.c", ["first publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to authrole that is not us
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authroles" => ["alpha", "bravo", "charlie"]
         ], "a.b.c", ["second publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to our first authrole
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authroles" => ["alpha", "bravo", "test_role1", "charlie"]
         ], "a.b.c", ["third publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to our second authrole
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authroles" => ["test_role2"]
         ], "a.b.c", ["fourth publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to empty authrole
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authroles" => []
         ], "a.b.c", ["fifth publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to invalid authrole
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authroles" => "test_authrole2"
         ], "a.b.c", ["sixth publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
     }
 
     public function testEligibleAuthids() {
@@ -405,7 +424,8 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         $subscribeMessage = new \Thruway\Message\SubscribeMessage(1, (object)[], "a.b.c");
 
-        $broker->onMessage($session, $subscribeMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($session, $subscribeMessage);
+        $broker->handleSubscribeMessage($messageEvent );
 
         $pubSession = $this->getMockBuilder('\Thruway\Session')
             ->setMethods(["sendMessage"])
@@ -417,36 +437,42 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
         // test regular publish
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[], "a.b.c", ["first publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to authrole that is not us
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authids" => ["alpha", "bravo", "charlie"]
         ], "a.b.c", ["second publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to our first authrole
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authids" => ["alpha", "bravo", "test_authid", "charlie"]
         ], "a.b.c", ["third publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to our second authrole
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authids" => ["test_authid"]
         ], "a.b.c", ["fourth publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to empty authrole
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authids" => []
         ], "a.b.c", ["fifth publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
 
         // test publish to invalid authrole
         $pubMessage = new \Thruway\Message\PublishMessage(2, (object)[
             "_thruway_eligible_authids" => "test_authid"
         ], "a.b.c", ["sixth publish"]);
-        $broker->onMessage($pubSession, $pubMessage);
+        $messageEvent = new \Thruway\Event\MessageEvent($pubSession, $pubMessage);
+        $broker->handlePublishMessage($messageEvent);
     }
 }
