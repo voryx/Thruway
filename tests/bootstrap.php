@@ -1,5 +1,7 @@
 <?php
 
+ini_set("xdebug.max_nesting_level","200");
+
 /**
  * Find the auto loader file
  */
