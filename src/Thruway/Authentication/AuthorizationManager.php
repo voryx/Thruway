@@ -56,7 +56,6 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
 
         $authorizingRealm     = $router->getRealmManager()->getRealm($this->getRealm());
         $authorizingRealm->setAuthorizationManager($this);
-        $authorizingRealm->setAuthenticationManager($this->router->getAuthenticationManager());
     }
 
     /**

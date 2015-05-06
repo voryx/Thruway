@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__.'/../bootstrap.php';
 
 class RealmTest extends PHPUnit_Framework_TestCase
 {
@@ -30,32 +30,13 @@ class RealmTest extends PHPUnit_Framework_TestCase
      * @depends testRealmCreate
      *
      * @param \Thruway\Realm $realm
-     * @expectedException \Thruway\Exception\InvalidRealmNameException
-     */
-    public function testJoinWithWrongRealmInHello(\Thruway\Realm $realm)
-    {
-        $session = new \Thruway\Session(new \Thruway\Transport\DummyTransport());
-
-        $helloMsg = new \Thruway\Message\HelloMessage('incorrect_realm', []);
-        $realm->handleHelloMessage(new \Thruway\Event\MessageEvent($session, $helloMsg));
-    }
-
-    /**
-     * @depends testRealmCreate
-     *
-     * @param \Thruway\Realm $realm
      * @return \Thruway\Session
      */
     public function testJoin(\Thruway\Realm $realm)
     {
         $session = new \Thruway\Session(new \Thruway\Transport\DummyTransport());
 
-
-        $helloMessage = new \Thruway\Message\HelloMessage('test_realm', []);
         $realm->addSession($session);
-        $realm->handleHelloMessage(new \Thruway\Event\MessageEvent($session, $helloMessage));
-
-        $this->assertInstanceOf('\Thruway\Message\WelcomeMessage', $session->getTransport()->getLastMessageSent());
         $this->assertSame($session->getRealm(), $realm);
 
         return $session;
@@ -71,9 +52,9 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $realm = $session->getRealm();
 
         $registerMessage = new \Thruway\Message\RegisterMessage(
-            \Thruway\Common\Utils::getUniqueId(),
-            [],
-            'test_procedure'
+          \Thruway\Common\Utils::getUniqueId(),
+          [],
+          'test_procedure'
         );
 
         $session->dispatchMessage($registerMessage);
@@ -83,9 +64,8 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($registrations));
         $this->assertEquals("test_procedure", $registrations[0]['name']);
         $this->assertInstanceOf('\Thruway\Message\RegisteredMessage',
-            $session->getTransport()->getLastMessageSent());
+          $session->getTransport()->getLastMessageSent());
     }
-
 
 
     /**
@@ -109,34 +89,35 @@ class RealmTest extends PHPUnit_Framework_TestCase
     }
 
 
-    public function xtestUnauthorizedActions() {
+    public function xtestUnauthorizedActions()
+    {
         $this->markTestIncomplete("Authorization cannot be tested here and will be moved to a module");
         $session = $this->getMockBuilder('\Thruway\Session')
-            ->disableOriginalConstructor()
-            ->setMethods(["sendMessage"])
-            ->getMock();
+          ->disableOriginalConstructor()
+          ->setMethods(["sendMessage"])
+          ->getMock();
 
         $authorizationManager = $this->getMockBuilder('\Thruway\Authentication\AuthorizationManagerInterface')
-            ->getMock();
+          ->getMock();
 
         $realm = new \Thruway\Realm("some_realm");
         $realm->setAuthorizationManager($authorizationManager);
 
         $subscribeMsg = new \Thruway\Message\SubscribeMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_topic");
-        $publishMsg = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), (object)["acknowledge"=>true], "some_topic");
-        $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], 'some_procedure');
-        $callMsg = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_procedure");
+        $publishMsg   = new \Thruway\Message\PublishMessage(\Thruway\Common\Utils::getUniqueId(), (object) ["acknowledge" => true], "some_topic");
+        $registerMsg  = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], 'some_procedure');
+        $callMsg      = new \Thruway\Message\CallMessage(\Thruway\Common\Utils::getUniqueId(), [], "some_procedure");
 
         $authorizationManager->expects($this->exactly(5))
-            ->method("isAuthorizedTo")
-            ->withConsecutive(
-                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\SubscribeMessage')],
-                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\PublishMessage')],
-                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\RegisterMessage')],
-                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\CallMessage')],
-                [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\PublishMessage')]
-            )
-            ->willReturn(false);;
+          ->method("isAuthorizedTo")
+          ->withConsecutive(
+            [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\SubscribeMessage')],
+            [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\PublishMessage')],
+            [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\RegisterMessage')],
+            [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\CallMessage')],
+            [$this->isInstanceOf('\Thruway\Session'), $this->isInstanceOf('\Thruway\Message\PublishMessage')]
+          )
+          ->willReturn(false);;
 
         $errorCheck = function ($msg) {
             $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $msg);
@@ -146,14 +127,14 @@ class RealmTest extends PHPUnit_Framework_TestCase
         };
 
         $session->expects($this->exactly(5))
-            ->method("sendMessage")
-            ->withConsecutive(
-                [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
-                [$this->callback($errorCheck)],
-                [$this->callback($errorCheck)],
-                [$this->callback($errorCheck)],
-                [$this->callback($errorCheck)]
-            );
+          ->method("sendMessage")
+          ->withConsecutive(
+            [$this->isInstanceOf('\Thruway\Message\WelcomeMessage')],
+            [$this->callback($errorCheck)],
+            [$this->callback($errorCheck)],
+            [$this->callback($errorCheck)],
+            [$this->callback($errorCheck)]
+          );
 
         $helloMsg = new \Thruway\Message\HelloMessage("some_realm", []);
 
@@ -169,16 +150,17 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $realm->onMessage($session, $publishMsg2);
     }
 
-    public function testImmediateAbort() {
+    public function testImmediateAbort()
+    {
         $realm = new \Thruway\Realm("realm1");
 
         $session = $this->getMockBuilder('\Thruway\Session')
-            ->disableOriginalConstructor()
-            ->setMethods(["sendMessage", "shutdown"])
-            ->getMock();
+          ->disableOriginalConstructor()
+          ->setMethods(["sendMessage", "shutdown"])
+          ->getMock();
 
         $session->expects($this->once())
-            ->method("shutdown");
+          ->method("shutdown");
 
         $abortMessage = new \Thruway\Message\AbortMessage([], "some.abort.reason");
         $realm->handleAbortMessage(new \Thruway\Event\MessageEvent($session, $abortMessage));

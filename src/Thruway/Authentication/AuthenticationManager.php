@@ -3,12 +3,15 @@
 namespace Thruway\Authentication;
 
 use React\EventLoop\LoopInterface;
+use Thruway\Event\ConnectionOpenEvent;
+use Thruway\Event\MessageEvent;
 use Thruway\Logging\Logger;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\WelcomeMessage;
+use Thruway\Module\RealmModuleInterface;
 use Thruway\Module\RouterModuleClient;
 use Thruway\Peer\RouterInterface;
 use Thruway\Realm;
@@ -20,7 +23,8 @@ use Thruway\Session;
  *
  * @package Thruway\Authentication
  */
-class AuthenticationManager extends RouterModuleClient implements AuthenticationManagerInterface
+class AuthenticationManager extends RouterModuleClient implements AuthenticationManagerInterface, RealmModuleInterface
+
 {
     /**
      * List authentication methods
@@ -48,6 +52,56 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
     }
 
     /**
+     * Listen for Router events
+     *
+     * @return array
+     */
+    public static function getSubscribedEvents()
+    {
+        return [
+          "connection_open" => ["handleConnectionOpen", 10]
+        ];
+    }
+
+
+    /**
+     * Listen for Realm events
+     * @return array
+     */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+          "HelloMessageEvent"        => ["handleMessageEvent", 99],
+          "AuthenticateMessageEvent" => ["handleMessageEvent", 100],
+        ];
+    }
+
+    /**
+     * @param \Thruway\Event\ConnectionOpenEvent $event
+     */
+    public function handleConnectionOpen(ConnectionOpenEvent $event)
+    {
+        //Register for Realm events
+        $event->session->dispatcher->addRealmSubscriber($this);
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $event
+     */
+    public function handleMessageEvent(MessageEvent $event)
+    {
+
+        /** @var HelloMessage $msg */
+        $msg     = $event->message;
+        $session = $event->session;
+
+        $this->onAuthenticationMessage($session->getRealm(), $session, $msg);
+
+        $event->stopPropagation();
+
+    }
+
+    /**
      * Gets called when the module is initialized in the router
      *
      * @inheritdoc
@@ -55,7 +109,6 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
     public function initModule(RouterInterface $router, LoopInterface $loop)
     {
         parent::initModule($router, $loop);
-        $this->router->setAuthenticationManager($this);
     }
 
 

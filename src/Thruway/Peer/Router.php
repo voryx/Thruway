@@ -164,23 +164,28 @@ class Router implements RouterInterface, EventSubscriberInterface
 
     /**
      * Set authentication manager
+     * @deprecated
      *
      * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
+     * @throws \Exception
      */
     public function setAuthenticationManager($authenticationManager)
     {
-        $this->authenticationManager = $authenticationManager;
-        $this->realmManager->setDefaultAuthenticationManager($this->authenticationManager);
+        throw new \Exception("You must add the AuthenticationManager as a module");
+
     }
 
     /**
      * Get authentication manager
      *
+     * @deprecated
+     *
      * @return \Thruway\Authentication\AuthenticationManagerInterface
+     * @throws \Exception
      */
     public function getAuthenticationManager()
     {
-        return $this->authenticationManager;
+        throw new \Exception("AuthenticationManager is now a module");
     }
 
     /**

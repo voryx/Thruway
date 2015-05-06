@@ -136,7 +136,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
             if ($this->getAllowRealmAutocreate()) {
                 Logger::debug($this, "Creating new realm \"".$realmName."\"");
                 $realm = new Realm($realmName);
-                $realm->setAuthenticationManager($this->getDefaultAuthenticationManager());
                 $realm->setAuthorizationManager($this->getDefaultAuthorizationManager());
                 $realm->setManager($this->manager);
 
@@ -230,26 +229,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     public function getAllowRealmAutocreate()
     {
         return $this->allowRealmAutocreate;
-    }
-
-    /**
-     * Set default authentication manager
-     *
-     * @param \Thruway\Authentication\AuthenticationManagerInterface $defaultAuthenticationManager
-     */
-    public function setDefaultAuthenticationManager($defaultAuthenticationManager)
-    {
-        $this->defaultAuthenticationManager = $defaultAuthenticationManager;
-    }
-
-    /**
-     * Get default authentication manager
-     *
-     * @return \Thruway\Authentication\AuthenticationManagerInterface
-     */
-    public function getDefaultAuthenticationManager()
-    {
-        return $this->defaultAuthenticationManager;
     }
 
     /**

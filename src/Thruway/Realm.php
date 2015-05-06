@@ -3,7 +3,7 @@
 namespace Thruway;
 
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
-use Thruway\Authentication\AuthenticationDetails;
+use Thruway\Authentication\AnonymousAuthenticator;
 use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
@@ -11,11 +11,8 @@ use Thruway\Event\MessageEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Logging\Logger;
 use Thruway\Manager\ManagerDummy;
-use Thruway\Message\ActionMessageInterface;
 use Thruway\Message\AuthenticateMessage;
-use Thruway\Message\ErrorMessage;
 use Thruway\Message\GoodbyeMessage;
-use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\WelcomeMessage;
@@ -52,9 +49,6 @@ class Realm implements RealmModuleInterface
     /** @var \Thruway\Role\Dealer */
     private $dealer;
 
-    /** @var \Thruway\Authentication\AuthenticationManagerInterface */
-    private $authenticationManager;
-
     /** @var AuthorizationManagerInterface */
     private $authorizationManager;
 
@@ -72,15 +66,15 @@ class Realm implements RealmModuleInterface
      */
     public function __construct($realmName)
     {
-        $this->realmName             = $realmName;
-        $this->sessions              = new \SplObjectStorage();
-        $this->broker                = new Broker();
-        $this->dealer                = new Dealer();
-        $this->roles                 = [$this->broker, $this->dealer];
-        $this->authenticationManager = null;
+        $this->realmName = $realmName;
+        $this->sessions  = new \SplObjectStorage();
+        $this->broker    = new Broker();
+        $this->dealer    = new Dealer();
+        $this->roles     = [$this->broker, $this->dealer];
 
         $this->addModule($this->broker);
         $this->addModule($this->dealer);
+        $this->addModule(new AnonymousAuthenticator());
 
         $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
         $this->setManager(new ManagerDummy());
@@ -94,11 +88,12 @@ class Realm implements RealmModuleInterface
     public function getSubscribedRealmEvents()
     {
         return [
-          "HelloMessageEvent"        => ["handleHelloMessage", 10],
+
           "GoodbyeMessageEvent"      => ["handleGoodbyeMessage", 10],
           "AbortMessageEvent"        => ["handleAbortMessage", 10],
           "AuthenticateMessageEvent" => ["handleAuthenticateMessage", 10],
           "LeaveRealm"               => ["handleLeaveRealm", 10],
+          "SendWelcomeMessageEvent"  => ["handleSendWelcomeMessage", 10],
         ];
     }
 
@@ -106,9 +101,9 @@ class Realm implements RealmModuleInterface
      * @param \Thruway\Event\MessageEvent $event
      * @throws \Thruway\Exception\InvalidRealmNameException
      */
-    public function handleHelloMessage(MessageEvent $event)
+    public function handleSendWelcomeMessage(MessageEvent $event)
     {
-        $this->processHello($event->session, $event->message);
+        $this->processSendWelcome($event->session, $event->message);
     }
 
     /**
@@ -166,65 +161,16 @@ class Realm implements RealmModuleInterface
     }
 
     /**
-     * Process All Messages if the session has been authenticated
-     *
-     * @param \Thruway\Session $session
-     * @param \Thruway\Message\Message $msg
-     */
-    private function processAuthenticated(Session $session, Message $msg)
-    {
-        // authorization stuff here
-        if ($msg instanceof ActionMessageInterface) {
-            if (!$this->getAuthorizationManager()->isAuthorizedTo($session, $msg)) {
-                Logger::alert($this,
-                  "Permission denied: ".$msg->getActionName()." ".$msg->getUri()." for ".$session->getAuthenticationDetails()->getAuthId());
-
-                // we are not to send messages in response to publish messages unless
-                // they set acknowledge = true
-                if ($msg instanceof PublishMessage) {
-                    if (!$msg->acknowledge()) {
-                        return;
-                    }
-                }
-
-                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.not_authorized"));
-
-                return;
-            }
-        }
-
-        $handled = false;
-        foreach ($this->roles as $role) {
-            if ($role->handlesMessage($msg)) {
-                $role->onMessage($session, $msg);
-                $handled = true;
-                break;
-            }
-        }
-
-        if (!$handled) {
-            Logger::warning($this, "Unhandled message sent to \"{$this->getRealmName()}\"");
-        }
-    }
-
-    /**
      * Process HelloMessage
      *
      * @param \Thruway\Session $session
-     * @param \Thruway\Message\HelloMessage $msg
+     * @param \Thruway\Message\WelcomeMessage $msg
      * @throws InvalidRealmNameException
      */
-    private function processHello(Session $session, HelloMessage $msg)
+    private function processSendWelcome(Session $session, WelcomeMessage $msg)
     {
-        if ($this->getRealmName() != $msg->getRealm()) {
-            throw new InvalidRealmNameException();
-        }
-        Logger::debug($this, "Got Hello");
 
-        $this->sessions->attach($session);
-        $session->setRealm($this);
-
-        $details = $msg->getDetails();
+        $details = $session->getHelloMessage()->getDetails();
 
         if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
             $session->setRoleFeatures($details->roles);
@@ -232,27 +178,8 @@ class Realm implements RealmModuleInterface
 
         $session->setState(Session::STATE_UP); // this should probably be after authentication
 
-        if ($this->getAuthenticationManager() !== null) {
-            try {
-                $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
-            } catch (\Exception $e) {
-
-            }
-        } else {
-            $session->setAuthenticated(true);
-
-            // still set admin on trusted transports
-            $authDetails = AuthenticationDetails::createAnonymous();
-            if ($session->getTransport() !== null && $session->getTransport()->isTrusted()) {
-                $authDetails->addAuthRole('admin');
-            }
-            $session->setAuthenticationDetails($authDetails);
-
-            $session->sendMessage(
-              new WelcomeMessage($session->getSessionId(), $details)
-            );
-        }
     }
+
 
     /**
      * Process AuthenticateMessage
@@ -262,17 +189,8 @@ class Realm implements RealmModuleInterface
      */
     private function processAuthenticate(Session $session, AuthenticateMessage $msg)
     {
-        if ($this->getAuthenticationManager() !== null) {
-            try {
-                $this->getAuthenticationManager()->onAuthenticationMessage($this, $session, $msg);
-            } catch (\Exception $e) {
-                $session->abort(new \stdClass(), "thruway.error.internal");
-                Logger::error($this, "Authenticate sent to realm without auth manager.");
-            }
-        } else {
-            $session->abort(new \stdClass(), "thruway.error.internal");
-            Logger::error($this, "Authenticate sent to realm without auth manager.");
-        }
+        $session->abort(new \stdClass(), "thruway.error.internal");
+        Logger::error($this, "Authenticate sent to realm without auth manager.");
     }
 
     /**
@@ -336,10 +254,10 @@ class Realm implements RealmModuleInterface
 
         Logger::debug($this, "Leaving realm {$session->getRealm()->getRealmName()}");
 
-        // TODO: move to module
-        if ($this->getAuthenticationManager() !== null) {
-            $this->getAuthenticationManager()->onSessionClose($session);
-        }
+//        // TODO: move to module
+//        if ($this->getAuthenticationManager() !== null) {
+//            $this->getAuthenticationManager()->onSessionClose($session);
+//        }
 
         $this->sessions->detach($session);
     }
@@ -369,26 +287,6 @@ class Realm implements RealmModuleInterface
     public function getManager()
     {
         return $this->manager;
-    }
-
-    /**
-     * Set authentication manager
-     *
-     * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
-     */
-    public function setAuthenticationManager($authenticationManager)
-    {
-        $this->authenticationManager = $authenticationManager;
-    }
-
-    /**
-     * Get authentication manager
-     *
-     * @return \Thruway\Authentication\AuthenticationManagerInterface
-     */
-    public function getAuthenticationManager()
-    {
-        return $this->authenticationManager;
     }
 
     /**
@@ -478,6 +376,7 @@ class Realm implements RealmModuleInterface
     public function addSession(Session $session)
     {
         $this->sessions->attach($session);
+        $session->setRealm($this);
         $session->dispatcher->addRealmSubscriber($this);
         foreach ($this->modules as $module) {
             $session->dispatcher->addRealmSubscriber($module);
