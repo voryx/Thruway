@@ -23,7 +23,7 @@ use Thruway\Session;
  *
  * @package Thruway\Authentication
  */
-class AuthenticationManager extends RouterModuleClient implements AuthenticationManagerInterface, RealmModuleInterface
+class AuthenticationManager extends RouterModuleClient implements RealmModuleInterface
 
 {
     /**
@@ -90,12 +90,10 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
      */
     public function handleMessageEvent(MessageEvent $event)
     {
-
-        /** @var HelloMessage $msg */
         $msg     = $event->message;
         $session = $event->session;
 
-        $this->onAuthenticationMessage($session->getRealm(), $session, $msg);
+        $this->processMessage($session->getRealm(), $session, $msg);
 
         $event->stopPropagation();
 
@@ -141,7 +139,7 @@ class AuthenticationManager extends RouterModuleClient implements Authentication
      * @param \Thruway\Message\Message $msg
      * @throws \Exception
      */
-    public function onAuthenticationMessage(Realm $realm, Session $session, Message $msg)
+    private function processMessage(Realm $realm, Session $session, Message $msg)
     {
         if ($session->isAuthenticated()) {
             throw new \Exception("Message sent to authentication manager for already authenticated session.");

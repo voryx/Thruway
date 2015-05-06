@@ -23,11 +23,8 @@ class AnonymousAuthenticator implements RealmModuleInterface
      */
     public function getSubscribedRealmEvents()
     {
-        return [
-          "HelloMessageEvent" => ["handleHelloMessageEvent", 0]
-        ];
+        return ["HelloMessageEvent" => ["handleHelloMessageEvent", 0]];
     }
-
 
     /**
      * @param \Thruway\Event\MessageEvent $event
