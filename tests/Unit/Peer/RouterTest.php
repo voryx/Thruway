@@ -50,7 +50,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Configure the stub.
         $transport->expects($this->any())
             ->method('getTransportDetails')
-            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+            ->will($this->returnValue(["type" => "ratchet", "transport_address" => "127.0.0.1"]));
 
         $session = new \Thruway\Session($transport);
 
@@ -73,7 +73,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Configure the stub.
         $transport->expects($this->any())
             ->method('getTransportDetails')
-            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+            ->will($this->returnValue(["type" => "ratchet", "transport_address" => "127.0.0.1"]));
 
         $session = new \Thruway\Session($transport);
 
@@ -408,7 +408,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Configure the stub.
         $transport->expects($this->any())
             ->method('getTransportDetails')
-            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+            ->will($this->returnValue(["type" => "ratchet", "transport_address" => "127.0.0.1"]));
 
         //Simulate onOpen
         $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
@@ -439,7 +439,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Configure the stub.
         $transport->expects($this->any())
             ->method('getTransportDetails')
-            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+            ->will($this->returnValue(["type" => "ratchet", "transport_address" => "127.0.0.1"]));
 
         //Subscribe to a topic
         $subscriptionId = null;
@@ -521,7 +521,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Configure the stub.
         $transport->expects($this->any())
             ->method('getTransportDetails')
-            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+            ->will($this->returnValue(["type" => "ratchet", "transport_address" => "127.0.0.1"]));
 
         //No messages should be sent
         $transport->expects($this->never())
@@ -554,7 +554,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Configure the stub.
         $transport->expects($this->any())
             ->method('getTransportDetails')
-            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+            ->will($this->returnValue(["type" => "ratchet", "transport_address" => "127.0.0.1"]));
 
         $transport->expects($this->once())
             ->method('sendMessage')
@@ -597,7 +597,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         // Configure the stub.
         $transport->expects($this->any())
             ->method('getTransportDetails')
-            ->will($this->returnValue(["type" => "ratchet", "transportAddress" => "127.0.0.1"]));
+            ->will($this->returnValue(["type" => "ratchet", "transport_address" => "127.0.0.1"]));
 
         $transport->expects($this->once())
             ->method('sendMessage')

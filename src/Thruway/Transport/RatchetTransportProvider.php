@@ -56,8 +56,8 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
      */
     public function __construct($address = "127.0.0.1", $port = 8080)
     {
-        $this->port       = $port;
-        $this->address    = $address;
+        $this->port     = $port;
+        $this->address  = $address;
         $this->sessions = new \SplObjectStorage();
     }
 
@@ -122,11 +122,20 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
             //$this->router->onMessage($transport, $transport->getSerializer()->deserialize($msg));
             $msg = $session->getTransport()->getSerializer()->deserialize($msg);
 
+            if ($msg instanceof HelloMessage) {
+
+                $details = $msg->getDetails();
+
+                $details->transport = (object) $session->getTransport()->getTransportDetails();
+
+                $msg->setDetails($details);
+            }
+
             $session->dispatchMessage($msg);
         } catch (DeserializationException $e) {
             Logger::alert($this, "Deserialization exception occurred.");
         } catch (\Exception $e) {
-            Logger::alert($this, "Exception occurred during onMessage: " . $e->getMessage());
+            Logger::alert($this, "Exception occurred during onMessage: ".$e->getMessage());
         }
     }
 
@@ -153,12 +162,13 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
         $socket = new Reactor($this->loop);
         $socket->listen($this->port, $this->address);
 
-        Logger::info($this, "Websocket listening on " . $this->address . ":" . $this->port);
+        Logger::info($this, "Websocket listening on ".$this->address.":".$this->port);
 
         $this->server = new IoServer(new HttpServer($ws), $socket, $this->loop);
     }
 
-    public function handleRouterStop(RouterStopEvent $event) {
+    public function handleRouterStop(RouterStopEvent $event)
+    {
         if ($this->server) {
             $this->server->socket->shutdown();
         }
@@ -171,8 +181,8 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     public static function getSubscribedEvents()
     {
         return [
-            "router.start" => ["handleRouterStart", 10],
-            "router.stop" => ["handleRouterStop", 10]
+          "router.start" => ["handleRouterStart", 10],
+          "router.stop"  => ["handleRouterStop", 10]
         ];
     }
 }

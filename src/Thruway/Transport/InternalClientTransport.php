@@ -47,7 +47,7 @@ class InternalClientTransport extends AbstractTransport
     {
         return [
             "type"             => "internalClient",
-            "transportAddress" => "internal"
+            "transport_address" => "internal"
         ];
     }
 

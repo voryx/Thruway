@@ -299,10 +299,9 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
 
                 case "NOCHALLENGE":
                     $details             = new \stdClass();
-                    $details->authid     = $res[1]["authid"];
+                    $details->authid     = $res[1]->authid;
                     $details->authmethod = $session->getAuthenticationDetails()->getAuthMethod();
 
-                    $realm->addRolesToDetails($details);
                     $session->sendMessage(new WelcomeMessage($session->getSessionId(), $details));
                     break;
 
@@ -425,6 +424,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         $arguments->challenge  = $session->getAuthenticationDetails()->getChallenge();
         $arguments->signature  = $msg->getSignature();
         $arguments->authmethod = $authMethod;
+        $arguments->hello_message = $session->getHelloMessage();
 
         // now we send our authenticate information to the RPC
         $onAuthenticateHandler = $authMethodInfo['handlers']->onauthenticate;

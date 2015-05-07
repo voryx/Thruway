@@ -54,7 +54,7 @@ class DummyTransport extends AbstractTransport
     {
         return [
             "type"             => "dummyTransport",
-            "transportAddress" => "dummy"
+            "transport_address" => "dummy"
         ];
     }
 

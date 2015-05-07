@@ -3,6 +3,8 @@
 namespace Thruway\Transport;
 
 
+use Guzzle\Http\Message\Header\HeaderCollection;
+use Guzzle\Http\Message\Request;
 use Ratchet\WebSocket\Version\RFC6455\Frame;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
@@ -71,9 +73,20 @@ class RatchetTransport extends AbstractTransport
         $transportAddress = null;
         $transportAddress = $this->conn->remoteAddress;
 
+        /** @var Request $request */
+        $request     = $this->conn->WebSocket->request;
+        $headers     = $request->getHeaders()->toArray();
+        $queryParams = $request->getQuery()->toArray();
+        $cookies     = $request->getCookies();
+        $url         = $request->getUrl();
+
         return [
-            "type"             => "ratchet",
-            "transportAddress" => $transportAddress
+          "type"             => "ratchet",
+          "transport_address" => $transportAddress,
+          "headers"          => $headers,
+          "url"              => $url,
+          "query_params"     => $queryParams,
+          "cookies"          => $cookies,
         ];
     }
 
@@ -105,9 +118,9 @@ class RatchetTransport extends AbstractTransport
             $deferred = new Deferred();
 
             $this->pingRequests[$seq] = [
-                'seq'      => $seq,
-                'deferred' => $deferred,
-                'timer'    => $timer
+              'seq'      => $seq,
+              'deferred' => $deferred,
+              'timer'    => $timer
             ];
 
             return $deferred->promise();

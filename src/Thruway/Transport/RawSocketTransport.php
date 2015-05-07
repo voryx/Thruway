@@ -142,7 +142,7 @@ class RawSocketTransport extends AbstractTransport implements EventEmitterInterf
     {
         return [
             "type"             => "raw",
-            "transportAddress" => $this->getConn()->getRemoteAddress()
+            "transport_address" => $this->getConn()->getRemoteAddress()
         ];
     }
 
