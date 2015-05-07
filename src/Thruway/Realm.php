@@ -4,7 +4,6 @@ namespace Thruway;
 
 use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AnonymousAuthenticator;
-use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
 use Thruway\Event\MessageEvent;
@@ -49,9 +48,6 @@ class Realm implements RealmModuleInterface
     /** @var \Thruway\Role\Dealer */
     private $dealer;
 
-    /** @var AuthorizationManagerInterface */
-    private $authorizationManager;
-
     /**
      * The metaSession is used as a dummy session to send meta events from
      *
@@ -75,8 +71,6 @@ class Realm implements RealmModuleInterface
         $this->addModule($this->broker);
         $this->addModule($this->dealer);
         $this->addModule(new AnonymousAuthenticator());
-
-        $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
         $this->setManager(new ManagerDummy());
     }
 
@@ -253,12 +247,6 @@ class Realm implements RealmModuleInterface
     {
 
         Logger::debug($this, "Leaving realm {$session->getRealm()->getRealmName()}");
-
-//        // TODO: move to module
-//        if ($this->getAuthenticationManager() !== null) {
-//            $this->getAuthenticationManager()->onSessionClose($session);
-//        }
-
         $this->sessions->detach($session);
     }
 
@@ -287,22 +275,6 @@ class Realm implements RealmModuleInterface
     public function getManager()
     {
         return $this->manager;
-    }
-
-    /**
-     * @return AuthorizationManagerInterface
-     */
-    public function getAuthorizationManager()
-    {
-        return $this->authorizationManager;
-    }
-
-    /**
-     * @param AuthorizationManagerInterface $authorizationManager
-     */
-    public function setAuthorizationManager($authorizationManager)
-    {
-        $this->authorizationManager = $authorizationManager;
     }
 
     /**

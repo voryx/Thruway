@@ -19,7 +19,7 @@
 
             <!-- tests that need to be reworked for 0.4 or support hasn't been ported over yet -->
             <exclude>tests/WAMP/SessionMetaTest.php</exclude>
-            <exclude>tests/WAMP/AuthorizingRealmTest.php</exclude>
+            <!--<exclude>tests/WAMP/AuthorizingRealmTest.php</exclude>-->
         </testsuite>
     </testsuites>
 

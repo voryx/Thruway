@@ -2,12 +2,10 @@
 
 namespace Thruway;
 
-
-use Thruway\Authentication\AllPermissiveAuthorizationManager;
-use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\MessageEvent;
+use Thruway\Event\NewRealmEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Logging\Logger;
@@ -33,11 +31,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     /** @var boolean */
     private $allowRealmAutocreate;
 
-    /** @var \Thruway\Authentication\AuthenticationManagerInterface */
-    private $defaultAuthenticationManager;
-
-    /** @var AuthorizationManagerInterface */
-    private $defaultAuthorizationManager;
 
     /**
      * Constructor
@@ -46,10 +39,9 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
      */
     public function __construct(ManagerInterface $manager = null)
     {
-        $this->realms                      = [];
-        $this->manager                     = $manager ?: new ManagerDummy();
-        $this->allowRealmAutocreate        = true;
-        $this->defaultAuthorizationManager = new AllPermissiveAuthorizationManager();
+        $this->realms               = [];
+        $this->manager              = $manager ?: new ManagerDummy();
+        $this->allowRealmAutocreate = true;
 
     }
 
@@ -136,7 +128,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
             if ($this->getAllowRealmAutocreate()) {
                 Logger::debug($this, "Creating new realm \"".$realmName."\"");
                 $realm = new Realm($realmName);
-                $realm->setAuthorizationManager($this->getDefaultAuthorizationManager());
                 $realm->setManager($this->manager);
 
                 $this->addRealm($realm);
@@ -176,6 +167,8 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
         }
 
         $this->realms[$realm->getRealmName()] = $realm;
+
+        $this->router->getEventDispatcher()->dispatch('new_realm', new NewRealmEvent($realm));
     }
 
     /**
@@ -229,22 +222,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     public function getAllowRealmAutocreate()
     {
         return $this->allowRealmAutocreate;
-    }
-
-    /**
-     * @return AuthorizationManagerInterface
-     */
-    public function getDefaultAuthorizationManager()
-    {
-        return $this->defaultAuthorizationManager;
-    }
-
-    /**
-     * @param AuthorizationManagerInterface $defaultAuthorizationManager
-     */
-    public function setDefaultAuthorizationManager($defaultAuthorizationManager)
-    {
-        $this->defaultAuthorizationManager = $defaultAuthorizationManager;
     }
 
 }

@@ -7,7 +7,11 @@ namespace Thruway\Authentication;
 use Ratchet\Wamp\Exception;
 use React\EventLoop\LoopInterface;
 use Thruway\Common\Utils;
+use Thruway\Event\MessageEvent;
+use Thruway\Event\NewRealmEvent;
 use Thruway\Message\ActionMessageInterface;
+use Thruway\Message\ErrorMessage;
+use Thruway\Module\RealmModuleInterface;
 use Thruway\Module\RouterModuleClient;
 use Thruway\Peer\RouterInterface;
 use Thruway\Result;
@@ -18,7 +22,7 @@ use Thruway\Session;
  * Class AuthorizationManager
  * @package Thruway\Authentication
  */
-class AuthorizationManager extends RouterModuleClient implements AuthorizationManagerInterface
+class AuthorizationManager extends RouterModuleClient implements RealmModuleInterface
 {
     /**
      * @var bool
@@ -46,6 +50,54 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
     }
 
     /**
+     * Listen for Router events
+     *
+     * @return array
+     */
+    public static function getSubscribedEvents()
+    {
+        return [
+          "new_realm" => ["handleNewRealm", 10]
+        ];
+    }
+
+    /**
+     * @param \Thruway\Event\NewRealmEvent $newRealmEvent
+     */
+    public function handleNewRealm(NewRealmEvent $newRealmEvent)
+    {
+        $realm = $newRealmEvent->realm;
+
+        if ($realm->getRealmName() === $this->getRealm()) {
+            $realm->addModule($this);
+        }
+    }
+
+    /** @return array */
+    public function getSubscribedRealmEvents()
+    {
+        return [
+          "PublishMessageEvent"   => ["handleMessage", 100],
+          "SubscribeMessageEvent" => ["handleMessage", 100],
+          "RegisterMessageEvent"  => ["handleMessage", 100],
+          "CallMessageEvent"      => ["handleMessage", 100],
+        ];
+    }
+
+    /**
+     * @param \Thruway\Event\MessageEvent $messageEvent
+     */
+    public function handleMessage(MessageEvent $messageEvent)
+    {
+        if (!$this->isAuthorizedTo($messageEvent->session, $messageEvent->message)) {
+            $messageEvent->session->sendMessage(ErrorMessage::createErrorMessageFromMessage($messageEvent->message, "wamp.error.not_authorized"));
+            $messageEvent->stopPropagation();
+        }
+
+    }
+
+
+    /**
      * Gets called when the module is initialized in the router
      *
      * @inheritdoc
@@ -53,9 +105,6 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
     public function initModule(RouterInterface $router, LoopInterface $loop)
     {
         parent::initModule($router, $loop);
-
-        $authorizingRealm     = $router->getRealmManager()->getRealm($this->getRealm());
-        $authorizingRealm->setAuthorizationManager($this);
     }
 
     /**
@@ -107,14 +156,14 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
             $rolesToCheck = array_merge(["default"], $rolesToCheck);
         }
 
-        $ruleUri = $action . "." . $uri;
+        $ruleUri = $action.".".$uri;
 
         $uriParts = explode(".", $ruleUri);
 
         $matchable = ["."];
         $building  = "";
         foreach ($uriParts as $part) {
-            $building .= $part . ".";
+            $building .= $part.".";
             $matchable[] = $building;
         }
 
@@ -167,23 +216,23 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
         $promises   = [];
         $promises[] = $this->getCallee()->register($session, 'add_authorization_rule', [$this, "addAuthorizationRule"]);
         $promises[] = $this->getCallee()->register($session, 'remove_authorization_rule',
-            [$this, "removeAuthorizationRule"]);
+          [$this, "removeAuthorizationRule"]);
         $promises[] = $this->getCallee()->register($session, 'flush_authorization_rules',
-            [$this, 'flushAuthorizationRules']);
+          [$this, 'flushAuthorizationRules']);
         $promises[] = $this->getCallee()->register($session, 'get_authorization_rules',
-            [$this, 'getAuthorizationRules']);
+          [$this, 'getAuthorizationRules']);
         $promises[] = $this->getCallee()->register($session, 'test_authorization',
-            [$this, 'testAuthorization']);
+          [$this, 'testAuthorization']);
 
         $pAll = \React\Promise\all($promises);
 
         $pAll->then(
-            function () {
-                $this->setReady(true);
-            },
-            function () {
-                $this->setReady(false);
-            }
+          function () {
+              $this->setReady(true);
+          },
+          function () {
+              $this->setReady(false);
+          }
         );
     }
 
@@ -221,19 +270,19 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
         $rule = $args[0];
 
         if (isset($rule->role) &&
-            isset($rule->action) &&
-            isset($rule->uri) &&
-            isset($rule->allow)
+          isset($rule->action) &&
+          isset($rule->uri) &&
+          isset($rule->allow)
         ) {
             if ($this->isValidAction($rule->action) &&
-                static::isValidRuleUri($rule->uri) && Utils::uriIsValid($rule->role)
+              static::isValidRuleUri($rule->uri) && Utils::uriIsValid($rule->role)
             ) {
                 if ($rule->allow === true || $rule->allow === false) {
-                    return (object)[
-                        "action" => $rule->action,
-                        "uri"    => $rule->uri,
-                        "role"   => $rule->role,
-                        "allow"  => $rule->allow
+                    return (object) [
+                      "action" => $rule->action,
+                      "uri"    => $rule->uri,
+                      "role"   => $rule->role,
+                      "allow"  => $rule->allow
                     ];
                 }
             }
@@ -266,7 +315,7 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
         }
 
         $role      = $rule->role;
-        $actionUri = $rule->action . '.' . $rule->uri;
+        $actionUri = $rule->action.'.'.$rule->uri;
         $allow     = $rule->allow;
 
         if (!isset($this->rules[$role])) {
@@ -312,7 +361,7 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
         // indexes in the rules match the role we are checking for
         // we give the longest uri precedence
         $this->rules['default'] = [
-            "." => $allowByDefault
+          "." => $allowByDefault
         ];
 
         return "OK";
@@ -323,7 +372,7 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
      */
     public function getAuthorizationRules()
     {
-        $result = new Result([(array)$this->rules]);
+        $result = new Result([(array) $this->rules]);
 
         return $result;
     }
@@ -381,4 +430,5 @@ class AuthorizationManager extends RouterModuleClient implements AuthorizationMa
     {
         $this->ready = $ready;
     }
+
 }

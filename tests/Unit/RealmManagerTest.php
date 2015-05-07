@@ -21,6 +21,7 @@ class RealmManagerTest extends PHPUnit_Framework_TestCase {
      */
     public function testAddRealmWithSameNameAsExisting() {
         $realmManager = new \Thruway\RealmManager();
+        $realmManager->initModule(new \Thruway\Peer\Router(), \React\EventLoop\Factory::create());
 
         $realm1 = new \Thruway\Realm("test_realm");
         $realm2 = new \Thruway\Realm("test_realm");

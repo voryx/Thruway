@@ -2,8 +2,6 @@
 
 namespace Thruway\Peer;
 
-use Thruway\Authentication\AllPermissiveAuthorizationManager;
-use Thruway\Authentication\AuthorizationManagerInterface;
 use Thruway\Common\Utils;
 use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\EventDispatcher;
@@ -39,12 +37,6 @@ class Router implements RouterInterface, EventSubscriberInterface
     /** @var array */
     private $sessions = [];
 
-    /** @var \Thruway\Authentication\AuthenticationManagerInterface */
-    private $authenticationManager;
-
-    /** @var AuthorizationManagerInterface */
-    private $authorizationManager;
-
     /** @var \React\EventLoop\LoopInterface */
     private $loop;
 
@@ -70,8 +62,6 @@ class Router implements RouterInterface, EventSubscriberInterface
         $this->eventDispatcher->addSubscriber($this);
 
         $this->registerModule($this->realmManager);
-
-        $this->setAuthorizationManager(new AllPermissiveAuthorizationManager());
 
         Logger::debug($this, "New router created");
     }
@@ -166,7 +156,6 @@ class Router implements RouterInterface, EventSubscriberInterface
      * Set authentication manager
      * @deprecated
      *
-     * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
      * @throws \Exception
      */
     public function setAuthenticationManager($authenticationManager)
@@ -180,7 +169,6 @@ class Router implements RouterInterface, EventSubscriberInterface
      *
      * @deprecated
      *
-     * @return \Thruway\Authentication\AuthenticationManagerInterface
      * @throws \Exception
      */
     public function getAuthenticationManager()
@@ -189,20 +177,24 @@ class Router implements RouterInterface, EventSubscriberInterface
     }
 
     /**
-     * @return AuthorizationManagerInterface
+     * @deprecated
+     *
+     * @throws \Exception
      */
     public function getAuthorizationManager()
     {
-        return $this->authorizationManager;
+        throw new \Exception("You must add the AuthorizationManager as a module");
     }
 
     /**
-     * @param AuthorizationManagerInterface $authorizationManager
+     * @deprecated
+     *
+     * @param $authorizationManager
+     * @throws \Exception
      */
     public function setAuthorizationManager($authorizationManager)
     {
-        $this->authorizationManager = $authorizationManager;
-        $this->getRealmManager()->setDefaultAuthorizationManager($this->getAuthorizationManager());
+        throw new \Exception("AuthorizationManager is now a module");
     }
 
     /**
