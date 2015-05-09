@@ -31,6 +31,11 @@ class EventMessage extends Message
     private $publicationId;
 
     /**
+     * @var
+     */
+    private $topic;
+
+    /**
      * Constructor
      *
      * @param int $subscriptionId
@@ -38,14 +43,16 @@ class EventMessage extends Message
      * @param \stdClass $details
      * @param mixed $arguments
      * @param mixed $argumentsKw
+     * @param null $topic
      */
-    public function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null)
+    public function __construct($subscriptionId, $publicationId, $details, $arguments = null, $argumentsKw = null, $topic = null)
     {
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
         $this->setDetails($details);
         $this->setPublicationId($publicationId);
         $this->setSubscriptionId($subscriptionId);
+        $this->topic = $topic;
     }
 
     /**
@@ -81,11 +88,12 @@ class EventMessage extends Message
     public static function createFromPublishMessage(PublishMessage $msg, $subscriptionId)
     {
         return new static(
-            $subscriptionId,
-            $msg->getPublicationId(),
-            new \stdClass(),
-            $msg->getArguments(),
-            $msg->getArgumentsKw()
+          $subscriptionId,
+          $msg->getPublicationId(),
+          new \stdClass(),
+          $msg->getArguments(),
+          $msg->getArgumentsKw(),
+          $msg->getTopicName()
         );
     }
 
@@ -136,7 +144,8 @@ class EventMessage extends Message
     {
 
         $details             = $this->getDetails();
-        $details->caller     = $session->getSessionId();
+        $details->publisher  = $session->getSessionId();
+        $details->topic      = $this->topic;
         $details->authid     = $session->getAuthenticationDetails()->getAuthId();
         $details->authrole   = $session->getAuthenticationDetails()->getAuthRole();
         $details->authroles  = $session->getAuthenticationDetails()->getAuthRoles();
@@ -150,6 +159,7 @@ class EventMessage extends Message
     public function isRestoringState()
     {
         $restoringState = isset($this->getDetails()->_thruway_restoring_state) ? $this->getDetails()->_thruway_restoring_state : false;
+
         return $restoringState;
     }
 
