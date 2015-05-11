@@ -374,20 +374,19 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
             if ($res[0] == "SUCCESS") {
                 $welcomeDetails = new \stdClass();
 
-                if (isset($res[1]) && isset($res[1]->authid)) {
+                if (isset($res[1]->authid)) {
                     $session->getAuthenticationDetails()->setAuthId($res[1]->authid);
                 } else {
                     $session->getAuthenticationDetails()->setAuthId('authenticated_user');
-                    $res[1]->authid = $session->getAuthenticationDetails()->getAuthId();
                 }
 
                 $authRole = 'authenticated_user';
                 $session->getAuthenticationDetails()->addAuthRole($authRole);
-                if (isset($res[1]) && isset($res[1]->authroles)) {
+                if (isset($res[1]->authroles)) {
                     $session->getAuthenticationDetails()->addAuthRole($res[1]->authroles);
                 }
 
-                if (isset($res[1]) && isset($res[1]->authrole)) {
+                if (isset($res[1]->authrole)) {
                     $session->getAuthenticationDetails()->addAuthRole($res[1]->authrole);
                 }
 
@@ -418,12 +417,12 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         $extra                    = new \stdClass();
         $extra->challenge_details = $session->getAuthenticationDetails()->getChallengeDetails();
 
-        $arguments             = new \stdClass();
-        $arguments->extra      = $extra;
-        $arguments->authid     = $session->getAuthenticationDetails()->getAuthId();
-        $arguments->challenge  = $session->getAuthenticationDetails()->getChallenge();
-        $arguments->signature  = $msg->getSignature();
-        $arguments->authmethod = $authMethod;
+        $arguments                = new \stdClass();
+        $arguments->extra         = $extra;
+        $arguments->authid        = $session->getAuthenticationDetails()->getAuthId();
+        $arguments->challenge     = $session->getAuthenticationDetails()->getChallenge();
+        $arguments->signature     = $msg->getSignature();
+        $arguments->authmethod    = $authMethod;
         $arguments->hello_message = $session->getHelloMessage();
 
         // now we send our authenticate information to the RPC
