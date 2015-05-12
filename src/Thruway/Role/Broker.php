@@ -68,7 +68,7 @@ class Broker implements ManageableInterface, RealmModuleInterface
           "SubscribeMessageEvent"   => ["handleSubscribeMessage", 10],
           "UnsubscribeMessageEvent" => ["handleUnsubscribeMessage", 10],
           "LeaveRealm"              => ["handleLeaveRealm", 10],
-          "SendWelcomeMessageEvent" => ["handleSendWelcomeMessage", 10]
+          "SendWelcomeMessageEvent" => ["handleSendWelcomeMessage", 20]
         ];
     }
 
