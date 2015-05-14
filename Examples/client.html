@@ -48,6 +48,14 @@
         console.log("authenticated with authid '" + details.authid + "' and authrole '" + details.authrole + "'");
 
         session.call('com.example.add', [3, 5]).then(
+                function (res) {
+                    console.log("Call 'com.example.add' result:", res);
+                },
+                function (error) {
+                    console.log("Call Error:", error.error);
+                }
+        );
+
         //subscribe to a topic
         function onevent(args) {
             console.log('Subscribe message:', args);
@@ -61,15 +69,6 @@
                     console.log("subscription error:", error);
                 }
         );
-
-                function (res) {
-                    console.log("Call 'com.example.add' result:", res);
-                },
-                function (error) {
-                    console.log("Call Error:", error.error);
-                }
-        );
-
 
     };
 
