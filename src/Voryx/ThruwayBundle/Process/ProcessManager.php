@@ -5,7 +5,10 @@ namespace Voryx\ThruwayBundle\Process;
 
 
 use React\Promise\Deferred;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Thruway\ClientSession;
 use Thruway\Peer\Client;
+use Thruway\Transport\PawlTransportProvider;
 
 /**
  * Class ProcessManager
@@ -18,6 +21,16 @@ class ProcessManager extends Client
      * @var Command[]
      */
     private $commands;
+
+    /** @var  ContainerInterface */
+    private $container;
+
+    function __construct($realm, $loop, ContainerInterface $container)
+    {
+        $this->container = $container;
+
+        parent::__construct($realm, $loop);
+    }
 
 
     /**
@@ -34,6 +47,18 @@ class ProcessManager extends Client
         $session->register('stop_process', [$this, 'stopProcess']);
         $session->register('restart_process', [$this, 'restartProcess']);
         $session->register('add_instance', [$this, 'addInstance']);
+
+
+        //Congestion Manager Client.  This needs to be a separate client because it needs to listen on the main realm and not `process_manager`.
+        $config            = $this->container->getParameter('voryx_thruway');
+        $congestionManager = new Client($config['realm'], $session->getLoop());
+        $congestionManager->addTransportProvider(new PawlTransportProvider($config['trusted_url']));
+
+        $congestionManager->on('open', function (ClientSession $session) {
+            $session->subscribe("thruway.metaevent.procedure.congestion", [$this, "onCongestion"]);
+        });
+
+        $congestionManager->start(false);
 
     }
 
@@ -165,5 +190,18 @@ class ProcessManager extends Client
         if (isset($this->commands[$name])) {
             $this->commands[$name]->addInstance();
         };
+    }
+
+    public function onCongestion($args)
+    {
+        //Get the name of the worker that handles this RPC
+        $worker = $this->container->get('voryx.thruway.resource.mapper')->findWorker($args[0]->name);
+
+        if (!isset($this->commands[$worker])) {
+            return;
+        }
+
+        $this->commands[$worker]->addInstance();
+
     }
 }

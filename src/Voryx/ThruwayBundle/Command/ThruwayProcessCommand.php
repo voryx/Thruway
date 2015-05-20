@@ -120,7 +120,7 @@ class ThruwayProcessCommand extends ContainerAwareCommand
             $env  = $this->getContainer()->get('kernel')->getEnvironment();
             $loop = $this->getContainer()->get('voryx.thruway.loop');
 
-            $this->processManager = new ProcessManager("process_manager", $loop);
+            $this->processManager = new ProcessManager("process_manager", $loop, $this->getContainer());
             $this->processManager->addTransportProvider(new PawlTransportProvider($this->config['trusted_url']));
 
             $this->output->writeln("Starting Thruway Workers...");
@@ -265,8 +265,7 @@ class ThruwayProcessCommand extends ContainerAwareCommand
 
         //Default Symfony Command Workers
         $defaultWorkers = [
-            "router"  => "thruway:router:start",
-            "manager" => "thruway:manager:start"
+            "router" => "thruway:router:start"
         ];
 
         $onetimeWorkers = array_merge($defaultWorkers, $this->config['workers']['symfony_commands']);
