@@ -5,6 +5,8 @@ namespace Thruway\Role;
 
 use React\Promise\Deferred;
 use React\Promise\Promise;
+use React\Promise\RejectedPromise;
+use React\Promise\RejectedPromiseTest;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
 use Thruway\Common\Utils;
@@ -15,6 +17,7 @@ use Thruway\Message\Message;
 use Thruway\Message\SubscribedMessage;
 use Thruway\Message\SubscribeMessage;
 use Thruway\Message\UnsubscribedMessage;
+use Thruway\Message\UnsubscribeMessage;
 use Thruway\Session;
 
 /**
@@ -139,9 +142,9 @@ class Subscriber extends AbstractRole
     protected function processUnsubscribed(ClientSession $session, UnsubscribedMessage $msg)
     {
         foreach ($this->subscriptions as $key => $subscription) {
-            if (isset($subscription['unsubscribed_request_id']) && $subscription['unsubscribed_request_id'] == $msg->getRequestId()) {
+            if (isset($subscription['unsubscribe_request_id']) && $subscription['unsubscribe_request_id'] == $msg->getRequestId()) {
                 /* @var $deferred \React\Promise\Deferred */
-                $deferred = $subscription['unsubscribed_deferred'];
+                $deferred = $subscription['unsubscribe_deferred'];
                 $deferred->resolve();
 
                 unset($this->subscriptions[$key]);
@@ -229,4 +232,38 @@ class Subscriber extends AbstractRole
         return $deferred->promise();
     }
 
+    /**
+     * @param ClientSession $session
+     * @param $subscriptionId
+     * @return Promise|RejectedPromise
+     */
+    public function unsubscribe(ClientSession $session, $subscriptionId) {
+        $subscription = null;
+        foreach($this->subscriptions as $key => $subscription) {
+            if (isset($subscription['subscription_id']) && $subscriptionId == $subscription['subscription_id']) {
+                break;
+            }
+            $subscription = null;
+        }
+
+
+        if (!$subscription) {
+            return new RejectedPromise("Could not find subscription");
+        }
+
+        if (isset($subscription['unsubscribe_deferred'])) {
+            return new RejectedPromise("Already unsubscribing");
+        }
+
+        $subscription['unsubscribe_deferred'] = new Deferred();
+        $subscription['unsubscribe_request_id'] = Utils::getUniqueId();
+
+        $msg = new UnsubscribeMessage($subscription['unsubscribe_request_id'], $subscriptionId);
+
+        $session->sendMessage($msg);
+
+        $this->subscriptions[$key] = $subscription;
+
+        return $subscription['unsubscribe_deferred']->promise();
+    }
 } 

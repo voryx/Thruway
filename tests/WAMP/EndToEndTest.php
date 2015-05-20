@@ -489,4 +489,55 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("-A.3--B.3--C.3--X.3-", $results[3]);
         $this->assertEquals("-A.4--B.4--C.4--X.4-", $results[4]);
     }
+
+    public function testUnsubscribe() {
+        $this->_error = null;
+        $this->_testResult = null;
+
+        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
+            $session->subscribe('unsubscribe_test', function () {})->then(
+                function (\Thruway\Message\SubscribedMessage $msg) use ($session) {
+                    $session->unsubscribe($msg->getSubscriptionId())->then(function () use ($session) {
+                        $this->_testResult = "Unsubscribe successful";
+                        $session->close();
+                    }, function () use ($session) {
+                        $this->_error = "unsubscribe failed";
+                        $session->close();
+                    });
+
+                },
+                function () use ($session) {
+                    $this->_error = "subscribe failed";
+                    $session->close();
+                }
+            );
+        }
+        );
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error, "Error " . $this->_error);
+        $this->assertEquals("Unsubscribe successful", $this->_testResult);
+    }
+
+    public function testUnsubscribeWithoutSubscribe() {
+        $this->_error = null;
+        $this->_testResult = null;
+
+        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
+            $session->unsubscribe(1234)->then(function () use ($session) {
+                $this->_error = "unsubscribe succeeded?";
+                $session->close();
+            }, function () use ($session) {
+                $this->_testResult = "received expected error";
+                $session->close();
+            });
+
+        });
+
+        $this->_conn->open();
+
+        $this->assertNull($this->_error, "Error " . $this->_error);
+        $this->assertEquals("received expected error", $this->_testResult);
+    }
 }

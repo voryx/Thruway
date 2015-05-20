@@ -47,6 +47,14 @@ class ClientSession extends AbstractSession
     }
 
     /**
+     * @param $subscriptionId
+     * @return Promise|\React\Promise\RejectedPromise
+     */
+    public function unsubscribe($subscriptionId) {
+        return $this->peer->getSubscriber()->unsubscribe($this, $subscriptionId);
+    }
+
+    /**
      * Publish
      *
      * @param string $topicName
