@@ -87,7 +87,9 @@
             <argument type="service" id="thruway.client"/>
 
         </service>
-        
+
+        <service id="thruway.details" class="Voryx\ThruwayBundle\Details"/>
+
         <!--Authentication-->
         <service id="voryx.thruway.authentication.manager"
                  class="Thruway\Authentication\AuthenticationManager"
@@ -135,7 +137,7 @@
         </service>
 
         <service id="voryx.thruway.topic_state_handler" class="Voryx\ThruwayBundle\TopicStateHandler">
-            <tag name="kernel.event_listener" event="wamp.open" method="onOpen" />
+            <tag name="kernel.event_listener" event="wamp.open" method="onOpen"/>
         </service>
 
     </services>
