@@ -4,15 +4,20 @@
 namespace Voryx\ThruwayBundle;
 
 
-use Symfony\Component\HttpKernel\Kernel;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Voryx\ThruwayBundle\Client\ClientManager;
 
 class ContainerFactory
 {
 
-    public static function createContainer(Kernel $kernel)
+    public static function createContainer($containerName, ClientManager $thruwayClient)
     {
-        $container = $kernel->getName() . ucfirst($kernel->getEnvironment()) . ($kernel->isDebug() ? 'Debug' : '') . 'ProjectContainer';
-        return new $container();
+
+        /** @var ContainerInterface $container */
+        $container = new $containerName();
+        $container->set('thruway.client', $thruwayClient);
+
+        return $container;
     }
 
 }

@@ -6,6 +6,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 
 /**
+ * @deprecated
  * Class UserAware
  * @package Voryx\ThruwayBundle\DependencyInjection
  */

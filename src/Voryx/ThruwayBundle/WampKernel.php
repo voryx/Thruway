@@ -5,6 +5,7 @@ namespace Voryx\ThruwayBundle;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer;
 use React\Promise\Promise;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -192,15 +193,28 @@ class WampKernel implements HttpKernelInterface
 
             $controller     = $this->container->get($mapping->getServiceId());
             $controllerArgs = $this->deserializeArgs($args, $mapping);
-            $traits         = class_uses($controller);
 
-            //Inject the User object if the UserAware trait in in use
-            if (isset($traits['Voryx\ThruwayBundle\DependencyInjection\UserAwareTrait'])) {
-                $user = $this->authenticateAuthId($details->authid);
-                if ($user) {
-                    $controller->setUser($user);
+            if ($controller instanceof ContainerAwareInterface) {
+
+                $reflectController = new \ReflectionClass($controller);
+
+                $containerProperty = $reflectController->getProperty('container');
+                $containerProperty->setAccessible(true);
+                $container = $containerProperty->getValue($controller);
+
+                $user = $this->authenticateAuthId($details->authid, $container);
+
+                // Newer version of symfony have Controller::getUser(), so this isn't really needed anymore.  Leaving this here for BC.
+                //Inject the User object if the UserAware trait in in use
+                $traits = class_uses($controller);
+                if (isset($traits['Voryx\ThruwayBundle\DependencyInjection\UserAwareTrait'])) {
+
+                    if ($user) {
+                        $controller->setUser($user);
+                    }
                 }
             }
+
 
             // Disabled this for now since it conflicts with the deserializeArgs
             // @todo make this an option so you can use one or the other
@@ -400,11 +414,14 @@ class WampKernel implements HttpKernelInterface
 
     /**
      * @param $authid
+     * @param ContainerInterface $container
      * @return UserInterface
      */
-    private function authenticateAuthId($authid)
+    private function authenticateAuthId($authid, ContainerInterface $container)
     {
-        $user   = null;
+        $user = null;
+
+        //Use the global container so every call uses the same instance of the user provider
         $config = $this->container->getParameter('voryx_thruway');
 
         if ($this->container->has($config['user_provider'])) {
@@ -412,19 +429,22 @@ class WampKernel implements HttpKernelInterface
         }
 
         $user = $user ?: new User($authid, null);
-        $this->authenticateUser($user);
+        $this->authenticateUser($user, $container);
 
         return $user;
     }
 
     /**
      * @param UserInterface $user
+     * @param ContainerInterface $container
      */
-    private function authenticateUser(UserInterface $user)
+    private function authenticateUser(UserInterface $user, ContainerInterface $container)
     {
         $providerKey = 'thruway';
         $token       = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
-        $this->container->get('security.context')->setToken($token);
+
+        //Use the controller's container to set the token
+        $container->get('security.context')->setToken($token);
     }
 
     /**

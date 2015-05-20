@@ -83,7 +83,8 @@
                  factory-class="Voryx\ThruwayBundle\ContainerFactory"
                  factory-method="createContainer"
                  scope="prototype">
-            <argument type="service" id="kernel"/>
+            <argument type="expression">parameter('kernel.container_class')</argument>
+            <argument type="service" id="thruway.client"/>
 
         </service>
         
