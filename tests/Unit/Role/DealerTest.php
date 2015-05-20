@@ -344,4 +344,39 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 //    public function testCallCancelAfterCancel() {
 //        $this->assertTrue(false);
 //    }
+
+    public function testSessionLeaveProcedureDestroy() {
+        $transport = new \Thruway\Transport\DummyTransport();
+        $session = new Session($transport);
+
+        $dealer = new \Thruway\Role\Dealer();
+
+        $registerMessage = new \Thruway\Message\RegisterMessage(1234, new stdClass(), 'test');
+
+        $dealer->onMessage($session, $registerMessage);
+
+        $response = $transport->getLastMessageSent();
+
+        $this->assertInstanceOf('\Thruway\Message\RegisteredMessage', $response);
+
+        // try reregistering
+        $dealer->onMessage($session, $registerMessage);
+
+        $response = $transport->getLastMessageSent();
+
+        $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $response);
+        $this->assertEquals($response->getErrorUri(), "wamp.error.procedure_already_exists");
+
+        // leave the realm now
+        // the procedure should un-register itself
+        $dealer->leave($session);
+
+        // we can now reregister
+        $dealer->onMessage($session, $registerMessage);
+
+        $response = $transport->getLastMessageSent();
+
+        $this->assertInstanceOf('\Thruway\Message\RegisteredMessage', $response);
+
+    }
 } 
