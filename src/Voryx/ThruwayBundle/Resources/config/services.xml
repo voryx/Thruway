@@ -79,6 +79,14 @@
         </service>
 
 
+        <service id="thruway_container" class="Symfony\Component\DependencyInjection\Container"
+                 factory-class="Voryx\ThruwayBundle\ContainerFactory"
+                 factory-method="createContainer"
+                 scope="prototype">
+            <argument type="service" id="kernel"/>
+
+        </service>
+        
         <!--Authentication-->
         <service id="voryx.thruway.authentication.manager"
                  class="Thruway\Authentication\AuthenticationManager"
