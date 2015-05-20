@@ -177,13 +177,13 @@ class WampKernel implements HttpKernelInterface
      * Handle the RPC
      *
      * @param $args
-     * @param $kwargs
+     * @param $argsKw
      * @param $details
      * @param MappingInterface $mapping
      * @return mixed|static
      * @throws \Exception
      */
-    protected function handleRPC($args, $kwargs, $details, MappingInterface $mapping)
+    protected function handleRPC($args, $argsKw, $details, MappingInterface $mapping)
     {
         //@todo match up $kwargs to the method arguments
 
@@ -194,27 +194,8 @@ class WampKernel implements HttpKernelInterface
             $controller     = $this->container->get($mapping->getServiceId());
             $controllerArgs = $this->deserializeArgs($args, $mapping);
 
-            if ($controller instanceof ContainerAwareInterface) {
-
-                $reflectController = new \ReflectionClass($controller);
-
-                $containerProperty = $reflectController->getProperty('container');
-                $containerProperty->setAccessible(true);
-                $container = $containerProperty->getValue($controller);
-
-                $user = $this->authenticateAuthId($details->authid, $container);
-
-                // Newer version of symfony have Controller::getUser(), so this isn't really needed anymore.  Leaving this here for BC.
-                //Inject the User object if the UserAware trait in in use
-                $traits = class_uses($controller);
-                if (isset($traits['Voryx\ThruwayBundle\DependencyInjection\UserAwareTrait'])) {
-
-                    if ($user) {
-                        $controller->setUser($user);
-                    }
-                }
-            }
-
+            $this->setControllerContainerUser($controller, $details);
+            $this->setControllerContainerDetails($controller, $args, $argsKw, $details);
 
             // Disabled this for now since it conflicts with the deserializeArgs
             // @todo make this an option so you can use one or the other
@@ -257,8 +238,8 @@ class WampKernel implements HttpKernelInterface
     {
         $topic = $mapping->getAnnotation()->getName();
 
-        $subscribeCallback = function ($args) use ($mapping) {
-            $this->handleEvent($args, $mapping);
+        $subscribeCallback = function ($args, $argsKw, $details) use ($mapping) {
+            $this->handleEvent($args, $argsKw, $details, $mapping);
         };
 
         //Subscribe to a topic
@@ -272,7 +253,7 @@ class WampKernel implements HttpKernelInterface
      * @param MappingInterface $mapping
      * @throws \Exception
      */
-    protected function handleEvent($args, MappingInterface $mapping)
+    protected function handleEvent($args, $argsKw, $details, MappingInterface $mapping)
     {
         try {
             //Force clean up before calling the subscribed method
@@ -280,6 +261,9 @@ class WampKernel implements HttpKernelInterface
 
             $controller     = $this->container->get($mapping->getServiceId());
             $controllerArgs = $this->deserializeArgs($args, $mapping);
+
+            $this->setControllerContainerUser($controller, $details);
+            $this->setControllerContainerDetails($controller, $args, $argsKw, $details);
 
             //Call Controller
             call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
@@ -292,6 +276,71 @@ class WampKernel implements HttpKernelInterface
             $this->container->get('logger')->critical($message);
             throw new \Exception($message);
         }
+    }
+
+
+    /**
+     * @param $controller
+     * @return mixed|void
+     */
+    protected function getControllerContainer($controller)
+    {
+        if (!$controller instanceof ContainerAwareInterface) {
+            return;
+        }
+
+        $reflectController = new \ReflectionClass($controller);
+
+        $containerProperty = $reflectController->getProperty('container');
+        $containerProperty->setAccessible(true);
+
+        return $containerProperty->getValue($controller);
+
+    }
+
+    /**
+     * @param $controller
+     * @param $details
+     */
+    protected function setControllerContainerUser($controller, $details)
+    {
+
+        $container = $this->getControllerContainer($controller);
+
+        if (!$container) {
+            return;
+        }
+
+        $user = $this->authenticateAuthId($details->authid, $container);
+
+        // Newer version of symfony have Controller::getUser(), so this isn't really needed anymore.  Leaving this here for BC.
+        //Inject the User object if the UserAware trait in in use
+        $traits = class_uses($controller);
+        if (isset($traits['Voryx\ThruwayBundle\DependencyInjection\UserAwareTrait'])) {
+
+            if ($user) {
+                $controller->setUser($user);
+            }
+        }
+    }
+
+    /**
+     * @param $controller
+     * @param $args
+     * @param $argsKw
+     * @param $details
+     */
+    protected function setControllerContainerDetails($controller, $args, $argsKw, $details)
+    {
+
+        $container = $this->getControllerContainer($controller);
+
+        if (!$container) {
+            return;
+        }
+
+        $container->set('thruway.details', new Details($args, $argsKw, $details));
+
     }
 
     /**
