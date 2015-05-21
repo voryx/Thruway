@@ -102,7 +102,7 @@ class WampKernel implements HttpKernelInterface
     {
         $this->session   = $session;
         $this->transport = $transport;
-        $mappings        = $this->resourceMapper->getMappings($this->getProcessName());
+        $mappings        = $this->resourceMapper->getMappings($this->processName);
 
         $event = new SessionEvent($session, $transport, $this->processName, $this->processInstance, $mappings);
         $this->dispatcher->dispatch(WampEvents::OPEN, $event);
@@ -152,7 +152,7 @@ class WampKernel implements HttpKernelInterface
         /**
          * If this isn't the first worker process to be created, we can't register this RPC call again.
          */
-        if ($this->getProcessInstance() > 0 && !$multiRegister) {
+        if ($this->processInstance > 0 && !$multiRegister) {
             return;
         }
 
@@ -201,10 +201,6 @@ class WampKernel implements HttpKernelInterface
             $this->setControllerContainerUser($controller, $details);
             $this->setControllerContainerDetails($controller, $args, $argsKw, $details);
 
-            // Disabled this for now since it conflicts with the deserializeArgs
-            // @todo make this an option so you can use one or the other
-            //Dispatch Controller Events
-            //$this->dispatchControllerEvents($controller, $mapping);
 
             //Call Controller
             $rawResult = call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
@@ -386,13 +382,6 @@ class WampKernel implements HttpKernelInterface
         return $context;
     }
 
-    /**
-     * @return Client
-     */
-    public function getClient()
-    {
-        return $this->client;
-    }
 
     /**
      * @param Client $client
@@ -403,22 +392,6 @@ class WampKernel implements HttpKernelInterface
         $this->client->on('open', [$this, 'onOpen']);
     }
 
-
-    /**
-     * @return mixed
-     */
-    public function getSession()
-    {
-        return $this->session;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getTransport()
-    {
-        return $this->transport;
-    }
 
     /**
      * Deserialize Controller arguments
@@ -514,58 +487,6 @@ class WampKernel implements HttpKernelInterface
         $container->get('security.context')->setToken($token);
     }
 
-    /**
-     * @param $controller
-     * @param URIClassMapping $mapping
-     */
-    private function dispatchControllerEvents($controller, URIClassMapping $mapping)
-    {
-        $request  = new Request();
-        $callable = [$controller, $mapping->getMethod()->getName()];
-        $event    = new FilterControllerEvent($this, $callable, $request, self::MASTER_REQUEST);
-        $this->dispatcher->dispatch(KernelEvents::CONTROLLER, $event);
-    }
-
-    /**
-     * @return null
-     */
-    public function getProcessName()
-    {
-        return $this->processName;
-    }
-
-    /**
-     * @param null $processName
-     */
-    public function setProcessName($processName)
-    {
-        $this->processName = $processName;
-    }
-
-    /**
-     * @return ResourceMapper
-     */
-    public function getResourceMapper()
-    {
-        return $this->resourceMapper;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getProcessInstance()
-    {
-        return $this->processInstance;
-    }
-
-    /**
-     * @param mixed $processInstance
-     */
-    public function setProcessInstance($processInstance)
-    {
-        $this->processInstance = $processInstance;
-    }
-
 
     /**
      * @param $arr
@@ -597,13 +518,6 @@ class WampKernel implements HttpKernelInterface
             }
             $this->container->get('doctrine')->getManager()->clear();
         }
-
-
-//        //Remove any listeners for the kernel.controller event
-//        $listeners = $this->dispatcher->getListeners("kernel.controller");
-//        foreach ($listeners as $listener) {
-//            $this->dispatcher->removeListener("kernel.controller", $listener);
-//        }
 
     }
 
@@ -665,4 +579,45 @@ class WampKernel implements HttpKernelInterface
     {
         // TODO: Implement handle() method.
     }
+
+    /**
+     * @return ResourceMapper
+     */
+    public function getResourceMapper()
+    {
+        return $this->resourceMapper;
+    }
+
+    /**
+     * @param null $processName
+     */
+    public function setProcessName($processName)
+    {
+        $this->processName = $processName;
+    }
+
+    /**
+     * @param mixed $processInstance
+     */
+    public function setProcessInstance($processInstance)
+    {
+        $this->processInstance = $processInstance;
+    }
+
+    /**
+     * @return Client
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    /**
+     * @return ClientSession
+     */
+    public function getSession()
+    {
+        return $this->session;
+    }
+
 }

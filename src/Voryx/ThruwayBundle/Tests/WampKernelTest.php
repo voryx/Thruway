@@ -7,6 +7,7 @@ namespace Voryx\ThruwayBundle\Tests;
 use JMS\Serializer\SerializationContext;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Thruway\ClientSession;
 use Voryx\ThruwayBundle\Annotation\Register;
 use Voryx\ThruwayBundle\Mapping\URIClassMapping;
 use Voryx\ThruwayBundle\WampKernel;
@@ -54,6 +55,13 @@ class WampKernelTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($args, $result);
 
+    }
+
+
+    public function testGetResourceMapper(){
+        $resourceMapper = $this->wampkernel->getResourceMapper();
+
+        $this->assertInstanceOf('Voryx\ThruwayBundle\ResourceMapper', $resourceMapper);
     }
 
 }
