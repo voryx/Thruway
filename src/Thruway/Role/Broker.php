@@ -193,7 +193,11 @@ class Broker implements ManageableInterface
         // should probably be more efficient about this - maybe later
         /** @var SubscriptionGroup $subscriptionGroup */
         foreach ($this->subscriptionGroups as $subscriptionGroup) {
-            $subscription = $subscriptionGroup->processUnsubscribe($session, $msg);
+            $result = $subscriptionGroup->processUnsubscribe($session, $msg);
+            
+            if ($result !== false) {
+                $subscription = $result;
+            }
         }
 
         if ($subscription === false) {
