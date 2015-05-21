@@ -3,7 +3,7 @@
 namespace Voryx\ThruwayBundle;
 
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
+use JMS\Serializer\SerializerInterface;
 use React\Promise\Promise;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -52,7 +52,7 @@ class WampKernel implements HttpKernelInterface
     private $client;
 
     /**
-     * @var Serializer
+     * @var SerializerInterface
      */
     private $serializer;
 
@@ -79,12 +79,12 @@ class WampKernel implements HttpKernelInterface
 
     /**
      * @param ContainerInterface $container
-     * @param Serializer $serializer
+     * @param SerializerInterface $serializer
      * @param ResourceMapper $resourceMapper
      */
     function __construct(
         ContainerInterface $container,
-        Serializer $serializer,
+        SerializerInterface $serializer,
         ResourceMapper $resourceMapper,
         EventDispatcherInterface $dispatcher
     ) {
@@ -183,7 +183,7 @@ class WampKernel implements HttpKernelInterface
      * @return mixed|static
      * @throws \Exception
      */
-    protected function handleRPC($args, $argsKw, $details, MappingInterface $mapping)
+    public function handleRPC($args, $argsKw, $details, MappingInterface $mapping)
     {
         //@todo match up $kwargs to the method arguments
 
@@ -253,7 +253,7 @@ class WampKernel implements HttpKernelInterface
      * @param MappingInterface $mapping
      * @throws \Exception
      */
-    protected function handleEvent($args, $argsKw, $details, MappingInterface $mapping)
+    public function handleEvent($args, $argsKw, $details, MappingInterface $mapping)
     {
         try {
             //Force clean up before calling the subscribed method
