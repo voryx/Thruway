@@ -51,7 +51,26 @@ class ThruwayDebugCommand extends ContainerAwareCommand
                 $output->writeln("File:   {$mapping->getMethod()->getFileName()}");
                 $output->writeln("Method: {$mapping->getMethod()->getName()}");
                 $output->writeln("Type:   {$this->getAnnotationType($mapping->getAnnotation())}");
-                $output->writeln("Todo:   Add more annotation info");
+                $output->writeln("Arguments:");
+
+                $table = new Table($output);
+                $table->setStyle('compact');
+                $table->setHeaders(['Name', 'Type', 'Optional', 'Default', 'Position']);
+
+                $params = $mapping->getmethod()->getParameters();
+
+                /** @var \ReflectionParameter $param */
+                foreach ($params as $param) {
+
+                    $table->addRow([
+                        $param->getName(),
+                        $this->getType($param),
+                        $param->isOptional() ? 'true' : 'false',
+                        $param->isDefaultValueAvailable() ? $param->getDefaultValue() : '',
+                        $param->getPosition()
+                    ]);
+                }
+                $table->render();
 
             } else {
                 $output->writeln("Sorry, we couldn't find {$name}");
@@ -97,6 +116,18 @@ class ThruwayDebugCommand extends ContainerAwareCommand
 
         if ($annotation instanceof Subscribe) {
             return "Subscription";
+        }
+
+    }
+
+    private function getType(\ReflectionParameter $param)
+    {
+        if ($param->getClass() && $param->getClass()->getName()) {
+            return $param->getClass()->getName();
+        }
+
+        if ($param->isArray()) {
+            return 'Array';
         }
 
     }
