@@ -1,35 +1,44 @@
 {
-    "name": "voryx/thruway-bundle",
-    "type": "symfony-bundle",
-    "description": "WebSockets (WAMP2) integration for Symfony2",
-    "keywords": [
-        "WebSockets",
-        "WAMP",
-        "WAMP2",
-        "Autobahn",
-        "Sockets",
-        "Symfony"
-    ],
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "David Dan", "email": "davidwdan@gmail.com", "role": "Developer"
-        },
-        {
-            "name": "Matt Bonneau", "email": "matt@bonneau.net", "role": "Developer"
-        }
-    ],
-    "autoload": {
-        "psr-0": {
-            "Voryx\\ThruwayBundle": "src"
-        }
+  "name": "voryx/thruway-bundle",
+  "type": "symfony-bundle",
+  "description": "WebSockets (WAMP2) integration for Symfony2",
+  "keywords": [
+    "WebSockets",
+    "WAMP",
+    "WAMP2",
+    "Autobahn",
+    "Sockets",
+    "Symfony"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "David Dan",
+      "email": "davidwdan@gmail.com",
+      "role": "Developer"
     },
-    "require": {
-        "php": ">=5.4",
-        "symfony/finder": ">=2.4",
-        "voryx/thruway": "~0.3",
-        "jms/serializer-bundle": "0.13.*",
-        "react/child-process": "~0.4"
+    {
+      "name": "Matt Bonneau",
+      "email": "matt@bonneau.net",
+      "role": "Developer"
     }
-
+  ],
+  "autoload": {
+    "psr-0": {
+      "Voryx\\ThruwayBundle": "src"
+    }
+  },
+  "require": {
+    "php": ">=5.4",
+    "symfony/finder": ">=2.4",
+    "voryx/thruway": "~0.3",
+    "jms/serializer-bundle": "0.13.*",
+    "react/child-process": "~0.4"
+  },
+  "require-dev": {
+    "symfony/symfony": "2.*",
+    "doctrine/orm": "~2.1",
+    "symfony/yaml": "2.*",
+    "phpunit/phpunit": "~4.0"
+  }
 }
