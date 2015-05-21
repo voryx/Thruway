@@ -8,9 +8,8 @@ Note:  This project is still undergoing a lot of changes, so the API will change
 ### Quick Start with Composer
 
 
-Download the Thruway Bundle (and dependancies)
+Install the Thruway Bundle
 
-      $ php composer.phar require "voryx/thruway":"dev-master"
       $ php composer.phar require "voryx/thruway-bundle":"dev-master"
       
 
