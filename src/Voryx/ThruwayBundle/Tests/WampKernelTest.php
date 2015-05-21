@@ -14,39 +14,45 @@ use Voryx\ThruwayBundle\WampKernel;
 class WampKernelTest extends \PHPUnit_Framework_TestCase
 {
 
+    /** @var  Container */
+    private $container;
+
+    /** @var  WampKernel */
+    private $wampkernel;
+
+    public function setup(){
+
+        $this->container = new \Symfony\Component\DependencyInjection\ContainerBuilder();
+
+        //Create a WampKernel instance
+        $reader         = $this->getMockBuilder('Doctrine\Common\Annotations\Reader')->getMock();
+        $resourceMapper = new \Voryx\ThruwayBundle\ResourceMapper($reader);
+        $dispatcher     = new EventDispatcher();
+        $serializer     = $this->getMockBuilder('JMS\Serializer\SerializerInterface')->getMock();
+        $this->wampkernel     = new WampKernel($this->container, $serializer, $resourceMapper, $dispatcher);
+
+    }
 
     public function testSimpleRPC()
     {
+
+        //Create the test controller and service
+        $controller = new TestController();
+        $this->container->set('some.controller.service', $controller);
+
+        //Create a URI mapping
+        $reflectController = new \ReflectionClass($controller);
+        $reflectMethod     = $reflectController->getMethod('echoRPC');
+        $rpcAnnotation     = new Register(["value" => "test.uri"]);
+        $mapping           = new URIClassMapping('some.controller.service', $reflectMethod, $rpcAnnotation);
 
         $args    = [3, "test", "test2"];
         $argsKw  = new \stdClass();
         $details = new \stdClass();
 
-        $container = new \Symfony\Component\DependencyInjection\ContainerBuilder();
+        $result = $this->wampkernel->handleRPC($args, $argsKw, $details, $mapping);
 
-        $reader         = $this->getMockBuilder('Doctrine\Common\Annotations\Reader')->getMock();
-        $resourceMapper = new \Voryx\ThruwayBundle\ResourceMapper($reader);
-        $dispatcher     = new EventDispatcher();
-
-        $expectedContext = SerializationContext::create();
-
-        $serializer = $this->getMockBuilder('JMS\Serializer\SerializerInterface')->getMock();
-        $serializer->expects($this->once())->method('serialize')
-            ->with($args, 'json', $this->equalTo($expectedContext));
-
-        $wampkernel = new WampKernel($container, $serializer, $resourceMapper, $dispatcher);
-
-        $controller        = new TestController();
-        $reflectController = new \ReflectionClass($controller);
-
-        $container->set('some.controller.service', $controller);
-
-        $reflectMethod = $reflectController->getMethod('echoRPC');
-        $rpcAnnotation = new Register(["value" => "test.uri"]);
-
-        $mapping = new URIClassMapping('some.controller.service', $reflectMethod, $rpcAnnotation);
-
-        $wampkernel->handleRPC($args, $argsKw, $details, $mapping);
+        $this->assertEquals($args, $result);
 
     }
 

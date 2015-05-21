@@ -165,7 +165,11 @@ class WampKernel implements HttpKernelInterface
 
         //RPC Callback
         $rpcCallback = function ($args, $kwargs, $details) use ($mapping) {
-            return $this->handleRPC($args, $kwargs, $details, $mapping);
+            $rawResult = $this->handleRPC($args, $kwargs, $details, $mapping);
+
+            //Run the results through JMS serializer
+            //@todo, make this step optional
+            return $this->serializeResult($rawResult, $mapping);
         };
 
         //Register the RPC Call
@@ -205,21 +209,11 @@ class WampKernel implements HttpKernelInterface
             //Call Controller
             $rawResult = call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
 
-            //Create a serialization context
-            $context = $this->createSerializationContext($mapping);
-
             //Do clean on the controller
             $this->cleanup($controller);
 
-            if ($rawResult instanceof Promise) {
-                return $rawResult->then(function ($d) use ($context) {
-                    //If the data is a CallResult, we only want to serialize the first argument
-                    $d = $d instanceof CallResult ? [$d[0]] : $d;
-                    return json_decode($this->serializer->serialize($d, "json", $context));
-                });
-            } else {
-                return json_decode($this->serializer->serialize($rawResult, "json", $context));
-            }
+            return $rawResult;
+
 
         } catch (\Exception $e) {
             $this->cleanup();
@@ -244,6 +238,30 @@ class WampKernel implements HttpKernelInterface
 
         //Subscribe to a topic
         $this->session->subscribe($topic, $subscribeCallback);
+    }
+
+    /**
+     * Run the RPC result through JMS serializer, so that entities get serialized properly
+     *
+     * @param $rawResult
+     * @param $mapping
+     * @return mixed|static
+     */
+    protected function serializeResult($rawResult, $mapping)
+    {
+        //Create a serialization context
+        $context = $this->createSerializationContext($mapping);
+
+
+        if ($rawResult instanceof Promise) {
+            return $rawResult->then(function ($d) use ($context) {
+                //If the data is a CallResult, we only want to serialize the first argument
+                $d = $d instanceof CallResult ? [$d[0]] : $d;
+                return json_decode($this->serializer->serialize($d, "json", $context));
+            });
+        } else {
+            return json_decode($this->serializer->serialize($rawResult, "json", $context));
+        }
     }
 
     /**

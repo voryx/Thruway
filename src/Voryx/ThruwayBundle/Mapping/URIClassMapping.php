@@ -44,9 +44,9 @@ class URIClassMapping implements MappingInterface
      */
     function __construct($serviceId = null, \ReflectionMethod $method = null, AnnotationInterface $annotation = null)
     {
-        $this->setServiceId($serviceId);
-        $this->setMethod($method);
-        $this->setAnnotation($annotation);
+        $this->serviceId  = $serviceId;
+        $this->method     = $method;
+        $this->annotation = $annotation;
     }
 
     /**
