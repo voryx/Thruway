@@ -96,6 +96,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('authentication')->defaultFalse()->end()
                         ->booleanNode('enable_manager')->defaultFalse()->end()
                         ->booleanNode('enable_web_push')->defaultFalse()->end()
+                        ->booleanNode('enable_topic_state')->defaultFalse()->end()
                     ->end()
                 ->end()
             ->end();

@@ -140,6 +140,14 @@
             <tag name="kernel.event_listener" event="wamp.open" method="onOpen"/>
         </service>
 
+        <!-- Topic State Handler -->
+        <service id="voryx.thruway.topic.state.handler"
+                 class="Thruway\Subscription\StateHandlerRegistry"
+                 public="false">
+            <argument type="expression">parameter('voryx_thruway')['realm']</argument>
+            <argument type="service" id="voryx.thruway.loop"/>
+        </service>
+
     </services>
 
 </container>
