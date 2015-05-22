@@ -30,17 +30,17 @@ $bundles = array(
 #app/config/config.yml
 
 voryx_thruway:
-    realm: 'myrealm'
-    enable_logging: true
-    #user_provider: 'in_memory_user_provider' 
+    realm: 'realm1'
+    url: 'ws://127.0.0.1:8081' #The url that the clients will use to connect to the router
     router:
         ip: '127.0.0.1'  # the ip that the router should start on
-        port: '8080'  # public facing port
-        #authentication: 'in_memory'
+        port: '8080'  # public facing port.  If authentication is enabled, this port will be protected
+        trusted_port: '8081' # Bypasses all authentication.  Use this for trusted clients.
+#        authentication: 'in_memory'
     locations:
         bundles: ["AppBundle"]
-        files:
-            - "Acme\\DemoBundle\\Controller\\DemoController"
+#        files:
+#            - "Acme\\DemoBundle\\Controller\\DemoController"
       
 ```
 If you enable ```authentication: 'in_memory'```, you'll need to add a ```thruway``` to the security firewall and set the ``in_memory_user_provider``.

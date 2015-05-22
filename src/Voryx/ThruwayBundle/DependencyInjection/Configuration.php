@@ -29,7 +29,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('uri')->info('Deprecated, use "url"')->end()
                 ->scalarNode('trusted_uri')->info('Deprecated, use "trusted_url"')->end()
                 ->booleanNode('enable_logging')->defaultFalse()->end()
-                ->scalarNode('user_provider')->info('use fos_user.user_manager or in_memory_user_provider')->end()
+                ->scalarNode('user_provider')->defaultNull()->info('use fos_user.user_manager or in_memory_user_provider')->end()
             ->end();
 
         $this->addLocationsSection($rootNode);
