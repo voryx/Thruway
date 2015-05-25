@@ -241,7 +241,7 @@ class Dealer extends AbstractRole
         $keepIndex = $call->processYield($session, $msg);
 
         if (!$keepIndex) {
-            unset($this->callInvocationIndex[$msg->getRequestId()]);
+            $this->removeCall($call);
         }
 
         /* @var $procedure \Thruway\Procedure */
