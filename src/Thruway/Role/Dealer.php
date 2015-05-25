@@ -312,7 +312,7 @@ class Dealer implements RealmModuleInterface
         $keepIndex = $call->processYield($session, $msg);
 
         if (!$keepIndex) {
-            unset($this->callInvocationIndex[$msg->getRequestId()]);
+            $this->removeCall($call);
         }
 
         /* @var $procedure \Thruway\Procedure */
