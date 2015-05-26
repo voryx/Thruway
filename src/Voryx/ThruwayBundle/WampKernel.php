@@ -2,6 +2,7 @@
 
 namespace Voryx\ThruwayBundle;
 
+use Doctrine\DBAL\Driver\Connection;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use React\Promise\Promise;
@@ -504,6 +505,29 @@ class WampKernel implements HttpKernelInterface
      */
     private function cleanup($controller = null)
     {
+
+        //Do some doctrine cleanup on the controller container.
+        $controllerContainer = $this->getControllerContainer($controller);
+
+        if ($controllerContainer && $controllerContainer->has('doctrine')) {
+            if (!$controllerContainer->get('doctrine')->getManager()->isOpen()) {
+                $controllerContainer->get('doctrine')->resetManager();
+
+            }
+            $controllerContainer->get('doctrine')->getManager()->clear();
+
+
+            //Close any open doctrine connections
+            /** @var Connection[] $connections */
+            $connections = $controllerContainer->get('doctrine')->getConnections();
+
+            foreach($connections as $connection){
+
+                $connection->close();
+            }
+
+        }
+
         unset ($controller);
 
         //Clear out any stuff that doctrine has cached
