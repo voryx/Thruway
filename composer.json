@@ -22,8 +22,8 @@
         }
     ],
     "autoload": {
-        "psr-0": {
-            "Thruway": "src"
+        "psr-4": {
+            "Thruway\\": "src/Thruway/"
         }
     },
     "require": {
