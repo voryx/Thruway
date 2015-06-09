@@ -146,10 +146,15 @@ class EventMessage extends Message
         $details             = $this->getDetails();
         $details->publisher  = $session->getSessionId();
         $details->topic      = $this->topic;
-        $details->authid     = $session->getAuthenticationDetails()->getAuthId();
-        $details->authrole   = $session->getAuthenticationDetails()->getAuthRole();
-        $details->authroles  = $session->getAuthenticationDetails()->getAuthRoles();
-        $details->authmethod = $session->getAuthenticationDetails()->getAuthMethod();
+        $authenticationDetails = $session->getAuthenticationDetails();
+        $details->authid     = $authenticationDetails->getAuthId();
+        $details->authrole   = $authenticationDetails->getAuthRole();
+        $details->authroles  = $authenticationDetails->getAuthRoles();
+        $details->authmethod = $authenticationDetails->getAuthMethod();
+
+        if ($authenticationDetails->getAuthExtra() !== null) {
+            $details->_thruway_authextra = $authenticationDetails->getAuthExtra();
+        }
 
     }
 

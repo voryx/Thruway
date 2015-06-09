@@ -32,6 +32,11 @@ class AuthenticationDetails
      */
     private $authRoles;
 
+    /**
+     * @var \stdClass
+     */
+    private $authExtra;
+
     function __construct()
     {
         $this->authRoles = [];
@@ -183,4 +188,22 @@ class AuthenticationDetails
             return FALSE;
         }
     }
+
+    /**
+     * @return \stdClass
+     */
+    public function getAuthExtra()
+    {
+        return $this->authExtra;
+    }
+
+    /**
+     * @param \stdClass $authExtra
+     */
+    public function setAuthExtra($authExtra)
+    {
+        $this->authExtra = $authExtra;
+    }
+
+
 }

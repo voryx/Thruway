@@ -345,4 +345,37 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 //    public function testCallCancelAfterCancel() {
 //        $this->assertTrue(false);
 //    }
+
+    public function testInvocationError() {
+        $dealer = new \Thruway\Role\Dealer();
+
+        $callerTransport = new \Thruway\Transport\DummyTransport();
+        $callerSession = new Session($callerTransport);
+
+        $calleeTransport = new \Thruway\Transport\DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+
+        // register from callee
+        $registerMsg = new \Thruway\Message\RegisterMessage(1, new stdClass(), 'test_proc_name');
+        $dealer->handleRegisterMessage(new \Thruway\Event\MessageEvent($calleeSession, $registerMsg));
+
+        $this->assertInstanceOf('\Thruway\Message\RegisteredMessage', $calleeTransport->getLastMessageSent());
+
+        // call from one session
+        $callRequestId = \Thruway\Common\Utils::getUniqueId();
+        $callMsg = new \Thruway\Message\CallMessage($callRequestId, new stdClass(), 'test_proc_name');
+        $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($callerSession, $callMsg));
+
+        $this->assertInstanceOf('\Thruway\Message\InvocationMessage', $calleeTransport->getLastMessageSent());
+
+        $errorMsg = \Thruway\Message\ErrorMessage::createErrorMessageFromMessage($calleeTransport->getLastMessageSent(), 'the.error.uri');
+        $dealer->handleErrorMessage(new \Thruway\Event\MessageEvent($calleeSession, $errorMsg));
+
+        /** @var \Thruway\Message\ErrorMessage $returnedError */
+        $returnedError = $callerTransport->getLastMessageSent();
+        $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $returnedError);
+        $this->assertEquals(Message::MSG_CALL, $returnedError->getErrorMsgCode());
+        $this->assertEquals($callRequestId, $returnedError->getErrorRequestId());
+        $this->assertEquals('the.error.uri', $returnedError->getErrorURI());
+    }
 } 

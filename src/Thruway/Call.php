@@ -295,14 +295,20 @@ class Call
             $invocationMessage->setRequestId($this->getInvocationRequestId());
 
             $details = [];
+
             if ($this->getRegistration()->getDiscloseCaller() === true && $this->getCallerSession()->getAuthenticationDetails()) {
+                $authenticationDetails = $this->getCallerSession()->getAuthenticationDetails();
                 $details = [
                     "caller"     => $this->getCallerSession()->getSessionId(),
-                    "authid"     => $this->getCallerSession()->getAuthenticationDetails()->getAuthId(),
-                    "authrole"   => $this->getCallerSession()->getAuthenticationDetails()->getAuthRole(),
-                    "authroles"  => $this->getCallerSession()->getAuthenticationDetails()->getAuthRoles(),
-                    "authmethod" => $this->getCallerSession()->getAuthenticationDetails()->getAuthMethod(),
+                    "authid"     => $authenticationDetails->getAuthId(),
+                    "authrole"   => $authenticationDetails->getAuthRole(),
+                    "authroles"  => $authenticationDetails->getAuthRoles(),
+                    "authmethod" => $authenticationDetails->getAuthMethod(),
                 ];
+
+                if ($authenticationDetails->getAuthExtra() !== null) {
+                    $details["_thruway_authextra"] = $authenticationDetails->getAuthExtra();
+                }
             }
 
             // TODO: check to see if callee supports progressive call
