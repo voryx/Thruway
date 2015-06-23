@@ -199,9 +199,8 @@ class WampKernel implements HttpKernelInterface
             $controller     = $this->container->get($mapping->getServiceId());
             $controllerArgs = $this->deserializeArgs($args, $mapping);
 
-            $this->setControllerContainerUser($controller, $details);
             $this->setControllerContainerDetails($controller, $args, $argsKw, $details);
-
+            $this->setControllerContainerUser($controller, $details);
 
             //Call Controller
             $rawResult = call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
@@ -277,8 +276,8 @@ class WampKernel implements HttpKernelInterface
             $controller     = $this->container->get($mapping->getServiceId());
             $controllerArgs = $this->deserializeArgs($args, $mapping);
 
-            $this->setControllerContainerUser($controller, $details);
             $this->setControllerContainerDetails($controller, $args, $argsKw, $details);
+            $this->setControllerContainerUser($controller, $details);
 
             //Call Controller
             call_user_func_array([$controller, $mapping->getMethod()->getName()], $controllerArgs);
@@ -465,8 +464,8 @@ class WampKernel implements HttpKernelInterface
         //Use the global container so every call uses the same instance of the user provider
         $config = $this->container->getParameter('voryx_thruway');
 
-        if ($this->container->has($config['user_provider'])) {
-            $user = $this->container->get($config['user_provider'])->loadUserByUsername($authid);
+        if ($container->has($config['user_provider'])) {
+            $user = $container->get($config['user_provider'])->loadUserByUsername($authid);
         }
 
         $user = $user ?: new User($authid, null);
@@ -485,7 +484,10 @@ class WampKernel implements HttpKernelInterface
         $token       = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
 
         //Use the controller's container to set the token
+        // This is deprecated in 2.6. we are leaving security.context for BC
         $container->get('security.context')->setToken($token);
+        // This is what it should look like in 2.6+
+        //$container->get('security.token_storage')->setToken($token);
     }
 
 
