@@ -36,14 +36,14 @@ voryx_thruway:
         ip: '127.0.0.1'  # the ip that the router should start on
         port: '8080'  # public facing port.  If authentication is enabled, this port will be protected
         trusted_port: '8081' # Bypasses all authentication.  Use this for trusted clients.
-#        authentication: 'in_memory'
+#        authentication: false # true will load the AuthenticationManager
     locations:
         bundles: ["AppBundle"]
 #        files:
 #            - "Acme\\DemoBundle\\Controller\\DemoController"
       
 ```
-If you enable ```authentication: 'in_memory'```, you'll need to add a ```thruway``` to the security firewall and set the ``in_memory_user_provider``.
+If you are using the in-memory user provider, you'll need to add a ```thruway``` to the security firewall and set the ``in_memory_user_provider``.
 
 ```yml
 #app/config/security.yml
@@ -89,6 +89,16 @@ set voryx_thruway.user_provider to "fos_user.user_manager"
 
 voryx_thruway:
     user_provider: 'fos_user.user_manager' 
+```
+
+The WAMP-CRA service is already configured, we just need to add a tag to it to have the bundle install it:
+
+```yml
+    wamp_cra_auth:
+        class: Thruway\Authentication\WampCraAuthProvider
+        parent: voryx.thruway.wamp.cra.auth.client
+        tags:
+            - { name: thruway.internal_client }
 ```
 
 ## Usage

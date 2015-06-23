@@ -79,7 +79,7 @@ class VoryxThruwayExtension extends Extension
     protected function configureOptions(&$config, ContainerBuilder $container)
     {
         //Add optional Manager
-        if ($config['router'] && $config['router']['enable_manager'] === true) {
+        if (isset($config['router']['enable_manager']) && $config['router']['enable_manager'] === true) {
 
             //Replace the dummy manager with the client manager
             $container
@@ -97,14 +97,12 @@ class VoryxThruwayExtension extends Extension
             Logger::set(new NullLogger());
         }
 
-        if ($config['router'] && isset($config['router']['authentication']) && $config['router']['authentication'] == "in_memory") {
+        if (isset($config['router']['authentication']) && $config['router']['authentication'] !== false) {
 
             //Inject the authentication manager into the router
             $container
                 ->getDefinition('voryx.thruway.server')
-                ->addMethodCall('setAuthenticationManager', [new Reference('voryx.thruway.authentication.manager')])
-                ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.auth.manager.transport.provider')])
-                ->addMethodCall('addTransportProvider', [new Reference('voryx.thruway.wamp.cra.auth.transport.provider')]);
+                ->addMethodCall('registerModule', [new Reference('voryx.thruway.authentication.manager')]);
         }
 
         if ($container->hasDefinition('security.user.provider.concrete.in_memory')) {
