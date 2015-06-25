@@ -85,6 +85,7 @@
                  scope="prototype">
             <argument type="expression">parameter('kernel.container_class')</argument>
             <argument type="service" id="thruway.client"/>
+            <argument type="service" id="voryx.thruway.loop"/>
 
         </service>
 
