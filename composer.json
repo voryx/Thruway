@@ -34,6 +34,9 @@
         "psr/log": "~1",
         "guzzle/guzzle": "~3.9"
     },
+    "suggest": {
+	    "ext-mcrypt":"If you want to use WAMP-CRA for authentication"
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "0.4-dev"
