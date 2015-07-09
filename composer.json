@@ -32,8 +32,10 @@
         "cboden/ratchet": "0.3.*",
         "ratchet/pawl": "0.1.*",
         "psr/log": "~1",
-        "guzzle/guzzle": "~3.9",
-        "ext-mcrypt":"*"
+        "guzzle/guzzle": "~3.9"
+    },
+    "suggest": {
+	    "ext-mcrypt":"If you want to use WAMP-CRA for authentication"
     },
     "extra": {
         "branch-alias": {
