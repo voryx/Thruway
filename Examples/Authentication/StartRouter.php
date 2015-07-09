@@ -7,10 +7,7 @@ use Thruway\Transport\RatchetTransportProvider;
 
 $router = new Router();
 
-$authMgr = new \Thruway\Authentication\AuthenticationManager();
-
-$router->setAuthenticationManager($authMgr);
-$router->addInternalClient($authMgr);
+$router->registerModule(new \Thruway\Authentication\AuthenticationManager());
 
 //Provide authentication for the realm: 'somerealm'
 $authProvClient = new SimpleAuthProviderClient(["somerealm"]);
