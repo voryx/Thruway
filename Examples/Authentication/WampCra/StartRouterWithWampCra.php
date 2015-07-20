@@ -1,7 +1,7 @@
 <?php
-require '../../bootstrap.php';
+require_once __DIR__ . '/../../bootstrap.php';
 
-require 'UserDb.php';
+require_once __DIR__ . '/UserDb.php';
 
 use Thruway\Authentication\WampCraAuthProvider;
 use Thruway\Peer\Router;
@@ -27,8 +27,7 @@ $userDb->add('joe', 'secret2', "mmm...salt");
  */
 $authMgr = new \Thruway\Authentication\AuthenticationManager();
 
-$router->setAuthenticationManager($authMgr);
-$router->addInternalClient($authMgr);
+$router->registerModule($authMgr);
 
 $authProvClient = new WampCraAuthProvider(["realm1"]);
 $authProvClient->setUserDb($userDb);
