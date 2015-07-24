@@ -127,6 +127,26 @@ class Callee extends AbstractRole
         Logger::error($this, "Got an Unregistered Message, but couldn't find corresponding request");
     }
 
+    private function processExceptionFromRPCCall(ClientSession $session, InvocationMessage $msg, $registration, \Exception $e) {
+        if ($e instanceof WampErrorException) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+            $errorMsg->setErrorURI($e->getErrorUri());
+            $errorMsg->setArguments($e->getArguments());
+            $errorMsg->setArgumentsKw($e->getArgumentsKw());
+            $errorMsg->setDetails($e->getDetails());
+
+            $session->sendMessage($errorMsg);
+            return;
+        }
+
+        $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
+        $errorMsg->setErrorURI($registration['procedure_name'].'.error');
+        $errorMsg->setArguments([$e->getMessage()]);
+        $errorMsg->setArgumentsKw($e);
+
+        $session->sendMessage($errorMsg);
+    }
+
     /**
      * Process InvocationMessage
      *
@@ -159,21 +179,8 @@ class Callee extends AbstractRole
                             $this->processResultAsArray($results, $msg, $session);
                         }
 
-                    } catch (WampErrorException $e) {
-                        $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-                        $errorMsg->setErrorURI($e->getErrorUri());
-                        $errorMsg->setArguments($e->getArguments());
-                        $errorMsg->setArgumentsKw($e->getArgumentsKw());
-                        $errorMsg->setDetails($e->getDetails());
-
-                        $session->sendMessage($errorMsg);
                     } catch (\Exception $e) {
-                        $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-                        $errorMsg->setErrorURI($registration['procedure_name'].'.error');
-                        $errorMsg->setArguments([$e->getMessage()]);
-                        $errorMsg->setArgumentsKw($e);
-
-                        $session->sendMessage($errorMsg);
+                        $this->processExceptionFromRPCCall($session, $msg, $registration, $e);
                     }
 
                     break;
@@ -209,7 +216,12 @@ class Callee extends AbstractRole
 
               $session->sendMessage($yieldMsg);
           },
-          function () use ($msg, $session, $registration) {
+          function ($e) use ($msg, $session, $registration) {
+              if ($e instanceof \Exception) {
+                  $this->processExceptionFromRPCCall($session, $msg, $registration, $e);
+                  return;
+              }
+
               $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
               $errorMsg->setErrorURI($registration['procedure_name'].'.error');
 
