@@ -363,6 +363,32 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("subscribe failed", $this->_testResult);
     }
 
+    public function testPublishNoArguments() {
+        $this->_testResult = null;
+        $this->_error = null;
+
+        $this->_conn->on('open', function (\Thruway\ClientSession $session) {
+            $session->subscribe("some.topic", function ($args, $argsKw) {
+                $this->_testResult = $args;
+                $this->_conn->close();
+            })->then(
+                function ($asdf) use ($session) {
+                    $session->publish("some.topic", null, null, ["exclude_me" => false]);
+                },
+                function ($err) {
+                    $this->_error = "Subscribe failed.";
+                    $this->_conn->close();
+                }
+            );
+        });
+
+        $this->_conn->open();
+
+        $this->assertTrue(is_array($this->_testResult));
+        $this->assertEmpty($this->_testResult);
+        $this->assertNull($this->_error, "Error: " . $this->_error);
+    }
+
     public function testPublishExclude() {
         $this->_testResult = null;
         $this->_deferred = new \React\Promise\Deferred();

@@ -55,7 +55,7 @@ class ClientSession extends AbstractSession
      * @param array|mixed $options
      * @return \React\Promise\Promise
      */
-    public function publish($topicName, $arguments, $argumentsKw = null, $options = null)
+    public function publish($topicName, $arguments = null, $argumentsKw = null, $options = null)
     {
         return $this->peer->getPublisher()->publish($this, $topicName, $arguments, $argumentsKw, $options);
     }
