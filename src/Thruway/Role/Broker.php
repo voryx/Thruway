@@ -268,7 +268,9 @@ class Broker implements ManageableInterface, RealmModuleInterface
                 if ($subscription->getSession() === $session) {
                     $subscriptionGroup->removeSubscription($subscription);
                 }
-                if (empty($subscriptionGroup->getSubscriptions())) {
+
+                $subscriptions = $subscriptionGroup->getSubscriptions();
+                if (empty($subscriptions)) {
                     unset($this->subscriptionGroups[$key]);
                 }
             }
