@@ -101,6 +101,8 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
 
         $this->router->getEventDispatcher()->dispatch('connection_close', new ConnectionCloseEvent($session));
 
+        unset($this->sessions[$conn]);
+
         Logger::info($this, "Ratchet has closed");
     }
 

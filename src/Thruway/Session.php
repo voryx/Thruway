@@ -141,6 +141,9 @@ class Session extends AbstractSession implements RealmModuleInterface
                 $this->getRealm()->publishMeta('wamp.metaevent.session.on_leave', [$this->getMetaInfo()]);
             }
             $this->dispatcher->dispatch("LeaveRealm", new LeaveRealmEvent($this->realm, $this));
+
+            unset($this->dispatcher);
+
             $this->realm = null;
         }
     }

@@ -262,11 +262,14 @@ class Broker implements ManageableInterface, RealmModuleInterface
     public function leave(Session $session)
     {
         /** @var SubscriptionGroup $subscriptionGroup */
-        foreach ($this->subscriptionGroups as $subscriptionGroup) {
+        foreach ($this->subscriptionGroups as $key => $subscriptionGroup) {
             /** @var Subscription $subscription */
             foreach ($subscriptionGroup->getSubscriptions() as $subscription) {
                 if ($subscription->getSession() === $session) {
                     $subscriptionGroup->removeSubscription($subscription);
+                }
+                if (empty($subscriptionGroup->getSubscriptions())) {
+                    unset($this->subscriptionGroups[$key]);
                 }
             }
         }

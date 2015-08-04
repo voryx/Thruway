@@ -428,6 +428,8 @@ class Dealer implements RealmModuleInterface
 
         $call->getRegistration()->removeCall($call);
 
+        $this->removeCall($call);
+
         $errorMsg = ErrorMessage::createErrorMessageFromMessage($call->getCallMessage());
 
         $errorMsg->setErrorURI($msg->getErrorURI());
@@ -461,6 +463,7 @@ class Dealer implements RealmModuleInterface
 
         $callerSession->sendMessage($errorMsgToCaller);
 
+        $call->getRegistration()->removeCall($call);
         $this->removeCall($call);
     }
 
