@@ -3,9 +3,6 @@
 
 namespace Thruway;
 
-use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
-use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\RegisteredMessage;
 use Thruway\Message\RegisterMessage;
@@ -48,11 +45,6 @@ class Procedure
     private $callQueue;
 
     /**
-     * @var ManagerInterface
-     */
-    private $manager;
-
-    /**
      * Constructor
      *
      * @param string $procedureName
@@ -64,7 +56,6 @@ class Procedure
         $this->registrations              = [];
         $this->allowMultipleRegistrations = false;
         $this->discloseCaller             = false;
-        $this->setManager(new ManagerDummy());
 
         $this->callQueue = new \SplQueue();
     }
@@ -428,23 +419,9 @@ class Procedure
     }
 
     /**
-     * @return ManagerInterface
+     * todo: This was part of the manager stuff - but may be used by some tests
+     *
      */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
-     * @param ManagerInterface $manager
-     */
-    public function setManager($manager)
-    {
-        $this->manager = $manager;
-        $this->manager->addCallable("manager.procedure." . $this->getProcedureName() . "get_registrations",
-            $this->getRegistrations());
-    }
-
     public function managerGetRegistrations()
     {
         $registrations = $this->getRegistrations();

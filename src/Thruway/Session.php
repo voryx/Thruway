@@ -8,8 +8,7 @@ use Thruway\Common\Utils;
 use Thruway\Event\EventDispatcher;
 use Thruway\Event\LeaveRealmEvent;
 use Thruway\Event\MessageEvent;
-use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
+use Thruway\Logging\Logger;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 use Thruway\Module\RealmModuleInterface;
@@ -32,9 +31,6 @@ class Session extends AbstractSession implements RealmModuleInterface
     /** @var \DateTime */
     private $sessionStart;
 
-    /** @var \Thruway\Manager\ManagerInterface */
-    private $manager;
-
     /** @var int */
     private $pendingCallCount;
 
@@ -51,9 +47,8 @@ class Session extends AbstractSession implements RealmModuleInterface
      * Constructor
      *
      * @param \Thruway\Transport\TransportInterface $transport
-     * @param \Thruway\Manager\ManagerInterface $manager
      */
-    public function __construct(TransportInterface $transport, ManagerInterface $manager = null)
+    public function __construct(TransportInterface $transport)
     {
         $this->transport             = $transport;
         $this->state                 = static::STATE_PRE_HELLO;
@@ -66,13 +61,6 @@ class Session extends AbstractSession implements RealmModuleInterface
         $this->dispatcher            = new EventDispatcher();
 
         $this->dispatcher->addRealmSubscriber($this);
-
-        if ($manager === null) {
-            $manager = new ManagerDummy();
-        }
-
-        $this->setManager($manager);
-
     }
 
     /**
@@ -150,27 +138,6 @@ class Session extends AbstractSession implements RealmModuleInterface
 
 
     /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     * @throws \InvalidArgumentException
-     */
-    public function setManager(ManagerInterface $manager)
-    {
-        $this->manager = $manager;
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
      * Get number sent messages
      *
      * @return int
@@ -217,12 +184,6 @@ class Session extends AbstractSession implements RealmModuleInterface
      */
     public function setAuthenticated($authenticated)
     {
-        // generally, there is no provisions in the WAMP specs to change from
-        // authenticated to unauthenticated
-        if ($this->authenticated && !$authenticated) {
-            $this->getManager()->error("Session changed from authenticated to unauthenticated");
-        }
-
         // make sure the metaevent is only sent when changing from
         // not-authenticate to authenticated
         if ($authenticated && !$this->authenticated) {
@@ -295,7 +256,7 @@ class Session extends AbstractSession implements RealmModuleInterface
     {
         // if we are already at zero - something is wrong
         if ($this->pendingCallCount == 0) {
-            $this->getManager()->alert('Session pending call count wants to go negative.');
+            Logger::alert($this, 'Session pending call count wants to go negative.');
 
             return 0;
         }

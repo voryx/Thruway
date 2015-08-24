@@ -8,8 +8,6 @@ use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
 use Thruway\Event\MessageEvent;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Message\CallMessage;
 use Thruway\Message\CancelMessage;
 use Thruway\Message\ErrorMessage;
@@ -34,12 +32,6 @@ class Dealer implements RealmModuleInterface
      * @var Procedure[]
      */
     private $procedures = [];
-
-    /**
-     * @var \Thruway\Manager\ManagerInterface
-     */
-    private $manager;
-
 
     /**
      * @var Call[]
@@ -69,14 +61,9 @@ class Dealer implements RealmModuleInterface
     /**
      * Constructor
      *
-     * @param \Thruway\Manager\ManagerInterface $manager
      */
-    public function __construct(ManagerInterface $manager = null)
+    public function __construct()
     {
-        $manager = $manager === null ? $manager : new ManagerDummy();
-
-        $this->setManager($manager);
-
         $this->registrationsBySession = new \SplObjectStorage();
     }
 
@@ -545,29 +532,9 @@ class Dealer implements RealmModuleInterface
     }
 
     /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     */
-    public function setManager($manager)
-    {
-        $this->manager = $manager;
-
-
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
-    }
-
-    /**
      * Get list registrations
+     *
+     * todo: this may be used by testing
      *
      * @return array
      */

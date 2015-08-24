@@ -6,7 +6,6 @@ use Thruway\Authentication\ClientAuthenticationInterface;
 use Thruway\ClientSession;
 use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AbortMessage;
 use Thruway\Message\ChallengeMessage;
 use Thruway\Message\GoodbyeMessage;
@@ -142,7 +141,6 @@ class Client implements EventEmitterInterface, ClientInterface
         $this->transportProvider    = null;
         $this->roles                = [];
         $this->authMethods          = [];
-        $this->manager              = new ManagerDummy();
         $this->session              = null;
         $this->clientAuthenticators = [];
         $this->authId               = "anonymous";
@@ -558,26 +556,6 @@ class Client implements EventEmitterInterface, ClientInterface
     public function getRoles()
     {
         return $this->roles;
-    }
-
-    /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     */
-    public function setManager($manager)
-    {
-        $this->manager = $manager;
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
     }
 
     /**

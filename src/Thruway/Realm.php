@@ -9,7 +9,6 @@ use Thruway\Event\LeaveRealmEvent;
 use Thruway\Event\MessageEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManagerDummy;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\GoodbyeMessage;
 use Thruway\Message\Message;
@@ -38,9 +37,6 @@ class Realm implements RealmModuleInterface
 
     /** @var \Thruway\Role\AbstractRole[] */
     private $roles;
-
-    /** @var \Thruway\Manager\ManagerInterface */
-    private $manager;
 
     /** @var \Thruway\Role\Broker */
     private $broker;
@@ -71,7 +67,6 @@ class Realm implements RealmModuleInterface
         $this->addModule($this->broker);
         $this->addModule($this->dealer);
         $this->addModule(new AnonymousAuthenticator());
-        $this->setManager(new ManagerDummy());
     }
 
     /**
@@ -190,6 +185,8 @@ class Realm implements RealmModuleInterface
     /**
      * Get list sessions
      *
+     * todo: this is used by some tests - is leftover from the old manager stuff
+     *
      * @return array
      */
     public function managerGetSessions()
@@ -248,33 +245,6 @@ class Realm implements RealmModuleInterface
 
         Logger::debug($this, "Leaving realm {$session->getRealm()->getRealmName()}");
         $this->sessions->detach($session);
-    }
-
-    /**
-     * Set manager
-     *
-     * @param \Thruway\Manager\ManagerInterface $manager
-     */
-    public function setManager($manager)
-    {
-        $this->manager = $manager;
-
-        $this->broker->setManager($manager);
-        $this->dealer->setManager($manager);
-
-        $manager->addCallable("realm.{$this->getRealmName()}.registrations", function () {
-            return $this->dealer->managerGetRegistrations();
-        });
-    }
-
-    /**
-     * Get manager
-     *
-     * @return \Thruway\Manager\ManagerInterface
-     */
-    public function getManager()
-    {
-        return $this->manager;
     }
 
     /**

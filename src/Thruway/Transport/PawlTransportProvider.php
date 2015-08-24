@@ -5,7 +5,6 @@ namespace Thruway\Transport;
 use Ratchet\Client\Factory;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManagerDummy;
 use Ratchet\Client\WebSocket;
 use React\EventLoop\LoopInterface;
 use Thruway\Peer\ClientInterface;
@@ -37,7 +36,6 @@ class PawlTransportProvider extends AbstractClientTransportProvider
     function __construct($URL = "ws://127.0.0.1:9090/")
     {
         $this->URL     = $URL;
-        $this->manager = new ManagerDummy();
     }
 
     /**

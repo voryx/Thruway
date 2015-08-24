@@ -7,8 +7,6 @@ use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
 use Thruway\Event\MessageEvent;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManageableInterface;
-use Thruway\Manager\ManageableTrait;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishedMessage;
@@ -29,10 +27,8 @@ use Thruway\Subscription\SubscriptionGroup;
  * Class Broker
  * @package Thruway\Role
  */
-class Broker implements ManageableInterface, RealmModuleInterface
+class Broker implements RealmModuleInterface
 {
-    use ManageableTrait;
-
     /**
      * @var array
      */
@@ -278,6 +274,8 @@ class Broker implements ManageableInterface, RealmModuleInterface
     }
 
     /**
+     * todo: this may be used by testing
+     *
      * @return array
      */
     public function managerGetSubscriptions()

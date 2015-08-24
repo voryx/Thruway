@@ -9,8 +9,6 @@ use Thruway\Event\NewRealmEvent;
 use Thruway\Exception\InvalidRealmNameException;
 use Thruway\Exception\RealmNotFoundException;
 use Thruway\Logging\Logger;
-use Thruway\Manager\ManagerDummy;
-use Thruway\Manager\ManagerInterface;
 use Thruway\Message\HelloMessage;
 use Thruway\Module\RealmModuleInterface;
 
@@ -25,9 +23,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     /** @var array */
     private $realms;
 
-    /** @var \Thruway\Manager\ManagerInterface */
-    private $manager;
-
     /** @var boolean */
     private $allowRealmAutocreate;
 
@@ -35,12 +30,10 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     /**
      * Constructor
      *
-     * @param \Thruway\Manager\ManagerInterface $manager
      */
-    public function __construct(ManagerInterface $manager = null)
+    public function __construct()
     {
         $this->realms               = [];
-        $this->manager              = $manager ?: new ManagerDummy();
         $this->allowRealmAutocreate = true;
 
     }
@@ -128,7 +121,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
             if ($this->getAllowRealmAutocreate()) {
                 Logger::debug($this, "Creating new realm \"".$realmName."\"");
                 $realm = new Realm($realmName);
-                $realm->setManager($this->manager);
 
                 $this->addRealm($realm);
             } else {
@@ -159,12 +151,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
         }
 
         Logger::debug($this, "Adding realm \"".$realmName."\"");
-
-        if ($realm->getManager() instanceof ManagerDummy) {
-            /** remind people that we don't setup the manager for them if they
-             * are creating their own realms */
-            Logger::info($this, "Realm \"".$realmName."\" is using ManagerDummy");
-        }
 
         $this->realms[$realm->getRealmName()] = $realm;
 
