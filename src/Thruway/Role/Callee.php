@@ -3,7 +3,7 @@
 namespace Thruway\Role;
 
 use React\Promise\Deferred;
-use React\Promise\Promise;
+use React\Promise\PromiseInterface;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
 use Thruway\Common\Utils;
@@ -151,7 +151,7 @@ class Callee extends AbstractRole
                     try {
                         $results = $registration["callback"]($msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails());
 
-                        if ($results instanceof Promise) {
+                        if ($results instanceof PromiseInterface) {
                             $this->processResultAsPromise($results, $msg, $session, $registration);
                         } else {
                             $this->processResultAsArray($results, $msg, $session);
@@ -184,12 +184,12 @@ class Callee extends AbstractRole
     /**
      *  Process a result as a promise
      *
-     * @param \React\Promise\Promise $promise
+     * @param \React\Promise\PromiseInterface $promise
      * @param \Thruway\Message\InvocationMessage $msg
      * @param \Thruway\ClientSession $session
      * @param array $registration
      */
-    private function processResultAsPromise(Promise $promise, InvocationMessage $msg, ClientSession $session, $registration)
+    private function processResultAsPromise(PromiseInterface $promise, InvocationMessage $msg, ClientSession $session, $registration)
     {
 
         $promise->then(
