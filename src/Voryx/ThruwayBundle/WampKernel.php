@@ -4,7 +4,8 @@ namespace Voryx\ThruwayBundle;
 
 use Doctrine\DBAL\Driver\Connection;
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\SerializerInterface;
+use JMS\Serializer\Serializer;
+use Psr\Log\LoggerInterface;
 use React\Promise\Promise;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -53,7 +54,7 @@ class WampKernel implements HttpKernelInterface
     private $client;
 
     /**
-     * @var SerializerInterface
+     * @var Serializer
      */
     private $serializer;
 
@@ -80,19 +81,21 @@ class WampKernel implements HttpKernelInterface
 
     /**
      * @param ContainerInterface $container
-     * @param SerializerInterface $serializer
+     * @param Serializer $serializer
      * @param ResourceMapper $resourceMapper
      */
     function __construct(
         ContainerInterface $container,
-        SerializerInterface $serializer,
+        Serializer $serializer,
         ResourceMapper $resourceMapper,
-        EventDispatcherInterface $dispatcher
+        EventDispatcherInterface $dispatcher,
+        LoggerInterface $logger
     ) {
         $this->container      = $container;
         $this->serializer     = $serializer;
         $this->resourceMapper = $resourceMapper;
         $this->dispatcher     = $dispatcher;
+        $this->logger         = $logger;
     }
 
     /**
@@ -214,7 +217,7 @@ class WampKernel implements HttpKernelInterface
         } catch (\Exception $e) {
             $this->cleanup();
             $message = "Unable to make the call: {$mapping->getAnnotation()->getName()} \n Message:  {$e->getMessage()}";
-            $this->container->get('logger')->critical($message);
+            $this->logger->critical($message);
             throw new \Exception($message);
         }
     }
@@ -253,10 +256,10 @@ class WampKernel implements HttpKernelInterface
             return $rawResult->then(function ($d) use ($context) {
                 //If the data is a CallResult, we only want to serialize the first argument
                 $d = $d instanceof CallResult ? [$d[0]] : $d;
-                return json_decode($this->serializer->serialize($d, "json", $context));
+                return $this->serializer->toArray($d, $context);
             });
         } else {
-            return json_decode($this->serializer->serialize($rawResult, "json", $context));
+            return $this->serializer->toArray($rawResult, $context);
         }
     }
 
@@ -287,7 +290,7 @@ class WampKernel implements HttpKernelInterface
         } catch (\Exception $e) {
             $this->cleanup();
             $message = "Unable to publish to: {$mapping->getAnnotation()->getName()} \n Message:  {$e->getMessage()}";
-            $this->container->get('logger')->critical($message);
+            $this->logger->critical($message);
             throw new \Exception($message);
         }
     }
@@ -405,7 +408,6 @@ class WampKernel implements HttpKernelInterface
     private function deserializeArgs($args, MappingInterface $mapping)
     {
         try {
-            $args = (array)$args;
 
             if ($this->isAssoc($args)) {
                 $args = [$args];
@@ -434,7 +436,7 @@ class WampKernel implements HttpKernelInterface
                     }
 
                     $className          = $params[$key]->getClass()->getName();
-                    $deserializedArgs[] = $this->serializer->deserialize(json_encode($arg), $className, "json");
+                    $deserializedArgs[] = $this->serializer->fromArray($arg, $className);
 
                 } else {
                     $deserializedArgs[] = $arg;
@@ -445,7 +447,7 @@ class WampKernel implements HttpKernelInterface
             return $deserializedArgs;
 
         } catch (\Exception $e) {
-            $this->container->get('logger')->addEmergency($e->getMessage());
+            $this->logger->emergency($e->getMessage());
 
         }
 
@@ -523,7 +525,7 @@ class WampKernel implements HttpKernelInterface
             /** @var Connection[] $connections */
             $connections = $controllerContainer->get('doctrine')->getConnections();
 
-            foreach($connections as $connection){
+            foreach ($connections as $connection) {
 
                 $connection->close();
             }
