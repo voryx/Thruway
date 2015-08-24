@@ -40,7 +40,7 @@ class TestController extends Controller
     /**
      * rpc test with multiple types
      */
-    public function RPCTestWithMultipleTypes(Person $person, Person $person, Person $person)
+    public function RPCTestWithMultipleTypes(Person $person, Person $person2, Person $person3)
     {
         return func_get_args();
     }
