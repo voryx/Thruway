@@ -33,7 +33,7 @@ class PawlTransportProvider extends AbstractClientTransportProvider
      *
      * @param string $URL
      */
-    function __construct($URL = "ws://127.0.0.1:9090/")
+    function __construct($URL = "ws://127.0.0.1:8080/")
     {
         $this->URL     = $URL;
     }
