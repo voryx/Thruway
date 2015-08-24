@@ -397,14 +397,12 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
                     $session->getAuthenticationDetails()->setAuthExtra($res[1]->_thruway_authextra);
                 }
 
-                if (isset($res[1])) {
+                if (isset($res[1]) && is_object($res[1])) {
                     $res[1]->authrole  = $session->getAuthenticationDetails()->getAuthRole();
                     $res[1]->authroles = $session->getAuthenticationDetails()->getAuthRoles();
                     $res[1]->authid    = $session->getAuthenticationDetails()->getAuthId();
-                    if (is_object($res[1])) {
-                        foreach ($res[1] as $k => $v) {
-                            $welcomeDetails->$k = $v;
-                        }
+                    foreach ($res[1] as $k => $v) {
+                        $welcomeDetails->$k = $v;
                     }
                 }
 
