@@ -130,8 +130,6 @@ class Session extends AbstractSession implements RealmModuleInterface
             }
             $this->dispatcher->dispatch("LeaveRealm", new LeaveRealmEvent($this->realm, $this));
 
-            unset($this->dispatcher);
-
             $this->realm = null;
         }
     }
