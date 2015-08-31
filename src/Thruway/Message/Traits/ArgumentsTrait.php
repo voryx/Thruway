@@ -65,7 +65,7 @@ trait ArgumentsTrait
      */
     public function setArguments($arguments)
     {
-        if (is_array($arguments) || $arguments === null) {
+        if (is_array($arguments) || $arguments instanceof \stdClass || $arguments === null) {
             $this->arguments = $arguments;
         } else {
             $this->arguments = null;
