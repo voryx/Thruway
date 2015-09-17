@@ -190,6 +190,35 @@ class BrokerTest extends PHPUnit_Framework_TestCase
         $broker->handlePublishMessage($messageEvent);
     }
 
+    public function testUnknownPrefixMatcher()
+    {
+        $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
+            ->getMock();
+
+        $transport->expects($this->any())->method("getTransportDetails")->will($this->returnValue(""));
+
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->setMethods(["sendMessage"])
+            ->setConstructorArgs([$transport])
+            ->getMock();
+
+//        /** @var $session \Thruway\Session */
+//        $session->setRealm(new \Thruway\Realm("testrealm"));
+
+        $broker = new \Thruway\Role\Broker();
+
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(
+            12345,
+            (object)["match" => "unknown"],
+            "test_subscription"
+        );
+
+        $session->expects($this->never())->method("sendMessage");
+
+        $event = new \Thruway\Event\MessageEvent($session, $subscribeMsg);
+        $broker->handleSubscribeMessage($event);
+    }
+
 //    /**
 //     * @throws Exception
 //     * @expectedException Exception

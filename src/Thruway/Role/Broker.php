@@ -141,7 +141,7 @@ class Broker implements RealmModuleInterface
         // get a subscription group "hash"
         /** @var MatcherInterface $matcher */
         $matcher = $this->getMatcherForMatchType($msg->getMatchType());
-        if ($matcher === null) {
+        if ($matcher === false) {
             Logger::alert($this,
               "no matching match type for \"".$msg->getMatchType()."\" for URI \"".$msg->getUri()."\"");
 
