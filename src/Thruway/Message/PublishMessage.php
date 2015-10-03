@@ -158,11 +158,12 @@ class PublishMessage extends Message implements ActionMessageInterface
         //Get the options that have been cast to an object
         $options = $this->getOptions();
 
-        $this->acknowledge = isset($options->acknowledge) && $options->acknowledge === true ? true : false;
-        $this->exclude_me  = isset($options->exclude_me) && $options->exclude_me === false ? false : true;
-        $this->exclude     = isset($options->exclude) && is_array($options->exclude) ? $options->exclude : [];
-        $this->eligible    = isset($options->eligible) && is_array($options->eligible) ? $options->eligible : null;
+        $this->acknowledge        = isset($options->acknowledge) && $options->acknowledge === true ? true : false;
+        $this->exclude_me         = isset($options->exclude_me) && $options->exclude_me === false ? false : true;
+        $this->exclude            = isset($options->exclude) && is_array($options->exclude) ? $options->exclude : [];
+        $this->eligible           = isset($options->eligible) && is_array($options->eligible) ? $options->eligible : null;
         $this->eligible_authroles = []; // default to no auth roles eligible
+
         if (isset($options->_thruway_eligible_authroles)) {
             if (is_array($options->_thruway_eligible_authroles)) {
                 $this->eligible_authroles = $options->_thruway_eligible_authroles;
@@ -247,11 +248,14 @@ class PublishMessage extends Message implements ActionMessageInterface
         $this->publicationId = $publicationId;
     }
 
-    public function hasEligibleAuthrole($authroles) {
+    public function hasEligibleAuthrole($authroles)
+    {
         if (!is_array($authroles)) {
             $authroles = [];
         }
-        if ($this->eligible_authroles === null) return true;
+        if ($this->eligible_authroles === null) {
+            return true;
+        }
         $intersect = array_intersect($authroles, $this->eligible_authroles);
         if (count($intersect) > 0) {
             return true;
@@ -260,8 +264,11 @@ class PublishMessage extends Message implements ActionMessageInterface
         return false;
     }
 
-    public function hasEligibleAuthid($authid) {
-        if ($this->eligible_authids === null) return true;
+    public function hasEligibleAuthid($authid)
+    {
+        if ($this->eligible_authids === null) {
+            return true;
+        }
         if (in_array($authid, $this->eligible_authids)) {
             return true;
         }

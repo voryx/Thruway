@@ -26,13 +26,16 @@ class Session extends AbstractSession implements RealmModuleInterface
     private $authenticationDetails;
 
     /** @var int */
-    private $messagesSent;
+    private $messagesSent = 0;
+
+    /** @var int */
+    private $messagesReceived = 0;
 
     /** @var \DateTime */
     private $sessionStart;
 
     /** @var int */
-    private $pendingCallCount;
+    private $pendingCallCount = 0;
 
     /** @var \stdClass|null */
     private $roleFeatures;
@@ -42,6 +45,12 @@ class Session extends AbstractSession implements RealmModuleInterface
 
     /** @var EventDispatcher */
     public $dispatcher;
+
+    /** @var float */
+    private $lastInboundActivity = 0;
+
+    /** @var float */
+    private $lastOutboundActivity = 0;
 
     /**
      * Constructor
@@ -54,10 +63,8 @@ class Session extends AbstractSession implements RealmModuleInterface
         $this->state                 = static::STATE_PRE_HELLO;
         $this->sessionId             = Utils::getUniqueId();
         $this->realm                 = null;
-        $this->messagesSent          = 0;
         $this->sessionStart          = new \DateTime();
         $this->authenticationDetails = null;
-        $this->pendingCallCount      = 0;
         $this->dispatcher            = new EventDispatcher();
 
         $this->dispatcher->addRealmSubscriber($this);
@@ -105,6 +112,7 @@ class Session extends AbstractSession implements RealmModuleInterface
      */
     public function sendMessage(Message $msg)
     {
+        $this->lastOutboundActivity = microtime(true);
         $this->dispatchMessage($msg, "Send");
     }
 
@@ -143,6 +151,14 @@ class Session extends AbstractSession implements RealmModuleInterface
     public function getMessagesSent()
     {
         return $this->messagesSent;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMessagesReceived()
+    {
+        return $this->messagesReceived;
     }
 
     /**
@@ -295,11 +311,32 @@ class Session extends AbstractSession implements RealmModuleInterface
     }
 
     /**
+     * @return float
+     */
+    public function getLastInboundActivity()
+    {
+        return $this->lastInboundActivity;
+    }
+
+    /**
+     * @return float
+     */
+    public function getLastOutboundActivity()
+    {
+        return $this->lastOutboundActivity;
+    }
+
+    /**
      * @param \Thruway\Message\Message $message
      * @param string $eventNamePrefix
      */
     public function dispatchMessage(Message $message, $eventNamePrefix = "")
     {
+        if ($eventNamePrefix == "") {
+            $this->lastInboundActivity = microtime(true);
+            $this->messagesReceived++;
+        }
+
         // this could probably become a constant inside the message itself
         $r         = new \ReflectionClass($message);
         $shortName = $r->getShortName();

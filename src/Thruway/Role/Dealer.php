@@ -215,26 +215,24 @@ class Dealer implements RealmModuleInterface
      */
     private function processUnregister(Session $session, UnregisterMessage $msg)
     {
-        // we are going to assume that the registration only exists in one spot
-        /** @var Procedure $procedure */
-        foreach ($this->procedures as $procedure) {
-            /** @var Registration $registration */
-            $registration = $procedure->getRegistrationById($msg->getRegistrationId());
+        $registration = $this->getRegistrationById($msg->getRegistrationId());
 
-            if ($registration) {
+        if ($registration && $this->procedures[$registration->getProcedureName()]) {
+            $procedure = $this->procedures[$registration->getProcedureName()];
+            if ($procedure) {
                 if ($procedure->processUnregister($session, $msg)) {
                     // Unregistration was successful - remove from this sessions
                     // list of registrations
                     if ($this->registrationsBySession->contains($session) &&
-                      in_array($procedure, $this->registrationsBySession[$session])
+                        in_array($procedure, $this->registrationsBySession[$session])
                     ) {
                         $registrationsInSession = $this->registrationsBySession[$session];
                         array_splice($registrationsInSession, array_search($procedure, $registrationsInSession), 1);
                     }
                 }
-
-                return;
             }
+
+            return;
         }
 
         // apparently we didn't find anything to unregister
@@ -483,6 +481,34 @@ class Dealer implements RealmModuleInterface
         $call = isset($this->callRequestIndex[$requestId]) ? $this->callRequestIndex[$requestId] : false;
 
         return $call;
+    }
+
+    /**
+     * @return \Thruway\Procedure[]
+     */
+    public function getProcedures()
+    {
+        return $this->procedures;
+    }
+
+    /**
+     * @param $id
+     * @return bool|Registration
+     */
+    public function getRegistrationById($id)
+    {
+        // we are going to assume that the registration only exists in one spot
+        /** @var Procedure $procedure */
+        foreach ($this->procedures as $procedure) {
+            /** @var Registration $registration */
+            $registration = $procedure->getRegistrationById($id);
+
+            if ($registration) {
+                return $registration;
+            }
+        }
+
+        return false;
     }
 
     /**
