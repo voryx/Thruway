@@ -1194,6 +1194,54 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Stop was called", $this->_result);
     }
 
+    public function testRealmJoinNoAutocreate() {
+        $loop = new \React\EventLoop\StreamSelectLoop();
+        $router = new \Thruway\Peer\Router($loop);
+
+        // you have to have at least one transport for the router to start
+        // internal client in this case
+        $iClient = new \Thruway\Peer\Client('some_realm');
+        $router->registerModule(new \Thruway\Transport\InternalClientTransportProvider($iClient));
+
+        $router->start(false);
+
+        $router->getRealmManager()->setAllowRealmAutocreate(false);
+
+        $this->assertEquals(1,count($router->getRealmManager()->getRealms()));
+
+        $transport = new \Thruway\Transport\DummyTransport();
+        $session = $router->createNewSession($transport);
+        $prevMsg = null;
+        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+
+        $fromRouter = [];
+
+        $toRouter = [
+            new \Thruway\Message\HelloMessage("another_realm", (object)[]),
+            function () use (&$fromRouter) {
+                $this->assertEquals(1, count($fromRouter));
+                $this->assertInstanceOf('\Thruway\Message\AbortMessage', $fromRouter[0]);
+                /** @var \Thruway\Message\AbortMessage $abortMessage */
+                $abortMessage = $fromRouter[0];
+                $this->assertEquals("wamp.error.no_such_realm", $abortMessage->getResponseURI());
+            }
+        ];
+
+        foreach ($toRouter as $msg) {
+            if (is_callable($msg)) {
+                $msg = $msg();
+                if (!($msg instanceof \Thruway\Message\Message)) {
+                    continue;
+                }
+            }
+
+            $session->dispatchMessage($msg);
+            if ($prevMsg !== $transport->getLastMessageSent()) {
+                $fromRouter[] = $prevMsg = $transport->getLastMessageSent();
+            }
+        }
+    }
+
     // This came over from 0.3 but things work differently now
     // still should implement removeModule or something for the same type of thing
 //    public function testRemoveInternalClient() {
