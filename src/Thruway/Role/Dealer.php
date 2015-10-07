@@ -411,6 +411,11 @@ class Dealer implements RealmModuleInterface
             return;
         }
 
+        if ($call->getCalleeSession() !== $session) {
+            Logger::error($this, "Attempted Invocation Error from session that does not own the call");
+            return;
+        }
+
         $call->getRegistration()->removeCall($call);
 
         $this->removeCall($call);
