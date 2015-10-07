@@ -4,7 +4,6 @@ namespace Thruway\Transport;
 
 use React\EventLoop\LoopInterface;
 use Thruway\Message\Message;
-use Thruway\Peer\PeerInterface;
 
 /**
  * Class InternalClientTransport
@@ -34,7 +33,9 @@ class InternalClientTransport extends AbstractTransport
     public function sendMessage(Message $msg)
     {
         if (is_callable($this->sendMessageFunction)) {
-            call_user_func_array($this->sendMessageFunction, [$msg]);
+            $this->getLoop()->nextTick(function () use ($msg) {
+                call_user_func_array($this->sendMessageFunction, [$msg]);
+            });
         }
     }
 
