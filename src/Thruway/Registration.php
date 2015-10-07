@@ -3,6 +3,7 @@
 namespace Thruway;
 
 use Thruway\Common\Utils;
+use Thruway\Message\ErrorMessage;
 use Thruway\Message\RegisterMessage;
 
 
@@ -40,7 +41,7 @@ class Registration
     private $allowMultipleRegistrations;
 
     /**
-     * @var array
+     * @var Call[]
      */
     private $calls;
 
@@ -302,6 +303,16 @@ class Registration
     public function getCurrentCallCount()
     {
         return count($this->calls);
+    }
+
+    /**
+     * This will send error messages on all pending calls
+     * This is used when a session disconnects before completing a call
+     */
+    public function errorAllPendingCalls() {
+        foreach ($this->calls as $call) {
+            $call->getCallerSession()->sendMessage(ErrorMessage::createErrorMessageFromMessage($call->getCallMessage(), 'wamp.error.canceled'));
+        }
     }
 
     /**

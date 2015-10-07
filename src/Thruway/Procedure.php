@@ -413,6 +413,8 @@ class Procedure
         /* @var $registration \Thruway\Registration */
         foreach ($this->registrations as $i => $registration) {
             if ($registration->getSession() === $session) {
+                // if this session is the callee on pending calls - error them out
+                $registration->errorAllPendingCalls();
                 array_splice($this->registrations, $i, 1);
             }
         }
