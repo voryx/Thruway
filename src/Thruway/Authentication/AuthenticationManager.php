@@ -3,8 +3,8 @@
 namespace Thruway\Authentication;
 
 use React\EventLoop\LoopInterface;
-use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\MessageEvent;
+use Thruway\Event\NewRealmEvent;
 use Thruway\Logging\Logger;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
@@ -59,7 +59,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
     public static function getSubscribedEvents()
     {
         return [
-          "connection_open" => ["handleConnectionOpen", 10]
+          "new_realm" => ["handleNewRealm", 10]
         ];
     }
 
@@ -77,12 +77,11 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
     }
 
     /**
-     * @param \Thruway\Event\ConnectionOpenEvent $event
+     * @param \Thruway\Event\NewRealmEvent $event
      */
-    public function handleConnectionOpen(ConnectionOpenEvent $event)
+    public function handleNewRealm(NewRealmEvent $event)
     {
-        //Register for Realm events
-        $event->session->dispatcher->addRealmSubscriber($this);
+        $event->realm->addModule($this);
     }
 
     /**
