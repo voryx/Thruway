@@ -58,7 +58,7 @@ class StateHandlerRegistration
         $sessionId = $subscription->getSession()->getSessionId();
 
         $this->clientSession->call($this->getProcedureName(),
-            [$subscription->getUri(), $sessionId, $subscription->getOptions()])->then(
+            [$subscription->getUri(), $sessionId, $subscription->getOptions(), $subscription->getSession()->getAuthenticationDetails()])->then(
             function ($res) use ($subscription) {
                 $pubId = null;
                 if (isset($res[0])) {
