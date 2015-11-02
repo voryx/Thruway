@@ -1,7 +1,7 @@
 <?php
 
-require '../bootstrap.php';
-require 'RawSocketClient.php';
+require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/RawSocketClient.php';
 
 $client = new RawSocketClient('realm1');
 
