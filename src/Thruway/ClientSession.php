@@ -37,11 +37,11 @@ class ClientSession extends AbstractSession
      * Subscribe
      *
      * @param string $topicName
-     * @param \Closure $callback
+     * @param callable $callback
      * @param $options array
      * @return Promise
      */
-    public function subscribe($topicName, $callback, $options = null)
+    public function subscribe($topicName, callable $callback, $options = null)
     {
         return $this->peer->getSubscriber()->subscribe($this, $topicName, $callback, $options);
     }
@@ -64,11 +64,11 @@ class ClientSession extends AbstractSession
      * Register
      *
      * @param string $procedureName
-     * @param \Closure $callback
+     * @param callable $callback
      * @param array|mixed $options
      * @return \React\Promise\Promise
      */
-    public function register($procedureName, $callback, $options = null)
+    public function register($procedureName, callable $callback, $options = null)
     {
         return $this->peer->getCallee()->register($this, $procedureName, $callback, $options);
     }

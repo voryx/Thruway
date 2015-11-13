@@ -369,7 +369,7 @@ class Callee extends AbstractRole
      * @param mixed $options
      * @return \React\Promise\Promise
      */
-    public function register(ClientSession $session, $procedureName, $callback, $options = null)
+    public function register(ClientSession $session, $procedureName, callable $callback, $options = null)
     {
         $futureResult = new Deferred();
 

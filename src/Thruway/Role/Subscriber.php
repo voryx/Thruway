@@ -15,7 +15,6 @@ use Thruway\Message\Message;
 use Thruway\Message\SubscribedMessage;
 use Thruway\Message\SubscribeMessage;
 use Thruway\Message\UnsubscribedMessage;
-use Thruway\Session;
 
 /**
  * Class Subscriber
@@ -207,7 +206,7 @@ class Subscriber extends AbstractRole
      * @param $options
      * @return Promise
      */
-    public function subscribe(ClientSession $session, $topicName, $callback, $options = null)
+    public function subscribe(ClientSession $session, $topicName, callable $callback, $options = null)
     {
         $requestId = Utils::getUniqueId();
         $options   = $options ? (object)$options : (object)[];
