@@ -17,7 +17,8 @@ use SplQueue;
  *
  * @package Thruway
  */
-class Procedure {
+class Procedure
+{
 
     /**
      * @var string
@@ -54,7 +55,8 @@ class Procedure {
      *
      * @param string $procedureName
      */
-    public function __construct($procedureName) {
+    public function __construct($procedureName)
+    {
         $this->setProcedureName($procedureName);
 
         $this->registrations = [];
@@ -73,7 +75,8 @@ class Procedure {
      * @return bool
      * @throws \Exception
      */
-    public function processRegister(Session $session, RegisterMessage $msg) {
+    public function processRegister(Session $session, RegisterMessage $msg)
+    {
         $registration = Registration::createRegistrationFromRegisterMessage($session, $msg);
 
         if (count($this->registrations) > 0) {
@@ -132,7 +135,8 @@ class Procedure {
      * @return bool
      * @throws \Exception
      */
-    private function addRegistration(Registration $registration, RegisterMessage $msg) {
+    private function addRegistration(Registration $registration, RegisterMessage $msg)
+    {
         try {
             // make sure the uri is exactly the same
             if ($registration->getProcedureName() != $this->getProcedureName()) {
@@ -170,7 +174,8 @@ class Procedure {
      * @param $registrationId
      * @return bool|Registration
      */
-    public function getRegistrationById($registrationId) {
+    public function getRegistrationById($registrationId)
+    {
         /** @var Registration $registration */
         foreach ($this->registrations as $registration) {
             if ($registration->getId() == $registrationId) {
@@ -188,7 +193,8 @@ class Procedure {
      * @param \Thruway\Message\UnregisterMessage $msg
      * @return bool
      */
-    public function processUnregister(Session $session, UnregisterMessage $msg) {
+    public function processUnregister(Session $session, UnregisterMessage $msg)
+    {
         for ($i = 0; $i < count($this->registrations); $i++) {
             /** @var Registration $registration */
             $registration = $this->registrations[$i];
@@ -223,7 +229,8 @@ class Procedure {
      * @throws \Exception
      * @return bool | Call
      */
-    public function processCall(Session $session, Call $call) {
+    public function processCall(Session $session, Call $call)
+    {
         // find a registration to call
         if (count($this->registrations) == 0) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($call->getCallMessage(), 'wamp.error.no_such_procedure'));
@@ -246,7 +253,8 @@ class Procedure {
      *
      * @throws \Exception
      */
-    public function processQueue() {
+    public function processQueue()
+    {
         if (!$this->getAllowMultipleRegistrations()) {
             throw new \Exception("Queuing only allowed when there are multiple registrations");
         }
@@ -274,7 +282,8 @@ class Procedure {
         }
     }
 
-    private function getNextThruwayRegistration() {
+    private function getNextThruwayRegistration()
+    {
         $congestion = true;
         /* @var $bestRegistration \Thruway\Registration */
         $bestRegistration = $this->registrations[0];
@@ -301,12 +310,14 @@ class Procedure {
         return $bestRegistration;
     }
 
-    private function getNextRandomRegistration() {
+    private function getNextRandomRegistration()
+    {
         //mt_rand is apparently faster than array_rand(which uses the libc generator)
         return $this->registrations[mt_rand(0, count($this->registrations) - 1)];
     }
 
-    private function getNextRoundRobinRegistration() {
+    private function getNextRoundRobinRegistration()
+    {
         /* @var $bestRegistration \Thruway\Registration */
         $bestRegistration = $this->registrations[0];
         /* @var $registration \Thruway\Registration */
@@ -320,13 +331,15 @@ class Procedure {
         return $bestRegistration;
     }
 
-    private function getNextFirstRegistration() {
+    private function getNextFirstRegistration()
+    {
         /* @var $bestRegistration \Thruway\Registration */
         $bestRegistration = $this->registrations[0];
         return $bestRegistration;
     }
 
-    private function getNextLastRegistration() {
+    private function getNextLastRegistration()
+    {
         /* @var $bestRegistration \Thruway\Registration */
         $bestRegistration = $this->registrations[count($this->registrations) - 1];
         return $bestRegistration;
@@ -337,7 +350,8 @@ class Procedure {
      *
      * @param Call $call
      */
-    public function removeCall(Call $call) {
+    public function removeCall(Call $call)
+    {
         $newQueue = new \SplQueue();
         while (!$this->callQueue->isEmpty()) {
             $c = $this->callQueue->dequeue();
@@ -361,7 +375,8 @@ class Procedure {
      * @param int $requestId
      * @return \Thruway\Call|boolean
      */
-    public function getCallByRequestId($requestId) {
+    public function getCallByRequestId($requestId)
+    {
         /* @var $registration \Thruway\Registration */
         foreach ($this->registrations as $registration) {
             $call = $registration->getCallByRequestId($requestId);
@@ -376,77 +391,88 @@ class Procedure {
     /**
      * @return string
      */
-    public function getProcedureName() {
+    public function getProcedureName()
+    {
         return $this->procedureName;
     }
 
     /**
      * @param string $procedureName
      */
-    private function setProcedureName($procedureName) {
+    private function setProcedureName($procedureName)
+    {
         $this->procedureName = $procedureName;
     }
 
     /**
      * @return boolean
      */
-    public function isDiscloseCaller() {
+    public function isDiscloseCaller()
+    {
         return $this->getDiscloseCaller();
     }
 
     /**
      * @return boolean
      */
-    public function getDiscloseCaller() {
+    public function getDiscloseCaller()
+    {
         return $this->discloseCaller;
     }
 
     /**
      * @param boolean $discloseCaller
      */
-    public function setDiscloseCaller($discloseCaller) {
+    public function setDiscloseCaller($discloseCaller)
+    {
         $this->discloseCaller = $discloseCaller;
     }
 
     /**
      * @return string
      */
-    public function getInvokeType() {
+    public function getInvokeType()
+    {
         return $this->invokeType;
     }
 
     /**
      * @param string $invokeType
      */
-    public function setInvokeType($invoketype) {
+    public function setInvokeType($invoketype)
+    {
         $this->invokeType = $invoketype;
     }
 
     /**
      * @return boolean
      */
-    public function isAllowMultipleRegistrations() {
+    public function isAllowMultipleRegistrations()
+    {
         return $this->getAllowMultipleRegistrations();
     }
 
     /**
      * @return boolean
      */
-    public function getAllowMultipleRegistrations() {
+    public function getAllowMultipleRegistrations()
+    {
         return $this->allowMultipleRegistrations;
     }
 
     /**
      * @param boolean $allowMultipleRegistrations
      */
-    public function setAllowMultipleRegistrations($allowMultipleRegistrations) {
+    public function setAllowMultipleRegistrations($allowMultipleRegistrations)
+    {
         $this->allowMultipleRegistrations = $allowMultipleRegistrations;
     }
 
     /**
      * @return array
      */
-    public function getRegistrations() {
+    public function getRegistrations()
+    {
         return $this->registrations;
     }
 
@@ -455,7 +481,8 @@ class Procedure {
      *
      * @param \Thruway\Session $session
      */
-    public function leave(Session $session) {
+    public function leave(Session $session)
+    {
         // remove all registrations that belong to this session
         /* @var $registration \Thruway\Registration */
         foreach ($this->registrations as $i => $registration) {
@@ -471,7 +498,8 @@ class Procedure {
      * todo: This was part of the manager stuff - but may be used by some tests
      *
      */
-    public function managerGetRegistrations() {
+    public function managerGetRegistrations()
+    {
         $registrations = $this->getRegistrations();
 
         $regInfo = [];

@@ -11,7 +11,8 @@ use Thruway\Message\RegisterMessage;
  *
  * @package Thruway
  */
-class Registration {
+class Registration
+{
 
     /**
      * @var mixed
@@ -108,7 +109,8 @@ class Registration {
      * @param \Thruway\Session $session
      * @param string $procedureName
      */
-    public function __construct(Session $session, $procedureName) {
+    public function __construct(Session $session, $procedureName)
+    {
         $this->id = Utils::getUniqueId();
         $this->session = $session;
         $this->procedureName = $procedureName;
@@ -134,7 +136,8 @@ class Registration {
      * @param \Thruway\Message\RegisterMessage $msg
      * @return \Thruway\Registration
      */
-    public static function createRegistrationFromRegisterMessage(Session $session, RegisterMessage $msg) {
+    public static function createRegistrationFromRegisterMessage(Session $session, RegisterMessage $msg)
+    {
         $registration = new Registration($session, $msg->getProcedureName());
         $options = $msg->getOptions();
 
@@ -160,21 +163,24 @@ class Registration {
     /**
      * @return boolean
      */
-    public function getAllowMultipleRegistrations() {
+    public function getAllowMultipleRegistrations()
+    {
         return $this->allowMultipleRegistrations;
     }
 
     /**
      * @return boolean
      */
-    public function isAllowMultipleRegistrations() {
+    public function isAllowMultipleRegistrations()
+    {
         return $this->getAllowMultipleRegistrations();
     }
 
     /**
      * @param boolean $allowMultipleRegistrations
      */
-    public function setAllowMultipleRegistrations($allowMultipleRegistrations) {
+    public function setAllowMultipleRegistrations($allowMultipleRegistrations)
+    {
         $this->allowMultipleRegistrations = $allowMultipleRegistrations;
     }
 
@@ -182,7 +188,8 @@ class Registration {
      * 
      * @return String
      */
-    public function getInvokeType() {
+    public function getInvokeType()
+    {
         return $this->invokeType;
     }
 
@@ -190,7 +197,8 @@ class Registration {
      * 
      * @param String $type
      */
-    public function setInvokeType($type) {
+    public function setInvokeType($type)
+    {
         $type = strtolower($type);
         $allowedRegistrations = array(
             Registration::SINGLE_REGISTRATION,
@@ -214,7 +222,8 @@ class Registration {
      * @param Call $call
      * @throws \Exception
      */
-    public function processCall(Call $call) {
+    public function processCall(Call $call)
+    {
         if ($call->getRegistration() !== null) {
             throw new \Exception("Registration already set when asked to process call");
         }
@@ -243,7 +252,8 @@ class Registration {
      * @param int $requestId
      * @return boolean
      */
-    public function getCallByRequestId($requestId) {
+    public function getCallByRequestId($requestId)
+    {
         /** @var Call $call */
         foreach ($this->calls as $call) {
             if ($call->getInvocationMessage()->getRequestId() == $requestId) {
@@ -259,7 +269,8 @@ class Registration {
      *
      * @param \Thruway\Call $callToRemove
      */
-    public function removeCall($callToRemove) {
+    public function removeCall($callToRemove)
+    {
         /* @var $call \Thruway\Call */
         foreach ($this->calls as $i => $call) {
             if ($callToRemove === $call) {
@@ -291,7 +302,8 @@ class Registration {
      *
      * @return mixed
      */
-    public function getId() {
+    public function getId()
+    {
         return $this->id;
     }
 
@@ -300,7 +312,8 @@ class Registration {
      *
      * @return string
      */
-    public function getProcedureName() {
+    public function getProcedureName()
+    {
         return $this->procedureName;
     }
 
@@ -309,7 +322,8 @@ class Registration {
      *
      * @return \Thruway\Session
      */
-    public function getSession() {
+    public function getSession()
+    {
         return $this->session;
     }
 
@@ -318,7 +332,8 @@ class Registration {
      *
      * @return mixed
      */
-    public function getDiscloseCaller() {
+    public function getDiscloseCaller()
+    {
         return $this->discloseCaller;
     }
 
@@ -327,7 +342,8 @@ class Registration {
      *
      * @param mixed $discloseCaller
      */
-    public function setDiscloseCaller($discloseCaller) {
+    public function setDiscloseCaller($discloseCaller)
+    {
         $this->discloseCaller = $discloseCaller;
     }
 
@@ -336,7 +352,8 @@ class Registration {
      *
      * @return int
      */
-    public function getCurrentCallCount() {
+    public function getCurrentCallCount()
+    {
         return count($this->calls);
     }
 
@@ -344,7 +361,8 @@ class Registration {
      * This will send error messages on all pending calls
      * This is used when a session disconnects before completing a call
      */
-    public function errorAllPendingCalls() {
+    public function errorAllPendingCalls()
+    {
         foreach ($this->calls as $call) {
             $call->getCallerSession()->sendMessage(ErrorMessage::createErrorMessageFromMessage($call->getCallMessage(), 'wamp.error.canceled'));
         }
@@ -355,7 +373,8 @@ class Registration {
      *
      * @return array
      */
-    public function getStatistics() {
+    public function getStatistics()
+    {
         return [
             'currentCallCount' => count($this->calls),
             'registeredAt' => $this->registeredAt,
