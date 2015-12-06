@@ -507,6 +507,7 @@ class Procedure
         foreach ($registrations as $reg) {
             $regInfo[] = [
                 'id' => $reg->getId(),
+                "invoke" => $reg->getInvokeType(),
                 "thruway_multiregister" => $reg->getAllowMultipleRegistrations(),
                 "disclose_caller" => $reg->getDiscloseCaller(),
                 "session" => $reg->getSession()->getSessionId(),
