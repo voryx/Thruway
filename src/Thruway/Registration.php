@@ -6,14 +6,12 @@ use Thruway\Common\Utils;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\RegisterMessage;
 
-
 /**
  * Class Registration
  *
  * @package Thruway
  */
-class Registration
-{
+class Registration {
 
     /**
      * @var mixed
@@ -39,6 +37,11 @@ class Registration
      * @var bool
      */
     private $allowMultipleRegistrations;
+
+    /**
+     * @var string
+     */
+    private $invokeType;
 
     /**
      * @var Call[]
@@ -92,29 +95,36 @@ class Registration
      */
     private $completedCallTimeTotal;
 
+    const SINGLE_REGISTRATION = 'single';
+    const THRUWAY_REGISTRATION = 'thruway';
+    const ROUNDROBIN_REGISTRATION = 'roundrobin';
+    const RANDOM_REGISTRATION = 'random';
+    const FIRST_REGISTRATION = 'first';
+    const LAST_REGISTRATION = 'last';
+
     /**
      * Constructor
      *
      * @param \Thruway\Session $session
      * @param string $procedureName
      */
-    public function __construct(Session $session, $procedureName)
-    {
-        $this->id                         = Utils::getUniqueId();
-        $this->session                    = $session;
-        $this->procedureName              = $procedureName;
+    public function __construct(Session $session, $procedureName) {
+        $this->id = Utils::getUniqueId();
+        $this->session = $session;
+        $this->procedureName = $procedureName;
         $this->allowMultipleRegistrations = false;
-        $this->discloseCaller             = false;
-        $this->calls                      = [];
-        $this->registeredAt               = new \DateTime();
-        $this->invocationCount            = 0;
-        $this->busyTime                   = 0;
-        $this->invocationAverageTime      = 0;
-        $this->maxSimultaneousCalls       = 0;
-        $this->lastCallStartedAt          = null;
-        $this->lastIdledAt                = $this->registeredAt;
-        $this->busyStart                  = null;
-        $this->completedCallTimeTotal     = 0;
+        $this->invokeType = 'single';
+        $this->discloseCaller = false;
+        $this->calls = [];
+        $this->registeredAt = new \DateTime();
+        $this->invocationCount = 0;
+        $this->busyTime = 0;
+        $this->invocationAverageTime = 0;
+        $this->maxSimultaneousCalls = 0;
+        $this->lastCallStartedAt = null;
+        $this->lastIdledAt = $this->registeredAt;
+        $this->busyStart = null;
+        $this->completedCallTimeTotal = 0;
     }
 
     /**
@@ -124,17 +134,24 @@ class Registration
      * @param \Thruway\Message\RegisterMessage $msg
      * @return \Thruway\Registration
      */
-    public static function createRegistrationFromRegisterMessage(Session $session, RegisterMessage $msg)
-    {
+    public static function createRegistrationFromRegisterMessage(Session $session, RegisterMessage $msg) {
         $registration = new Registration($session, $msg->getProcedureName());
-        $options      = $msg->getOptions();
+        $options = $msg->getOptions();
 
         if (isset($options->disclose_caller) && $options->disclose_caller === true) {
             $registration->setDiscloseCaller(true);
         }
 
-        if (isset($options->thruway_multiregister) && $options->thruway_multiregister === true) {
-            $registration->setAllowMultipleRegistrations(true);
+        if (isset($options->invoke)) {
+            $registration->setInvokeType($options->invoke);
+        } else {
+            if (isset($options->thruway_multiregister) && $options->thruway_multiregister === true) {
+                $registration->setAllowMultipleRegistrations(true);
+                $registration->setInvokeType(Registration::THRUWAY_REGISTRATION);
+            } else {
+                $registration->setInvokeType(Registration::SINGLE_REGISTRATION);
+                $registration->setAllowMultipleRegistrations(false);
+            }
         }
 
         return $registration;
@@ -143,25 +160,52 @@ class Registration
     /**
      * @return boolean
      */
-    public function getAllowMultipleRegistrations()
-    {
+    public function getAllowMultipleRegistrations() {
         return $this->allowMultipleRegistrations;
     }
 
     /**
      * @return boolean
      */
-    public function isAllowMultipleRegistrations()
-    {
+    public function isAllowMultipleRegistrations() {
         return $this->getAllowMultipleRegistrations();
     }
 
     /**
      * @param boolean $allowMultipleRegistrations
      */
-    public function setAllowMultipleRegistrations($allowMultipleRegistrations)
-    {
+    public function setAllowMultipleRegistrations($allowMultipleRegistrations) {
         $this->allowMultipleRegistrations = $allowMultipleRegistrations;
+    }
+
+    /**
+     * 
+     * @return String
+     */
+    public function getInvokeType() {
+        return $this->invokeType;
+    }
+
+    /**
+     * 
+     * @param String $type
+     */
+    public function setInvokeType($type) {
+        $type = strtolower($type);
+        $allowedRegistrations = array(
+            Registration::SINGLE_REGISTRATION,
+            Registration::ROUNDROBIN_REGISTRATION,
+            Registration::RANDOM_REGISTRATION,
+            Registration::THRUWAY_REGISTRATION,
+            Registration::FIRST_REGISTRATION,
+            Registration::LAST_REGISTRATION
+        );
+        if (in_array($type, $allowedRegistrations)) {
+            if ($type !== Registration::SINGLE_REGISTRATION) {
+                $this->invokeType = $type;
+                $this->setAllowMultipleRegistrations(true);
+            }
+        }
     }
 
     /**
@@ -170,8 +214,7 @@ class Registration
      * @param Call $call
      * @throws \Exception
      */
-    public function processCall(Call $call)
-    {
+    public function processCall(Call $call) {
         if ($call->getRegistration() !== null) {
             throw new \Exception("Registration already set when asked to process call");
         }
@@ -200,8 +243,7 @@ class Registration
      * @param int $requestId
      * @return boolean
      */
-    public function getCallByRequestId($requestId)
-    {
+    public function getCallByRequestId($requestId) {
         /** @var Call $call */
         foreach ($this->calls as $call) {
             if ($call->getInvocationMessage()->getRequestId() == $requestId) {
@@ -217,8 +259,7 @@ class Registration
      *
      * @param \Thruway\Call $callToRemove
      */
-    public function removeCall($callToRemove)
-    {
+    public function removeCall($callToRemove) {
         /* @var $call \Thruway\Call */
         foreach ($this->calls as $i => $call) {
             if ($callToRemove === $call) {
@@ -237,7 +278,7 @@ class Registration
                 if (count($this->calls) == 0) {
                     $this->lastIdledAt = new \DateTime();
                     if ($this->busyStart !== null) {
-                        $this->busyTime  = $this->busyTime + ($callEnd - $this->busyStart);
+                        $this->busyTime = $this->busyTime + ($callEnd - $this->busyStart);
                         $this->busyStart = null;
                     }
                 }
@@ -250,8 +291,7 @@ class Registration
      *
      * @return mixed
      */
-    public function getId()
-    {
+    public function getId() {
         return $this->id;
     }
 
@@ -260,8 +300,7 @@ class Registration
      *
      * @return string
      */
-    public function getProcedureName()
-    {
+    public function getProcedureName() {
         return $this->procedureName;
     }
 
@@ -270,8 +309,7 @@ class Registration
      *
      * @return \Thruway\Session
      */
-    public function getSession()
-    {
+    public function getSession() {
         return $this->session;
     }
 
@@ -280,8 +318,7 @@ class Registration
      *
      * @return mixed
      */
-    public function getDiscloseCaller()
-    {
+    public function getDiscloseCaller() {
         return $this->discloseCaller;
     }
 
@@ -290,8 +327,7 @@ class Registration
      *
      * @param mixed $discloseCaller
      */
-    public function setDiscloseCaller($discloseCaller)
-    {
+    public function setDiscloseCaller($discloseCaller) {
         $this->discloseCaller = $discloseCaller;
     }
 
@@ -300,8 +336,7 @@ class Registration
      *
      * @return int
      */
-    public function getCurrentCallCount()
-    {
+    public function getCurrentCallCount() {
         return count($this->calls);
     }
 
@@ -320,19 +355,18 @@ class Registration
      *
      * @return array
      */
-    public function getStatistics()
-    {
+    public function getStatistics() {
         return [
-          'currentCallCount'       => count($this->calls),
-          'registeredAt'           => $this->registeredAt,
-          'invocationCount'        => $this->invocationCount,
-          'invocationAverageTime'  => $this->invocationAverageTime,
-          'busyTime'               => $this->busyTime,
-          'busyStart'              => $this->busyStart,
-          'lastIdledAt'            => $this->lastIdledAt,
-          'lastCallStartedAt'      => $this->lastCallStartedAt,
-          'completedCallTimeTotal' => $this->completedCallTimeTotal
-
+            'currentCallCount' => count($this->calls),
+            'registeredAt' => $this->registeredAt,
+            'invocationCount' => $this->invocationCount,
+            'invocationAverageTime' => $this->invocationAverageTime,
+            'busyTime' => $this->busyTime,
+            'busyStart' => $this->busyStart,
+            'lastIdledAt' => $this->lastIdledAt,
+            'lastCallStartedAt' => $this->lastCallStartedAt,
+            'completedCallTimeTotal' => $this->completedCallTimeTotal
         ];
     }
+
 }
