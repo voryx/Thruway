@@ -275,10 +275,11 @@ class Procedure
                 $registration = $this->getNextThruwayRegistration();
             }
 
-            if ($registration !== NULL) {
-                $call = $this->callQueue->dequeue();
-                $registration->processCall($call);
+            if ($registration === NULL) {
+                break;
             }
+            $call = $this->callQueue->dequeue();
+            $registration->processCall($call);
         }
     }
 
@@ -312,6 +313,10 @@ class Procedure
 
     private function getNextRandomRegistration()
     {
+        if (count($this->registrations) === 1){
+            //just return this so that we don't have to run mt_rand
+            return $this->registrations[0];
+        }
         //mt_rand is apparently faster than array_rand(which uses the libc generator)
         return $this->registrations[mt_rand(0, count($this->registrations) - 1)];
     }
@@ -327,6 +332,12 @@ class Procedure
                 $bestRegistration = $registration;
                 break;
             }
+        }
+        if ($bestRegistration->getSession()->getPendingCallCount() !== 0) {
+            //emit a congestion to let people know that we have one...
+            $bestRegistration->getSession()->getRealm()->publishMeta('thruway.metaevent.procedure.congestion', [
+                ["name" => $this->getProcedureName()]]
+            );
         }
         return $bestRegistration;
     }

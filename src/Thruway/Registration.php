@@ -149,11 +149,9 @@ class Registration
             $registration->setInvokeType($options->invoke);
         } else {
             if (isset($options->thruway_multiregister) && $options->thruway_multiregister === true) {
-                $registration->setAllowMultipleRegistrations(true);
                 $registration->setInvokeType(Registration::THRUWAY_REGISTRATION);
             } else {
                 $registration->setInvokeType(Registration::SINGLE_REGISTRATION);
-                $registration->setAllowMultipleRegistrations(false);
             }
         }
 
@@ -212,6 +210,10 @@ class Registration
             if ($type !== Registration::SINGLE_REGISTRATION) {
                 $this->invokeType = $type;
                 $this->setAllowMultipleRegistrations(true);
+            }
+            else {
+                $this->invokeType = Registration::SINGLE_REGISTRATION;
+                $this->setAllowMultipleRegistrations(false);
             }
         }
     }
