@@ -588,4 +588,48 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
         $this->assertFalse($reg);
     }
+
+    public function testInvokeFirstRegistration()
+    {
+        $transportCaller = new \Thruway\Transport\DummyTransport();
+        $sessionCaller = new \Thruway\Session($transportCaller);
+
+        $transportA = new \Thruway\Transport\DummyTransport();
+        $sessionA = new \Thruway\Session($transportA);
+
+        $transportB = new \Thruway\Transport\DummyTransport();
+        $sessionB = new \Thruway\Session($transportB);
+
+        $proc = new \Thruway\Procedure('some.procedure');
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+            \Thruway\Common\Utils::getUniqueId(),
+            [ "invoke" => "first" ],
+            'some.procedure'
+        );
+
+        $proc->processRegister($sessionA, $registerMsg);
+
+        $proc->processRegister($sessionB, $registerMsg);
+
+        $this->assertEquals(2, count($proc->getRegistrations()));
+
+        // call a few times - make sure that we always get proc A
+        for ($i = 0; $i < 10; $i++) {
+            $callMessage = new \Thruway\Message\CallMessage(
+                \Thruway\Common\Utils::getUniqueId(),
+                [],
+                'some.procedure'
+            );
+
+            $call = new \Thruway\Call($sessionCaller, $callMessage, $proc);
+
+            $proc->processCall($sessionCaller, $call);
+
+            // make sure the invocation was called on the first registration
+            $this->assertEquals($call->getInvocationRequestId(), $transportA->getLastMessageSent()->getRequestId());
+        }
+
+        $this->assertEquals(10, $sessionA->getPendingCallCount());
+    }
 }
