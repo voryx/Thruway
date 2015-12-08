@@ -97,7 +97,7 @@ class Registration
     private $completedCallTimeTotal;
 
     const SINGLE_REGISTRATION = 'single';
-    const THRUWAY_REGISTRATION = 'thruway';
+    const THRUWAY_REGISTRATION = '_thruway';
     const ROUNDROBIN_REGISTRATION = 'roundrobin';
     const RANDOM_REGISTRATION = 'random';
     const FIRST_REGISTRATION = 'first';
