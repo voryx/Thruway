@@ -313,7 +313,7 @@ class Procedure
 
     private function getNextRandomRegistration()
     {
-        if (count($this->registrations) === 1){
+        if (count($this->registrations) === 1) {
             //just return this so that we don't have to run mt_rand
             return $this->registrations[0];
         }
@@ -332,12 +332,6 @@ class Procedure
                 $bestRegistration = $registration;
                 break;
             }
-        }
-        if ($bestRegistration->getSession()->getPendingCallCount() !== 0) {
-            //emit a congestion to let people know that we have one...
-            $bestRegistration->getSession()->getRealm()->publishMeta('thruway.metaevent.procedure.congestion', [
-                ["name" => $this->getProcedureName()]]
-            );
         }
         return $bestRegistration;
     }
