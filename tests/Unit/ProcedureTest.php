@@ -669,64 +669,90 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
 
     public function testInvokeRandomRegistration()
     {
-        //we need some sessions
-        $sessionsToInitiate = 10;
-        //we also need a big sample space to check randomness
-        $callsToSendInTotal = 30000;
-        //the standard deviation of the calls made to every registration should 
-        //not exceed {$standardDeviationThresholdPercentage}% of $callsToSendInTotal
-        $standardDeviationThresholdPercentage = 1;
-
         $transportCaller = new \Thruway\Transport\DummyTransport();
-        $sessionCaller = new \Thruway\Session($transportCaller);
+        $sessionCaller   = new \Thruway\Session($transportCaller);
+        $sessionsToStart = 3;
+        $sessions        = array ();
 
-        $sessions = array();
-        for ($i = $sessionsToInitiate; $i-- > 0;) {
-            $sessions[] = new \Thruway\Session(
-                    new \Thruway\Transport\DummyTransport()
-            );
+        for ($i = 0; $i < $sessionsToStart; $i++) {
+            $sessions[] = new \Thruway\Session(new \Thruway\Transport\DummyTransport());
         }
 
         $proc = new \Thruway\Procedure('random.procedure');
 
         foreach ($sessions as $session) {
             $registerMsg = new \Thruway\Message\RegisterMessage(
-                    \Thruway\Common\Utils::getUniqueId(), [ "invoke" => "random"], $proc->getProcedureName()
+              \Thruway\Common\Utils::getUniqueId(), ["invoke" => "random"], 'random.procedure'
             );
             $proc->processRegister($session, $registerMsg);
         }
-
+        //make sure that the registrations have been successful
         $this->assertEquals(count($sessions), count($proc->getRegistrations()));
 
-        // call a few times 
-        for ($i = 0; $i < $callsToSendInTotal; $i++) {
+        $calls = 0;
+
+        for ($i = 0; $i < 10; $i++) {
             $callMessage = new \Thruway\Message\CallMessage(
-                    \Thruway\Common\Utils::getUniqueId(), [], $proc->getProcedureName()
+              \Thruway\Common\Utils::getUniqueId(), [], 'random.procedure'
             );
 
             $call = new \Thruway\Call($sessionCaller, $callMessage, $proc);
 
+            //lets send the call
             $proc->processCall($sessionCaller, $call);
-        }
 
-        $pendingCounts = array();
+        }
 
         foreach ($sessions as $session) {
-            $pendingCounts[] = $session->getPendingCallCount();
+            $calls += $session->getPendingCallCount();
         }
 
-        //get the standard deviation of the call counts
-        $fMean = array_sum($pendingCounts) / count($pendingCounts);
-        $fVariance = 0.0;
-        foreach ($pendingCounts as $i) {
-            $fVariance += pow($i - $fMean, 2);
+        $this->assertEquals(10, $calls);
+
+    }
+
+    public function testInvokeRandomOneRegistration()
+    {
+        $transportCaller = new \Thruway\Transport\DummyTransport();
+        $sessionCaller   = new \Thruway\Session($transportCaller);
+        $sessionsToStart = 1;
+        $sessions        = array ();
+
+        for ($i = 0; $i < $sessionsToStart; $i++) {
+            $sessions[] = new \Thruway\Session(new \Thruway\Transport\DummyTransport());
         }
-        $fVariance /= count($pendingCounts);
-        $stdDeviation = sqrt($fVariance);
 
-        $threshold = ($standardDeviationThresholdPercentage / 100) * $callsToSendInTotal;
+        $proc = new \Thruway\Procedure('random.procedure');
 
-        $this->assertLessThanOrEqual($threshold, $stdDeviation);
+        foreach ($sessions as $session) {
+            $registerMsg = new \Thruway\Message\RegisterMessage(
+              \Thruway\Common\Utils::getUniqueId(), ["invoke" => "random"], 'random.procedure'
+            );
+            $proc->processRegister($session, $registerMsg);
+        }
+        //make sure that the registrations have been successful
+        $this->assertEquals(count($sessions), count($proc->getRegistrations()));
+
+        $calls = 0;
+
+        for ($i = 0; $i < 10; $i++) {
+            $callMessage = new \Thruway\Message\CallMessage(
+              \Thruway\Common\Utils::getUniqueId(), [], 'random.procedure'
+            );
+
+            $call = new \Thruway\Call($sessionCaller, $callMessage, $proc);
+
+            //lets send the call
+            $proc->processCall($sessionCaller, $call);
+
+        }
+
+        foreach ($sessions as $session) {
+            $calls += $session->getPendingCallCount();
+        }
+
+        $this->assertEquals(10, $calls);
+
     }
 
 }
