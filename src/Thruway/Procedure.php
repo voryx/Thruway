@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Thruway;
 
 use Thruway\Message\ErrorMessage;
@@ -8,7 +7,8 @@ use Thruway\Message\RegisteredMessage;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\UnregisteredMessage;
 use Thruway\Message\UnregisterMessage;
-
+use Thruway\Registration;
+use SplQueue;
 
 /**
  * Class Procedure
@@ -19,6 +19,7 @@ use Thruway\Message\UnregisterMessage;
  */
 class Procedure
 {
+
     /**
      * @var string
      */
@@ -33,6 +34,11 @@ class Procedure
      * @var bool
      */
     private $allowMultipleRegistrations;
+
+    /**
+     * @var string
+     */
+    private $invokeType;
 
     /**
      * @var bool
@@ -53,11 +59,12 @@ class Procedure
     {
         $this->setProcedureName($procedureName);
 
-        $this->registrations              = [];
+        $this->registrations = [];
         $this->allowMultipleRegistrations = false;
-        $this->discloseCaller             = false;
+        $this->invokeType = Registration::SINGLE_REGISTRATION;
+        $this->discloseCaller = false;
 
-        $this->callQueue = new \SplQueue();
+        $this->callQueue = new SplQueue();
     }
 
     /**
@@ -88,11 +95,10 @@ class Procedure
                 if (isset($options->replace_orphaned_session) && $options->replace_orphaned_session == "yes") {
                     try {
                         $oldRegistration->getSession()->ping(5)
-                            ->then(function ($res) use ($session, $errorMsg) {
+                                ->then(function ($res) use ($session, $errorMsg) {
                                     // the ping came back - send procedure_already_exists
                                     $session->sendMessage($errorMsg);
-                                },
-                                function ($r) use ($oldRegistration, $session, $registration, $msg) {
+                                }, function ($r) use ($oldRegistration, $session, $registration, $msg) {
                                     // bring down the exiting session because the
                                     // ping timed out
                                     $deadSession = $oldRegistration->getSession();
@@ -116,6 +122,7 @@ class Procedure
             // setup the procedure to match the options
             $this->setDiscloseCaller($registration->getDiscloseCaller());
             $this->setAllowMultipleRegistrations($registration->getAllowMultipleRegistrations());
+            $this->setInvokeType($registration->getInvokeType());
 
             return $this->addRegistration($registration, $msg);
         }
@@ -137,8 +144,8 @@ class Procedure
             }
 
             // make sure options match
-            if ($registration->getAllowMultipleRegistrations() != $this->getAllowMultipleRegistrations()) {
-                throw new \Exception('Registration and procedure must agree on allowing multiple registrations');
+            if (strcasecmp($registration->getInvokeType(), $this->getInvokeType()) != 0) {
+                throw new \Exception('Registration and procedure must agree on invocation type');
             }
             if ($registration->getDiscloseCaller() != $this->getDiscloseCaller()) {
                 throw new \Exception('Registration and procedure must agree on disclose caller');
@@ -249,44 +256,98 @@ class Procedure
     public function processQueue()
     {
         if (!$this->getAllowMultipleRegistrations()) {
-            throw new \Exception("queuing only allowed when there are multiple registrations");
+            throw new \Exception("Queuing only allowed when there are multiple registrations");
         }
 
         // find the best candidate
         while ($this->callQueue->count() > 0) {
-            $congestion = true;
+            $registration = NULL;
 
-            /* @var $bestRegistration \Thruway\Registration */
-            $bestRegistration = $this->registrations[0];
-            /* @var $registration \Thruway\Registration */
-            foreach ($this->registrations as $registration) {
-                if ($registration->getSession()->getPendingCallCount() == 0) {
-                    $bestRegistration = $registration;
-                    $congestion       = false;
-                    break;
-                }
-                if ($registration->getSession()->getPendingCallCount() <
-                    $bestRegistration->getSession()->getPendingCallCount()
-                ) {
-                    $bestRegistration = $registration;
-                }
+            if (strcasecmp($this->getInvokeType(), Registration::FIRST_REGISTRATION) === 0) {
+                $registration = $this->getNextFirstRegistration();
+            } else if (strcasecmp($this->getInvokeType(), Registration::LAST_REGISTRATION) === 0) {
+                $registration = $this->getNextLastRegistration();
+            } else if (strcasecmp($this->getInvokeType(), Registration::RANDOM_REGISTRATION) === 0) {
+                $registration = $this->getNextRandomRegistration();
+            } else if (strcasecmp($this->getInvokeType(), Registration::ROUNDROBIN_REGISTRATION) === 0) {
+                $registration = $this->getNextRoundRobinRegistration();
+            } else if (strcasecmp($this->getInvokeType(), Registration::THRUWAY_REGISTRATION) === 0) {
+                $registration = $this->getNextThruwayRegistration();
             }
 
-            if ($congestion) {
-                // there is congestion
-                $bestRegistration->getSession()->getRealm()->publishMeta('thruway.metaevent.procedure.congestion',
-                    [
-                        ["name" => $this->getProcedureName()]
-                    ]
-                );
-
-                return;
+            if ($registration === NULL) {
+                break;
             }
-
             $call = $this->callQueue->dequeue();
-
-            $bestRegistration->processCall($call);
+            $registration->processCall($call);
         }
+    }
+
+    private function getNextThruwayRegistration()
+    {
+        $congestion = true;
+        /* @var $bestRegistration \Thruway\Registration */
+        $bestRegistration = $this->registrations[0];
+        /* @var $registration \Thruway\Registration */
+        foreach ($this->registrations as $registration) {
+            if ($registration->getSession()->getPendingCallCount() == 0) {
+                $bestRegistration = $registration;
+                $congestion = false;
+                break;
+            }
+            if ($registration->getSession()->getPendingCallCount() <
+                    $bestRegistration->getSession()->getPendingCallCount()
+            ) {
+                $bestRegistration = $registration;
+            }
+        }
+        if ($congestion) {
+            // there is congestion
+            $bestRegistration->getSession()->getRealm()->publishMeta('thruway.metaevent.procedure.congestion', [
+                ["name" => $this->getProcedureName()]]
+            );
+            return NULL;
+        }
+        return $bestRegistration;
+    }
+
+    private function getNextRandomRegistration()
+    {
+        if (count($this->registrations) === 1) {
+            //just return this so that we don't have to run mt_rand
+            return $this->registrations[0];
+        }
+        //mt_rand is apparently faster than array_rand(which uses the libc generator)
+        return $this->registrations[mt_rand(0, count($this->registrations) - 1)];
+    }
+
+    private function getNextRoundRobinRegistration()
+    {
+        /* @var $bestRegistration \Thruway\Registration */
+        $bestRegistration = $this->registrations[0];
+        /* @var $registration \Thruway\Registration */
+        foreach ($this->registrations as $registration) {
+            if ($registration->getStatistics()['lastCallStartedAt'] <
+                    $bestRegistration->getStatistics()['lastCallStartedAt']) {
+                $bestRegistration = $registration;
+                break;
+            }
+        }
+        return $bestRegistration;
+    }
+
+    private function getNextFirstRegistration()
+    {
+        /* @var $bestRegistration \Thruway\Registration */
+        $bestRegistration = $this->registrations[0];
+        return $bestRegistration;
+    }
+
+    private function getNextLastRegistration()
+    {
+        /* @var $bestRegistration \Thruway\Registration */
+        $bestRegistration = $this->registrations[count($this->registrations) - 1];
+        return $bestRegistration;
     }
 
     /**
@@ -294,12 +355,14 @@ class Procedure
      *
      * @param Call $call
      */
-    public function removeCall(Call $call) {
+    public function removeCall(Call $call)
+    {
         $newQueue = new \SplQueue();
         while (!$this->callQueue->isEmpty()) {
             $c = $this->callQueue->dequeue();
 
-            if ($c === $call) continue;
+            if ($c === $call)
+                continue;
 
             $newQueue->enqueue($c);
         }
@@ -371,6 +434,22 @@ class Procedure
     }
 
     /**
+     * @return string
+     */
+    public function getInvokeType()
+    {
+        return $this->invokeType;
+    }
+
+    /**
+     * @param string $invokeType
+     */
+    public function setInvokeType($invoketype)
+    {
+        $this->invokeType = $invoketype;
+    }
+
+    /**
      * @return boolean
      */
     public function isAllowMultipleRegistrations()
@@ -432,13 +511,15 @@ class Procedure
         /** @var Registration $reg */
         foreach ($registrations as $reg) {
             $regInfo[] = [
-                'id'                    => $reg->getId(),
+                'id' => $reg->getId(),
+                "invoke" => $reg->getInvokeType(),
                 "thruway_multiregister" => $reg->getAllowMultipleRegistrations(),
-                "disclose_caller"       => $reg->getDiscloseCaller(),
-                "session"               => $reg->getSession()->getSessionId(),
-                "authid"                => $reg->getSession()->getAuthenticationDetails()->getAuthId(),
-                "statistics"            => $reg->getStatistics()
+                "disclose_caller" => $reg->getDiscloseCaller(),
+                "session" => $reg->getSession()->getSessionId(),
+                "authid" => $reg->getSession()->getAuthenticationDetails()->getAuthId(),
+                "statistics" => $reg->getStatistics()
             ];
         }
     }
+
 }
