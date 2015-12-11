@@ -3,6 +3,7 @@
 namespace Thruway;
 
 use Thruway\Common\Utils;
+use Thruway\Common\LeakyBucket;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\RegisterMessage;
 
@@ -18,6 +19,16 @@ class Registration
      * @var mixed
      */
     private $id;
+
+    /**
+     * @var int
+     */
+    private $limit;
+
+    /**
+     * @var LeakyBucket
+     */
+    private $leakyQueue;
 
     /**
      * @var \Thruway\Session
@@ -97,11 +108,11 @@ class Registration
     private $completedCallTimeTotal;
 
     const SINGLE_REGISTRATION = 'single';
-    const THRUWAY_REGISTRATION = '_thruway';
     const ROUNDROBIN_REGISTRATION = 'roundrobin';
     const RANDOM_REGISTRATION = 'random';
     const FIRST_REGISTRATION = 'first';
     const LAST_REGISTRATION = 'last';
+    const THRUWAY_REGISTRATION = '_thruway';
 
     /**
      * Constructor
@@ -127,6 +138,9 @@ class Registration
         $this->lastIdledAt = $this->registeredAt;
         $this->busyStart = null;
         $this->completedCallTimeTotal = 0;
+
+        $this->limit = -1;
+        $this->leakyQueue = new LeakyBucket(); //no throtling by default
     }
 
     /**
@@ -153,6 +167,11 @@ class Registration
             } else {
                 $registration->setInvokeType(Registration::SINGLE_REGISTRATION);
             }
+        }
+        if (isset($options->_limit) && settype($options->_limit, "integer")) {
+            $registration->setLimit($options->_limit);
+        } else {
+            $registration->setLimit(-1); //setting to UNLIMITED
         }
 
         return $registration;
@@ -210,12 +229,29 @@ class Registration
             if ($type !== Registration::SINGLE_REGISTRATION) {
                 $this->invokeType = $type;
                 $this->setAllowMultipleRegistrations(true);
-            }
-            else {
+            } else {
                 $this->invokeType = Registration::SINGLE_REGISTRATION;
                 $this->setAllowMultipleRegistrations(false);
             }
         }
+    }
+
+    /**
+     * @param int $limit The number of calls allowed per second
+     */
+    public function setLimit($limit)
+    {
+        $this->limit = $limit;
+        $this->leakyQueue->setMaxRate($limit);
+    }
+
+    /**
+     * Get the Limit per second on this registrations
+     * @return int
+     */
+    public function getLimit()
+    {
+        return $this->limit;
     }
 
     /**
@@ -245,7 +281,22 @@ class Registration
         $this->invocationCount++;
         $this->lastCallStartedAt = new \DateTime();
 
-        $this->getSession()->sendMessage($call->getInvocationMessage());
+        $this->leakyQueue->enqueue($call->getInvocationMessage());
+
+        $this->processInvocationQueue();
+    }
+
+    /**
+     * Process Invocation Queue
+     * 
+     * @param none
+     */
+    private function processInvocationQueue()
+    {
+        while ($this->leakyQueue->count() > 0) {
+            //this will sleep till we can actually make the call
+            $this->getSession()->sendMessage($this->leakyQueue->consume());
+        }
     }
 
     /**
@@ -386,7 +437,8 @@ class Registration
             'busyStart' => $this->busyStart,
             'lastIdledAt' => $this->lastIdledAt,
             'lastCallStartedAt' => $this->lastCallStartedAt,
-            'completedCallTimeTotal' => $this->completedCallTimeTotal
+            'completedCallTimeTotal' => $this->completedCallTimeTotal,
+            'invokeQueueCount' => $this->leakyQueue->count()
         ];
     }
 
