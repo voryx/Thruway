@@ -317,8 +317,33 @@ class Procedure
             //just return this so that we don't have to run mt_rand
             return $this->registrations[0];
         }
-        //mt_rand is apparently faster than array_rand(which uses the libc generator)
-        return $this->registrations[mt_rand(0, count($this->registrations) - 1)];
+
+        //getting registrations with 0 unprocessed calls
+        $possibleRegistrations = array_filter($this->registrations, function($theRegistration, $theIndex) {
+            return ($theRegistration->getStatistics()['invokeQueueCount'] === 0);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        if (count($possibleRegistrations) > 0) {
+            //return a random from this set
+            return $possibleRegistrations[mt_rand(0, count($possibleRegistrations) - 1)];
+        } else {
+            //create a copy to maintain the original indexing
+            $possibleRegistrations = array_merge([], $this->registrations);
+            //sort ascending by number of unprocessed Invocations
+            usort($possibleRegistrations, function($registrationA, $registrationB) {
+                $unprocessedA = $registrationA->getStatistics()['invokeQueueCount'];
+                $unprocessedB = $registrationB->getStatistics()['invokeQueueCount'];
+                if ($unprocessedA == $unprocessedB) {
+                    return 0;
+                } else if ($unprocessedA < $unprocessedB) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            });
+            //return the first one
+            return $possibleRegistrations[0];
+        }
     }
 
     private function getNextRoundRobinRegistration()

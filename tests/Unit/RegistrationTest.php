@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../bootstrap.php';
 
 
 class RegistrationTest extends PHPUnit_Framework_TestCase
@@ -44,6 +45,31 @@ class RegistrationTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->_registration->getCurrentCallCount());
 
 
+    }
+    
+    public function testRateLimitedRegistration()
+    {
+        $procedure = new \Thruway\Procedure('rate.limit.procedure');
+
+        $callerSession = new \Thruway\Session(new Thruway\Transport\DummyTransport());
+        $calleeSession = new \Thruway\Session(new Thruway\Transport\DummyTransport());
+
+        $registerMsg = new \Thruway\Message\RegisterMessage(
+                \Thruway\Common\Utils::getUniqueId(), [ "_limit" => 0], 'rate.limit.procedure'
+        );
+        $procedure->processRegister($calleeSession, $registerMsg);
+
+        $this->assertEquals(1, count($procedure->getRegistrations()));
+
+        for ($i = 5; $i-- > 0;) {
+            //send an invocation
+            $callMessage = new \Thruway\Message\CallMessage(
+                    \Thruway\Common\Utils::getUniqueId(), [], 'rate.limit.procedure'
+            );
+            $call = new \Thruway\Call($callerSession, $callMessage, $procedure);
+            $procedure->processCall($callerSession, $call);
+        }
+        $this->assertEquals(1, count($procedure->getRegistrations()[0]->getStatistics()['invokeQueueCount']));
     }
 
     /**
