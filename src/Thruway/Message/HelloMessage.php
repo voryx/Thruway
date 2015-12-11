@@ -39,6 +39,10 @@ class HelloMessage extends Message
      */
     public function __construct($realm, $details)
     {
+        if (!is_scalar($realm)) {
+            throw new \InvalidArgumentException("Non-scalar realm name.");
+        }
+
         $this->setDetails($details);
         $this->setRealm($realm);
         $authMethods = isset($details->authmethods) ? $details->authmethods : [];

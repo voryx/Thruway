@@ -1242,6 +1242,17 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * @expectedException InvalidArgumentException
+     * @throws \Thruway\Exception\RealmNotFoundException
+     */
+    public function testGetRealmWithNonscalarThrows()
+    {
+        $router = new \Thruway\Peer\Router();
+
+        $router->getRealmManager()->getRealm(new stdClass());
+    }
+
     // This came over from 0.3 but things work differently now
     // still should implement removeModule or something for the same type of thing
 //    public function testRemoveInternalClient() {
