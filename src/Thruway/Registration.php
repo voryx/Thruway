@@ -3,7 +3,6 @@
 namespace Thruway;
 
 use Thruway\Common\Utils;
-use Thruway\Common\LeakyBucket;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\RegisterMessage;
 
@@ -19,16 +18,6 @@ class Registration
      * @var mixed
      */
     private $id;
-
-    /**
-     * @var int
-     */
-    private $limit;
-
-    /**
-     * @var LeakyBucket
-     */
-    private $leakyQueue;
 
     /**
      * @var \Thruway\Session
@@ -106,6 +95,16 @@ class Registration
      * @var float
      */
     private $completedCallTimeTotal;
+//for ratelimiting
+
+    /**
+     * @var int
+     */
+    private $limit;
+    private $eventLoop;
+    private $leakyBucket;
+    private $invokeQueue;
+    private $rateLimited;
 
     const SINGLE_REGISTRATION = 'single';
     const ROUNDROBIN_REGISTRATION = 'roundrobin';
@@ -140,7 +139,7 @@ class Registration
         $this->completedCallTimeTotal = 0;
 
         $this->limit = -1;
-        $this->leakyQueue = new LeakyBucket(); //no throtling by default
+        $this->rateLimited = false;
     }
 
     /**
@@ -242,7 +241,17 @@ class Registration
     public function setLimit($limit)
     {
         $this->limit = $limit;
-        $this->leakyQueue->setMaxRate($limit);
+        if ($limit > 0) {
+            $this->rateLimited = true;
+            $this->invokeQueue = new \SplQueue();
+            $this->leakyBucket = new Common\LeakyBucket($this->limit);
+            $this->eventLoop = \React\EventLoop\Factory::create();
+            $this->eventLoop->addPeriodicTimer(30, function() {
+                //just to keep the event loop running
+                //no idea if this is required
+            });
+            $this->eventLoop->run();
+        }
     }
 
     /**
@@ -280,22 +289,32 @@ class Registration
         }
         $this->invocationCount++;
         $this->lastCallStartedAt = new \DateTime();
-
-        $this->leakyQueue->enqueue($call->getInvocationMessage());
-
-        $this->processInvocationQueue();
+        if ($this->rateLimited) {
+            if ($this->leakyBucket->canConsume()) {
+                $this->leakyBucket->consume();
+                $this->getSession()->sendMessage($call->getInvocationMessage());
+            } else {
+                $this->invokeQueue->enqueue($call->getInvocationMessage());
+                if ($this->invokeQueue->count() === 1) {
+                    //start the timer if I am the first addition to the queue
+                    $this->eventLoop->addTimer($this->leakyBucket->getTimeLeft() / 1000, 'invokeNextMessage');
+                }
+            }
+        } else {
+            $this->getSession()->sendMessage($call->getInvocationMessage());
+        }
     }
 
-    /**
-     * Process Invocation Queue
-     * 
-     * @param none
-     */
-    private function processInvocationQueue()
+    public function isRateLimited()
     {
-        while ($this->leakyQueue->count() > 0) {
-            //this will sleep till we can actually make the call
-            $this->getSession()->sendMessage($this->leakyQueue->consume());
+        return $this->rateLimited;
+    }
+
+    private function invokeNextMessage()
+    {
+        $this->getSession()->sendMessage($this->invokeQueue->dequeue());
+        if ($this->invokeQueue->count() > 0) {
+            $this->eventLoop->addTimer($this->leakyBucket->getTimeLeft() / 1000, 'invokeNextMessage');
         }
     }
 
@@ -331,10 +350,10 @@ class Registration
                 $this->session->decPendingCallCount();
                 $callEnd = microtime(true);
 
-                // average call time
+// average call time
                 $callsInAverage = $this->invocationCount - count($this->calls) - 1;
 
-                // add this call time into the total
+// add this call time into the total
                 $this->completedCallTimeTotal += $callEnd - $call->getCallStart();
                 $callsInAverage++;
                 $this->invocationAverageTime = ((float) $this->completedCallTimeTotal) / $callsInAverage;
@@ -438,7 +457,7 @@ class Registration
             'lastIdledAt' => $this->lastIdledAt,
             'lastCallStartedAt' => $this->lastCallStartedAt,
             'completedCallTimeTotal' => $this->completedCallTimeTotal,
-            'invokeQueueCount' => $this->leakyQueue->count()
+            'pendingInvokeCount' => ($this->rateLimited ? $this->invokeQueue->count() : 0)
         ];
     }
 
