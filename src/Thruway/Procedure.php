@@ -320,7 +320,7 @@ class Procedure
 
         //getting registrations with 0 unprocessed calls
         $possibleRegistrations = array_filter($this->registrations, function($theRegistration, $theIndex) {
-            return ($theRegistration->getStatistics()['invokeQueueCount'] === 0);
+            return ($theRegistration->getStatistics()['pendingInvokeCount'] === 0);
         }, ARRAY_FILTER_USE_BOTH);
 
         if (count($possibleRegistrations) > 0) {
@@ -331,8 +331,8 @@ class Procedure
             $possibleRegistrations = array_merge([], $this->registrations);
             //sort ascending by number of unprocessed Invocations
             usort($possibleRegistrations, function($registrationA, $registrationB) {
-                $unprocessedA = $registrationA->getStatistics()['invokeQueueCount'];
-                $unprocessedB = $registrationB->getStatistics()['invokeQueueCount'];
+                $unprocessedA = $registrationA->getStatistics()['pendingInvokeCount'];
+                $unprocessedB = $registrationB->getStatistics()['pendingInvokeCount'];
                 if ($unprocessedA == $unprocessedB) {
                     return 0;
                 } else if ($unprocessedA < $unprocessedB) {

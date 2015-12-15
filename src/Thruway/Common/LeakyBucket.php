@@ -16,28 +16,15 @@ class LeakyBucket
     protected $minTime;
     //holds time of last action (past or future!)
     protected $lastSchedAction;
-
-    /**
-     * @var SplQueue The Object Storage
-     */
+    protected $eventLoop;
+    protected $timer;
     protected $objectQueue;
 
     public function __construct($maxRatePerSecond = -1)
     {
         $this->maxRate = -1;
-        $this->objectQueue = new SplQueue();
         $this->lastSchedAction = time();
         $this->setMaxRate($maxRatePerSecond);
-    }
-
-    public function enqueue($anyObject)
-    {
-        $this->objectQueue->enqueue($anyObject);
-    }
-
-    public function count()
-    {
-        return $this->objectQueue->count();
     }
 
     public function setMaxRate($maxRatePerSecond)
@@ -48,24 +35,28 @@ class LeakyBucket
         }
     }
 
-    public function consume()
+    public function canConsume()
     {
+        return ($this->timeLeft() <= 0);
+    }
+
+    public function getTimeLeft()
+    {
+        $timeLeft = 0;
         if ($this->maxRate > 0) {
             //we are rate limited
             $curTime = time();
             //calculate when can we send back
             $timeLeft = $this->lastSchedAction + $this->minTime - $curTime;
-            if ($timeLeft > 0) {
-                $this->lastSchedAction += $this->minTime;
-                //we need to sleep for sometime
-                echo "We are sleeping";
-                sleep($timeLeft);
-            } else {
-                $this->lastSchedAction = $this->curTime;
-            }
         }
-        //lets go back
-        return $this->objectQueue->dequeue();
+        return $timeLeft;
+    }
+
+    public function consume()
+    {
+        if ($this->canConsume()) {
+            $this->lastSchedAction = time();
+        }
     }
 
 }
