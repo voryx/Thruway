@@ -16,28 +16,26 @@ class LeakyBucket
     protected $minTime;
     //holds time of last action (past or future!)
     protected $lastSchedAction;
-    protected $eventLoop;
-    protected $timer;
-    protected $objectQueue;
 
     public function __construct($maxRatePerSecond = -1)
     {
         $this->maxRate = -1;
-        $this->lastSchedAction = time();
         $this->setMaxRate($maxRatePerSecond);
+        $this->lastSchedAction = time() - $this->minTime;
     }
 
     public function setMaxRate($maxRatePerSecond)
     {
         if ($maxRatePerSecond > 0.0) {
             $this->maxRate = $maxRatePerSecond;
+            //milliseconds between successive calls
             $this->minTime = (int) (1000.0 / $maxRatePerSecond);
         }
     }
 
     public function canConsume()
     {
-        return ($this->timeLeft() <= 0);
+        return ($this->getTimeLeft() <= 0);
     }
 
     public function getTimeLeft()

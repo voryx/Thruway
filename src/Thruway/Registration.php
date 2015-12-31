@@ -3,6 +3,7 @@
 namespace Thruway;
 
 use Thruway\Common\Utils;
+use Thruway\Common\LeakyBucket;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\RegisterMessage;
 
@@ -18,6 +19,21 @@ class Registration
      * @var mixed
      */
     private $id;
+
+    /**
+     * @var int
+     */
+    private $limit;
+
+    /**
+     * @var LeakyBucket
+     */
+    private $leakyBucket;
+
+    /**
+     * @var \SplQueue
+     */
+    private $invokeQueue;
 
     /**
      * @var \Thruway\Session
@@ -95,15 +111,10 @@ class Registration
      * @var float
      */
     private $completedCallTimeTotal;
-//for ratelimiting
 
     /**
-     * @var int
+     * @bool
      */
-    private $limit;
-    private $eventLoop;
-    private $leakyBucket;
-    private $invokeQueue;
     private $rateLimited;
 
     const SINGLE_REGISTRATION = 'single';
@@ -138,7 +149,9 @@ class Registration
         $this->busyStart = null;
         $this->completedCallTimeTotal = 0;
 
+        //no throtling by default
         $this->limit = -1;
+        $this->leakyBucket = new LeakyBucket();
         $this->rateLimited = false;
     }
 
@@ -245,12 +258,6 @@ class Registration
             $this->rateLimited = true;
             $this->invokeQueue = new \SplQueue();
             $this->leakyBucket = new Common\LeakyBucket($this->limit);
-            $this->eventLoop = \React\EventLoop\Factory::create();
-            $this->eventLoop->addPeriodicTimer(30, function() {
-                //just to keep the event loop running
-                //no idea if this is required
-            });
-            $this->eventLoop->run();
         }
     }
 
@@ -297,24 +304,35 @@ class Registration
                 $this->invokeQueue->enqueue($call->getInvocationMessage());
                 if ($this->invokeQueue->count() === 1) {
                     //start the timer if I am the first addition to the queue
-                    $this->eventLoop->addTimer($this->leakyBucket->getTimeLeft() / 1000, 'invokeNextMessage');
+                    $this->session->getLoop()->addTimer($this->leakyBucket->getTimeLeft() / 1000, $this);
                 }
             }
         } else {
             $this->getSession()->sendMessage($call->getInvocationMessage());
         }
     }
-
-    public function isRateLimited()
-    {
+    
+    /**
+     * Get whether rate limited
+     *
+     * @return bool
+     */
+    public function isRateLimited(){
         return $this->rateLimited;
     }
 
-    private function invokeNextMessage()
+    /**
+     * Process Invocation Queue
+     * 
+     * Using __invoke magic method
+     * 
+     * @param none
+     */
+    public function __invoke()
     {
         $this->getSession()->sendMessage($this->invokeQueue->dequeue());
         if ($this->invokeQueue->count() > 0) {
-            $this->eventLoop->addTimer($this->leakyBucket->getTimeLeft() / 1000, 'invokeNextMessage');
+            $this->session->getLoop()->addTimer($this->leakyBucket->getTimeLeft() / 1000, $this);
         }
     }
 
@@ -350,10 +368,10 @@ class Registration
                 $this->session->decPendingCallCount();
                 $callEnd = microtime(true);
 
-// average call time
+                // average call time
                 $callsInAverage = $this->invocationCount - count($this->calls) - 1;
 
-// add this call time into the total
+                // add this call time into the total
                 $this->completedCallTimeTotal += $callEnd - $call->getCallStart();
                 $callsInAverage++;
                 $this->invocationAverageTime = ((float) $this->completedCallTimeTotal) / $callsInAverage;
@@ -457,7 +475,7 @@ class Registration
             'lastIdledAt' => $this->lastIdledAt,
             'lastCallStartedAt' => $this->lastCallStartedAt,
             'completedCallTimeTotal' => $this->completedCallTimeTotal,
-            'pendingInvokeCount' => ($this->rateLimited ? $this->invokeQueue->count() : 0)
+            'invokeQueueCount' => $this->rateLimited ? $this->invokeQueue->count() : 0
         ];
     }
 

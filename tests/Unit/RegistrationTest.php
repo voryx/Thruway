@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../bootstrap.php';
 
-class RegistrationTest extends PHPUnit_Framework_TestCase
+class RegistrationTest extends Thruway\TestCase
 {
 
     /**
@@ -52,25 +52,27 @@ class RegistrationTest extends PHPUnit_Framework_TestCase
 
         $callerSession = new \Thruway\Session(new Thruway\Transport\DummyTransport());
         $calleeSession = new \Thruway\Session(new Thruway\Transport\DummyTransport());
+        
+        $calleeSession->setLoop(\React\EventLoop\Factory::create());
 
-        $registerMsg = new \Thruway\Message\RegisterMessage(
+        $throttledRegisterMsg = new \Thruway\Message\RegisterMessage(
                 \Thruway\Common\Utils::getUniqueId(), [ "_limit" => 1], 'rate.limit.procedure'
         );
-        $procedure->processRegister($calleeSession, $registerMsg);
+
+        $procedure->processRegister($calleeSession, $throttledRegisterMsg);
 
         $this->assertEquals(1, count($procedure->getRegistrations()));
-        
+
         $this->assertTrue($procedure->getRegistrations()[0]->isRateLimited());
 
-        for ($i = 5; $i-- > 0;) {
-            //send an invocation
-//            $callMessage = new \Thruway\Message\CallMessage(
-//                    \Thruway\Common\Utils::getUniqueId(), [], 'rate.limit.procedure'
-//            );
-//            $call = new \Thruway\Call($callerSession, $callMessage, $procedure);
-//            $procedure->processCall($callerSession, $call);
-        }
-//        $this->assertEquals(1, count($procedure->getRegistrations()[0]->getStatistics()['pendingInvokeCount']));
+        $callMsg = new \Thruway\Message\CallMessage(
+                \Thruway\Common\Utils::getUniqueId(), new \stdClass(), 'rate.limit.procedure'
+        );
+        $call = new \Thruway\Call($callerSession, $callMsg, $procedure);
+
+        $procedure->getRegistrations()[0]->processCall($call);
+
+        $this->assertEquals(1, $procedure->getRegistrations()[0]->getStatistics()['invokeQueueCount']);
     }
 
     /**
