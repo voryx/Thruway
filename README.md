@@ -63,7 +63,7 @@ Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloadin
       
 Download Thruway and dependencies
 
-      $ php composer.phar require "voryx/thruway":"0.3.*"
+      $ php composer.phar require voryx/thruway
 
 Start the WAMP router
 
