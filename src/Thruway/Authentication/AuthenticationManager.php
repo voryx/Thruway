@@ -272,7 +272,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
             // this is handling the return of the onhello RPC call
 
             if (isset($res[0]) && $res[0] == "FAILURE") {
-                $session->abort(new \stdClass(), "thruway.error.authentication_failure");
+                $this->abortSessionUsingResponse($session, $res);
 
                 return;
             }
@@ -315,7 +315,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
 
         $onHelloError = function () use ($session) {
             Logger::error($this, "onhello rejected the promise");
-            $session->abort("thruway.error.unknown");
+            $session->abort(new \stdClass(), "thruway.error.unknown");
         };
 
         $onHelloAuthHandler = $authMethodInfo['handlers']->onhello;
@@ -408,6 +408,8 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
                 $session->setAuthenticated(true);
                 $session->sendMessage(new WelcomeMessage($session->getSessionId(), $welcomeDetails));
 
+            } elseif (isset($res[0]) && $res[0] == "FAILURE") {
+                $this->abortSessionUsingResponse($session, $res);
             } else {
                 $session->abort(new \stdClass(), "thruway.error.authentication_failure");
             }
@@ -415,7 +417,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
 
         $onAuthenticateError = function () use ($session) {
             Logger::error($this, "onauthenticate rejected the promise");
-            $session->abort("thruway.error.unknown");
+            $session->abort(new \stdClass(), "thruway.error.unknown");
         };
 
         $extra                    = new \stdClass();
@@ -574,4 +576,38 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         return $this->getReady();
     }
 
+    /**
+     * Send an abort message to the session if the Authenticator sent a FAILURE response
+     * Returns true if the abort was sent, false otherwise
+     *
+     * @param Session $session
+     * @param $response
+     * @return bool
+     * @throws \Exception
+     */
+    private function abortSessionUsingResponse(Session $session, $response) {
+        // $response needs to be a failure
+        if (!isset($response[0]) || $response[0] !== 'FAILURE') {
+            return false;
+        }
+
+        if (!isset($response[1]) || !is_object($response[1])) {
+            // there are no other details to send - just fail it
+            $session->abort(new \stdClass(), "thruway.error.authentication_failure");
+            return true;
+        }
+
+        $details = new \stdClass();
+        if (isset($response[1]->details) && is_object($response[1]->details)) {
+            $details = $response[1]->details;
+        }
+
+        $abortUri = "thruway.error.authentication_failure";
+        if (isset($response[1]->abort_uri) && is_scalar($response[1]->abort_uri)) {
+            $abortUri = $response[1]->abort_uri;
+        }
+
+        $session->abort($details, $abortUri);
+        return true;
+    }
 }

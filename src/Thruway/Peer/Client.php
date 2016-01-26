@@ -365,7 +365,7 @@ class Client implements EventEmitterInterface, ClientInterface
      */
     public function processAbort(ClientSession $session, AbortMessage $msg)
     {
-        $this->emit('error', [$msg->getResponseURI()]);
+        $this->emit('error', [$msg->getResponseURI(), $msg]);
         $session->shutdown();
     }
 

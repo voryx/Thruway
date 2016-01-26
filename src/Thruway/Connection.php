@@ -151,8 +151,8 @@ class Connection implements EventEmitterInterface
      */
     private function handleOnError()
     {
-        $this->client->on('error', function ($reason) {
-            $this->emit('error', [$reason]);
+        $this->client->on('error', function () {
+            $this->emit('error', func_get_args());
         });
     }
 
