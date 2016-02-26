@@ -2,10 +2,8 @@
 
 namespace Thruway\Transport;
 
-
-use Guzzle\Http\Message\Header\HeaderCollection;
-use Guzzle\Http\Message\Request;
-use Ratchet\WebSocket\Version\RFC6455\Frame;
+use GuzzleHttp\Psr7\Request;
+use Ratchet\RFC6455\Messaging\Frame;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
 use Thruway\Message\Message;
@@ -75,10 +73,10 @@ class RatchetTransport extends AbstractTransport
 
         /** @var Request $request */
         $request     = $this->conn->WebSocket->request;
-        $headers     = $request->getHeaders()->toArray();
-        $queryParams = $request->getQuery()->toArray();
-        $cookies     = $request->getCookies();
-        $url         = $request->getUrl();
+        $headers     = $request->getHeaders();
+        $queryParams = \GuzzleHttp\Psr7\parse_query($request->getUri()->getQuery());
+        $cookies     = $request->getHeader("Cookie");
+        $url         = $request->getUri()->getPath();
 
         return [
           "type"             => "ratchet",
@@ -131,7 +129,7 @@ class RatchetTransport extends AbstractTransport
     /**
      * Handle on pong
      *
-     * @param \Ratchet\WebSocket\Version\RFC6455\Frame $frame
+     * @param Frame $frame
      */
     public function onPong(Frame $frame)
     {
@@ -145,6 +143,5 @@ class RatchetTransport extends AbstractTransport
 
             unset($this->pingRequests[$seq]);
         }
-
     }
-} 
+}

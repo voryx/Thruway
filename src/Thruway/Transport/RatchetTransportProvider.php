@@ -2,10 +2,9 @@
 
 namespace Thruway\Transport;
 
-use Ratchet\WebSocket\Version\RFC6455\Frame;
+use Ratchet\RFC6455\Messaging\Frame;
 use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\ConnectionOpenEvent;
-use Thruway\Event\MessageEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Event\RouterStopEvent;
 use Thruway\Exception\DeserializationException;
@@ -110,7 +109,6 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     public function onError(ConnectionInterface $conn, \Exception $e)
     {
         Logger::error($this, "onError...");
-        // TODO: Implement onError() method.
     }
 
     /** @inheritdoc */
@@ -145,7 +143,7 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
      * Handle on pong
      *
      * @param \Ratchet\ConnectionInterface $from
-     * @param \Ratchet\WebSocket\Version\RFC6455\Frame $frame
+     * @param Frame $frame
      */
     public function onPong(ConnectionInterface $from, Frame $frame)
     {
@@ -159,7 +157,8 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     public function handleRouterStart(RouterStartEvent $event)
     {
         $ws = new WsServer($this);
-        $ws->disableVersion(0);
+
+        //$ws->enableKeepAlive($this->getLoop(), 30);
 
         $socket = new Reactor($this->loop);
         $socket->listen($this->port, $this->address);
