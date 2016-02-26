@@ -3,6 +3,7 @@
 namespace Thruway\Transport;
 
 use Ratchet\RFC6455\Messaging\Frame;
+use React\EventLoop\LoopInterface;
 use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
@@ -46,6 +47,11 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
      * @var \SplObjectStorage
      */
     private $sessions;
+
+    /**
+     * @var WsServer
+     */
+    private $ws;
 
     /**
      * Constructor
@@ -158,14 +164,19 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     {
         $ws = new WsServer($this);
 
-        //$ws->enableKeepAlive($this->getLoop(), 30);
-
         $socket = new Reactor($this->loop);
         $socket->listen($this->port, $this->address);
 
         Logger::info($this, "Websocket listening on ".$this->address.":".$this->port);
 
         $this->server = new IoServer(new HttpServer($ws), $socket, $this->loop);
+    }
+
+    public function enableKeepAlive(LoopInterface $loop, $interval = 30)
+    {
+        if ($this->ws) {
+            $this->ws->enableKeepAlive($loop, $interval);
+        }
     }
 
     public function handleRouterStop(RouterStopEvent $event)
