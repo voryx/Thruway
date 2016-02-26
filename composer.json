@@ -32,7 +32,7 @@
         "cboden/ratchet": "0.4.x-dev",
         "ratchet/pawl": "rfc-dev",
         "psr/log": "~1",
-        "symfony/event-dispatcher": "^3.0"
+        "symfony/event-dispatcher": "2.7 - 3"
     },
     "suggest": {
 	    "ext-mcrypt":"If you want to use WAMP-CRA for authentication"
