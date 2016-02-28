@@ -129,7 +129,6 @@ class ClientSession extends AbstractSession
      */
     public function onClose()
     {
-
+        $this->state = static::STATE_DOWN;
     }
-
 }
