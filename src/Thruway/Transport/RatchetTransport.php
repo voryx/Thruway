@@ -72,7 +72,7 @@ class RatchetTransport extends AbstractTransport
         $transportAddress = $this->conn->remoteAddress;
 
         /** @var Request $request */
-        $request     = $this->conn->WebSocket->request;
+        $request     = $this->conn->httpRequest;
         $headers     = $request->getHeaders();
         $queryParams = \GuzzleHttp\Psr7\parse_query($request->getUri()->getQuery());
         $cookies     = $request->getHeader("Cookie");
