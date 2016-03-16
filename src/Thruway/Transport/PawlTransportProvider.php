@@ -2,7 +2,7 @@
 
 namespace Thruway\Transport;
 
-use Ratchet\Client\Factory;
+use Ratchet\Client\Connector;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Ratchet\Client\WebSocket;
@@ -50,7 +50,7 @@ class PawlTransportProvider extends AbstractClientTransportProvider
 
         $this->client    = $client;
         $this->loop      = $loop;
-        $this->connector = new Factory($this->loop);
+        $this->connector = new Connector($this->loop);
 
         $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
             function (WebSocket $conn) {
