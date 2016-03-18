@@ -55,7 +55,7 @@ class Router implements RouterInterface, EventSubscriberInterface
     {
         Utils::checkPrecision();
 
-        $this->loop            = $loop ?: Factory::create();
+        $this->loop            = $loop ? $loop : Factory::create();
         $this->realmManager    = new RealmManager();
         $this->eventDispatcher = new EventDispatcher();
 
