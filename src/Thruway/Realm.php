@@ -59,7 +59,7 @@ class Realm implements RealmModuleInterface
     public function __construct($realmName)
     {
         $this->realmName = $realmName;
-        $this->sessions  = new \SplObjectStorage();
+        $this->sessions  = [];
         $this->broker    = new Broker();
         $this->dealer    = new Dealer();
         $this->roles     = [$this->broker, $this->dealer];
@@ -244,13 +244,18 @@ class Realm implements RealmModuleInterface
     {
 
         Logger::debug($this, "Leaving realm {$session->getRealm()->getRealmName()}");
-        $this->sessions->detach($session);
+        for ($i = 0; $i < count($this->sessions); $i++) {
+            if ($session === $this->sessions[$i]) {
+                array_splice($this->sessions, $i, 1);
+                break;
+            }
+        }
     }
 
     /**
      * Get list session
      *
-     * @return \SplObjectStorage
+     * @return Session[]
      */
     public function getSessions()
     {
@@ -317,7 +322,7 @@ class Realm implements RealmModuleInterface
      */
     public function addSession(Session $session)
     {
-        $this->sessions->attach($session);
+        $this->sessions[] = $session;
         $session->setRealm($this);
         $session->dispatcher->addRealmSubscriber($this);
         foreach ($this->modules as $module) {
