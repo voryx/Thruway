@@ -15,6 +15,7 @@ use Thruway\Message\Message;
 use Thruway\Message\SubscribedMessage;
 use Thruway\Message\SubscribeMessage;
 use Thruway\Message\UnsubscribedMessage;
+use Thruway\Message\UnsubscribeMessage;
 
 /**
  * Class Subscriber
@@ -219,13 +220,44 @@ class Subscriber extends AbstractRole
             "options"    => $options,
             "deferred"   => $deferred
         ];
-
+		
         array_push($this->subscriptions, $subscription);
-
+		
         $subscribeMsg = new SubscribeMessage($requestId, $options, $topicName);
         $session->sendMessage($subscribeMsg);
 
         return $deferred->promise();
     }
-
+	
+	/**
+	 * process unsubscribe
+	 * @param ClientSession $session
+	 * @param type $topicName
+	 * @return boolean
+	 */
+	public function unsubscribe(ClientSession $session, $topicName)
+	{
+		$requestId = Utils::getUniqueId();
+		$subscriptionId = false;
+		$deferred  = new Deferred();
+		
+		echo 'Unsubscribe asked...'.PHP_EOL;
+		
+		foreach ($this->subscriptions as $i => $subscription) {
+			if ($subscription["topic_name"] == $topicName) {
+				$subscriptionId = $subscription["subscription_id"];
+				unset($this->subscriptions[$i]);
+			}
+		}
+		
+		if (false === $subscriptionId) {
+			// Maybe indicating somehow the user that he/she had never subscribed this topic before?
+			return false;
+		}
+		
+		$unsubscribeMessage = new UnsubscribeMessage($requestId, $subscriptionId);
+		$session->sendMessage($unsubscribeMessage);
+		
+		return $deferred->promise();
+	}
 } 
