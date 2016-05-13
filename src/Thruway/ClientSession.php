@@ -45,19 +45,19 @@ class ClientSession extends AbstractSession
     {
         return $this->peer->getSubscriber()->subscribe($this, $topicName, $callback, $options);
     }
-	
-	/**
-	 * Unsubscribe
-	 * 
-	 * @param string $topicName
-	 * @param callable $callback
-	 * @return Promise
-	 */
-	public function unsubscribe($topicName)
-	{
-		return $this->peer->getSubscriber()->unsubscribe($this, $topicName);
-	}
-
+    
+    /**
+     * Unsubscribe
+     * 
+     * @param string $topicName
+     * @param callable $callback
+     * @return Promise
+     */
+    public function unsubscribe($topicName)
+    {
+        return $this->peer->getSubscriber()->unsubscribe($this, $topicName);
+    }
+    
     /**
      * Publish
      *
