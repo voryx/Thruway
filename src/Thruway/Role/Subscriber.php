@@ -29,6 +29,11 @@ class Subscriber extends AbstractRole
      * @var array
      */
     private $subscriptions;
+	
+	/**
+	 * @var array
+	 */
+	private $unsubscriptionsPromises;
 
     /**
      * Constructor
@@ -37,6 +42,7 @@ class Subscriber extends AbstractRole
     {
 
         $this->subscriptions = [];
+		$this->unsubscriptionsPromises = [];
     }
 
     /**
@@ -87,7 +93,7 @@ class Subscriber extends AbstractRole
                 $this->processSubscribeError($session, $msg);
                 break;
             case Message::MSG_UNSUBSCRIBE:
-                // TODO
+                $this->processUnsubscribeError($session, $msg);
                 break;
             default:
                 Logger::critical($this, "Unhandled error");
@@ -129,6 +135,37 @@ class Subscriber extends AbstractRole
             }
         }
     }
+	
+	/**
+	 * Process unsubscribe error
+	 * 
+	 * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
+	 */
+	protected function processUnsubscribeError(AbstractSession $session, ErrorMessage $msg)
+	{
+		$hasBeenFound = false;
+		
+		foreach ($this->subscriptions as $key => $subscription) {
+            if ($subscription["unsubscribed_request_id"] === $msg->getErrorRequestId()) {
+				$hasBeenFound = true;
+				
+                // reject the promise
+                $this->subscriptions[$key]['deferred']->reject($msg);
+                break;
+            }
+        }
+		
+		if ($hasBeenFound === false) {
+			foreach ($this->unsubscriptionsPromises as $key => $unsubscriptionPromise) {
+				if ($unsubscriptionPromise["request_id"] === $msg->getErrorRequestId()) {
+					$unsubscriptionPromise["deferred"]->reject($msg);
+					unset($this->unsubscriptionPromises[$key]);
+					break;
+				}
+			}
+		}
+	}
 
     /**
      * process unsubscribed
@@ -244,13 +281,20 @@ class Subscriber extends AbstractRole
 		foreach ($this->subscriptions as $i => $subscription) {
 			if ($subscription["topic_name"] == $topicName) {
 				$subscriptionId = $subscription["subscription_id"];
-				unset($this->subscriptions[$i]);
+				
+				$this->subscriptions[$i]["unsubscribed_request_id"] = $requestId;
+				$this->subscriptions[$i]["unsubscribed_deferred"] = $deferred;
 			}
 		}
 		
-		if (false === $subscriptionId) {
-			// Maybe indicating somehow the user that he/she had never subscribed this topic before?
-			return false;
+		// In case the client never subscribed to this topic before
+		if ($subscriptionId === false) {
+			$unsubscriptionPromise = [
+				"request_id" => $requestId,
+				"deferred" => $deferred
+			];
+			
+			array_push($this->unsubscriptionsPromises, $unsubscriptionPromise);
 		}
 		
 		$unsubscribeMessage = new UnsubscribeMessage($requestId, $subscriptionId);
