@@ -241,8 +241,6 @@ class Subscriber extends AbstractRole
 		$subscriptionId = false;
 		$deferred  = new Deferred();
 		
-		echo 'Unsubscribe asked...'.PHP_EOL;
-		
 		foreach ($this->subscriptions as $i => $subscription) {
 			if ($subscription["topic_name"] == $topicName) {
 				$subscriptionId = $subscription["subscription_id"];
