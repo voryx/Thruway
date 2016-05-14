@@ -50,7 +50,6 @@ class ClientSession extends AbstractSession
      * Unsubscribe
      * 
      * @param string $topicName
-     * @param callable $callback
      * @return Promise
      */
     public function unsubscribe($topicName)
