@@ -143,25 +143,20 @@ class Subscriber extends AbstractRole
      */
     protected function processUnsubscribeError(AbstractSession $session, ErrorMessage $msg)
     {
-        $hasBeenFound = false;
-        
         foreach ($this->subscriptions as $key => $subscription) {
             if ($subscription["unsubscribed_request_id"] === $msg->getErrorRequestId()) {
-                $hasBeenFound = true;
-                
                 // reject the promise
                 $this->subscriptions[$key]['deferred']->reject($msg);
-                break;
+                return;
             }
         }
         
-        if ($hasBeenFound === false) {
-            foreach ($this->unsubscriptionsPromises as $key => $unsubscriptionPromise) {
-                if ($unsubscriptionPromise["request_id"] === $msg->getErrorRequestId()) {
-                    $unsubscriptionPromise["deferred"]->reject($msg);
-                    unset($this->unsubscriptionPromises[$key]);
-                    break;
-                }
+        // Execution continues up here in case the original unsubscribe request has not been found
+        foreach ($this->unsubscriptionsPromises as $key => $unsubscriptionPromise) {
+            if ($unsubscriptionPromise["request_id"] === $msg->getErrorRequestId()) {
+                $unsubscriptionPromise["deferred"]->reject($msg);
+                unset($this->unsubscriptionPromises[$key]);
+                return;
             }
         }
     }
