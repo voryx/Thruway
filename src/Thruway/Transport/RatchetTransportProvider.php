@@ -64,6 +64,7 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
         $this->port     = $port;
         $this->address  = $address;
         $this->sessions = new \SplObjectStorage();
+        $this->ws       = new WsServer($this);
     }
 
     /**
@@ -162,21 +163,18 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
 
     public function handleRouterStart(RouterStartEvent $event)
     {
-        $ws = new WsServer($this);
 
         $socket = new Reactor($this->loop);
         $socket->listen($this->port, $this->address);
 
         Logger::info($this, "Websocket listening on ".$this->address.":".$this->port);
 
-        $this->server = new IoServer(new HttpServer($ws), $socket, $this->loop);
+        $this->server = new IoServer(new HttpServer($this->ws), $socket, $this->loop);
     }
 
     public function enableKeepAlive(LoopInterface $loop, $interval = 30)
     {
-        if ($this->ws) {
-            $this->ws->enableKeepAlive($loop, $interval);
-        }
+        $this->ws->enableKeepAlive($loop, $interval);
     }
 
     public function handleRouterStop(RouterStopEvent $event)
