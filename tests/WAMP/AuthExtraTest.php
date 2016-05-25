@@ -98,9 +98,9 @@ class AuthExtraTest extends PHPUnit_Framework_TestCase {
             });
         });
 
-        $router->addTransportProvider(new \Thruway\Transport\RatchetTransportProvider('127.0.0.1', 8088));
+        $router->addTransportProvider(new \Thruway\Transport\RatchetTransportProvider('127.0.0.1', 58088));
 
-        $client->addTransportProvider(new \Thruway\Transport\PawlTransportProvider('ws://127.0.0.1:8088/'));
+        $client->addTransportProvider(new \Thruway\Transport\PawlTransportProvider('ws://127.0.0.1:58088/'));
 
         $loop->addTimer(5, function () use ($loop) {
             $loop->stop();
