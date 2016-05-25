@@ -161,14 +161,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test Subscribe to an empty topic
      *
-     * @depends testHelloMessage
-     * @param $rt array
      * @return array
      *
      * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#subscription-error
      */
-    public function testSubscribeEmptyTopicMessage($rt)
+    public function testSubscribeEmptyTopicMessage()
     {
+        $rt = $this->getActiveRouterAndSession();
         /** @var \Thruway\Session $session */
         $session = $rt["session"];
         $session->getTransport()->expects($this->exactly(1))
