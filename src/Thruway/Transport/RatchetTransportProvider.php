@@ -164,8 +164,7 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     public function handleRouterStart(RouterStartEvent $event)
     {
 
-        $socket = new Reactor($this->loop);
-        $socket->listen($this->port, $this->address);
+        $socket = new Reactor('tcp://' . $this->address . ':' . $this->port, $this->loop);
 
         Logger::info($this, "Websocket listening on ".$this->address.":".$this->port);
 

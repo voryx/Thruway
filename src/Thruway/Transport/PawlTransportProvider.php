@@ -2,7 +2,6 @@
 
 namespace Thruway\Transport;
 
-use Ratchet\Client\Connector;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Ratchet\Client\WebSocket;
@@ -17,23 +16,17 @@ use Thruway\Serializer\JsonSerializer;
  */
 class PawlTransportProvider extends AbstractClientTransportProvider
 {
-
     /**
      * @var string
      */
     private $URL;
 
     /**
-     * @var Factory
-     */
-    private $connector;
-
-    /**
      * Constructor
      *
      * @param string $URL
      */
-    function __construct($URL = "ws://127.0.0.1:8080/")
+    public function __construct($URL = "ws://127.0.0.1:8080/")
     {
         $this->URL     = $URL;
     }
@@ -50,11 +43,9 @@ class PawlTransportProvider extends AbstractClientTransportProvider
 
         $this->client    = $client;
         $this->loop      = $loop;
-        $this->connector = new Connector($this->loop);
 
-        $this->connector->__invoke($this->URL, ['wamp.2.json'])->then(
+        \Ratchet\Client\connect($this->URL, ['wamp.2.json'], [], $loop)->then(
             function (WebSocket $conn) {
-
                 Logger::info($this, "Pawl has connected");
 
                 $transport = new PawlTransport($conn, $this->loop);
@@ -83,18 +74,10 @@ class PawlTransportProvider extends AbstractClientTransportProvider
                         $this->client->onClose('close');
                     }
                 );
-
-                $conn->on(
-                    'pong',
-                    function ($frame, $ws) use ($transport) {
-                        $transport->onPong($frame, $ws);
-                    }
-                );
             },
             function ($e) {
                 $this->client->onClose('unreachable');
                 Logger::info($this, "Could not connect: {$e->getMessage()}");
-                // $this->loop->stop();
             }
         );
     }
