@@ -67,7 +67,7 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
         }
 
         // create a challenge
-        $nonce        = bin2hex(mcrypt_create_iv(22, MCRYPT_DEV_URANDOM));
+        $nonce        = bin2hex(openssl_random_pseudo_bytes(22));
         $authRole     = "user";
         $authMethod   = "wampcra";
         $authProvider = "userdb";
