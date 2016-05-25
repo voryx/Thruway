@@ -263,18 +263,18 @@ class Subscriber extends AbstractRole
     /**
      * process unsubscribe
      * @param ClientSession $session
-     * @param type $topicName
+     * @param string $subscriptionId
      * @return boolean
      */
-    public function unsubscribe(ClientSession $session, $topicName)
+    public function unsubscribe(ClientSession $session, $subscriptionId)
     {
         $requestId = Utils::getUniqueId();
-        $subscriptionId = false;
+        $subscriptionExists = false;
         $deferred  = new Deferred();
         
         foreach ($this->subscriptions as $i => $subscription) {
-            if ($subscription["topic_name"] == $topicName) {
-                $subscriptionId = $subscription["subscription_id"];
+            if ($subscription["subscription_id"] == $subscriptionId) {
+                $subscriptionExists = true;
                 
                 $this->subscriptions[$i]["unsubscribed_request_id"] = $requestId;
                 $this->subscriptions[$i]["unsubscribed_deferred"] = $deferred;
@@ -282,7 +282,7 @@ class Subscriber extends AbstractRole
         }
         
         // In case the client never subscribed to this topic before
-        if ($subscriptionId === false) {
+        if ($subscriptionExists === false) {
             $unsubscriptionPromise = [
                 "request_id" => $requestId,
                 "deferred" => $deferred
