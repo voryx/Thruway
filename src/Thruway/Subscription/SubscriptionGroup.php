@@ -276,7 +276,7 @@ class SubscriptionGroup
 
             $this->removeSubscription($subscription);
             
-            Logger::debug($this, "Removed subscription to \"" . $this->getmatchType() . "\":\"" . $this->getUri() . "\"");
+            Logger::debug($this, "Removed subscription to \"" . $this->getMatchType() . "\":\"" . $this->getUri() . "\"");
 
             $session->sendMessage(new UnsubscribedMessage($msg->getRequestId()));
             return $subscription;
