@@ -264,7 +264,7 @@ class Subscriber extends AbstractRole
      * process unsubscribe
      * @param ClientSession $session
      * @param string $subscriptionId
-     * @return boolean
+     * @return Promise
      */
     public function unsubscribe(ClientSession $session, $subscriptionId)
     {
