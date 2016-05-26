@@ -31,17 +31,11 @@ class Subscriber extends AbstractRole
     private $subscriptions;
     
     /**
-     * @var array
-     */
-    private $unsubscriptionsPromises;
-
-    /**
      * Constructor
      */
     public function __construct()
     {
         $this->subscriptions = [];
-        $this->unsubscriptionsPromises = [];
     }
 
     /**
@@ -147,15 +141,6 @@ class Subscriber extends AbstractRole
             if ($subscription["unsubscribed_request_id"] === $msg->getErrorRequestId()) {
                 // reject the promise
                 $subscription['unsubscribed_deferred']->reject($msg);
-                return;
-            }
-        }
-        
-        // Execution continues up here in case the original unsubscribe request has not been found
-        foreach ($this->unsubscriptionsPromises as $key => $unsubscriptionPromise) {
-            if ($unsubscriptionPromise["request_id"] === $msg->getErrorRequestId()) {
-                $unsubscriptionPromise["deferred"]->reject($msg);
-                unset($this->unsubscriptionPromises[$key]);
                 return;
             }
         }
@@ -283,12 +268,9 @@ class Subscriber extends AbstractRole
         
         // In case the client never subscribed to this topic before
         if ($subscriptionExists === false) {
-            $unsubscriptionPromise = [
-                "request_id" => $requestId,
-                "deferred" => $deferred
-            ];
-            
-            array_push($this->unsubscriptionsPromises, $unsubscriptionPromise);
+            $errorMsg = new ErrorMessage(Message::MSG_UNSUBSCRIBE, $requestId, new \stdClass, "wamp.error.no_such_subscription");
+            $deferred->reject($errorMsg);
+            return $deferred->promise();
         }
         
         $unsubscribeMessage = new UnsubscribeMessage($requestId, $subscriptionId);
