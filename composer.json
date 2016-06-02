@@ -32,8 +32,8 @@
         "cboden/ratchet": "0.3.*",
         "ratchet/pawl": "0.2.*",
         "psr/log": "~1",
-        "guzzle/guzzle": "~3.9",
-        "ext-openssl": "*"
+        "ext-openssl": "*",
+        "voryx/thruway-message": "^1.0"
     },
     "extra": {
         "branch-alias": {
