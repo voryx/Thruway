@@ -15,6 +15,7 @@ use Thruway\Message\Message;
 use Thruway\Message\SubscribedMessage;
 use Thruway\Message\SubscribeMessage;
 use Thruway\Message\UnsubscribedMessage;
+use Thruway\Message\UnsubscribeMessage;
 
 /**
  * Class Subscriber
@@ -28,13 +29,12 @@ class Subscriber extends AbstractRole
      * @var array
      */
     private $subscriptions;
-
+    
     /**
      * Constructor
      */
     public function __construct()
     {
-
         $this->subscriptions = [];
     }
 
@@ -86,7 +86,7 @@ class Subscriber extends AbstractRole
                 $this->processSubscribeError($session, $msg);
                 break;
             case Message::MSG_UNSUBSCRIBE:
-                // TODO
+                $this->processUnsubscribeError($session, $msg);
                 break;
             default:
                 Logger::critical($this, "Unhandled error");
@@ -125,6 +125,23 @@ class Subscriber extends AbstractRole
                 $this->subscriptions[$key]['subscription_id'] = $msg->getSubscriptionId();
                 $this->subscriptions[$key]['deferred']->resolve($msg);
                 break;
+            }
+        }
+    }
+    
+    /**
+     * Process unsubscribe error
+     * 
+     * @param \Thruway\AbstractSession $session
+     * @param \Thruway\Message\ErrorMessage $msg
+     */
+    protected function processUnsubscribeError(AbstractSession $session, ErrorMessage $msg)
+    {
+        foreach ($this->subscriptions as $key => $subscription) {
+            if ($subscription["unsubscribed_request_id"] === $msg->getErrorRequestId()) {
+                // reject the promise
+                $subscription['unsubscribed_deferred']->reject($msg);
+                return;
             }
         }
     }
@@ -219,13 +236,46 @@ class Subscriber extends AbstractRole
             "options"    => $options,
             "deferred"   => $deferred
         ];
-
+        
         array_push($this->subscriptions, $subscription);
-
+        
         $subscribeMsg = new SubscribeMessage($requestId, $options, $topicName);
         $session->sendMessage($subscribeMsg);
 
         return $deferred->promise();
     }
-
+	
+    /**
+     * process unsubscribe
+     * @param ClientSession $session
+     * @param string $subscriptionId
+     * @return Promise
+     */
+    public function unsubscribe(ClientSession $session, $subscriptionId)
+    {
+        $requestId = Utils::getUniqueId();
+        $subscriptionExists = false;
+        $deferred  = new Deferred();
+        
+        foreach ($this->subscriptions as $i => $subscription) {
+            if ($subscription["subscription_id"] == $subscriptionId) {
+                $subscriptionExists = true;
+                
+                $this->subscriptions[$i]["unsubscribed_request_id"] = $requestId;
+                $this->subscriptions[$i]["unsubscribed_deferred"] = $deferred;
+            }
+        }
+        
+        // In case the client never subscribed to this topic before
+        if ($subscriptionExists === false) {
+            $errorMsg = new ErrorMessage(Message::MSG_UNSUBSCRIBE, $requestId, new \stdClass, "wamp.error.no_such_subscription");
+            $deferred->reject($errorMsg);
+            return $deferred->promise();
+        }
+        
+        $unsubscribeMessage = new UnsubscribeMessage($requestId, $subscriptionId);
+        $session->sendMessage($unsubscribeMessage);
+        
+        return $deferred->promise();
+    }
 } 
