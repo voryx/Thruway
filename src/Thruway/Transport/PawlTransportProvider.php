@@ -32,6 +32,7 @@ class PawlTransportProvider extends AbstractClientTransportProvider
      * Constructor
      *
      * @param string $URL
+     * @param string $DNS
      */
     public function __construct($URL = "ws://127.0.0.1:8080/", $DNS=null)
     {
