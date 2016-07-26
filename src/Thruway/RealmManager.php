@@ -117,6 +117,9 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
      */
     public function getRealm($realmName)
     {
+        if (!is_scalar($realmName)) {
+            throw new \InvalidArgumentException("Non-string value given for realm name");
+        }
         if (!array_key_exists($realmName, $this->realms)) {
             if ($this->getAllowRealmAutocreate()) {
                 Logger::debug($this, "Creating new realm \"".$realmName."\"");

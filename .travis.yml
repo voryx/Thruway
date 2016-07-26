@@ -10,12 +10,10 @@ php:
 matrix:
     allow_failures:
         - php: hhvm
-        - php: 7
 
 before_install:
-     - sudo apt-get install python-pip -qq
-     - sudo apt-get install -qq build-essential libssl-dev libffi-dev python-dev python-pip
-     - sudo pip install crossbar
+    - export PATH=$HOME/.local/bin:$PATH
+    - pip install crossbar --user `whoami`
 
 before_script:
     - composer install

@@ -30,12 +30,10 @@
         "php": ">=5.4",
         "react/socket": "0.4.*",
         "cboden/ratchet": "0.3.*",
-        "ratchet/pawl": "0.1.*",
+        "ratchet/pawl": "0.2.*",
         "psr/log": "~1",
-        "guzzle/guzzle": "~3.9"
-    },
-    "suggest": {
-	    "ext-mcrypt":"If you want to use WAMP-CRA for authentication"
+        "ext-openssl": "*",
+        "voryx/thruway-message": "^1.0"
     },
     "extra": {
         "branch-alias": {

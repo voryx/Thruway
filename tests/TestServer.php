@@ -3,7 +3,9 @@
 require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/Clients/InternalClient.php';
 require_once __DIR__ . '/Clients/SimpleAuthProviderClient.php';
+require_once __DIR__ . '/Clients/AbortAfterAuthenticateWithDetailsAuthProviderClient.php';
 require_once __DIR__ . '/Clients/AbortAfterHelloAuthProviderClient.php';
+require_once __DIR__ . '/Clients/AbortAfterHelloWithDetailsAuthProviderClient.php';
 require_once __DIR__ . '/Clients/DisclosePublisherClient.php';
 require_once __DIR__ . '/Clients/QueryParamAuthProviderClient.php';
 require_once __DIR__ . '/UserDb.php';
@@ -49,7 +51,8 @@ $router->addInternalClient(new SimpleAuthProviderClient(["testSimpleAuthRealm", 
 
 // provide aborting auth provider
 $router->addInternalClient(new AbortAfterHelloAuthProviderClient(["abortafterhello"]));
-
+$router->addInternalClient(new AbortAfterHelloWithDetailsAuthProviderClient(["abortafterhellowithdetails"]));
+$router->addInternalClient(new AbortAfterAuthenticateWithDetailsAuthProviderClient(["aaawd"]));
 
 $router->addInternalClient(new QueryParamAuthProviderClient(["query_param_auth_realm"]));
 

@@ -161,14 +161,13 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     /**
      * Test Subscribe to an empty topic
      *
-     * @depends testHelloMessage
-     * @param $rt array
      * @return array
      *
      * https://github.com/tavendo/WAMP/blob/master/spec/basic.md#subscription-error
      */
-    public function testSubscribeEmptyTopicMessage($rt)
+    public function testSubscribeEmptyTopicMessage()
     {
+        $rt = $this->getActiveRouterAndSession();
         /** @var \Thruway\Session $session */
         $session = $rt["session"];
         $session->getTransport()->expects($this->exactly(1))
@@ -1240,6 +1239,17 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 $fromRouter[] = $prevMsg = $transport->getLastMessageSent();
             }
         }
+    }
+
+    /**
+     * @expectedException InvalidArgumentException
+     * @throws \Thruway\Exception\RealmNotFoundException
+     */
+    public function testGetRealmWithNonscalarThrows()
+    {
+        $router = new \Thruway\Peer\Router();
+
+        $router->getRealmManager()->getRealm(new stdClass());
     }
 
     // This came over from 0.3 but things work differently now

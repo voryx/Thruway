@@ -77,6 +77,8 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
         if ($this->session) {
             $this->session->shutdown();
         }
+
+        $this->internalClient->onClose("router stopped");
     }
 
     public static function getSubscribedEvents()
