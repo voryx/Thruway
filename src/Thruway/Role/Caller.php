@@ -2,7 +2,6 @@
 
 namespace Thruway\Role;
 
-
 use Thruway\AbstractSession;
 use Thruway\CallResult;
 use Thruway\ClientSession;
@@ -12,7 +11,6 @@ use Thruway\Message\CallMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\ResultMessage;
-use Thruway\Session;
 use React\Promise\Deferred;
 
 /**
@@ -22,7 +20,6 @@ use React\Promise\Deferred;
  */
 class Caller extends AbstractRole
 {
-
     /**
      * @var array
      */
@@ -177,5 +174,4 @@ class Caller extends AbstractRole
 
         return $futureResult->promise();
     }
-
-} 
+}

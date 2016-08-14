@@ -5,7 +5,6 @@ namespace Thruway\Transport;
 use Ratchet\WebSocket\Version\RFC6455\Frame;
 use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\ConnectionOpenEvent;
-use Thruway\Event\MessageEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Event\RouterStopEvent;
 use Thruway\Exception\DeserializationException;
@@ -103,7 +102,7 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
 
         unset($this->sessions[$conn]);
 
-        Logger::info($this, "Ratchet has closed");
+        Logger::debug($this, "Ratchet has closed");
     }
 
     /** @inheritdoc */

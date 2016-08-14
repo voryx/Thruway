@@ -1,12 +1,11 @@
 <?php
 
-
 namespace Thruway\Transport;
-
 
 use Thruway\Module\RouterModule;
 
-abstract class AbstractRouterTransportProvider extends RouterModule implements RouterTransportProviderInterface {
+abstract class AbstractRouterTransportProvider extends RouterModule implements RouterTransportProviderInterface
+{
     /**
      * @var \Thruway\Peer\RouterInterface
      */

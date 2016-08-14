@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Module;
-
 
 /**
  * Interface RealmModuleInterface
@@ -12,4 +10,4 @@ interface RealmModuleInterface
 {
     /** @return array */
     public function getSubscribedRealmEvents();
-} 
+}

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Peer;
-
 
 use Thruway\Message\Message;
 use Thruway\Transport\ClientTransportProviderInterface;

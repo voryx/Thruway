@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Thruway\Peer;
-
 
 use Thruway\Event\EventDispatcher;
 use Thruway\Message\Message;
 use Thruway\Session;
 use Thruway\Transport\TransportInterface;
-
 
 /**
  * Interface RouterInterface

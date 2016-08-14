@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-
 use React\Promise\Promise;
 use Thruway\Message\Message;
 use Thruway\Peer\ClientInterface;
@@ -15,7 +14,6 @@ use Thruway\Transport\TransportInterface;
  */
 class ClientSession extends AbstractSession
 {
-
     /**
      * @var \Thruway\Peer\Client
      */

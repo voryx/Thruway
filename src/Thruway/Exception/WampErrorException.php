@@ -1,12 +1,12 @@
 <?php
 
-
 namespace Thruway\Exception;
 
 use Thruway\Message\Traits\ArgumentsTrait;
 use Thruway\Message\Traits\DetailsTrait;
 
-class WampErrorException extends \Exception {
+class WampErrorException extends \Exception
+{
     use ArgumentsTrait;
     use DetailsTrait;
 
@@ -18,7 +18,7 @@ class WampErrorException extends \Exception {
      * @param \stdClass|null $argumentsKw
      * @param \stdClass|null $details
      */
-    function __construct($errorUri, $arguments = null, $argumentsKw = null, $details = null)
+    public function __construct($errorUri, $arguments = null, $argumentsKw = null, $details = null)
     {
         $this->setErrorUri($errorUri);
         $this->setArguments($arguments);
@@ -48,6 +48,4 @@ class WampErrorException extends \Exception {
     {
         $this->errorUri = $errorUri;
     }
-
-
 }

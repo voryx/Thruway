@@ -2,7 +2,6 @@
 
 namespace Thruway\Role;
 
-
 use Thruway\Call;
 use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
@@ -283,13 +282,12 @@ class Dealer implements RealmModuleInterface
      */
     private function processYield(Session $session, YieldMessage $msg)
     {
-
         /* @var $call Call */
         $call = isset($this->callInvocationIndex[$msg->getRequestId()]) ? $this->callInvocationIndex[$msg->getRequestId()] : null;
 
         if (!$call) {
             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg));
-            Logger::error($this, "Was expecting a call");
+            Logger::error($this, "Received YieldMessage for non-existent call from " . $session->getSessionId());
 
             return;
         }
@@ -588,6 +586,4 @@ class Dealer implements RealmModuleInterface
 
         return [$theRegistrations];
     }
-
-
 }

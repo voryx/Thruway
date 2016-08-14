@@ -20,7 +20,6 @@ use Thruway\Serializer\JsonSerializer;
  */
 class RawSocketTransportProvider extends AbstractRouterTransportProvider
 {
-
     /**
      * @var string
      */
@@ -125,6 +124,4 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
             "router.stop" => ['handleRouterStop', 10]
         ];
     }
-
-
 }

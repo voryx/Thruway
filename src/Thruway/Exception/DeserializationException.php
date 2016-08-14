@@ -8,8 +8,7 @@ namespace Thruway\Exception;
  *
  * @package Thruway\Exception
  */
-
 class DeserializationException extends \Exception
 {
 
-} 
+}

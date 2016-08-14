@@ -8,8 +8,7 @@ namespace Thruway\Exception;
  *
  * @package Thruway\Exception
  */
-
 class PingNotSupportedException extends \Exception
 {
 
-} 
+}

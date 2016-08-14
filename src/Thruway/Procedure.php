@@ -7,7 +7,6 @@ use Thruway\Message\RegisteredMessage;
 use Thruway\Message\RegisterMessage;
 use Thruway\Message\UnregisteredMessage;
 use Thruway\Message\UnregisterMessage;
-use Thruway\Registration;
 use SplQueue;
 
 /**
@@ -19,7 +18,6 @@ use SplQueue;
  */
 class Procedure
 {
-
     /**
      * @var string
      */
@@ -521,5 +519,4 @@ class Procedure
             ];
         }
     }
-
 }

@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-
 use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\CallMessage;
@@ -21,7 +20,6 @@ use Thruway\Message\YieldMessage;
  */
 class Call
 {
-
     /**
      * @var \Thruway\Session
      */
@@ -89,7 +87,7 @@ class Call
      *
      * @param \Thruway\Session $callerSession
      * @param \Thruway\Message\CallMessage $callMessage
-     * @param Registration $registration
+     * @param Procedure $procedure
      */
     public function __construct(
         Session $callerSession,
@@ -161,7 +159,7 @@ class Call
      */
     public function processCancel(Session $session, CancelMessage $msg) {
         if ($this->getCallerSession() !== $session) {
-            Logger::warning($this, "session attempted to cancel call they did not own.");
+            Logger::warning($this, "session " . $session->getSessionId() . " attempted to cancel call they did not own.");
             return false;
         }
 

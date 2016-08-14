@@ -7,10 +7,8 @@ namespace Thruway\Authentication;
  *
  * @package Thruway\Authentication
  */
-
 class AuthenticationDetails implements \JsonSerializable
 {
-
     /**
      * @var int
      */

@@ -2,7 +2,6 @@
 
 namespace Thruway\Role;
 
-
 use React\Promise\Deferred;
 use React\Promise\Promise;
 use Thruway\AbstractSession;
@@ -86,10 +85,10 @@ class Subscriber extends AbstractRole
                 $this->processSubscribeError($session, $msg);
                 break;
             case Message::MSG_UNSUBSCRIBE:
-                // TODO
+                Logger::error($this, "Unhandled unsubscribe error");
                 break;
             default:
-                Logger::critical($this, "Unhandled error");
+                Logger::error($this, "Unhandled error");
         }
     }
 
@@ -147,7 +146,7 @@ class Subscriber extends AbstractRole
                 return;
             }
         }
-//        $this->logger->error("---Got an Unsubscribed Message, but couldn't find corresponding request.\n");
+        Logger::error($this, "Got an Unsubscribed Message, but couldn't find corresponding request.\n");
     }
 
     /**
@@ -227,5 +226,4 @@ class Subscriber extends AbstractRole
 
         return $deferred->promise();
     }
-
-} 
+}

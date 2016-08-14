@@ -7,7 +7,6 @@ namespace Thruway\Authentication;
  *
  * @package Thruway\Authentication
  */
-
 interface WampCraUserDbInterface
 {
 

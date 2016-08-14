@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Common\Utils;
 use Thruway\Event\EventDispatcher;
@@ -21,7 +20,6 @@ use Thruway\Transport\TransportInterface;
  */
 class Session extends AbstractSession implements RealmModuleInterface
 {
-
     /** @var \Thruway\Authentication\AuthenticationDetails */
     private $authenticationDetails;
 
@@ -134,7 +132,9 @@ class Session extends AbstractSession implements RealmModuleInterface
             // only send the leave metaevent if we actually made it into the realm
             if ($this->isAuthenticated()) {
                 // metaevent
-                $this->getRealm()->publishMeta('wamp.metaevent.session.on_leave', [$this->getMetaInfo()]);
+                $metaInfo = $this->getMetaInfo();
+                $this->getRealm()->publishMeta('wamp.metaevent.session.on_leave', [$metaInfo]);
+                Logger::info($this, "Session close: " . json_encode($metaInfo));
             }
             $this->dispatcher->dispatch("LeaveRealm", new LeaveRealmEvent($this->realm, $this));
 
@@ -202,7 +202,9 @@ class Session extends AbstractSession implements RealmModuleInterface
         // not-authenticate to authenticated
         if ($authenticated && !$this->authenticated) {
             // metaevent
-            $this->getRealm()->publishMeta('wamp.metaevent.session.on_join', [$this->getMetaInfo()]);
+            $metaInfo = $this->getMetaInfo();
+            $this->getRealm()->publishMeta('wamp.metaevent.session.on_join', [$metaInfo]);
+            Logger::info($this, "Session joined: " . json_encode($metaInfo));
         }
         parent::setAuthenticated($authenticated);
 

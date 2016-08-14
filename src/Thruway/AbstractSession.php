@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-
 use Thruway\Message\AbortMessage;
 use Thruway\Message\Message;
 
@@ -13,7 +12,6 @@ use Thruway\Message\Message;
  */
 abstract class AbstractSession
 {
-
     /**
      * Session state
      * @const int
@@ -93,7 +91,6 @@ abstract class AbstractSession
         return $this->state;
     }
 
-
     /**
      * Set athentication state (authenticated or not)
      *
@@ -143,7 +140,6 @@ abstract class AbstractSession
     {
         return $this->realm;
     }
-
 
     /**
      * Get session ID
@@ -248,5 +244,4 @@ abstract class AbstractSession
     {
         return $this->loop;
     }
-
-} 
+}

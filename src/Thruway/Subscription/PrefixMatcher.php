@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Subscription;
-
 
 use Thruway\Common\Utils;
 
@@ -54,19 +52,24 @@ class PrefixMatcher implements MatcherInterface
         $uri = $this->fixupUri($uri);
 
         // if the uri is empty - then match everything
-        if ($uri == "") return true;
+        if ($uri == "") {
+            return true;
+        }
 
         // if there is a trailing . then remove it and run it through the
         // regular validator
-        if (substr($uri, strlen($uri) - 1) == ".") $uri = substr($uri, 0, strlen($uri) - 1);
+        $uri = substr($uri, strlen($uri) - 1) == "." ? substr($uri, 0, strlen($uri) - 1) : $uri;
 
         // allow matches to a normal URI or one with a trailing dot
         return Utils::uriIsValid($uri) || Utils::uriIsValid($uri . ".");
     }
 
-    private function fixupUri($uri) {
+    private function fixupUri($uri)
+    {
         // a single "." matches everything
-        if ($uri == ".") return "";
+        if ($uri == ".") {
+            return "";
+        }
 
         return $uri;
     }
@@ -82,5 +85,4 @@ class PrefixMatcher implements MatcherInterface
     {
         return $this->matches($childUri, $parentUri, $parentOptions);
     }
-
 }

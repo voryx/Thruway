@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Authentication;
-
 
 use Ratchet\Wamp\Exception;
 use React\EventLoop\LoopInterface;
@@ -16,7 +14,6 @@ use Thruway\Module\RouterModuleClient;
 use Thruway\Peer\RouterInterface;
 use Thruway\Result;
 use Thruway\Session;
-
 
 /**
  * Class AuthorizationManager

@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-
 use React\EventLoop\LoopInterface;
 use Thruway\Message\AuthenticateMessage;
 use Thruway\Message\ChallengeMessage;
@@ -12,7 +11,6 @@ use Thruway\Transport\TransportInterface;
 use Evenement\EventEmitterInterface;
 use Evenement\EventEmitterTrait;
 
-
 /**
  * Class Connection
  *
@@ -20,7 +18,6 @@ use Evenement\EventEmitterTrait;
  */
 class Connection implements EventEmitterInterface
 {
-
     /**
      * Using \Evenement\EventEmitterTrait to implements \Evenement\EventEmitterInterface
      * @see \Evenement\EventEmitterTrait
@@ -49,7 +46,7 @@ class Connection implements EventEmitterInterface
      * @param \React\EventLoop\LoopInterface $loop
      * @throws \Exception
      */
-    public function __construct(Array $options, LoopInterface $loop = null)
+    public function __construct(array $options, LoopInterface $loop = null)
     {
 
         $this->options = $options;
@@ -176,5 +173,4 @@ class Connection implements EventEmitterInterface
             });
         }
     }
-
 }

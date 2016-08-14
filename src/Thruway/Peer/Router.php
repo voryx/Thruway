@@ -377,6 +377,4 @@ class Router implements RouterInterface, EventSubscriberInterface
     {
         //not used anymore
     }
-
 }
-

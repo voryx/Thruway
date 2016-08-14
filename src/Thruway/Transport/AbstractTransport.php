@@ -11,13 +11,12 @@ use Thruway\Serializer\SerializerInterface;
  */
 abstract class AbstractTransport implements TransportInterface
 {
-
     /**
      * @var SerializerInterface
      */
     protected $serializer;
 
-    /*
+    /**
      * @var boolean
      */
     protected $trusted;

@@ -1,9 +1,8 @@
 <?php
 
-
 namespace Thruway\Event;
 
+class RouterStartEvent extends Event
+{
 
-class RouterStartEvent extends Event {
-
-} 
+}

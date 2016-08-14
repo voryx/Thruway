@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Subscription;
-
 
 use React\EventLoop\LoopInterface;
 use Thruway\Logging\Logger;

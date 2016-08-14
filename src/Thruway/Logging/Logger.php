@@ -2,17 +2,18 @@
 
 namespace Thruway\Logging;
 
-
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 class Logger
 {
-
     /**
      * @var LoggerInterface
      */
     private static $logger;
+
+    /** @var bool */
+    private static $showDebug = false;
 
     /**
      * @param LoggerInterface $logger
@@ -20,6 +21,16 @@ class Logger
     public static function set(LoggerInterface $logger)
     {
         static::$logger = $logger;
+    }
+
+    public static function setDebug($debug = false)
+    {
+        static::$showDebug = $debug;
+    }
+
+    public static function getDebug()
+    {
+        return static::$showDebug;
     }
 
     /**
@@ -75,8 +86,9 @@ class Logger
      */
     public static function debug($object = null, $message, $context = [])
     {
-
-        static::log($object, LogLevel::DEBUG, $message, $context);
+        if (static::$showDebug) {
+            static::log($object, LogLevel::DEBUG, $message, $context);
+        }
     }
 
     /**
@@ -87,7 +99,6 @@ class Logger
      */
     public static function emergency($object = null, $message, $context = [])
     {
-
         static::log($object, LogLevel::EMERGENCY, $message, $context);
     }
 

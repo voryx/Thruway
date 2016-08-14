@@ -209,7 +209,7 @@ class SubscriptionGroup
     public function setStateHandler($handlerUri)
     {
         if (!Utils::uriIsValid($handlerUri)) {
-            Logger::error($this, "Invalid URI");
+            Logger::error($this, "Invalid URI '" . $handlerUri . "' for state handler.");
             throw new \InvalidArgumentException("Invalid URI");
         }
 

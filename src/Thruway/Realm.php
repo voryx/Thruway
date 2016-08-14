@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AnonymousAuthenticator;
 use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
@@ -158,15 +157,13 @@ class Realm implements RealmModuleInterface
      */
     private function processSendWelcome(Session $session, WelcomeMessage $msg)
     {
-
         $details = $session->getHelloMessage()->getDetails();
 
         if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
             $session->setRoleFeatures($details->roles);
         }
 
-        $session->setState(Session::STATE_UP); // this should probably be after authentication
-
+        $session->setState(Session::STATE_UP);
     }
 
 
@@ -242,7 +239,6 @@ class Realm implements RealmModuleInterface
      */
     public function leave(Session $session)
     {
-
         Logger::debug($this, "Leaving realm {$session->getRealm()->getRealmName()}");
         $this->sessions->detach($session);
     }

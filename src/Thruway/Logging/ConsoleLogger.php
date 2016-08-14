@@ -11,7 +11,6 @@ use Psr\Log\AbstractLogger;
  */
 class ConsoleLogger extends AbstractLogger
 {
-
     /**
      * Logs with an arbitrary level.
      *
@@ -25,5 +24,4 @@ class ConsoleLogger extends AbstractLogger
         $now = date("Y-m-d\TH:i:s") . substr((string)microtime(), 1, 8);
         echo $now . " " . str_pad($level, 10, " ") . " " . $message . "\n";
     }
-
 }

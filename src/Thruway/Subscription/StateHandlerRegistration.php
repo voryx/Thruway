@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Subscription;
-
 
 use Thruway\ClientSession;
 use Thruway\Logging\Logger;
@@ -34,7 +32,7 @@ class StateHandlerRegistration
      */
     protected $matcher;
 
-    function __construct($clientSession, $procedureName, $uri, $options, MatcherInterface $matcher)
+    public function __construct($clientSession, $procedureName, $uri, $options, MatcherInterface $matcher)
     {
         $this->setClientSession($clientSession);
         $this->setProcedureName($procedureName);
@@ -67,7 +65,7 @@ class StateHandlerRegistration
                 $subscription->unPauseForState($pubId);
             },
             function ($error) use ($subscription) {
-                Logger::error($this, "Could not call '{$this->getProcedureName()}'");
+                Logger::error($this, "Could not call '{$this->getProcedureName()}' when restoring state");
                 $subscription->unPauseForState();
             }
         );

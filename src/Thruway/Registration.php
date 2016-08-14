@@ -13,7 +13,6 @@ use Thruway\Message\RegisterMessage;
  */
 class Registration
 {
-
     /**
      * @var mixed
      */
@@ -389,5 +388,4 @@ class Registration
             'completedCallTimeTotal' => $this->completedCallTimeTotal
         ];
     }
-
 }

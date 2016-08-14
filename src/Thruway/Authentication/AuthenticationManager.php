@@ -17,14 +17,12 @@ use Thruway\Peer\RouterInterface;
 use Thruway\Realm;
 use Thruway\Session;
 
-
 /**
  * Class AuthenticationManager
  *
  * @package Thruway\Authentication
  */
 class AuthenticationManager extends RouterModuleClient implements RealmModuleInterface
-
 {
     /**
      * List authentication methods

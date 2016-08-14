@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Thruway\Common;
 
 use Thruway\Logging\Logger;

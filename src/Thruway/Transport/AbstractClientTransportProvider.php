@@ -1,10 +1,9 @@
 <?php
 
-
 namespace Thruway\Transport;
 
-
-abstract class AbstractClientTransportProvider implements ClientTransportProviderInterface {
+abstract class AbstractClientTransportProvider implements ClientTransportProviderInterface
+{
     /**
      * @var \Thruway\Peer\ClientInterface
      */

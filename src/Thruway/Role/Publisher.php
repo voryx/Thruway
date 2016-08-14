@@ -2,7 +2,6 @@
 
 namespace Thruway\Role;
 
-
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
 use Thruway\Common\Utils;
@@ -10,7 +9,6 @@ use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
-use Thruway\Session;
 use React\Promise\Deferred;
 
 /**
@@ -20,7 +18,6 @@ use React\Promise\Deferred;
  */
 class Publisher extends AbstractRole
 {
-
     /**
      * @var array
      */
@@ -39,7 +36,8 @@ class Publisher extends AbstractRole
      *
      * @return \stdClass
      */
-    public function getFeatures() {
+    public function getFeatures()
+    {
         $features = new \stdClass();
 
         $features->subscriber_blackwhite_listing = true;
@@ -147,5 +145,4 @@ class Publisher extends AbstractRole
 
         return isset($futureResult) ? $futureResult->promise() : false;
     }
-
-} 
+}

@@ -60,5 +60,4 @@ class ExactMatcher implements MatcherInterface
     {
         return $parentUri == $childUri;
     }
-
 }

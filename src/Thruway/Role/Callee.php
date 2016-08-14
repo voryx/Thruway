@@ -26,12 +26,10 @@ use Thruway\Result;
  */
 class Callee extends AbstractRole
 {
-
     /**
      * @var array
      */
     private $registrations;
-
 
     /**
      * Constructor
@@ -475,6 +473,4 @@ class Callee extends AbstractRole
         // not be associative (e.g. the keys array looked like {0:0, 1:1...}).
         return array_keys($keys) === $keys;
     }
-
-
-} 
+}

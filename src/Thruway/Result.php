@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-
 /**
  * Class Result
  *
@@ -10,7 +9,6 @@ namespace Thruway;
  */
 class Result
 {
-
     /** @var array|null */
     private $arguments;
 
@@ -23,7 +21,7 @@ class Result
      * @param array|null $arguments
      * @param array|null $argumentsKw
      */
-    function __construct($arguments = null, $argumentsKw = null)
+    public function __construct($arguments = null, $argumentsKw = null)
     {
         $this->setArguments($arguments);
         $this->setArgumentsKw($argumentsKw);
@@ -73,5 +71,4 @@ class Result
     {
         return $this->argumentsKw;
     }
-
 }

@@ -14,7 +14,6 @@ use Thruway\Message\Message;
  */
 class PawlTransport extends AbstractTransport
 {
-
     /**
      * @var mixed
      */
@@ -36,7 +35,7 @@ class PawlTransport extends AbstractTransport
      * @param \Ratchet\Client\WebSocket $conn
      * @param \React\EventLoop\LoopInterface $loop
      */
-    function __construct($conn, LoopInterface $loop)
+    public function __construct($conn, LoopInterface $loop)
     {
         $this->conn         = $conn;
         $this->pingSeq      = 0;

@@ -2,7 +2,6 @@
 
 namespace Thruway\Authentication;
 
-
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 
@@ -13,7 +12,6 @@ use Thruway\Message\Message;
  */
 class WampCraAuthProvider extends AbstractAuthProviderClient
 {
-
     /**
      * @var \Thruway\Authentication\WampCraUserDbInterface
      */

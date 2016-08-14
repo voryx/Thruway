@@ -19,13 +19,11 @@ use Thruway\Module\RealmModuleInterface;
  */
 class RealmManager extends Module\RouterModule implements RealmModuleInterface
 {
-
     /** @var array */
     private $realms;
 
     /** @var boolean */
     private $allowRealmAutocreate;
-
 
     /**
      * Constructor
@@ -85,7 +83,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
      */
     public function handlePreHelloMessage(MessageEvent $event)
     {
-        Logger::info($this, "Got prehello...");
         /** @var HelloMessage $msg */
         $msg     = $event->message;
         $session = $event->session;
@@ -212,5 +209,4 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     {
         return $this->allowRealmAutocreate;
     }
-
 }

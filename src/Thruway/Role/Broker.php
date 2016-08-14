@@ -2,13 +2,11 @@
 
 namespace Thruway\Role;
 
-use Thruway\AbstractSession;
 use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
 use Thruway\Event\MessageEvent;
 use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
-use Thruway\Message\Message;
 use Thruway\Message\PublishedMessage;
 use Thruway\Message\PublishMessage;
 use Thruway\Message\SubscribeMessage;
@@ -47,7 +45,7 @@ class Broker implements RealmModuleInterface
     /**
      *
      */
-    function __construct()
+    public function __construct()
     {
         $this->addMatcher(new ExactMatcher());
         $this->addMatcher(new PrefixMatcher());

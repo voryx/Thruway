@@ -2,7 +2,6 @@
 
 namespace Thruway\Transport;
 
-
 use Guzzle\Http\Message\Header\HeaderCollection;
 use Guzzle\Http\Message\Request;
 use Ratchet\WebSocket\Version\RFC6455\Frame;
@@ -15,7 +14,6 @@ use Thruway\Message\Message;
  */
 class RatchetTransport extends AbstractTransport
 {
-
     /**
      * @var \Ratchet\ConnectionInterface
      */
@@ -37,7 +35,7 @@ class RatchetTransport extends AbstractTransport
      * @param \Ratchet\ConnectionInterface $conn
      * @param \React\EventLoop\LoopInterface $loop
      */
-    function __construct($conn, LoopInterface $loop)
+    public function __construct($conn, LoopInterface $loop)
     {
         $this->conn         = $conn;
         $this->pingSeq      = 1234;
@@ -147,4 +145,4 @@ class RatchetTransport extends AbstractTransport
         }
 
     }
-} 
+}

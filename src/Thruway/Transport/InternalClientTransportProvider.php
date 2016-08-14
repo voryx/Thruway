@@ -2,7 +2,6 @@
 
 namespace Thruway\Transport;
 
-
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Event\RouterStopEvent;
@@ -88,6 +87,4 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
             "router.stop" => ['handleRouterStop', 10]
         ];
     }
-
-
 }

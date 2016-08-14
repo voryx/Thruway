@@ -10,7 +10,6 @@ use Thruway\Serializer\SerializerInterface;
  */
 interface TransportInterface
 {
-
     /**
      * @return mixed
      */
@@ -56,5 +55,4 @@ interface TransportInterface
      * @param boolean $trusted
      */
     public function setTrusted($trusted);
-
 }

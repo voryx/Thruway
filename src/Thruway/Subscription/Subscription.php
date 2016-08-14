@@ -13,7 +13,6 @@ use Thruway\Session;
  */
 class Subscription
 {
-
     use OptionsTrait;
 
     /**
@@ -254,4 +253,4 @@ class Subscription
 
         $this->getSession()->sendMessage($msg);
     }
-} 
+}

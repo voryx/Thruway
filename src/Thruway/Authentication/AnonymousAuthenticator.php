@@ -2,19 +2,16 @@
 
 namespace Thruway\Authentication;
 
-
 use Thruway\Event\MessageEvent;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Module\RealmModuleInterface;
-
 
 /**
  * Class AnonymousAuthenticator
  * @package Thruway\Authentication
  */
 class AnonymousAuthenticator implements RealmModuleInterface
-
 {
 
     /**

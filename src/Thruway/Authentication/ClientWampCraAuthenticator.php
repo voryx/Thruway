@@ -2,7 +2,6 @@
 
 namespace Thruway\Authentication;
 
-
 use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\AuthenticateMessage;
@@ -13,7 +12,6 @@ use Thruway\Message\ChallengeMessage;
  */
 class ClientWampCraAuthenticator implements ClientAuthenticationInterface
 {
-
     /**
      * @var string|int
      */
@@ -50,7 +48,7 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
      */
     public function getAuthenticateFromChallenge(ChallengeMessage $msg)
     {
-        Logger::info($this, "Got challenge");
+        Logger::debug($this, "Got challenge");
         Logger::debug($this, "Challenge Message: " . json_encode($msg));
 
 
@@ -61,14 +59,14 @@ class ClientWampCraAuthenticator implements ClientAuthenticationInterface
 
         $details = $msg->getDetails();
         if (!is_object($details)) {
-            Logger::info($this, "No details sent with challenge");
+            Logger::debug($this, "No details sent with challenge");
             return false;
         }
 
         if (isset($details->challenge)) {
             $challenge = $details->challenge;
         } else {
-            Logger::info($this, "No challenge for wampcra?");
+            Logger::debug($this, "No challenge for wampcra?");
             return false;
         }
 

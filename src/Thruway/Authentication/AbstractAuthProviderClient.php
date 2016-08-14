@@ -3,7 +3,6 @@
 namespace Thruway\Authentication;
 
 use React\EventLoop\LoopInterface;
-use Thruway\ClientSession;
 use Thruway\Logging\Logger;
 use Thruway\Peer\Client;
 

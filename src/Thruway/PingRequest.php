@@ -12,7 +12,6 @@ use Thruway\Message\PingMessage;
  */
 class PingRequest
 {
-
     /**
      * @var PingMessage
      */
@@ -55,10 +54,10 @@ class PingRequest
 
     /**
      * Get Deferred
-     * 
+     *
      * @return \React\Promise\Deferred
      */
-    function getDeferred()
+    public function getDeferred()
     {
         if ($this->deferred === null) {
             $this->deferred = new Deferred();
@@ -69,27 +68,27 @@ class PingRequest
 
     /**
      * Set timer
-     * 
+     *
      * @param \React\EventLoop\Timer\TimerInterface $timer
      */
-    function setTimer($timer)
+    public function setTimer($timer)
     {
         $this->timer = $timer;
     }
 
     /**
      * Get timer
-     * 
+     *
      * @return \React\EventLoop\Timer\TimerInterface
      */
-    function getTimer()
+    public function getTimer()
     {
         return $this->timer;
     }
 
     /**
      * Set ping message
-     * 
+     *
      * @param \Thruway\Message\PingMessage $pingMsg
      */
     public function setPingMsg($pingMsg)
@@ -99,7 +98,7 @@ class PingRequest
 
     /**
      * Get ping message
-     * 
+     *
      * @return \Thruway\Message\PingMessage
      */
     public function getPingMsg()
@@ -109,7 +108,7 @@ class PingRequest
 
     /**
      * Set loop
-     * 
+     *
      * @param \React\EventLoop\LoopInterface $loop
      */
     public function setLoop($loop)
@@ -119,12 +118,11 @@ class PingRequest
 
     /**
      * Get loop
-     * 
+     *
      * @return \React\EventLoop\LoopInterface
      */
     public function getLoop()
     {
         return $this->loop;
     }
-
 }

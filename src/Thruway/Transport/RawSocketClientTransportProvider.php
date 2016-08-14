@@ -27,7 +27,6 @@ class RawSocketClientTransportProvider extends AbstractClientTransportProvider
      */
     private $port;
 
-
     /**
      * Constructor
      *

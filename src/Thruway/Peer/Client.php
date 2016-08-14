@@ -156,13 +156,12 @@ class Client implements EventEmitterInterface, ClientInterface
         $this->on('open', [$this, 'onSessionStart']);
 
         Logger::info($this, "New client created");
-
     }
 
     /**
      * @return string
      */
-    function __toString()
+    public function __toString()
     {
         return get_class($this);
     }
@@ -323,7 +322,6 @@ class Client implements EventEmitterInterface, ClientInterface
      */
     public function onMessage(TransportInterface $transport, Message $msg)
     {
-
         Logger::debug($this, "Client onMessage: {$msg}");
 
         $session = $this->session;
