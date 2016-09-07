@@ -357,7 +357,7 @@ class Dealer implements RealmModuleInterface
     {
         $call = $this->getCallByRequestId($msg->getRequestId());
 
-        if ($call->getCallerSession() !== $session) {
+        if ($call && $call->getCallerSession() !== $session) {
             Logger::warning($this, "Attempt to cancel call by non-owner");
 
             return;
@@ -554,6 +554,13 @@ class Dealer implements RealmModuleInterface
         /* @var $procedure \Thruway\Procedure */
         foreach ($this->procedures as $procedure) {
             $procedure->leave($session);
+        }
+
+        foreach ($this->callInvocationIndex as $call) {
+            if ($session->getSessionId() === $call->getCallerSession()->getSessionId()) {
+                $cancelMsg = new CancelMessage($call->getCallMessage()->getRequestId(), (object)[]);
+                $this->processCancel($session, $cancelMsg);
+            }
         }
 
         // remove the list of registrations
