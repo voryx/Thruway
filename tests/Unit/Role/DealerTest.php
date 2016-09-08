@@ -1,7 +1,22 @@
 <?php
 
+use Thruway\Event\LeaveRealmEvent;
+use Thruway\Event\MessageEvent;
+use Thruway\Message\CallMessage;
+use Thruway\Message\CancelMessage;
+use Thruway\Message\ErrorMessage;
+use Thruway\Message\HelloMessage;
+use Thruway\Message\InterruptMessage;
+use Thruway\Message\InvocationMessage;
 use Thruway\Message\Message;
+use Thruway\Message\RegisteredMessage;
+use Thruway\Message\RegisterMessage;
+use Thruway\Message\UnregisteredMessage;
+use Thruway\Message\UnregisterMessage;
+use Thruway\Realm;
+use Thruway\Role\Dealer;
 use Thruway\Session;
+use Thruway\Transport\DummyTransport;
 
 class DealerTest extends PHPUnit_Framework_TestCase {
     /** @var \Thruway\Message\HelloMessage */
@@ -378,4 +393,165 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($callRequestId, $returnedError->getErrorRequestId());
         $this->assertEquals('the.error.uri', $returnedError->getErrorURI());
     }
-} 
+
+    public function testCallCancelWithNoCall()
+    {
+        $dealer = new Dealer();
+
+        $callerTransport = new DummyTransport();
+        $callerSession = new Session($callerTransport);
+
+        $dealer->handleCancelMessage(new MessageEvent($callerSession, new CancelMessage(1234, (object)[])));
+        $this->assertEquals(
+            json_encode(new ErrorMessage(Message::MSG_CANCEL, 1234, (object)[], 'wamp.error.no_such_call')),
+            json_encode($callerTransport->getLastMessageSent())
+        );
+    }
+    
+    public function testInterruptSentToSupportingClient()
+    {
+        $dealer = new Dealer();
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage(new HelloMessage(
+            'some.realm',
+            (object)[
+                "roles" => (object)[
+                    'callee' => (object)[
+                        'features' => (object)[
+                            'call_canceling' => true
+                        ]
+                    ]
+                ]
+            ]
+        ));
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, new RegisterMessage(1234, (object)[], 'some.proc')));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+        $registrationId = $calleeTransport->getLastMessageSent()->getRegistrationId();
+
+        $callerTransport = new DummyTransport();
+        $callerSession = new Session($callerTransport);
+        $callMessage = new CallMessage(2345, (object)[], 'some.proc');
+
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMessage));
+
+        $this->assertInstanceOf(InvocationMessage::class, $calleeTransport->getLastMessageSent());
+        $invocationId = $calleeTransport->getLastMessageSent()->getRequestId();
+
+        $dealer->handleCancelMessage(new MessageEvent($callerSession, new CancelMessage(2345, (object)[])));
+        $this->assertInstanceOf(
+            InterruptMessage::class,
+            $calleeTransport->getLastMessageSent()
+        );
+        
+        $this->assertEquals($invocationId, $calleeTransport->getLastMessageSent()->getRequestId());
+    }
+
+    public function testInterruptSentToNonSupportingClient()
+    {
+        $dealer = new Dealer();
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage(new HelloMessage(
+            'some.realm',
+            (object)[
+                "roles" => (object)[
+                    'callee' => (object)[
+                        'features' => (object)[
+                            'call_canceling' => false
+                        ]
+                    ]
+                ]
+            ]
+        ));
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, new RegisterMessage(1234, (object)[], 'some.proc')));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+        $registrationId = $calleeTransport->getLastMessageSent()->getRegistrationId();
+
+        $callerTransport = new DummyTransport();
+        $callerSession = new Session($callerTransport);
+        $callMessage = new CallMessage(2345, (object)[], 'some.proc');
+
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMessage));
+
+        $this->assertInstanceOf(InvocationMessage::class, $calleeTransport->getLastMessageSent());
+        $invocationId = $calleeTransport->getLastMessageSent()->getRequestId();
+
+        $dealer->handleCancelMessage(new MessageEvent($callerSession, new CancelMessage(2345, (object)[])));
+        
+        // callee should not have received anything
+        $this->assertInstanceOf(
+            InvocationMessage::class,
+            $calleeTransport->getLastMessageSent()
+        );
+
+    }
+
+    public function testCancelAfterUnregister()
+    {
+        $dealer = new Dealer();
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage(new HelloMessage(
+            'some.realm',
+            (object)[
+                "roles" => (object)[
+                    'callee' => (object)[
+                        'features' => (object)[
+                            'call_canceling' => true
+                        ]
+                    ]
+                ]
+            ]
+        ));
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, new RegisterMessage(1234, (object)[], 'some.proc')));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+        $registrationId = $calleeTransport->getLastMessageSent()->getRegistrationId();
+        
+        $callerTransport = new DummyTransport();
+        $callerSession = new Session($callerTransport);
+        $callMessage = new CallMessage(2345, (object)[], 'some.proc');
+
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMessage));
+
+        $this->assertInstanceOf(InvocationMessage::class, $calleeTransport->getLastMessageSent());
+        $invocationId = $calleeTransport->getLastMessageSent()->getRequestId();
+
+        // unregister
+        $dealer->handleUnregisterMessage(new MessageEvent(
+            $calleeSession,
+            new UnregisterMessage(3456, $registrationId)
+        ));
+
+        // this may need to be addressed as the behavior of unregistration is still
+        // not completely defined if you have calls pending
+        $this->assertInstanceOf(UnregisteredMessage::class, $calleeTransport->getLastMessageSent());
+        
+        //$this->assertEquals(0, count($dealer->getProcedures()));
+        
+        $this->assertEquals(0, count($dealer->getProcedures()['some.proc']->getRegistrations()));
+
+        $dealer->handleCancelMessage(new MessageEvent($callerSession, new CancelMessage(2345, (object)[])));
+
+        $call = $dealer->getCallByRequestId(2345);
+        
+        $this->assertNotNull($call);
+        
+        $dealer->handleLeaveRealm(new LeaveRealmEvent(new Realm('some.realm'), $callerSession));
+        $dealer->handleLeaveRealm(new LeaveRealmEvent(new Realm('some.realm'), $calleeSession));
+
+        $call = $dealer->getCallByRequestId(2345);
+
+        $this->assertNotNull($call);
+
+    }
+}
