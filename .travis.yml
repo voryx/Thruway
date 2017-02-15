@@ -14,7 +14,7 @@ matrix:
 
 before_install:
     - export PATH=$HOME/.local/bin:$PATH
-    - pip install crossbar --user `whoami`
+    - pip install --user crossbar
 
 before_script:
     - composer install
