@@ -45,7 +45,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
      */
     public function testConnectionOpen(\Thruway\Peer\Router $router)
     {
-        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+        $transport = $this->createMock('Thruway\Transport\TransportInterface');
 
         // Configure the stub.
         $transport->expects($this->any())
@@ -68,7 +68,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     private function getNewRouterAndSession() {
         $router = new \Thruway\Peer\Router();
         $router->start(false);
-        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+        $transport = $this->createMock('Thruway\Transport\TransportInterface');
 
         // Configure the stub.
         $transport->expects($this->any())
@@ -401,7 +401,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function testPublishMessage(\Thruway\Peer\Router $router)
     {
 
-        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+        $transport = $this->createMock('Thruway\Transport\TransportInterface');
         $session = new \Thruway\Session($transport);
 
         // Configure the stub.
@@ -433,7 +433,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
         $router = $this->router;
         $router->start();
-        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+        $transport = $this->createMock('Thruway\Transport\TransportInterface');
 
         // Configure the stub.
         $transport->expects($this->any())
@@ -515,7 +515,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function testAbortMessage(\Thruway\Peer\Router $router)
     {
 
-        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+        $transport = $this->createMock('Thruway\Transport\TransportInterface');
 
         // Configure the stub.
         $transport->expects($this->any())
@@ -548,7 +548,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     {
         $this->markTestSkipped();
 
-        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+        $transport = $this->createMock('Thruway\Transport\TransportInterface');
 
         // Configure the stub.
         $transport->expects($this->any())
@@ -591,7 +591,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
     public function testInvalidRealm(\Thruway\Peer\Router $router)
     {
 
-        $transport = $this->getMock('Thruway\Transport\TransportInterface');
+        $transport = $this->createMock('Thruway\Transport\TransportInterface');
 
         // Configure the stub.
         $transport->expects($this->any())
