@@ -277,7 +277,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase
     }
 
     private function createTransportInterfaceMock() {
-        return $this->getMock('\Thruway\Transport\TransportInterface');
+        return $this->createMock('\Thruway\Transport\TransportInterface');
     }
 
     public function testProcessSubscriptionAddedCalled() {
