@@ -11,7 +11,7 @@ class RawSocketTest extends PHPUnit_Framework_TestCase {
     public function test() {
         $loop = \React\EventLoop\Factory::create();
         $client = new \Thruway\Peer\Client('raw_realm', $loop);
-        $client->addTransportProvider(new \Thruway\Transport\RawSocketClientTransportProvider());
+        $client->addTransportProvider(new \Thruway\Transport\RawSocketClientTransportProvider('127.0.0.1', 28181));
 
         $client->setAttemptRetry(false);
 
@@ -30,4 +30,4 @@ class RawSocketTest extends PHPUnit_Framework_TestCase {
 
         $this->assertNotNull($this->_result);
     }
-} 
+}

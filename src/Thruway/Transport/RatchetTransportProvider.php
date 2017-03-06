@@ -179,7 +179,7 @@ class RatchetTransportProvider extends AbstractRouterTransportProvider implement
     public function handleRouterStop(RouterStopEvent $event)
     {
         if ($this->server) {
-            $this->server->socket->shutdown();
+            $this->server->socket->close();
         }
 
         foreach ($this->sessions as $k) {

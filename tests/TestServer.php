@@ -41,7 +41,7 @@ $router->registerModules([
     // Websocket listener
     new RatchetTransportProvider("127.0.0.1", 8090),
     // Rawsocket listener
-    new \Thruway\Transport\RawSocketTransportProvider()
+    new \Thruway\Transport\RawSocketTransportProvider('127.0.0.1', 28181)
 
 ]);
 

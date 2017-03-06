@@ -108,7 +108,7 @@ class RawSocketTransportProvider extends AbstractRouterTransportProvider
 
     public function handleRouterStop(RouterStopEvent $event) {
         if ($this->server) {
-            $this->server->shutdown();
+            $this->server->close();
         }
 
         foreach ($this->sessions as $k) {
