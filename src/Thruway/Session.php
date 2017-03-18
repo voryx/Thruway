@@ -222,11 +222,13 @@ class Session extends AbstractSession implements RealmModuleInterface
             $authMethod = $this->getAuthenticationDetails()->getAuthMethod();
             $authRole   = $this->getAuthenticationDetails()->getAuthRole();
             $authRoles  = $this->getAuthenticationDetails()->getAuthRoles();
+            $authExtra  = $this->getAuthenticationDetails()->getAuthExtra();
         } else {
             $authId     = "anonymous";
             $authMethod = "anonymous";
             $authRole   = "anonymous";
             $authRoles  = [];
+            $authExtra  = null;
         }
 
         return [
@@ -236,6 +238,7 @@ class Session extends AbstractSession implements RealmModuleInterface
           "authrole"      => $authRole,
           "authroles"     => $authRoles,
           "authmethod"    => $authMethod,
+          "authextra"     => $authExtra,
           "session"       => $this->getSessionId(),
           "role_features" => $this->getRoleFeatures()
         ];
