@@ -7,7 +7,7 @@ use React\Promise\PromiseInterface;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
 use Thruway\Common\Utils;
-use Thruway\Exception\WampErrorException;
+use Thruway\WampErrorException;
 use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\InvocationMessage;

@@ -13,7 +13,7 @@ class WampErrorExceptionTest extends PHPUnit_Framework_TestCase {
         $client->setAttemptRetry(false);
         $client->on('open', function (\Thruway\ClientSession $session) use ($router) {
             $session->register('procedure_with_exception', function ($args) {
-                throw new \Thruway\Exception\WampErrorException("error.from.exception", $args, (object)[
+                throw new \Thruway\WampErrorException("error.from.exception", $args, (object)[
                     "theKw" => "great"
                 ], (object)[ "more_details" => "some_more_details" ]);
             })->then(function () use ($session, $router) {
