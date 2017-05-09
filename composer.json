@@ -27,8 +27,7 @@
         }
     },
     "require": {
-        "php": ">=5.4",
-        "react/socket": "0.5.*",
+        "php": ">=5.6",
         "psr/log": "~1",
         "symfony/event-dispatcher": "2.7 - 3",
         "voryx/thruway-common": "^1.0"
@@ -36,11 +35,12 @@
     "require-dev": {
         "phpunit/phpunit": "^5.5.4",
         "thruway/ratchet-transport": "dev-master",
-        "thruway/pawl-transport": "dev-master"
+        "thruway/pawl-transport": "dev-master",
+        "thruway/raw-socket-transport": "dev-master"
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "0.4-dev"
+            "dev-master": "ratchet-0.4-dev"
         }
     }
 }
