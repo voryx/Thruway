@@ -37,10 +37,5 @@
         "thruway/ratchet-transport": "dev-master",
         "thruway/pawl-transport": "dev-master",
         "thruway/raw-socket-transport": "dev-master"
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "ratchet-0.4-dev"
-        }
     }
 }
