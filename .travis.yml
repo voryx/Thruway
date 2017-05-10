@@ -15,7 +15,7 @@ before_install:
 
 before_script:
     - composer config minimum-stability dev
-    - composer install
+    - COMPOSER_ROOT_VERSION=ratchet-0.4-dev composer install
     - sh tests/Crossbar/travis_install
 
 script:
