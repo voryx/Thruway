@@ -1,13 +1,12 @@
 #!/bin/sh
 set -x
 
-cd $HOME/crossbar/crossbar-starter/crossbar
-
+cd crossbar/crossbar-starter/crossbar
 timeout 45s make start &
+cd ../../..
 
 sleep 20
 
-cd $HOME
 vendor/bin/phpunit tests/Crossbar/CrossbarTest.php
 
 exit $?

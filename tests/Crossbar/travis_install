@@ -3,11 +3,8 @@ set -x
 
 sudo useradd -u 1000 crossbar # crossbar requires non-root docker - so we create a 'crossbar' user
 
-mkdir $HOME/crossbar
+mkdir crossbar
 
-cd $HOME/crossbar
+cd crossbar
 
 git clone https://github.com/crossbario/crossbar-starter.git
-
-cd crossbar-starter/crossbar
-
