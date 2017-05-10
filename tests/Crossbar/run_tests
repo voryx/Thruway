@@ -2,7 +2,7 @@
 set -x
 
 cd crossbar/crossbar-starter/crossbar
-timeout 45s make start &
+docker run -v ${PWD}:/node -p 8080:8080 --name crossbar --rm crossbario/crossbar
 cd ../../..
 
 sleep 20
