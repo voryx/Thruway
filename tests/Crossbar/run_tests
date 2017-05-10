@@ -2,7 +2,7 @@
 set -x
 
 cd crossbar/crossbar-starter/crossbar
-docker run -v ${PWD}:/node -p 8080:8080 --name crossbar --rm crossbario/crossbar
+docker run -u 1000 -v ${PWD}:/node -p 8080:8080 --name crossbar --rm crossbario/crossbar
 cd ../../..
 
 sleep 20
