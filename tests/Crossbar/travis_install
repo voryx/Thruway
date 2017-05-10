@@ -1,14 +1,13 @@
 #!/bin/sh
+set -x
 
-crossbar init --template hello:php --appdir $HOME/hello
+sudo useradd -u 1000 crossbar # crossbar requires non-root docker - so we create a 'crossbar' user
 
-cd $HOME/hello
+mkdir $HOME/crossbar
 
-make install
+cd $HOME/crossbar
 
-#Tests need to be run against dev-master, not the latest stable
-composer require "voryx/thruway":"dev-master"
+git clone https://github.com/crossbario/crossbar-starter.git
 
+cd crossbar-starter/crossbar
 
-#Quite down the logger
-sed -ie "s/\/\/Logger::/Logger::/g" client.php
