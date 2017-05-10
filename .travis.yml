@@ -14,8 +14,7 @@ before_install:
     - pip install crossbar --user `whoami`
 
 before_script:
-    - composer config minimum-stability dev
-    - COMPOSER_ROOT_VERSION=ratchet-0.4-dev composer install
+    - composer require cboden/ratchet:0.4.x-dev
     - sh tests/Crossbar/travis_install
 
 script:
