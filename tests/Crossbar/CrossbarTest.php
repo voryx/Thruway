@@ -1,5 +1,9 @@
 <?php
 
+use React\EventLoop\Factory;
+use React\EventLoop\LoopInterface;
+use React\EventLoop\Timer\Timer;
+
 class CrossbarTest extends PHPUnit_Framework_TestCase
 {
 
@@ -15,21 +19,28 @@ class CrossbarTest extends PHPUnit_Framework_TestCase
     protected $_testResult;
     protected $_echoResult;
 
+    /** @var LoopInterface */
+    private $loop;
+
+
+
     public function setUp()
     {
         $this->_testArgs   = null;
         $this->_testResult = null;
         $this->_error      = null;
 
+        $this->loop = Factory::create();
+
         $this->_conn = new \Thruway\Connection(
             [
                 "realm"       => 'realm1',
                 "url"         => 'ws://127.0.0.1:8080/ws',
                 "max_retries" => 0,
-            ]
+            ],
+            $this->loop
         );
     }
-
 
     public function testCall()
     {
@@ -97,5 +108,4 @@ class CrossbarTest extends PHPUnit_Framework_TestCase
 
         $this->assertGreaterThan(0, $this->_testArgs[0]);
     }
-
 }
