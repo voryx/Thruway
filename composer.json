@@ -37,5 +37,10 @@
         "thruway/ratchet-transport": "dev-master",
         "thruway/pawl-transport": "dev-master",
         "thruway/raw-socket-transport": "dev-master"
+    },
+    "suggest":{
+        "thruway/ratchet-transport": "Router websocket transport",
+        "thruway/pawl-transport": "Client websocket transport",
+        "thruway/raw-socket-transport": "Client and Router raw socket transport"
     }
 }
