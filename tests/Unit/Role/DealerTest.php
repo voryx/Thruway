@@ -554,4 +554,53 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($call);
 
     }
+
+    public function testCanceledProgressiveCallRemovesRouterReferences()
+    {
+        $dealer = new Dealer();
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage(new HelloMessage(
+            'some.realm',
+            (object)[
+                "roles" => (object)[
+                    'callee' => (object)[
+                        'features' => (object)[
+                            'call_canceling' => true
+                        ]
+                    ]
+                ]
+            ]
+        ));
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, new RegisterMessage(1234, (object)[], 'some.proc')));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+        $registrationId = $calleeTransport->getLastMessageSent()->getRegistrationId();
+
+        $callerTransport = new DummyTransport();
+        $callerSession = new Session($callerTransport);
+        $callMessage = new CallMessage(2345, (object)['receive_progress' => true], 'some.proc');
+
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMessage));
+
+        $this->assertInstanceOf(InvocationMessage::class, $calleeTransport->getLastMessageSent());
+        /** @var InvocationMessage $invocationMessage */
+        $invocationMessage = $calleeTransport->getLastMessageSent();
+        $invocationId = $invocationMessage->getRequestId();
+
+        $this->assertEquals(1, $dealer->getProcedures()['some.proc']->getRegistrations()[0]->getCurrentCallCount());
+
+        $cancelMsg = new CancelMessage($callMessage->getRequestId(), (object)[]);
+
+        $dealer->handleCancelMessage(new MessageEvent($callerSession, $cancelMsg));
+
+        $this->assertInstanceOf(InterruptMessage::class, $calleeTransport->getLastMessageSent());
+        /** @var InterruptMessage $interruptMessage */
+        $interruptMessage = $calleeTransport->getLastMessageSent();
+        $this->assertEquals($invocationMessage->getRequestId(), $interruptMessage->getRequestId());
+
+        $this->assertEquals(0, $dealer->getProcedures()['some.proc']->getRegistrations()[0]->getCurrentCallCount());
+    }
 }

@@ -384,7 +384,7 @@ class Dealer implements RealmModuleInterface
             $this->callInterruptIndex[$call->getInterruptMessage()->getRequestId()] = $call;
         }
 
-        if ($removeCall) {
+        if ($removeCall || $call->isProgressive()) {
             $this->removeCall($call);
         }
     }

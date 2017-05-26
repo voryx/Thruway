@@ -474,7 +474,7 @@ class Procedure
     }
 
     /**
-     * @return array
+     * @return Registration[]
      */
     public function getRegistrations()
     {
