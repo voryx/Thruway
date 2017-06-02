@@ -2,11 +2,14 @@
 
 namespace Thruway\Role;
 
+use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 use Thruway\AbstractSession;
 use Thruway\ClientSession;
 use Thruway\Common\Utils;
+use Thruway\Message\InterruptMessage;
+use Thruway\Session;
 use Thruway\WampErrorException;
 use Thruway\Logging\Logger;
 use Thruway\Message\ErrorMessage;
@@ -32,6 +35,11 @@ class Callee extends AbstractRole
      */
     private $registrations;
 
+    /**
+     * @var array
+     */
+    private $invocationCanceller = [];
+
 
     /**
      * Constructor
@@ -53,6 +61,7 @@ class Callee extends AbstractRole
 
         $features->caller_identification    = true;
         $features->progressive_call_results = true;
+        $features->call_canceling           = true;
 
         return $features;
     }
@@ -72,6 +81,8 @@ class Callee extends AbstractRole
             $this->processUnregistered($msg);
         elseif ($msg instanceof InvocationMessage):
             $this->processInvocation($session, $msg);
+        elseif ($msg instanceof InterruptMessage):
+            $this->processInterrupt($session, $msg);
         elseif ($msg instanceof ErrorMessage):
             $this->processError($session, $msg);
         else:
@@ -174,6 +185,15 @@ class Callee extends AbstractRole
                         $results = $registration["callback"]($msg->getArguments(), $msg->getArgumentsKw(), $msg->getDetails());
 
                         if ($results instanceof PromiseInterface) {
+                            if ($results instanceof CancellablePromiseInterface) {
+                                $this->invocationCanceller[$msg->getRequestId()] = function () use ($results) {
+                                    $results->cancel();
+                                };
+                                $results = $results->then(function ($result) use ($msg) {
+                                    unset($this->invocationCanceller[$msg->getRequestId()]);
+                                    return $result;
+                                });
+                            }
                             $this->processResultAsPromise($results, $msg, $session, $registration);
                         } else {
                             $this->processResultAsArray($results, $msg, $session);
@@ -188,6 +208,15 @@ class Callee extends AbstractRole
             }
         }
 
+    }
+
+    private function processInterrupt(ClientSession $session, InterruptMessage $msg)
+    {
+        if (isset($this->invocationCanceller[$msg->getRequestId()])) {
+            $callable = $this->invocationCanceller[$msg->getRequestId()];
+            unset($this->invocationCanceller[$msg->getRequestId()]);
+            $callable();
+        }
     }
 
     /**
@@ -340,10 +369,11 @@ class Callee extends AbstractRole
     {
 
         $handledMsgCodes = [
-          Message::MSG_REGISTERED,
-          Message::MSG_UNREGISTERED,
-          Message::MSG_INVOCATION,
-          Message::MSG_REGISTER
+            Message::MSG_REGISTERED,
+            Message::MSG_UNREGISTERED,
+            Message::MSG_INVOCATION,
+            Message::MSG_REGISTER,
+            Message::MSG_INTERRUPT
         ];
 
         $codeToCheck = $msg->getMsgCode();

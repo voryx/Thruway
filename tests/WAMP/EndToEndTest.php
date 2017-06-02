@@ -1,5 +1,9 @@
 <?php
 
+use React\Promise\CancellablePromiseInterface;
+use React\Promise\Deferred;
+use Thruway\ClientSession;
+
 class EndToEndTest extends PHPUnit_Framework_TestCase
 {
 
@@ -514,5 +518,42 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("-A.2--B.2--C.2--D.2--X.2-", $results[2]);
         $this->assertEquals("-A.3--B.3--C.3--X.3-", $results[3]);
         $this->assertEquals("-A.4--B.4--C.4--X.4-", $results[4]);
+    }
+
+    public function testCallCancelEndToEnd()
+    {
+        $canceled = false;
+        $callHasBegun = new Deferred();
+        $callHasBeenCanceled = new Deferred();
+
+        /** @var CancellablePromiseInterface $callPromise */
+        $callPromise = null;
+
+        $this->_conn->on('open', function (ClientSession $session) use (&$canceled, $callHasBegun, &$callPromise, $callHasBeenCanceled) {
+            $session->register('registration.that.supports.cancel', function () use (&$canceled, $callHasBegun, $callHasBeenCanceled) {
+                $defered = new Deferred(function () use (&$canceled, $callHasBeenCanceled) {
+                    $canceled = true;
+                    $callHasBeenCanceled->resolve();
+                });
+
+                $callHasBegun->resolve();
+
+                return $defered->promise();
+            })->then(function () use ($session, $callHasBegun, &$callPromise) { // registration successful
+                $callPromise = $session->call('registration.that.supports.cancel');
+
+                return $callHasBegun->promise();
+            })->then(function () use (&$callPromise, $callHasBeenCanceled) { // invocation has been run
+                $callPromise->cancel();
+
+                return $callHasBeenCanceled->promise();
+            })->then(function () use ($session) {
+                $session->close();
+            });
+        });
+
+        $this->_conn->open();
+
+        $this->assertTrue($canceled);
     }
 }

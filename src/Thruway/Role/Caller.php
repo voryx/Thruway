@@ -9,6 +9,7 @@ use Thruway\ClientSession;
 use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\CallMessage;
+use Thruway\Message\CancelMessage;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\ResultMessage;
@@ -48,6 +49,7 @@ class Caller extends AbstractRole
 
         $features->caller_identification    = true;
         $features->progressive_call_results = true;
+        $features->call_canceling           = true;
 
         return $features;
     }
@@ -150,10 +152,12 @@ class Caller extends AbstractRole
      */
     public function call(ClientSession $session, $procedureName, $arguments = null, $argumentsKw = null, $options = null)
     {
-        //This promise gets resolved in Caller::processResult
-        $futureResult = new Deferred();
-
         $requestId = Utils::getUniqueId();
+
+        //This promise gets resolved in Caller::processResult
+        $futureResult = new Deferred(function () use ($session, $requestId) {
+            $session->sendMessage(new CancelMessage($requestId, (object)[]));
+        });
 
         $this->callRequests[$requestId] = [
           "procedure_name" => $procedureName,
@@ -177,5 +181,4 @@ class Caller extends AbstractRole
 
         return $futureResult->promise();
     }
-
-} 
+}

@@ -3,6 +3,9 @@
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\Timer\Timer;
+use React\Promise\CancellablePromiseInterface;
+use React\Promise\Deferred;
+use Thruway\ClientSession;
 
 class CrossbarTest extends PHPUnit_Framework_TestCase
 {
@@ -75,6 +78,42 @@ class CrossbarTest extends PHPUnit_Framework_TestCase
         $this->assertNull($this->_error, "Got this error when making an RPC call: {$this->_error}");
         $this->assertTrue(is_numeric($this->_testResult[0]));
         $this->assertEquals(28, $this->_testResult[0]);
+    }
+
+    public function testCallCancel()
+    {
+        $this->markTestSkipped('Skip until crossbar supports cancellation');
+        $canceled = false;
+        $callHasBegun = new Deferred();
+        $callHasBeenCanceled = new Deferred();
+
+        /** @var CancellablePromiseInterface $callPromise */
+        $callPromise = null;
+
+        $this->_conn->on('open', function (ClientSession $session) use (&$canceled, $callHasBegun, &$callPromise, $callHasBeenCanceled) {
+            $session->register('registration.that.supports.cancel', function () use (&$canceled, $callHasBegun, $callHasBeenCanceled) {
+                $defered = new Deferred(function () use ($callHasBeenCanceled) {
+                    $canceled = true;
+                    $callHasBeenCanceled->resolve();
+                });
+
+                $callHasBegun->resolve();
+
+                return $defered->promise();
+            })->then(function () use ($session, $callHasBegun, &$callPromise) { // registration successful
+                $callPromise = $session->call('registration.that.supports.cancel');
+
+                return $callHasBegun->promise();
+            })->then(function () use (&$callPromise, $callHasBeenCanceled) { // invocation has been run
+                $callPromise->cancel();
+
+                return $callHasBeenCanceled->promise();
+            });
+        });
+
+        $this->_conn->open();
+
+        $this->assertTrue($canceled);
     }
 
 
