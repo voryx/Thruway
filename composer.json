@@ -26,6 +26,17 @@
         }
     },
     "require": {
-        "voryx/thruway-common": "^1.0"
+        "php": ">=5.6",
+        "symfony/event-dispatcher": "2.7 - 3",
+        "voryx/thruway-common": "^1.0",
+        "thruway/client": "^0.5.0",
+        "react/event-loop": "^0.4.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.5.4",
+        "thruway/ratchet-transport": "dev-master",
+        "thruway/pawl-transport": "dev-master",
+        "thruway/raw-socket-transport": "dev-master",
+        "cboden/ratchet": "0.4.x-dev"
     }
 }
