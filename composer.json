@@ -1,7 +1,7 @@
 {
-    "name": "voryx/thruway",
-    "type": "library",
-    "description": "PHP WAMP2 library",
+    "name": "thruway/router",
+    "description": "Thruway WAMP router core",
+    "license": "MIT",
     "keywords": [
         "WebSockets",
         "Server",
@@ -11,7 +11,6 @@
         "Autobahn",
         "Sockets"
     ],
-    "license": "MIT",
     "authors": [
         {
             "name": "Matt Bonneau", "email": "matt@bonneau.net", "role": "Developer"
@@ -23,24 +22,10 @@
     ],
     "autoload": {
         "psr-4": {
-            "Thruway\\": "src/Thruway/"
+            "Thruway\\": "src/"
         }
     },
     "require": {
-        "php": ">=5.6",
-        "psr/log": "~1",
-        "symfony/event-dispatcher": "2.7 - 3",
         "voryx/thruway-common": "^1.0"
-    },
-    "require-dev": {
-        "phpunit/phpunit": "^5.5.4",
-        "thruway/ratchet-transport": "dev-master",
-        "thruway/pawl-transport": "dev-master",
-        "thruway/raw-socket-transport": "dev-master"
-    },
-    "suggest":{
-        "thruway/ratchet-transport": "Router websocket transport",
-        "thruway/pawl-transport": "Client websocket transport",
-        "thruway/raw-socket-transport": "Client and Router raw socket transport"
     }
 }
