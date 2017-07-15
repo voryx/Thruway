@@ -42,6 +42,10 @@ class RatchetTransport extends AbstractTransport
         $this->pingRequests = [];
         $this->loop         = $loop;
     }
+    
+    public function getConnection() {
+        return $this->conn;
+    }
 
     /**
      * Send message
