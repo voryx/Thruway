@@ -1,4 +1,5 @@
 <?php
+use Thruway\Message\WelcomeMessage;
 
 /**
  * Class RouterTest
@@ -110,8 +111,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->method('sendMessage')
             ->with(
                 $this->callback(
-                    function ($msg) {
+                    function (WelcomeMessage $msg) {
                         $this->assertInstanceOf('\Thruway\Message\WelcomeMessage', $msg);
+                        $this->assertNotEmpty($msg->getDetails());
+                        $this->assertObjectHasAttribute('roles', $msg->getDetails());
+                        $this->assertObjectHasAttribute('dealer', $msg->getDetails()->roles);
+                        $this->assertObjectHasAttribute('broker', $msg->getDetails()->roles);
 
                         return $msg instanceof Thruway\Message\WelcomeMessage;
                     }

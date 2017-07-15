@@ -8,16 +8,14 @@ services:
 php:
     - 5.6
     - 7
+    - 7.1
 
 before_install:
     - export PATH=$HOME/.local/bin:$PATH
-    - pip install crossbar --user `whoami`
 
 before_script:
     - composer require cboden/ratchet:0.4.x-dev
-    - sh tests/Crossbar/travis_install
 
 script:
     - php tests/TestServer.php 20 & vendor/bin/phpunit
-    - sh tests/Crossbar/run_tests
 
