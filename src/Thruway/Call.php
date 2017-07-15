@@ -302,6 +302,8 @@ class Call
                     "authrole"   => $authenticationDetails->getAuthRole(),
                     "authroles"  => $authenticationDetails->getAuthRoles(),
                     "authmethod" => $authenticationDetails->getAuthMethod(),
+                    'caller_authid' => $authenticationDetails->getAuthId(),
+                    'caller_authrole' => $authenticationDetails->getAuthRoles()
                 ];
 
                 if ($authenticationDetails->getAuthExtra() !== null) {
@@ -321,6 +323,7 @@ class Call
             if (count($details) == 0) {
                 $details = new \stdClass();
             }
+
             $invocationMessage->setDetails($details);
 
             $this->setIsProgressive($isProgressive);
