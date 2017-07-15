@@ -28,7 +28,17 @@ class PawlTransportProvider extends AbstractClientTransportProvider
      */
     public function __construct($URL = "ws://127.0.0.1:8080/")
     {
-        $this->URL     = $URL;
+        $protocoll = "";
+        if (strpos($URL, '://') > -1) {
+            $protocoll = substr($URL, 0, strpos($URL, ':')+3);
+            $URL = substr($URL, strpos($URL, ':')+3);
+        }
+        $port = "";
+        if (strpos($URL, ':') > -1) {
+            $port = substr($URL, strpos($URL, ':'));
+            $URL = substr($URL, 0, strpos($URL, ':'));
+        }
+        $this->URL     = $protocoll . gethostbyname($URL) . $port;
     }
 
     /**
