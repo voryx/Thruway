@@ -5,6 +5,8 @@ namespace Thruway\Transport;
 use Thruway\Exception\DeserializationException;
 use Thruway\Logging\Logger;
 use Ratchet\Client\WebSocket;
+use Ratchet\Client\Connector;
+use React\Dns\Resolver\Factory as DnsFactory;
 use React\EventLoop\LoopInterface;
 use Thruway\Peer\ClientInterface;
 use Thruway\Serializer\JsonSerializer;
@@ -22,13 +24,20 @@ class PawlTransportProvider extends AbstractClientTransportProvider
     private $URL;
 
     /**
+     * @var string
+     */
+    private $DNS;
+
+    /**
      * Constructor
      *
      * @param string $URL
+     * @param string $DNS
      */
-    public function __construct($URL = "ws://127.0.0.1:8080/")
+    public function __construct($URL = "ws://127.0.0.1:8080/", $DNS=null)
     {
         $this->URL     = $URL;
+        $this->DNS     = $DNS;
     }
 
     /**
@@ -44,7 +53,14 @@ class PawlTransportProvider extends AbstractClientTransportProvider
         $this->client    = $client;
         $this->loop      = $loop;
 
-        \Ratchet\Client\connect($this->URL, ['wamp.2.json'], [], $loop)->then(
+        $resolver = null;
+        if (!is_null($this->DNS)) {
+          $factory  = new DnsFactory();
+          $resolver = $factory->create($this->DNS, $loop);
+        }
+
+        $connector = new Connector($loop, $resolver);
+        $connector($this->URL, ['wamp.2.json'], [], $loop)->then(
             function (WebSocket $conn) {
                 Logger::info($this, "Pawl has connected");
 
