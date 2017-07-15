@@ -78,7 +78,7 @@ class Dealer implements RealmModuleInterface
           "YieldMessageEvent"      => ["handleYieldMessage", 10],
           "ErrorMessageEvent"      => ["handleErrorMessage", 10],
           "LeaveRealm"             => ["handleLeaveRealm", 10],
-          "SendWelcomeMessageEvent" => ["handleSendWelcomeMessage", 10]
+          "SendWelcomeMessageEvent" => ["handleSendWelcomeMessage", 20]
         ];
     }
 
