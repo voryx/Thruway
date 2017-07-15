@@ -3,6 +3,7 @@
 namespace Thruway;
 
 use Thruway\Common\Utils;
+use Thruway\Common\LeakyBucket;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\RegisterMessage;
 
@@ -17,6 +18,21 @@ class Registration
      * @var mixed
      */
     private $id;
+
+    /**
+     * @var int
+     */
+    private $limit;
+
+    /**
+     * @var LeakyBucket
+     */
+    private $leakyBucket;
+
+    /**
+     * @var \SplQueue
+     */
+    private $invokeQueue;
 
     /**
      * @var \Thruway\Session
@@ -95,12 +111,17 @@ class Registration
      */
     private $completedCallTimeTotal;
 
+    /**
+     * @bool
+     */
+    private $rateLimited;
+
     const SINGLE_REGISTRATION = 'single';
-    const THRUWAY_REGISTRATION = '_thruway';
     const ROUNDROBIN_REGISTRATION = 'roundrobin';
     const RANDOM_REGISTRATION = 'random';
     const FIRST_REGISTRATION = 'first';
     const LAST_REGISTRATION = 'last';
+    const THRUWAY_REGISTRATION = '_thruway';
 
     /**
      * Constructor
@@ -126,6 +147,11 @@ class Registration
         $this->lastIdledAt = $this->registeredAt;
         $this->busyStart = null;
         $this->completedCallTimeTotal = 0;
+
+        //no throtling by default
+        $this->limit = -1;
+        $this->leakyBucket = new LeakyBucket();
+        $this->rateLimited = false;
     }
 
     /**
@@ -152,6 +178,11 @@ class Registration
             } else {
                 $registration->setInvokeType(Registration::SINGLE_REGISTRATION);
             }
+        }
+        if (isset($options->_limit) && settype($options->_limit, "integer")) {
+            $registration->setLimit($options->_limit);
+        } else {
+            $registration->setLimit(-1); //setting to UNLIMITED
         }
 
         return $registration;
@@ -209,12 +240,33 @@ class Registration
             if ($type !== Registration::SINGLE_REGISTRATION) {
                 $this->invokeType = $type;
                 $this->setAllowMultipleRegistrations(true);
-            }
-            else {
+            } else {
                 $this->invokeType = Registration::SINGLE_REGISTRATION;
                 $this->setAllowMultipleRegistrations(false);
             }
         }
+    }
+
+    /**
+     * @param int $limit The number of calls allowed per second
+     */
+    public function setLimit($limit)
+    {
+        $this->limit = $limit;
+        if ($limit > 0) {
+            $this->rateLimited = true;
+            $this->invokeQueue = new \SplQueue();
+            $this->leakyBucket = new Common\LeakyBucket($this->limit);
+        }
+    }
+
+    /**
+     * Get the Limit per second on this registrations
+     * @return int
+     */
+    public function getLimit()
+    {
+        return $this->limit;
     }
 
     /**
@@ -243,8 +295,44 @@ class Registration
         }
         $this->invocationCount++;
         $this->lastCallStartedAt = new \DateTime();
+        if ($this->rateLimited) {
+            if ($this->leakyBucket->canConsume()) {
+                $this->leakyBucket->consume();
+                $this->getSession()->sendMessage($call->getInvocationMessage());
+            } else {
+                $this->invokeQueue->enqueue($call->getInvocationMessage());
+                if ($this->invokeQueue->count() === 1) {
+                    //start the timer if I am the first addition to the queue
+                    $this->session->getLoop()->addTimer($this->leakyBucket->getTimeLeft() / 1000, $this);
+                }
+            }
+        } else {
+            $this->getSession()->sendMessage($call->getInvocationMessage());
+        }
+    }
+    
+    /**
+     * Get whether rate limited
+     *
+     * @return bool
+     */
+    public function isRateLimited(){
+        return $this->rateLimited;
+    }
 
-        $this->getSession()->sendMessage($call->getInvocationMessage());
+    /**
+     * Process Invocation Queue
+     * 
+     * Using __invoke magic method
+     * 
+     * @param none
+     */
+    public function __invoke()
+    {
+        $this->getSession()->sendMessage($this->invokeQueue->dequeue());
+        if ($this->invokeQueue->count() > 0) {
+            $this->session->getLoop()->addTimer($this->leakyBucket->getTimeLeft() / 1000, $this);
+        }
     }
 
     /**
@@ -385,7 +473,8 @@ class Registration
             'busyStart' => $this->busyStart,
             'lastIdledAt' => $this->lastIdledAt,
             'lastCallStartedAt' => $this->lastCallStartedAt,
-            'completedCallTimeTotal' => $this->completedCallTimeTotal
+            'completedCallTimeTotal' => $this->completedCallTimeTotal,
+            'invokeQueueCount' => $this->rateLimited ? $this->invokeQueue->count() : 0
         ];
     }
 }
