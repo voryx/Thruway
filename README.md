@@ -63,7 +63,7 @@ Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloadin
       
 Download Thruway and dependencies
 
-      $ php composer.phar require voryx/thruway:ratchet-0.4-dev
+      $ php composer.phar require voryx/thruway:0.5-dev
       $ php composer.phar require cboden/ratchet:0.4.x-dev
       $ php composer.phar require thruway/ratchet-transport:dev-master
       $ php composer.phar require thruway/pawl-transport:dev-master
