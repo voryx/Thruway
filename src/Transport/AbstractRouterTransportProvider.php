@@ -1,22 +1,11 @@
 <?php
 
-
 namespace Thruway\Transport;
-
 
 use Thruway\Module\RouterModule;
 
-abstract class AbstractRouterTransportProvider extends RouterModule implements RouterTransportProviderInterface {
-    /**
-     * @var \Thruway\Peer\RouterInterface
-     */
-    protected $router;
-
-    /**
-     * @var \React\EventLoop\LoopInterface
-     */
-    protected $loop;
-
+abstract class AbstractRouterTransportProvider extends RouterModule implements RouterTransportProviderInterface
+{
     /**
      * @param boolean $trusted
      */

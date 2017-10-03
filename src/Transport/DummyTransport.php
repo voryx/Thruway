@@ -12,7 +12,6 @@ use Thruway\Serializer\JsonSerializer;
  */
 class DummyTransport extends AbstractTransport
 {
-
     /**
      * lastMessageSent holds the last message that was sent on the transport
      * makes testing a little easier too
@@ -53,8 +52,8 @@ class DummyTransport extends AbstractTransport
     public function getTransportDetails()
     {
         return [
-            "type"             => "dummyTransport",
-            "transport_address" => "dummy"
+            'type'              => 'dummyTransport',
+            'transport_address' => 'dummy'
         ];
     }
 
@@ -67,5 +66,4 @@ class DummyTransport extends AbstractTransport
     {
         $this->setLastMessageSent($msg);
     }
-
 }

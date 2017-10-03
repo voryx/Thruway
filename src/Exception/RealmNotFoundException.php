@@ -10,4 +10,4 @@ namespace Thruway\Exception;
 class RealmNotFoundException extends \Exception
 {
 
-} 
+}

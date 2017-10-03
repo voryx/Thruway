@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Common\Utils;
 use Thruway\Event\EventDispatcher;
@@ -21,7 +20,6 @@ use Thruway\Transport\TransportInterface;
  */
 class Session extends AbstractSession implements RealmModuleInterface
 {
-
     /** @var \Thruway\Authentication\AuthenticationDetails */
     private $authenticationDetails;
 
@@ -78,21 +76,21 @@ class Session extends AbstractSession implements RealmModuleInterface
     public function getSubscribedRealmEvents()
     {
         return [
-          "SendAbortMessageEvent"        => ["handleSendMessage", 10],
-          "SendAuthenticateMessageEvent" => ["handleSendMessage", 10],
-          "SendChallengeMessageEvent"    => ["handleSendMessage", 10],
-          "SendErrorMessageEvent"        => ["handleSendMessage", 10],
-          "SendEventMessageEvent"        => ["handleSendMessage", 10],
-          "SendGoodbyeMessageEvent"      => ["handleSendMessage", 10],
-          "SendInterruptMessageEvent"    => ["handleSendMessage", 10],
-          "SendInvocationMessageEvent"   => ["handleSendMessage", 10],
-          "SendPublishedMessageEvent"    => ["handleSendMessage", 10],
-          "SendRegisteredMessageEvent"   => ["handleSendMessage", 10],
-          "SendResultMessageEvent"       => ["handleSendMessage", 10],
-          "SendSubscribedMessageEvent"   => ["handleSendMessage", 10],
-          "SendUnregisteredMessageEvent" => ["handleSendMessage", 10],
-          "SendUnsubscribedMessageEvent" => ["handleSendMessage", 10],
-          "SendWelcomeMessageEvent"      => ["handleSendMessage", 10]
+            'SendAbortMessageEvent'        => ['handleSendMessage', 10],
+            'SendAuthenticateMessageEvent' => ['handleSendMessage', 10],
+            'SendChallengeMessageEvent'    => ['handleSendMessage', 10],
+            'SendErrorMessageEvent'        => ['handleSendMessage', 10],
+            'SendEventMessageEvent'        => ['handleSendMessage', 10],
+            'SendGoodbyeMessageEvent'      => ['handleSendMessage', 10],
+            'SendInterruptMessageEvent'    => ['handleSendMessage', 10],
+            'SendInvocationMessageEvent'   => ['handleSendMessage', 10],
+            'SendPublishedMessageEvent'    => ['handleSendMessage', 10],
+            'SendRegisteredMessageEvent'   => ['handleSendMessage', 10],
+            'SendResultMessageEvent'       => ['handleSendMessage', 10],
+            'SendSubscribedMessageEvent'   => ['handleSendMessage', 10],
+            'SendUnregisteredMessageEvent' => ['handleSendMessage', 10],
+            'SendUnsubscribedMessageEvent' => ['handleSendMessage', 10],
+            'SendWelcomeMessageEvent'      => ['handleSendMessage', 10]
         ];
     }
 
@@ -113,7 +111,7 @@ class Session extends AbstractSession implements RealmModuleInterface
     public function sendMessage(Message $msg)
     {
         $this->lastOutboundActivity = microtime(true);
-        $this->dispatchMessage($msg, "Send");
+        $this->dispatchMessage($msg, 'Send');
     }
 
     /**
@@ -136,7 +134,7 @@ class Session extends AbstractSession implements RealmModuleInterface
                 // metaevent
                 $this->getRealm()->publishMeta('wamp.metaevent.session.on_leave', [$this->getMetaInfo()]);
             }
-            $this->dispatcher->dispatch("LeaveRealm", new LeaveRealmEvent($this->realm, $this));
+            $this->dispatcher->dispatch('LeaveRealm', new LeaveRealmEvent($this->realm, $this));
 
             $this->realm = null;
         }
@@ -221,21 +219,21 @@ class Session extends AbstractSession implements RealmModuleInterface
             $authRole   = $this->getAuthenticationDetails()->getAuthRole();
             $authRoles  = $this->getAuthenticationDetails()->getAuthRoles();
         } else {
-            $authId     = "anonymous";
-            $authMethod = "anonymous";
-            $authRole   = "anonymous";
+            $authId     = 'anonymous';
+            $authMethod = 'anonymous';
+            $authRole   = 'anonymous';
             $authRoles  = [];
         }
 
         return [
-          "realm"         => $this->getRealm()->getRealmName(),
-          "authprovider"  => null,
-          "authid"        => $authId,
-          "authrole"      => $authRole,
-          "authroles"     => $authRoles,
-          "authmethod"    => $authMethod,
-          "session"       => $this->getSessionId(),
-          "role_features" => $this->getRoleFeatures()
+            'realm'         => $this->getRealm()->getRealmName(),
+            'authprovider'  => null,
+            'authid'        => $authId,
+            'authrole'      => $authRole,
+            'authroles'     => $authRoles,
+            'authmethod'    => $authMethod,
+            'session'       => $this->getSessionId(),
+            'role_features' => $this->getRoleFeatures()
         ];
     }
 
@@ -269,7 +267,7 @@ class Session extends AbstractSession implements RealmModuleInterface
     public function decPendingCallCount()
     {
         // if we are already at zero - something is wrong
-        if ($this->pendingCallCount == 0) {
+        if ($this->pendingCallCount === 0) {
             Logger::alert($this, 'Session pending call count wants to go negative.');
 
             return 0;
@@ -330,21 +328,19 @@ class Session extends AbstractSession implements RealmModuleInterface
      * @param \Thruway\Message\Message $message
      * @param string $eventNamePrefix
      */
-    public function dispatchMessage(Message $message, $eventNamePrefix = "")
+    public function dispatchMessage(Message $message, $eventNamePrefix = '')
     {
-        if ($eventNamePrefix == "") {
+        if ($eventNamePrefix === '') {
             $this->lastInboundActivity = microtime(true);
             $this->messagesReceived++;
         }
 
         // this could probably become a constant inside the message itself
-        $r         = new \ReflectionClass($message);
-        $shortName = $r->getShortName();
+        $shortName = (new \ReflectionClass($message))->getShortName();
 
         if ($message instanceof HelloMessage) {
-            $this->dispatcher->dispatch("Pre".$shortName."Event", new MessageEvent($this, $message));
+            $this->dispatcher->dispatch('Pre' . $shortName . 'Event', new MessageEvent($this, $message));
         }
-        $this->dispatcher->dispatch($eventNamePrefix.$shortName."Event", new MessageEvent($this, $message));
+        $this->dispatcher->dispatch($eventNamePrefix . $shortName . 'Event', new MessageEvent($this, $message));
     }
-
 }

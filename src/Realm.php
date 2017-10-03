@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-use Thruway\Authentication\AllPermissiveAuthorizationManager;
 use Thruway\Authentication\AnonymousAuthenticator;
 use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
@@ -77,12 +76,11 @@ class Realm implements RealmModuleInterface
     public function getSubscribedRealmEvents()
     {
         return [
-
-          "GoodbyeMessageEvent"      => ["handleGoodbyeMessage", 10],
-          "AbortMessageEvent"        => ["handleAbortMessage", 10],
-          "AuthenticateMessageEvent" => ["handleAuthenticateMessage", 10],
-          "LeaveRealm"               => ["handleLeaveRealm", 10],
-          "SendWelcomeMessageEvent"  => ["handleSendWelcomeMessage", 10],
+            'GoodbyeMessageEvent'      => ['handleGoodbyeMessage', 10],
+            'AbortMessageEvent'        => ['handleAbortMessage', 10],
+            'AuthenticateMessageEvent' => ['handleAuthenticateMessage', 10],
+            'LeaveRealm'               => ['handleLeaveRealm', 10],
+            'SendWelcomeMessageEvent'  => ['handleSendWelcomeMessage', 10],
         ];
     }
 
@@ -133,8 +131,8 @@ class Realm implements RealmModuleInterface
      */
     public function processGoodbye(Session $session, Message $msg)
     {
-        Logger::info($this, "Received a GoodBye, so shutting the session down");
-        $session->sendMessage(new GoodbyeMessage(new \stdClass(), "wamp.error.goodbye_and_out"));
+        Logger::info($this, 'Received a GoodBye, so shutting the session down');
+        $session->sendMessage(new GoodbyeMessage(new \stdClass(), 'wamp.error.goodbye_and_out'));
         $session->shutdown();
     }
 
@@ -158,7 +156,6 @@ class Realm implements RealmModuleInterface
      */
     private function processSendWelcome(Session $session, WelcomeMessage $msg)
     {
-
         $details = $session->getHelloMessage()->getDetails();
 
         if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
@@ -166,7 +163,6 @@ class Realm implements RealmModuleInterface
         }
 
         $session->setState(Session::STATE_UP); // this should probably be after authentication
-
     }
 
 
@@ -178,8 +174,8 @@ class Realm implements RealmModuleInterface
      */
     private function processAuthenticate(Session $session, AuthenticateMessage $msg)
     {
-        $session->abort(new \stdClass(), "thruway.error.internal");
-        Logger::error($this, "Authenticate sent to realm without auth manager.");
+        $session->abort(new \stdClass(), 'thruway.error.internal');
+        Logger::error($this, 'Authenticate sent to realm without auth manager.');
     }
 
     /**
@@ -205,20 +201,20 @@ class Realm implements RealmModuleInterface
             if ($session->getAuthenticationDetails() !== null) {
                 $authDetails = $session->getAuthenticationDetails();
                 $auth        = [
-                  "authid"     => $authDetails->getAuthId(),
-                  "authmethod" => $authDetails->getAuthMethod()
+                    'authid'     => $authDetails->getAuthId(),
+                    'authmethod' => $authDetails->getAuthMethod()
                 ];
             } else {
                 $auth = new \stdClass();
             }
 
             $theSessions[] = [
-              "id"           => $session->getSessionId(),
-              "transport"    => $session->getTransport()->getTransportDetails(),
-              "messagesSent" => $session->getMessagesSent(),
-              "sessionStart" => $session->getSessionStart(),
-              "realm"        => $sessionRealm,
-              "auth"         => $auth
+                'id'           => $session->getSessionId(),
+                'transport'    => $session->getTransport()->getTransportDetails(),
+                'messagesSent' => $session->getMessagesSent(),
+                'sessionStart' => $session->getSessionStart(),
+                'realm'        => $sessionRealm,
+                'auth'         => $auth
             ];
         }
 
@@ -242,13 +238,12 @@ class Realm implements RealmModuleInterface
      */
     public function leave(Session $session)
     {
-
         Logger::debug($this, "Leaving realm {$session->getRealm()->getRealmName()}");
-        for ($i = 0; $i < count($this->sessions); $i++) {
-            if ($session === $this->sessions[$i]) {
-                array_splice($this->sessions, $i, 1);
-                break;
-            }
+
+        $key = array_search($session, $this->sessions, true);
+
+        if ($key !== false) {
+            array_splice($this->sessions, $key, 1);
         }
     }
 
@@ -299,13 +294,13 @@ class Realm implements RealmModuleInterface
         }
 
         $messageEvent = new MessageEvent($this->metaSession,
-          new PublishMessage(
-            Utils::getUniqueId(),
-            $options,
-            $topicName,
-            $arguments,
-            $argumentsKw
-          ));
+            new PublishMessage(
+                Utils::getUniqueId(),
+                $options,
+                $topicName,
+                $arguments,
+                $argumentsKw
+            ));
         $this->getBroker()->handlePublishMessage($messageEvent);
     }
 

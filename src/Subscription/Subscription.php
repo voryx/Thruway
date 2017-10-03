@@ -13,7 +13,6 @@ use Thruway\Session;
  */
 class Subscription
 {
-
     use OptionsTrait;
 
     /**
@@ -30,7 +29,6 @@ class Subscription
      * @var string
      */
     private $uri;
-
 
     /**
      * @var boolean
@@ -102,7 +100,6 @@ class Subscription
         return $this->id;
     }
 
-
     /**
      * Set URI
      *
@@ -159,7 +156,6 @@ class Subscription
         $this->subscriptionGroup = $subscriptionGroup;
     }
 
-
     /**
      * @return boolean
      */
@@ -182,7 +178,7 @@ class Subscription
     public function pauseForState()
     {
         if ($this->pausedForState) {
-            throw new \Exception("Tried to paused already paused subscription");
+            throw new \Exception('Tried to paused already paused subscription');
         }
         $this->pausedForState = true;
     }
@@ -202,7 +198,7 @@ class Subscription
     public function unPauseForState($lastPublicationId = null)
     {
         if (!$this->pausedForState) {
-            throw new \Exception("Tried to unpaused subscription that was not paused");
+            throw new \Exception('Tried to unpaused subscription that was not paused');
         }
 
         $this->pausedForState = false;
@@ -226,7 +222,7 @@ class Subscription
                 $pubIds[] = $msg->getPublicationId();
             }
 
-            if (!in_array($lastPublicationId, $pubIds)) {
+            if (!in_array($lastPublicationId, $pubIds, true)) {
                 $lastPublicationId = null;
             }
         }
@@ -236,7 +232,7 @@ class Subscription
             if ($lastPublicationId === null) {
                 $this->sendEventMessage($msg);
             }
-            if ($lastPublicationId == $msg->getPublicationId()) {
+            if ($lastPublicationId === $msg->getPublicationId()) {
                 $lastPublicationId = null;
             }
         }
@@ -254,4 +250,4 @@ class Subscription
 
         $this->getSession()->sendMessage($msg);
     }
-} 
+}

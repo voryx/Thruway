@@ -4,7 +4,6 @@ namespace Thruway\Transport;
 
 use React\EventLoop\LoopInterface;
 use Thruway\Message\Message;
-use Thruway\Peer\PeerInterface;
 
 /**
  * Class InternalClientTransport
@@ -46,8 +45,8 @@ class InternalClientTransport extends AbstractTransport
     public function getTransportDetails()
     {
         return [
-            "type"             => "internalClient",
-            "transport_address" => "internal"
+            'type'             => 'internalClient',
+            'transport_address' => 'internal'
         ];
     }
 

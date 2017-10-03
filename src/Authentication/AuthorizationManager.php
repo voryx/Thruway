@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Authentication;
-
 
 use Ratchet\Wamp\Exception;
 use React\EventLoop\LoopInterface;
@@ -16,7 +14,6 @@ use Thruway\Module\RouterModuleClient;
 use Thruway\Peer\RouterInterface;
 use Thruway\Result;
 use Thruway\Session;
-
 
 /**
  * Class AuthorizationManager
@@ -38,7 +35,7 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
      * @param string $realm
      * @param null $loop
      */
-    function __construct($realm, $loop = null)
+    public function __construct($realm, $loop = null)
     {
         parent::__construct($realm, $loop);
 
@@ -57,7 +54,7 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
     public static function getSubscribedEvents()
     {
         return [
-          "new_realm" => ["handleNewRealm", 10]
+            'new_realm' => ['handleNewRealm', 10]
         ];
     }
 
@@ -77,10 +74,10 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
     public function getSubscribedRealmEvents()
     {
         return [
-          "PublishMessageEvent"   => ["handleMessage", 100],
-          "SubscribeMessageEvent" => ["handleMessage", 100],
-          "RegisterMessageEvent"  => ["handleMessage", 100],
-          "CallMessageEvent"      => ["handleMessage", 100],
+            'PublishMessageEvent'   => ['handleMessage', 100],
+            'SubscribeMessageEvent' => ['handleMessage', 100],
+            'RegisterMessageEvent'  => ['handleMessage', 100],
+            'CallMessageEvent'      => ['handleMessage', 100],
         ];
     }
 
@@ -90,12 +87,11 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
     public function handleMessage(MessageEvent $messageEvent)
     {
         if (!$this->isAuthorizedTo($messageEvent->session, $messageEvent->message)) {
-            $messageEvent->session->sendMessage(ErrorMessage::createErrorMessageFromMessage($messageEvent->message, "wamp.error.not_authorized"));
+            $messageEvent->session->sendMessage(ErrorMessage::createErrorMessageFromMessage($messageEvent->message, 'wamp.error.not_authorized'));
             $messageEvent->stopPropagation();
         }
 
     }
-
 
     /**
      * Gets called when the module is initialized in the router
@@ -136,7 +132,7 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
             return false;
         }
 
-        $rolesToCheck = ["default"];
+        $rolesToCheck = ['default'];
         if (count($authenticationDetails->getAuthRoles()) > 0) {
             $rolesToCheck = array_merge($rolesToCheck, $authenticationDetails->getAuthRoles());
         }
@@ -152,18 +148,18 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
      */
     private function isAuthorizedByRolesActionAndUri($rolesToCheck, $action, $uri)
     {
-        if (!in_array("default", $rolesToCheck)) {
-            $rolesToCheck = array_merge(["default"], $rolesToCheck);
+        if (!in_array('default', $rolesToCheck, true)) {
+            $rolesToCheck = array_merge(['default'], $rolesToCheck);
         }
 
-        $ruleUri = $action.".".$uri;
+        $ruleUri = $action . '.' . $uri;
 
-        $uriParts = explode(".", $ruleUri);
+        $uriParts = explode('.', $ruleUri);
 
-        $matchable = ["."];
-        $building  = "";
+        $matchable = ['.'];
+        $building  = '';
         foreach ($uriParts as $part) {
-            $building .= $part.".";
+            $building    .= $part . '.';
             $matchable[] = $building;
         }
 
@@ -214,25 +210,25 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
     public function onSessionStart($session, $transport)
     {
         $promises   = [];
-        $promises[] = $this->getCallee()->register($session, 'add_authorization_rule', [$this, "addAuthorizationRule"]);
+        $promises[] = $this->getCallee()->register($session, 'add_authorization_rule', [$this, 'addAuthorizationRule']);
         $promises[] = $this->getCallee()->register($session, 'remove_authorization_rule',
-          [$this, "removeAuthorizationRule"]);
+            [$this, 'removeAuthorizationRule']);
         $promises[] = $this->getCallee()->register($session, 'flush_authorization_rules',
-          [$this, 'flushAuthorizationRules']);
+            [$this, 'flushAuthorizationRules']);
         $promises[] = $this->getCallee()->register($session, 'get_authorization_rules',
-          [$this, 'getAuthorizationRules']);
+            [$this, 'getAuthorizationRules']);
         $promises[] = $this->getCallee()->register($session, 'test_authorization',
-          [$this, 'testAuthorization']);
+            [$this, 'testAuthorization']);
 
         $pAll = \React\Promise\all($promises);
 
         $pAll->then(
-          function () {
-              $this->setReady(true);
-          },
-          function () {
-              $this->setReady(false);
-          }
+            function () {
+                $this->setReady(true);
+            },
+            function () {
+                $this->setReady(false);
+            }
         );
     }
 
@@ -240,14 +236,14 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
      * @param $uri
      * @return bool
      */
-    static public function isValidRuleUri($uri)
+    public static function isValidRuleUri($uri)
     {
-        if ($uri == "") {
+        if ($uri === '') {
             return true;
         }
 
         $uriToCheck = $uri;
-        if (substr($uriToCheck, strlen($uriToCheck) - 1, 1) == ".") {
+        if (substr($uriToCheck, strlen($uriToCheck) - 1, 1) == '.') {
             $uriToCheck = substr($uriToCheck, 0, strlen($uriToCheck) - 1);
         }
 
@@ -270,19 +266,19 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
         $rule = $args[0];
 
         if (isset($rule->role) &&
-          isset($rule->action) &&
-          isset($rule->uri) &&
-          isset($rule->allow)
+            isset($rule->action) &&
+            isset($rule->uri) &&
+            isset($rule->allow)
         ) {
             if ($this->isValidAction($rule->action) &&
-              static::isValidRuleUri($rule->uri) && Utils::uriIsValid($rule->role)
+                static::isValidRuleUri($rule->uri) && Utils::uriIsValid($rule->role)
             ) {
                 if ($rule->allow === true || $rule->allow === false) {
-                    return (object) [
-                      "action" => $rule->action,
-                      "uri"    => $rule->uri,
-                      "role"   => $rule->role,
-                      "allow"  => $rule->allow
+                    return (object)[
+                        'action' => $rule->action,
+                        'uri'    => $rule->uri,
+                        'role'   => $rule->role,
+                        'allow'  => $rule->allow
                     ];
                 }
             }
@@ -295,10 +291,10 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
      *
      * rules look like (JSON)
      * {
-     *    "role": "some_role",
-     *    "action": "publish",
-     *    "uri": "some.uri",
-     *    "allow": true
+     *    'role': 'some_role',
+     *    'action': 'publish',
+     *    'uri': 'some.uri',
+     *    'allow': true
      * }
      *
      * Should be $args[0]
@@ -311,11 +307,11 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
         $rule = $this->getRuleFromArgs($args);
 
         if ($rule === false) {
-            return "ERROR";
+            return 'ERROR';
         }
 
         $role      = $rule->role;
-        $actionUri = $rule->action.'.'.$rule->uri;
+        $actionUri = $rule->action . '.' . $rule->uri;
         $allow     = $rule->allow;
 
         if (!isset($this->rules[$role])) {
@@ -323,12 +319,12 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
         }
 
         if (isset($this->rules[$role][$actionUri])) {
-            return "ERROR";
+            return 'ERROR';
         }
 
         $this->rules[$role][$actionUri] = $allow;
 
-        return "ADDED";
+        return 'ADDED';
     }
 
     /**
@@ -337,7 +333,7 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
      */
     public function removeAuthorizationRule($args)
     {
-        throw new Exception("remove_authorization_rule is not implemented yet");
+        throw new Exception('remove_authorization_rule is not implemented yet');
     }
 
     /**
@@ -352,7 +348,7 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
         }
 
         if ($allowByDefault !== true && $allowByDefault !== false) {
-            return "ERROR";
+            return 'ERROR';
         }
 
         $this->rules = [];
@@ -361,10 +357,10 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
         // indexes in the rules match the role we are checking for
         // we give the longest uri precedence
         $this->rules['default'] = [
-          "." => $allowByDefault
+            '.' => $allowByDefault
         ];
 
-        return "OK";
+        return 'OK';
     }
 
     /**
@@ -372,13 +368,13 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
      */
     public function getAuthorizationRules()
     {
-        $result = new Result([(array) $this->rules]);
+        $result = new Result([(array)$this->rules]);
 
         return $result;
     }
 
     /**
-     * Arguments need to be [["role1", "role2"], "publish|subscribe|register|call", "my.uri"]
+     * Arguments need to be [['role1', 'role2'], 'publish|subscribe|register|call', 'my.uri']
      *
      * @param $args
      * @return bool|mixed
@@ -410,9 +406,9 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
      * @param $action
      * @return bool
      */
-    static public function isValidAction($action)
+    public static function isValidAction($action)
     {
-        return in_array($action, ['publish', 'subscribe', 'register', 'call']);
+        return in_array($action, ['publish', 'subscribe', 'register', 'call'], true);
     }
 
     /**
@@ -430,5 +426,4 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
     {
         $this->ready = $ready;
     }
-
 }

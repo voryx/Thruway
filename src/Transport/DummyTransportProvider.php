@@ -2,7 +2,6 @@
 
 namespace Thruway\Transport;
 
-
 use React\EventLoop\LoopInterface;
 use Thruway\Peer\ClientInterface;
 
@@ -13,7 +12,6 @@ use Thruway\Peer\ClientInterface;
  */
 class DummyTransportProvider extends AbstractClientTransportProvider
 {
-
     /**
      * Start transport provider
      *
@@ -23,5 +21,4 @@ class DummyTransportProvider extends AbstractClientTransportProvider
     public function startTransportProvider(ClientInterface $client, LoopInterface $loop)
     {
     }
-
 }

@@ -12,4 +12,4 @@ namespace Thruway\Exception;
 class DeserializationException extends \Exception
 {
 
-} 
+}

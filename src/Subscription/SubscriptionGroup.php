@@ -63,7 +63,7 @@ class SubscriptionGroup
      * @param $uri
      * @param $options
      */
-    function __construct(MatcherInterface $matcher, $uri, $options)
+    public function __construct(MatcherInterface $matcher, $uri, $options)
     {
         $this->setOptions($options);
         $this->setUri($uri);
@@ -111,13 +111,13 @@ class SubscriptionGroup
      */
     private function sendEventMessage(Session $session, PublishMessage $msg, Subscription $subscription)
     {
-        $sessionId = $subscription->getSession()->getSessionId();
-        $authroles = [];
-        $authid = "";
+        $sessionId             = $subscription->getSession()->getSessionId();
+        $authroles             = [];
+        $authid                = '';
         $authenticationDetails = $subscription->getSession()->getAuthenticationDetails();
         if ($authenticationDetails) {
             $authroles = $authenticationDetails->getAuthRoles();
-            $authid = $authenticationDetails->getAuthId();
+            $authid    = $authenticationDetails->getAuthId();
         }
 
         if ((!$msg->excludeMe() || $subscription->getSession() != $session)
@@ -130,7 +130,7 @@ class SubscriptionGroup
             if ($subscription->isDisclosePublisher() === true) {
                 $eventMsg->disclosePublisher($session);
             }
-            if ($this->getMatchType() != "exact") {
+            if ($this->getMatchType() !== 'exact') {
                 $eventMsg->getDetails()->topic = $msg->getUri();
             }
             $subscription->sendEventMessage($eventMsg);
@@ -179,7 +179,7 @@ class SubscriptionGroup
             return $options->match;
         }
 
-        return "exact";
+        return 'exact';
     }
 
     /**
@@ -209,8 +209,8 @@ class SubscriptionGroup
     public function setStateHandler($handlerUri)
     {
         if (!Utils::uriIsValid($handlerUri)) {
-            Logger::error($this, "Invalid URI");
-            throw new \InvalidArgumentException("Invalid URI");
+            Logger::error($this, 'Invalid URI');
+            throw new \InvalidArgumentException('Invalid URI');
         }
 
         $this->stateHandler = $handlerUri;
@@ -252,7 +252,7 @@ class SubscriptionGroup
         $this->addSubscription($subscription);
         $subscription->setSubscriptionGroup($this);
 
-        Logger::debug($this, "Added subscription to \"" . $this->getMatchType() . "\":\"" . $this->getUri() . "\"");
+        Logger::debug($this, 'Added subscription to \'' . $this->getMatchType() . '\':\'' . $this->getUri() . '\'');
 
         $session->sendMessage(new SubscribedMessage($msg->getRequestId(), $subscription->getId()));
 
@@ -270,7 +270,7 @@ class SubscriptionGroup
             /** @var Subscription $subscription */
             $subscription = $this->subscriptions[$msg->getSubscriptionId()];
             if ($session !== $subscription->getSession()) {
-                Logger::alert($this, "Unsubscribe request from non-owner: " . json_encode($msg));
+                Logger::alert($this, 'Unsubscribe request from non-owner: ' . json_encode($msg));
                 return false;
             }
 

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Subscription;
-
 
 use React\EventLoop\LoopInterface;
 use Thruway\Logging\Logger;
@@ -47,7 +45,7 @@ class StateHandlerRegistry extends RouterModuleClient
      * @param string $realm
      * @param LoopInterface $loop
      */
-    function __construct($realm, LoopInterface $loop = null)
+    public function __construct($realm, LoopInterface $loop = null)
     {
         $this->stateHandlerMap = new \SplObjectStorage();
 
@@ -229,6 +227,4 @@ class StateHandlerRegistry extends RouterModuleClient
     {
 
     }
-
 }
-

@@ -63,7 +63,7 @@ class Router implements RouterInterface, EventSubscriberInterface
 
         $this->registerModule($this->realmManager);
 
-        Logger::debug($this, "New router created");
+        Logger::debug($this, 'New router created');
     }
 
     /**
@@ -74,8 +74,8 @@ class Router implements RouterInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-          "connection_open"  => ['handleConnectionOpen', 10],
-          "connection_close" => ['handleConnectionClose', 10]
+            'connection_open'  => ['handleConnectionOpen', 10],
+            'connection_close' => ['handleConnectionClose', 10]
         ];
     }
 
@@ -117,17 +117,17 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function start($runLoop = true)
     {
-        Logger::info($this, "Starting router");
+        Logger::info($this, 'Starting router');
         if ($this->loop === null) {
-            throw new \Exception("Loop is null");
+            throw new \Exception('Loop is null');
         }
 
         $this->started = true;
 
-        $this->eventDispatcher->dispatch("router.start", new RouterStartEvent());
+        $this->eventDispatcher->dispatch('router.start', new RouterStartEvent());
 
         if ($runLoop) {
-            Logger::info($this, "Starting loop");
+            Logger::info($this, 'Starting loop');
             $this->loop->run();
         }
     }
@@ -147,7 +147,7 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function onClose(TransportInterface $transport)
     {
-        Logger::debug($this, "onClose from ".json_encode($transport->getTransportDetails()));
+        Logger::debug($this, 'onClose from ' . json_encode($transport->getTransportDetails()));
 
         $this->sessions->detach($transport);
     }
@@ -160,7 +160,7 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function setAuthenticationManager($authenticationManager)
     {
-        throw new \Exception("You must add the AuthenticationManager as a module");
+        throw new \Exception('You must add the AuthenticationManager as a module');
 
     }
 
@@ -173,7 +173,7 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function getAuthenticationManager()
     {
-        throw new \Exception("AuthenticationManager is now a module");
+        throw new \Exception('AuthenticationManager is now a module');
     }
 
     /**
@@ -183,7 +183,7 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function getAuthorizationManager()
     {
-        throw new \Exception("You must add the AuthorizationManager as a module");
+        throw new \Exception('You must add the AuthorizationManager as a module');
     }
 
     /**
@@ -194,7 +194,7 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function setAuthorizationManager($authorizationManager)
     {
-        throw new \Exception("AuthorizationManager is now a module");
+        throw new \Exception('AuthorizationManager is now a module');
     }
 
     /**
@@ -275,20 +275,20 @@ class Router implements RouterInterface, EventSubscriberInterface
             if ($session->getAuthenticationDetails() !== null) {
                 $authDetails = $session->getAuthenticationDetails();
                 $auth        = [
-                  "authid"     => $authDetails->getAuthId(),
-                  "authmethod" => $authDetails->getAuthMethod()
+                    'authid'     => $authDetails->getAuthId(),
+                    'authmethod' => $authDetails->getAuthMethod()
                 ];
             } else {
                 $auth = new \stdClass();
             }
 
             $theSessions[] = [
-              "id"           => $session->getSessionId(),
-              "transport"    => $session->getTransport()->getTransportDetails(),
-              "messagesSent" => $session->getMessagesSent(),
-              "sessionStart" => $session->getSessionStart(),
-              "realm"        => $sessionRealm,
-              "auth"         => $auth
+                'id'           => $session->getSessionId(),
+                'transport'    => $session->getTransport()->getTransportDetails(),
+                'messagesSent' => $session->getMessagesSent(),
+                'sessionStart' => $session->getSessionStart(),
+                'realm'        => $sessionRealm,
+                'auth'         => $auth
             ];
         }
 
@@ -307,7 +307,7 @@ class Router implements RouterInterface, EventSubscriberInterface
         foreach ($this->realmManager->getRealms() as $realm) {
             /* @var $realm \Thruway\Realm */
             $theRealms[] = [
-              "name" => $realm->getRealmName()
+                'name' => $realm->getRealmName()
             ];
         }
 
@@ -377,6 +377,4 @@ class Router implements RouterInterface, EventSubscriberInterface
     {
         //not used anymore
     }
-
 }
-

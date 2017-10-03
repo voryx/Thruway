@@ -2,12 +2,10 @@
 
 namespace Thruway\Authentication;
 
-
 use Thruway\Event\MessageEvent;
 use Thruway\Message\HelloMessage;
 use Thruway\Message\WelcomeMessage;
 use Thruway\Module\RealmModuleInterface;
-
 
 /**
  * Class AnonymousAuthenticator
@@ -16,14 +14,13 @@ use Thruway\Module\RealmModuleInterface;
 class AnonymousAuthenticator implements RealmModuleInterface
 
 {
-
     /**
      * Listen for Realm events
      * @return array
      */
     public function getSubscribedRealmEvents()
     {
-        return ["HelloMessageEvent" => ["handleHelloMessageEvent", 0]];
+        return ['HelloMessageEvent' => ['handleHelloMessageEvent', 0]];
     }
 
     /**
@@ -53,7 +50,5 @@ class AnonymousAuthenticator implements RealmModuleInterface
         $session->sendMessage(
           new WelcomeMessage($session->getSessionId(), $msg->getDetails())
         );
-
     }
-
 }

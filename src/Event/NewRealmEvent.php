@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Event;
-
 
 use Thruway\Realm;
 
@@ -15,13 +13,11 @@ class NewRealmEvent extends Event
     /** @var  Realm */
     public $realm;
 
-
     /**
      * @param $realm
      */
-    function __construct($realm)
+    public function __construct($realm)
     {
         $this->realm = $realm;
     }
-
 }

@@ -14,7 +14,6 @@ before_install:
     - export PATH=$HOME/.local/bin:$PATH
 
 before_script:
-    - composer require cboden/ratchet:0.4.x-dev
     - sh tests/Crossbar/travis_install
 
 script:

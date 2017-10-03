@@ -37,6 +37,13 @@
         "thruway/ratchet-transport": "dev-master",
         "thruway/pawl-transport": "dev-master",
         "thruway/raw-socket-transport": "dev-master",
-        "cboden/ratchet": "0.4.x-dev"
-    }
+        "cboden/ratchet": "^0.4",
+        "ratchet/pawl": "socket-connector-dev as 0.2.3"
+      },
+    "repositories": [
+      {
+        "type": "git",
+        "url": "https://github.com/mbonneau/Pawl"
+      }
+    ]
 }

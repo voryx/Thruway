@@ -2,7 +2,6 @@
 
 namespace Thruway\Subscription;
 
-
 /**
  * Interface MatcherInterface
  * @package Thruway\Subscription

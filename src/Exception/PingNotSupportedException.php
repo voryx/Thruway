@@ -12,4 +12,4 @@ namespace Thruway\Exception;
 class PingNotSupportedException extends \Exception
 {
 
-} 
+}

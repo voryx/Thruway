@@ -2,7 +2,6 @@
 
 namespace Thruway\Role;
 
-
 use Thruway\Call;
 use Thruway\Common\Utils;
 use Thruway\Event\LeaveRealmEvent;
@@ -71,14 +70,14 @@ class Dealer implements RealmModuleInterface
     public function getSubscribedRealmEvents()
     {
         return [
-          "CallMessageEvent"       => ["handleCallMessage", 10],
-          "CancelMessageEvent"     => ["handleCancelMessage", 10],
-          "RegisterMessageEvent"   => ["handleRegisterMessage", 10],
-          "UnregisterMessageEvent" => ["handleUnregisterMessage", 10],
-          "YieldMessageEvent"      => ["handleYieldMessage", 10],
-          "ErrorMessageEvent"      => ["handleErrorMessage", 10],
-          "LeaveRealm"             => ["handleLeaveRealm", 10],
-          "SendWelcomeMessageEvent" => ["handleSendWelcomeMessage", 20]
+            'CallMessageEvent'        => ['handleCallMessage', 10],
+            'CancelMessageEvent'      => ['handleCancelMessage', 10],
+            'RegisterMessageEvent'    => ['handleRegisterMessage', 10],
+            'UnregisterMessageEvent'  => ['handleUnregisterMessage', 10],
+            'YieldMessageEvent'       => ['handleYieldMessage', 10],
+            'ErrorMessageEvent'       => ['handleErrorMessage', 10],
+            'LeaveRealm'              => ['handleLeaveRealm', 10],
+            'SendWelcomeMessageEvent' => ['handleSendWelcomeMessage', 20]
         ];
     }
 
@@ -199,8 +198,9 @@ class Dealer implements RealmModuleInterface
             }
             $registrationsForThisSession = $this->registrationsBySession[$session];
 
-            if (!in_array($procedure, $registrationsForThisSession)) {
-                array_push($registrationsForThisSession, $procedure);
+            if (!in_array($procedure, $registrationsForThisSession, true)) {
+                $registrationsForThisSession[] = $procedure;
+                
                 $this->registrationsBySession[$session] = $registrationsForThisSession;
             }
         }
@@ -224,10 +224,10 @@ class Dealer implements RealmModuleInterface
                     // Unregistration was successful - remove from this sessions
                     // list of registrations
                     if ($this->registrationsBySession->contains($session) &&
-                        in_array($procedure, $this->registrationsBySession[$session])
+                        in_array($procedure, $this->registrationsBySession[$session], true)
                     ) {
                         $registrationsInSession = $this->registrationsBySession[$session];
-                        array_splice($registrationsInSession, array_search($procedure, $registrationsInSession), 1);
+                        array_splice($registrationsInSession, array_search($procedure, $registrationsInSession, true), 1);
                     }
                 }
             }
@@ -358,24 +358,24 @@ class Dealer implements RealmModuleInterface
         $call = $this->getCallByRequestId($msg->getRequestId());
 
         if ($call && $call->getCallerSession() !== $session) {
-            Logger::warning($this, "Attempt to cancel call by non-owner");
+            Logger::warning($this, 'Attempt to cancel call by non-owner');
 
             return;
         }
 
         if (!$call) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $errorMsg->setErrorURI("wamp.error.no_such_call");
+            $errorMsg->setErrorURI('wamp.error.no_such_call');
             $session->sendMessage($errorMsg);
-            Logger::error($this, "wamp.error.no_such_call");
+            Logger::error($this, 'wamp.error.no_such_call');
 
             return;
         }
 
         if ($call->getInterruptMessage()) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            $errorMsg->setErrorURI("wamp.error.canceling");
-            Logger::warning($this, "There was an attempt to cancel a message that is already in the process of being canceled");
+            $errorMsg->setErrorURI('wamp.error.canceling');
+            Logger::warning($this, 'There was an attempt to cancel a message that is already in the process of being canceled');
 
             return;
         }
@@ -402,7 +402,7 @@ class Dealer implements RealmModuleInterface
 
         if (!$call) {
             $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg);
-            Logger::error($this, 'No call for invocation error message: '.$msg->getRequestId());
+            Logger::error($this, 'No call for invocation error message: ' . $msg->getRequestId());
 
             // TODO: do we send a message back to the callee?
             $errorMsg->setErrorURI('wamp.error.no_such_procedure');
@@ -412,7 +412,7 @@ class Dealer implements RealmModuleInterface
         }
 
         if ($call->getCalleeSession() !== $session) {
-            Logger::error($this, "Attempted Invocation Error from session that does not own the call");
+            Logger::error($this, 'Attempted Invocation Error from session that does not own the call');
             return;
         }
 
@@ -441,7 +441,7 @@ class Dealer implements RealmModuleInterface
         $call = isset($this->callInterruptIndex[$msg->getRequestId()]) ? $this->callInterruptIndex[$msg->getRequestId()] : null;
 
         if (!$call) {
-            Logger::warning($this, "Interrupt error with no corresponding interrupt index");
+            Logger::warning($this, 'Interrupt error with no corresponding interrupt index');
 
             return;
         }
@@ -525,19 +525,19 @@ class Dealer implements RealmModuleInterface
     public function handlesMessage(Message $msg)
     {
         $handledMsgCodes = [
-          Message::MSG_CALL,
-          Message::MSG_CANCEL,
-          Message::MSG_REGISTER,
-          Message::MSG_UNREGISTER,
-          Message::MSG_YIELD,
-          Message::MSG_INTERRUPT
+            Message::MSG_CALL,
+            Message::MSG_CANCEL,
+            Message::MSG_REGISTER,
+            Message::MSG_UNREGISTER,
+            Message::MSG_YIELD,
+            Message::MSG_INTERRUPT
         ];
 
         if (in_array($msg->getMsgCode(), $handledMsgCodes)) {
             return true;
-        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_INVOCATION) {
+        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() === Message::MSG_INVOCATION) {
             return true;
-        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() == Message::MSG_INTERRUPT) {
+        } elseif ($msg instanceof ErrorMessage && $msg->getErrorMsgCode() === Message::MSG_INTERRUPT) {
             return true;
         } else {
             return false;
@@ -585,16 +585,14 @@ class Dealer implements RealmModuleInterface
             /* @var $registration \Thruway\Registration */
             foreach ($procedure->getRegistrations() as $registration) {
                 $theRegistrations[] = [
-                  "id"         => $registration->getId(),
-                  "name"       => $registration->getProcedureName(),
-                  "session"    => $registration->getSession()->getSessionId(),
-                  "statistics" => $registration->getStatistics()
+                    'id'         => $registration->getId(),
+                    'name'       => $registration->getProcedureName(),
+                    'session'    => $registration->getSession()->getSessionId(),
+                    'statistics' => $registration->getStatistics()
                 ];
             }
         }
 
         return [$theRegistrations];
     }
-
-
 }

@@ -1,14 +1,11 @@
 <?php
 
-
 namespace Thruway\Peer;
-
 
 use Thruway\Event\EventDispatcher;
 use Thruway\Message\Message;
 use Thruway\Session;
 use Thruway\Transport\TransportInterface;
-
 
 /**
  * Interface RouterInterface
@@ -24,7 +21,6 @@ interface RouterInterface extends PeerInterface
      * @return mixed
      */
     public function onMessage(TransportInterface $transport, Message $msg);
-
 
     /**
      * Handle close session
@@ -49,7 +45,7 @@ interface RouterInterface extends PeerInterface
     /**
      * Set authentication manager
      *
-     * @param \Thruway\Authentication\AuthenticationManagerInterface $authenticationManager
+     * @param \Thruway\Authentication\AuthenticationManager $authenticationManager
      */
     public function setAuthenticationManager($authenticationManager);
 
@@ -63,7 +59,7 @@ interface RouterInterface extends PeerInterface
     /**
      * Get authentication manager
      *
-     * @return \Thruway\Authentication\AuthenticationManagerInterface
+     * @return \Thruway\Authentication\AuthenticationManager
      */
     public function getAuthenticationManager();
 

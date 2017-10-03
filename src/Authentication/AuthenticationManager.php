@@ -17,7 +17,6 @@ use Thruway\Peer\RouterInterface;
 use Thruway\Realm;
 use Thruway\Session;
 
-
 /**
  * Class AuthenticationManager
  *
@@ -59,10 +58,9 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
     public static function getSubscribedEvents()
     {
         return [
-          "new_realm" => ["handleNewRealm", 10]
+            'new_realm' => ['handleNewRealm', 10]
         ];
     }
-
 
     /**
      * Listen for Realm events
@@ -71,8 +69,8 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
     public function getSubscribedRealmEvents()
     {
         return [
-          "HelloMessageEvent"        => ["handleMessageEvent", 99],
-          "AuthenticateMessageEvent" => ["handleMessageEvent", 100],
+            'HelloMessageEvent'        => ['handleMessageEvent', 99],
+            'AuthenticateMessageEvent' => ['handleMessageEvent', 100],
         ];
     }
 
@@ -95,7 +93,6 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         $this->processMessage($session->getRealm(), $session, $msg);
 
         $event->stopPropagation();
-
     }
 
     /**
@@ -108,7 +105,6 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         parent::initModule($router, $loop);
     }
 
-
     /**
      * Handles session started
      *
@@ -118,15 +114,15 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
     public function onSessionStart($session, $transport)
     {
         $session->register('thruway.auth.registermethod', [$this, 'registerAuthMethod'], ['disclose_caller' => true])
-          ->then(
-            function () {
-                $this->setReady(true);
-            },
-            function () {
-                $this->setReady(false);
-                Logger::error($this, "registration of registerAuthMethod failed.");
-            }
-          );
+            ->then(
+                function () {
+                    $this->setReady(true);
+                },
+                function () {
+                    $this->setReady(false);
+                    Logger::error($this, 'registration of registerAuthMethod failed.');
+                }
+            );
     }
 
     /**
@@ -141,7 +137,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
     private function processMessage(Realm $realm, Session $session, Message $msg)
     {
         if ($session->isAuthenticated()) {
-            throw new \Exception("Message sent to authentication manager for already authenticated session.");
+            throw new \Exception('Message sent to authentication manager for already authenticated session.');
         }
 
         // trusted transports do not need any authentication
@@ -158,8 +154,8 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
                 }
             }
 
-            $authDetails->addAuthRole("authenticated_user");
-            $authDetails->addAuthRole("admin");
+            $authDetails->addAuthRole('authenticated_user');
+            $authDetails->addAuthRole('admin');
 
             $session->setAuthenticationDetails($authDetails);
             $session->setAuthenticated(true);
@@ -185,7 +181,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
             if ($session->getAuthenticationDetails() !== null) {
                 // Todo: probably shouldn't be so dramatic here
                 throw new \Exception(
-                  "Hello message sent to authentication manager when there is already authentication details attached."
+                    'Hello message sent to authentication manager when there is already authentication details attached.'
                 );
             }
 
@@ -194,7 +190,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
             if ($msg instanceof AuthenticateMessage) {
                 $this->handleAuthenticateMessage($realm, $session, $msg);
             } else {
-                throw new \Exception("Invalid message type sent to AuthenticationManager.");
+                throw new \Exception('Invalid message type sent to AuthenticationManager.');
             }
         }
     }
@@ -214,8 +210,8 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         // Go through the authmethods and try to send a response message
         foreach ($this->authMethods as $authMethod => $authMethodInfo) {
             if (in_array($authMethod, $requestedMethods)
-              && (in_array($realm->getRealmName(), $authMethodInfo['auth_realms'])
-                || in_array("*", $authMethodInfo['auth_realms']))
+                && (in_array($realm->getRealmName(), $authMethodInfo['auth_realms'])
+                    || in_array("*", $authMethodInfo['auth_realms']))
             ) {
                 $this->onHelloAuthHandler($authMethod, $authMethodInfo, $realm, $session, $msg);
                 $sentMessage = true;
@@ -229,7 +225,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
 
         // If no authentication providers are registered for this realm send an abort message
         if ($this->realmHasAuthProvider($realm->getRealmName())) {
-            $session->abort(new \stdClass(), "wamp.error.not_authorized");
+            $session->abort(new \stdClass(), 'wamp.error.not_authorized');
 
             return;
         }
@@ -266,25 +262,25 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
 
         $session->setAuthenticationDetails($authDetails);
 
-        $sessionInfo = ["sessionId" => $session->getSessionId(), "realm" => $realm->getRealmName()];
+        $sessionInfo = ['sessionId' => $session->getSessionId(), 'realm' => $realm->getRealmName()];
 
         $onHelloSuccess = function ($res) use ($realm, $session, $msg) {
             // this is handling the return of the onhello RPC call
 
-            if (isset($res[0]) && $res[0] == "FAILURE") {
+            if (isset($res[0]) && $res[0] === 'FAILURE') {
                 $this->abortSessionUsingResponse($session, $res);
 
                 return;
             }
 
             if (count($res) < 2) {
-                $session->abort(new \stdClass(), "thruway.auth.invalid_response_to_hello");
+                $session->abort(new \stdClass(), 'thruway.auth.invalid_response_to_hello');
 
                 return;
             }
 
             switch ($res[0]) {
-                case "CHALLENGE":
+                case 'CHALLENGE':
                     // TODO: validate challenge message
                     $authMethod = $res[1]->challenge_method;
                     $challenge  = $res[1]->challenge;
@@ -296,7 +292,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
                     $session->sendMessage(new ChallengeMessage($authMethod, $challengeDetails));
                     break;
 
-                case "NOCHALLENGE":
+                case 'NOCHALLENGE':
                     $details             = new \stdClass();
                     $details->authid     = $res[1]->authid;
                     $details->authmethod = $session->getAuthenticationDetails()->getAuthMethod();
@@ -314,15 +310,15 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         };
 
         $onHelloError = function () use ($session) {
-            Logger::error($this, "onhello rejected the promise");
-            $session->abort(new \stdClass(), "thruway.error.unknown");
+            Logger::error($this, 'onhello rejected the promise');
+            $session->abort(new \stdClass(), 'thruway.error.unknown');
         };
 
         $onHelloAuthHandler = $authMethodInfo['handlers']->onhello;
 
         //Make the OnHello Call
         $this->session->call($onHelloAuthHandler, [$msg, $sessionInfo])
-          ->then($onHelloSuccess, $onHelloError);
+            ->then($onHelloSuccess, $onHelloError);
 
     }
 
@@ -365,7 +361,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         $onAuthenticateSuccess = function ($res) use ($realm, $session) {
 
             if (count($res) < 1) {
-                $session->abort(new \stdClass(), "thruway.error.authentication_failure");
+                $session->abort(new \stdClass(), 'thruway.error.authentication_failure');
 
                 return;
             }
@@ -373,7 +369,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
             // we should figure out a way to have the router send the welcome
             // message so that the roles and extras that go along with it can be
             // filled in
-            if ($res[0] == "SUCCESS") {
+            if ($res[0] === 'SUCCESS') {
                 $welcomeDetails = new \stdClass();
 
                 if (isset($res[1]->authid)) {
@@ -408,16 +404,16 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
                 $session->setAuthenticated(true);
                 $session->sendMessage(new WelcomeMessage($session->getSessionId(), $welcomeDetails));
 
-            } elseif (isset($res[0]) && $res[0] == "FAILURE") {
+            } elseif (isset($res[0]) && $res[0] === 'FAILURE') {
                 $this->abortSessionUsingResponse($session, $res);
             } else {
-                $session->abort(new \stdClass(), "thruway.error.authentication_failure");
+                $session->abort(new \stdClass(), 'thruway.error.authentication_failure');
             }
         };
 
         $onAuthenticateError = function () use ($session) {
-            Logger::error($this, "onauthenticate rejected the promise");
-            $session->abort(new \stdClass(), "thruway.error.unknown");
+            Logger::error($this, 'onauthenticate rejected the promise');
+            $session->abort(new \stdClass(), 'thruway.error.unknown');
         };
 
         $extra                    = new \stdClass();
@@ -435,7 +431,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         $onAuthenticateHandler = $authMethodInfo['handlers']->onauthenticate;
 
         $this->session->call($onAuthenticateHandler, [$arguments])
-          ->then($onAuthenticateSuccess, $onAuthenticateError);
+            ->then($onAuthenticateSuccess, $onAuthenticateError);
 
     }
 
@@ -454,46 +450,42 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
 
         // TODO: should return different error
         if (!is_array($args)) {
-            return ["Received non-array arguments in registerAuthMethod"];
+            return ['Received non-array arguments in registerAuthMethod'];
         }
 
         if (count($args) < 2) {
-            return ["Not enough arguments sent to registerAuthMethod"];
+            return ['Not enough arguments sent to registerAuthMethod'];
         }
 
-        $authMethod = $args[0];
-        $methodInfo = $args[1];
-        $authRealms = $args[2];
+        list($authMethod, $methodInfo, $authRealms) = $args;
 
         // TODO: validate this stuff
         if (isset($this->authMethods[$authMethod])) {
             // error - there is alreay a registered authMethod of this name
-            return ["ERROR", "Method registration already exists"];
+            return ['ERROR', 'Method registration already exists'];
         }
 
         if (!isset($methodInfo->onhello)) {
-            return ["ERROR", "Authentication provider must provide \"onhello\" handler"];
+            return ['ERROR', 'Authentication provider must provide "onhello" handler'];
         }
 
         if (!isset($methodInfo->onauthenticate)) {
-            return ["ERROR", "Authentication provider must provide \"onauthenticate\" handler"];
+            return ['ERROR', 'Authentication provider must provide "onauthenticate" handler'];
         }
 
         if (!isset($details->caller)) {
-            return ["ERROR", "Invocation must provide \"caller\" detail on registration"];
+            return ['ERROR', 'Invocation must provide "caller" detail on registration'];
         }
 
-
         $this->authMethods[$authMethod] = [
-          'authMethod'  => $authMethod,
-          'handlers'    => $methodInfo,
-          'auth_realms' => $authRealms,
-          'session_id'  => $details->caller
+            'authMethod'  => $authMethod,
+            'handlers'    => $methodInfo,
+            'auth_realms' => $authRealms,
+            'session_id'  => $details->caller
         ];
 
-        return ["SUCCESS"];
+        return ['SUCCESS'];
     }
-
 
     /**
      * Checks to see if a realm has a registered auth provider
@@ -523,13 +515,13 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
      */
     public function onSessionClose(Session $session)
     {
-        if ($session->getRealm() && $session->getRealm()->getRealmName() == "thruway.auth") {
+        if ($session->getRealm() && $session->getRealm()->getRealmName() === 'thruway.auth') {
             // session is closing in the auth domain
             // check and see if there are any registrations that came from this session
             $sessionId = $session->getSessionId();
 
             foreach ($this->authMethods as $methodName => $method) {
-                if (isset($method['session_id']) && $method['session_id'] == $sessionId) {
+                if (isset($method['session_id']) && $method['session_id'] === $sessionId) {
                     unset($this->authMethods[$methodName]);
                 }
             }
@@ -585,7 +577,8 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
      * @return bool
      * @throws \Exception
      */
-    private function abortSessionUsingResponse(Session $session, $response) {
+    private function abortSessionUsingResponse(Session $session, $response)
+    {
         // $response needs to be a failure
         if (!isset($response[0]) || $response[0] !== 'FAILURE') {
             return false;
@@ -593,7 +586,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
 
         if (!isset($response[1]) || !is_object($response[1])) {
             // there are no other details to send - just fail it
-            $session->abort(new \stdClass(), "thruway.error.authentication_failure");
+            $session->abort(new \stdClass(), 'thruway.error.authentication_failure');
             return true;
         }
 
@@ -602,7 +595,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
             $details = $response[1]->details;
         }
 
-        $abortUri = "thruway.error.authentication_failure";
+        $abortUri = 'thruway.error.authentication_failure';
         if (isset($response[1]->abort_uri) && is_scalar($response[1]->abort_uri)) {
             $abortUri = $response[1]->abort_uri;
         }

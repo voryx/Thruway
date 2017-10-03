@@ -2,7 +2,6 @@
 
 namespace Thruway\Module;
 
-
 use React\EventLoop\LoopInterface;
 use Thruway\Peer\RouterInterface;
 

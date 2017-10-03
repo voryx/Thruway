@@ -2,7 +2,6 @@
 
 namespace Thruway;
 
-
 use Thruway\Common\Utils;
 use Thruway\Logging\Logger;
 use Thruway\Message\CallMessage;
@@ -21,7 +20,6 @@ use Thruway\Message\YieldMessage;
  */
 class Call
 {
-
     /**
      * @var \Thruway\Session
      */
@@ -89,18 +87,19 @@ class Call
      *
      * @param \Thruway\Session $callerSession
      * @param \Thruway\Message\CallMessage $callMessage
-     * @param Registration $registration
+     * @param Procedure $procedure
      */
     public function __construct(
         Session $callerSession,
         CallMessage $callMessage,
         Procedure $procedure
-    ) {
-        $this->callMessage       = $callMessage;
-        $this->callerSession     = $callerSession;
-        $this->procedure         = $procedure;
+    )
+    {
+        $this->callMessage   = $callMessage;
+        $this->callerSession = $callerSession;
+        $this->procedure     = $procedure;
 
-        $this->callStart = microtime(true);
+        $this->callStart           = microtime(true);
         $this->invocationRequestId = Utils::getUniqueId();
     }
 
@@ -159,17 +158,18 @@ class Call
      * @param CancelMessage $msg
      * @return bool
      */
-    public function processCancel(Session $session, CancelMessage $msg) {
+    public function processCancel(Session $session, CancelMessage $msg)
+    {
         if ($this->getCallerSession() !== $session) {
-            Logger::warning($this, "session attempted to cancel call they did not own.");
+            Logger::warning($this, 'session attempted to cancel call they did not own.');
             return false;
         }
 
         if ($this->getCalleeSession() === null) {
             // this call has not been sent to a callee yet (it is in a queue)
             // we can just kill it and say it was canceled
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.canceled");
-            $details = $errorMsg->getDetails() ?: (object)[];
+            $errorMsg                             = ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.canceled');
+            $details                              = $errorMsg->getDetails() ?: (object)[];
             $details->_thruway_removed_from_queue = true;
             $session->sendMessage($errorMsg);
             return true;
@@ -202,8 +202,8 @@ class Call
         $calleeSession->sendMessage($interruptMessage);
         $this->setInterruptMessage($interruptMessage);
 
-        if (isset($msg->getOptions()->mode) && is_scalar($msg->getOptions()->mode) && $msg->getOptions()->mode == "killnowait") {
-            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg, "wamp.error.canceled");
+        if (isset($msg->getOptions()->mode) && is_scalar($msg->getOptions()->mode) && $msg->getOptions()->mode === 'killnowait') {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.canceled');
             $session->sendMessage($errorMsg);
 
             return true;
@@ -283,11 +283,11 @@ class Call
         if ($this->invocationMessage === null) {
             // try to create one
             if ($this->registration === null) {
-                throw new \Exception("You must set the registration prior to calling getInvocationMessage");
+                throw new \Exception('You must set the registration prior to calling getInvocationMessage');
             }
 
             if ($this->callMessage === null) {
-                throw new \Exception("You must set the CallMessage prior to calling getInvocationMessage");
+                throw new \Exception('You must set the CallMessage prior to calling getInvocationMessage');
             }
 
             $invocationMessage = InvocationMessage::createMessageFrom($this->getCallMessage(), $this->getRegistration());
@@ -298,16 +298,16 @@ class Call
 
             if ($this->getRegistration()->getDiscloseCaller() === true && $this->getCallerSession()->getAuthenticationDetails()) {
                 $authenticationDetails = $this->getCallerSession()->getAuthenticationDetails();
-                $details = [
-                    "caller"     => $this->getCallerSession()->getSessionId(),
-                    "authid"     => $authenticationDetails->getAuthId(),
-                    "authrole"   => $authenticationDetails->getAuthRole(),
-                    "authroles"  => $authenticationDetails->getAuthRoles(),
-                    "authmethod" => $authenticationDetails->getAuthMethod(),
+                $details               = [
+                    'caller'     => $this->getCallerSession()->getSessionId(),
+                    'authid'     => $authenticationDetails->getAuthId(),
+                    'authrole'   => $authenticationDetails->getAuthRole(),
+                    'authroles'  => $authenticationDetails->getAuthRoles(),
+                    'authmethod' => $authenticationDetails->getAuthMethod(),
                 ];
 
                 if ($authenticationDetails->getAuthExtra() !== null) {
-                    $details["_thruway_authextra"] = $authenticationDetails->getAuthExtra();
+                    $details['_thruway_authextra'] = $authenticationDetails->getAuthExtra();
                 }
             }
 
@@ -315,12 +315,12 @@ class Call
             $callOptions   = $this->getCallMessage()->getOptions();
             $isProgressive = false;
             if (is_object($callOptions) && isset($callOptions->receive_progress) && $callOptions->receive_progress) {
-                $details       = array_merge($details, ["receive_progress" => true]);
+                $details       = array_merge($details, ['receive_progress' => true]);
                 $isProgressive = true;
             }
 
             // if nothing was added to details - change ot stdClass so it will serialize correctly
-            if (count($details) == 0) {
+            if (count($details) === 0) {
                 $details = new \stdClass();
             }
             $invocationMessage->setDetails($details);

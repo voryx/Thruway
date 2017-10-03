@@ -10,7 +10,6 @@ namespace Thruway\Authentication;
 
 class AuthenticationDetails implements \JsonSerializable
 {
-
     /**
      * @var int
      */
@@ -37,7 +36,7 @@ class AuthenticationDetails implements \JsonSerializable
      */
     private $authExtra;
 
-    function __construct()
+    public function __construct()
     {
         $this->authRoles = [];
     }
@@ -130,9 +129,9 @@ class AuthenticationDetails implements \JsonSerializable
     static public function createAnonymous()
     {
         $authDetails = new AuthenticationDetails();
-        $authDetails->setAuthId("anonymous");
-        $authDetails->setAuthMethod("anonymous");
-        $authDetails->addAuthRole("anonymous");
+        $authDetails->setAuthId('anonymous');
+        $authDetails->setAuthMethod('anonymous');
+        $authDetails->addAuthRole('anonymous');
 
         return $authDetails;
     }
@@ -156,7 +155,8 @@ class AuthenticationDetails implements \JsonSerializable
     /**
      * @param $authRole
      */
-    public function addAuthRole($authRole) {
+    public function addAuthRole($authRole)
+    {
         if (is_array($authRole)) {
             $this->authRoles = array_merge($authRole, $this->authRoles);
         } else {
@@ -170,8 +170,9 @@ class AuthenticationDetails implements \JsonSerializable
      * @param $authRole
      * @return bool
      */
-    public function hasAuthRole($authRole) {
-        if (in_array($authRole, $this->authRoles)) {
+    public function hasAuthRole($authRole)
+    {
+        if (in_array($authRole, $this->authRoles, true)) {
             return true;
         } else {
             return false;
@@ -181,12 +182,9 @@ class AuthenticationDetails implements \JsonSerializable
     /**
      * @return mixed
      */
-    public function getAuthRole() {
-        if (count($this->authRoles) > 0) {
-            return $this->authRoles[0];
-        } else {
-            return FALSE;
-        }
+    public function getAuthRole()
+    {
+        return count($this->authRoles) > 0 ? $this->authRoles[0] : FALSE;
     }
 
     /**
@@ -212,12 +210,12 @@ class AuthenticationDetails implements \JsonSerializable
      * @return mixed data which can be serialized by <b>json_encode</b>,
      * which is a value of any type other than a resource.
      */
-    function jsonSerialize()
+    public function jsonSerialize()
     {
         return [
-          "authid"      => $this->authId,
-          "auth_method" => $this->authMethod,
-          "auth_roles"  => $this->authRoles,
+            'authid'      => $this->authId,
+            'auth_method' => $this->authMethod,
+            'auth_roles'  => $this->authRoles,
         ];
     }
 }

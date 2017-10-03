@@ -47,7 +47,7 @@ class Broker implements RealmModuleInterface
     /**
      *
      */
-    function __construct()
+    public function __construct()
     {
         $this->addMatcher(new ExactMatcher());
         $this->addMatcher(new PrefixMatcher());
@@ -60,11 +60,11 @@ class Broker implements RealmModuleInterface
     public function getSubscribedRealmEvents()
     {
         return [
-          "PublishMessageEvent"     => ["handlePublishMessage", 10],
-          "SubscribeMessageEvent"   => ["handleSubscribeMessage", 10],
-          "UnsubscribeMessageEvent" => ["handleUnsubscribeMessage", 10],
-          "LeaveRealm"              => ["handleLeaveRealm", 10],
-          "SendWelcomeMessageEvent" => ["handleSendWelcomeMessage", 20]
+            'PublishMessageEvent'     => ['handlePublishMessage', 10],
+            'SubscribeMessageEvent'   => ['handleSubscribeMessage', 10],
+            'UnsubscribeMessageEvent' => ['handleUnsubscribeMessage', 10],
+            'LeaveRealm'              => ['handleLeaveRealm', 10],
+            'SendWelcomeMessageEvent' => ['handleSendWelcomeMessage', 20]
         ];
     }
 
@@ -110,7 +110,6 @@ class Broker implements RealmModuleInterface
 
         //Tell the welcome message what features we support
         $welcomeMessage->addFeatures('broker', $this->getFeatures());
-
     }
 
     /**
@@ -143,7 +142,7 @@ class Broker implements RealmModuleInterface
         $matcher = $this->getMatcherForMatchType($msg->getMatchType());
         if ($matcher === false) {
             Logger::alert($this,
-              "no matching match type for \"".$msg->getMatchType()."\" for URI \"".$msg->getUri()."\"");
+                "no matching match type for \"" . $msg->getMatchType() . "\" for URI \"" . $msg->getUri() . "\"");
 
             return;
         }
@@ -206,7 +205,7 @@ class Broker implements RealmModuleInterface
         /** @var SubscriptionGroup $subscriptionGroup */
         foreach ($this->subscriptionGroups as $subscriptionGroup) {
             $result = $subscriptionGroup->processUnsubscribe($session, $msg);
-            
+
             if ($result !== false) {
                 $subscription = $result;
             }
@@ -337,5 +336,4 @@ class Broker implements RealmModuleInterface
     {
         return $this->subscriptionGroups;
     }
-
 }

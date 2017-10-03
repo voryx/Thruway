@@ -15,7 +15,7 @@ class ExactMatcher implements MatcherInterface
      */
     public function getMatchTypes()
     {
-        return ["exact"];
+        return ['exact'];
     }
 
     /**
@@ -25,7 +25,7 @@ class ExactMatcher implements MatcherInterface
      */
     public function getMatchHash($uri, $options)
     {
-        return "exact_" . $uri;
+        return 'exact_' . $uri;
     }
 
     /**
@@ -36,7 +36,7 @@ class ExactMatcher implements MatcherInterface
      */
     public function matches($eventUri, $subscriptionUri, $subscriptionOptions)
     {
-        return $eventUri == $subscriptionUri;
+        return $eventUri === $subscriptionUri;
     }
 
     /**
@@ -58,7 +58,7 @@ class ExactMatcher implements MatcherInterface
      */
     public function isSubGroup($parentUri, $parentOptions, $childUri, $childOptions)
     {
-        return $parentUri == $childUri;
+        return $parentUri === $childUri;
     }
 
 }

@@ -26,7 +26,6 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     /** @var boolean */
     private $allowRealmAutocreate;
 
-
     /**
      * Constructor
      *
@@ -46,8 +45,8 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     public static function getSubscribedEvents()
     {
         return [
-          "connection_open"  => ['handleConnectionOpen', 10],
-          "connection_close" => ['handleConnectionClose', 10]
+            'connection_open'  => ['handleConnectionOpen', 10],
+            'connection_close' => ['handleConnectionClose', 10]
         ];
     }
 
@@ -59,7 +58,7 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     public function getSubscribedRealmEvents()
     {
         return [
-          "PreHelloMessageEvent" => ["handlePreHelloMessage", 10]
+            'PreHelloMessageEvent' => ['handlePreHelloMessage', 10]
         ];
     }
 
@@ -97,10 +96,10 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
             $realm->addSession($session);
         } catch (\Exception $e) {
             // TODO: Test this
-            $errorUri    = "wamp.error.unknown";
+            $errorUri    = 'wamp.error.unknown';
             $description = $e->getMessage();
             if ($e instanceof InvalidRealmNameException || $e instanceof RealmNotFoundException) {
-                $errorUri = "wamp.error.no_such_realm";
+                $errorUri = 'wamp.error.no_such_realm';
             }
             $session->abort(['description' => $description], $errorUri);
         }
@@ -118,11 +117,11 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     public function getRealm($realmName)
     {
         if (!is_scalar($realmName)) {
-            throw new \InvalidArgumentException("Non-string value given for realm name");
+            throw new \InvalidArgumentException('Non-string value given for realm name');
         }
         if (!array_key_exists($realmName, $this->realms)) {
             if ($this->getAllowRealmAutocreate()) {
-                Logger::debug($this, "Creating new realm \"".$realmName."\"");
+                Logger::debug($this, 'Creating new realm \'' . $realmName . '\'');
                 $realm = new Realm($realmName);
 
                 $this->addRealm($realm);
@@ -150,10 +149,10 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
         }
 
         if (array_key_exists($realm->getRealmName(), $this->realms)) {
-            throw new \Exception("There is already a realm \"".$realm->getRealmName()."\"");
+            throw new \Exception('There is already a realm \'' . $realm->getRealmName() . '\'');
         }
 
-        Logger::debug($this, "Adding realm \"".$realmName."\"");
+        Logger::debug($this, 'Adding realm \'' . $realmName . '\'');
 
         $this->realms[$realm->getRealmName()] = $realm;
 
@@ -169,12 +168,11 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     public static function validRealmName($name)
     {
         // check to see if this is a valid name
-        // TODO maybe use similar checks to Autobahn|Py
-        if (strlen($name) < 1) {
+        if ($name === '') {
             return false;
         }
         //throw new \UnexpectedValueException("Realm name too short: " . $realmName);
-        if ($name == "WAMP1") {
+        if ($name === 'WAMP1') {
             return false;
         }
 
@@ -212,5 +210,4 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
     {
         return $this->allowRealmAutocreate;
     }
-
 }

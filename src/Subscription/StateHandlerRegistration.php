@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Thruway\Subscription;
-
 
 use Thruway\ClientSession;
 use Thruway\Logging\Logger;
@@ -34,7 +32,7 @@ class StateHandlerRegistration
      */
     protected $matcher;
 
-    function __construct($clientSession, $procedureName, $uri, $options, MatcherInterface $matcher)
+    public function __construct($clientSession, $procedureName, $uri, $options, MatcherInterface $matcher)
     {
         $this->setClientSession($clientSession);
         $this->setProcedureName($procedureName);
@@ -141,7 +139,7 @@ class StateHandlerRegistration
     public function handlesStateFor(SubscriptionGroup $subscriptionGroup)
     {
         if ($subscriptionGroup->getMatchType() == $this->getMatchType()
-            || $subscriptionGroup->getMatchType() == "exact") {
+            || $subscriptionGroup->getMatchType() === 'exact') {
             $sgUri     = $subscriptionGroup->getUri();
             $sgOptions = $subscriptionGroup->getOptions();
 

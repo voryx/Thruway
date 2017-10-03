@@ -3,7 +3,6 @@
 namespace Thruway\Authentication;
 
 use React\EventLoop\LoopInterface;
-use Thruway\ClientSession;
 use Thruway\Logging\Logger;
 use Thruway\Peer\Client;
 
@@ -49,8 +48,7 @@ abstract class AbstractAuthProviderClient extends Client
      */
     public function processHello(array $args)
     {
-
-        return ["CHALLENGE", (object)["challenge" => new \stdClass(), "challenge_method" => $this->getMethodName()]];
+        return ['CHALLENGE', (object)['challenge' => new \stdClass(), 'challenge_method' => $this->getMethodName()]];
     }
 
     /**
@@ -64,13 +62,13 @@ abstract class AbstractAuthProviderClient extends Client
         $session->register(
             "thruway.auth.{$this->getMethodName()}.onhello",
             [$this, 'processHello'],
-            ["replace_orphaned_session" => "yes"]
+            ['replace_orphaned_session' => 'yes']
         )
             ->then(function () use ($session) {
                 $session->register(
                     "thruway.auth.{$this->getMethodName()}.onauthenticate",
                     [$this, 'preProcessAuthenticate'],
-                    ["replace_orphaned_session" => "yes"]
+                    ['replace_orphaned_session' => 'yes']
                 )->then(function () use ($session) {
 
                     $registrations                 = new \stdClass();
@@ -105,11 +103,10 @@ abstract class AbstractAuthProviderClient extends Client
         $extra     = isset($args->extra) ? $args->extra : null;
 
         if (!$signature) {
-            return ["ERROR"];
+            return ['ERROR'];
         }
 
         return $this->processAuthenticate($signature, $extra);
-
     }
 
     /**
@@ -122,9 +119,7 @@ abstract class AbstractAuthProviderClient extends Client
      */
     public function processAuthenticate($signature, $extra = null)
     {
-
-        return ["SUCCESS"];
-
+        return ['SUCCESS'];
     }
 
     /**
@@ -152,4 +147,4 @@ abstract class AbstractAuthProviderClient extends Client
      */
     abstract public function getMethodName();
 
-} 
+}

@@ -2,7 +2,6 @@
 
 namespace Thruway\Authentication;
 
-
 use Thruway\Message\HelloMessage;
 use Thruway\Message\Message;
 
@@ -42,11 +41,11 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
         $sessionInfo = array_shift($args);
 
         if (!is_array($helloMsg)) {
-            return ["ERROR"];
+            return ['ERROR'];
         }
 
         if (!is_object($sessionInfo)) {
-            return ["ERROR"];
+            return ['ERROR'];
         }
 
         $helloMsg = Message::createMessageFromArray($helloMsg);
@@ -56,57 +55,57 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
             || !isset($helloMsg->getDetails()->authid)
             || !$this->getUserDb() instanceof WampCraUserDbInterface
         ) {
-            return ["ERROR"];
+            return ['ERROR'];
         }
 
         $authid = $helloMsg->getDetails()->authid;
         $user   = $this->getUserDb()->get($authid);
 
         if (!$user) {
-            return ["FAILURE"];
+            return ['FAILURE'];
         }
 
         // create a challenge
         $nonce        = bin2hex(openssl_random_pseudo_bytes(22));
-        $authRole     = "user";
-        $authMethod   = "wampcra";
-        $authProvider = "userdb";
+        $authRole     = 'user';
+        $authMethod   = 'wampcra';
+        $authProvider = 'userdb';
         $now          = new \DateTime();
         $timeStamp    = $now->format($now::ISO8601);
         if (!isset($sessionInfo->sessionId)) {
-            return ["ERROR"];
+            return ['ERROR'];
         }
-        $sessionId    = $sessionInfo->sessionId;
+        $sessionId = $sessionInfo->sessionId;
 
         $challenge = [
-            "authid"       => $authid,
-            "authrole"     => $authRole,
-            "authprovider" => $authProvider,
-            "authmethod"   => $authMethod,
-            "nonce"        => $nonce,
-            "timestamp"    => $timeStamp,
-            "session"      => $sessionId
+            'authid'       => $authid,
+            'authrole'     => $authRole,
+            'authprovider' => $authProvider,
+            'authmethod'   => $authMethod,
+            'nonce'        => $nonce,
+            'timestamp'    => $timeStamp,
+            'session'      => $sessionId
         ];
 
         $serializedChallenge = json_encode($challenge);
 
         $challengeDetails = [
-            "challenge"        => $serializedChallenge,
-            "challenge_method" => $this->getMethodName()
+            'challenge'        => $serializedChallenge,
+            'challenge_method' => $this->getMethodName()
         ];
 
         if ($user['salt'] !== null) {
             // we are using salty password
             $saltInfo = [
-                "salt"       => $user['salt'],
-                "keylen"     => 32,
-                "iterations" => 1000
+                'salt'       => $user['salt'],
+                'keylen'     => 32,
+                'iterations' => 1000
             ];
 
             $challengeDetails = array_merge($challengeDetails, $saltInfo);
         }
 
-        return ["CHALLENGE", (object)$challengeDetails];
+        return ['CHALLENGE', (object)$challengeDetails];
 
     }
 
@@ -126,31 +125,31 @@ class WampCraAuthProvider extends AbstractAuthProviderClient
             || !isset($challenge->authid)
             || !$this->getUserDb() instanceof WampCraUserDbInterface
         ) {
-            return ["FAILURE"];
+            return ['FAILURE'];
         }
 
         $authid = $challenge->authid;
         $user   = $this->getUserDb()->get($authid);
 
         if (!$user) {
-            return ["FAILURE"];
+            return ['FAILURE'];
         }
 
         $keyToUse = $user['key'];
         $token    = base64_encode(hash_hmac('sha256', json_encode($challenge), $keyToUse, true));
 
         if ($token != $signature) {
-            return ["FAILURE"];
+            return ['FAILURE'];
         }
 
         $authDetails = [
-            "authmethod"   => "wampcra",
-            "authrole"     => "user",
-            "authid"       => $challenge->authid,
-            "authprovider" => $challenge->authprovider
+            'authmethod'   => 'wampcra',
+            'authrole'     => 'user',
+            'authid'       => $challenge->authid,
+            'authprovider' => $challenge->authprovider
         ];
 
-        return ["SUCCESS", $authDetails];
+        return ['SUCCESS', $authDetails];
 
     }
 

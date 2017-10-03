@@ -2,7 +2,6 @@
 
 namespace Thruway\Transport;
 
-
 use Thruway\Event\ConnectionOpenEvent;
 use Thruway\Event\RouterStartEvent;
 use Thruway\Event\RouterStopEvent;
@@ -40,7 +39,8 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
         $this->internalClient->addTransportProvider(new DummyTransportProvider());
     }
 
-    public function handleRouterStart(RouterStartEvent $event) {
+    public function handleRouterStart(RouterStartEvent $event)
+    {
         /** @var Session $session */
         $session = null;
 
@@ -57,11 +57,11 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
         }, $this->loop);
         $transport->setTrusted($this->trusted);
 
-        $session = $this->router->createNewSession($transport);
+        $session       = $this->router->createNewSession($transport);
         $this->session = $session;
 
         // connect the transport to the Router/Peer
-        $this->router->getEventDispatcher()->dispatch("connection_open", new ConnectionOpenEvent($session));
+        $this->router->getEventDispatcher()->dispatch('connection_open', new ConnectionOpenEvent($session));
 
         // open the client side
         $this->internalClient->onOpen($clientTransport);
@@ -73,21 +73,20 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
         $this->internalClient->start(false);
     }
 
-    public function handleRouterStop(RouterStopEvent $event) {
+    public function handleRouterStop(RouterStopEvent $event)
+    {
         if ($this->session) {
             $this->session->shutdown();
         }
 
-        $this->internalClient->onClose("router stopped");
+        $this->internalClient->onClose('router stopped');
     }
 
     public static function getSubscribedEvents()
     {
         return [
-            "router.start" => ['handleRouterStart', 10],
-            "router.stop" => ['handleRouterStop', 10]
+            'router.start' => ['handleRouterStart', 10],
+            'router.stop'  => ['handleRouterStop', 10]
         ];
     }
-
-
 }
