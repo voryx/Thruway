@@ -45,7 +45,7 @@ Thruway is an open source client and router implementation of [WAMP (Web Applica
 Requirements
 ------------
 
-Thruway is only supported on PHP 5.4 and up.
+Thruway is only supported on PHP 5.6 and up.
 
 ### Quick Start with Composer
 
@@ -63,10 +63,7 @@ Download Composer [more info](https://getcomposer.org/doc/00-intro.md#downloadin
       
 Download Thruway and dependencies
 
-      $ php composer.phar require voryx/thruway:0.5-dev
-      $ php composer.phar require cboden/ratchet:0.4.x-dev
-      $ php composer.phar require thruway/ratchet-transport:dev-master
-      $ php composer.phar require thruway/pawl-transport:dev-master
+      $ php composer.phar require voryx/thruway
 
 Start the WAMP router
 
