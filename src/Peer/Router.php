@@ -262,9 +262,8 @@ class Router implements RouterInterface, EventSubscriberInterface
     {
         $theSessions = [];
 
-        foreach ($this->sessions as $key) {
-            /* @var $session \Thruway\Session */
-            $session = $this->sessions[$key];
+        foreach ($this->sessions as $session) {
+            /* @var \Thruway\Session $session */
 
             $sessionRealm = null;
             // just in case the session is not in a realm yet
