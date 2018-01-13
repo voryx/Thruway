@@ -156,13 +156,24 @@ class Realm implements RealmModuleInterface
      */
     private function processSendWelcome(Session $session, WelcomeMessage $msg)
     {
-        $details = $session->getHelloMessage()->getDetails();
+        $helloDetails = $session->getHelloMessage()->getDetails();
 
-        if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
-            $session->setRoleFeatures($details->roles);
+        if (is_object($helloDetails) && isset($helloDetails->roles) && is_object($helloDetails->roles)) {
+            $session->setRoleFeatures($helloDetails->roles);
         }
 
         $session->setState(Session::STATE_UP); // this should probably be after authentication
+
+        $details = $msg->getDetails();
+
+        if (is_object($details) && isset($details->roles) && is_object($details->roles)) {
+            $roles = array_filter((array) $details->roles, function($key) {
+                return in_array($key, ['broker', 'dealer']);
+            }, ARRAY_FILTER_USE_KEY);
+
+            $details->roles = (object) $roles;
+            $msg->setDetails($details);
+        }
     }
 
 

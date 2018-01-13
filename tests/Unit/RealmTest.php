@@ -166,6 +166,98 @@ class RealmTest extends PHPUnit_Framework_TestCase
         $realm->handleAbortMessage(new \Thruway\Event\MessageEvent($session, $abortMessage));
     }
 
+    /**
+     * Ensure the roles in welcome messages obey the RFC spec.
+     *
+     * @see https://github.com/wamp-proto/wamp-proto/blob/master/rfc/draft-oberstet-hybi-crossbar-wamp.txt#L1685
+     */
+    public function testWelcomeMessageRfcRoles()
+    {
+        $realm = new \Thruway\Realm("realm1");
+
+        /** @var \Thruway\Session $session */
+        $session = $this->getMockBuilder('\Thruway\Session')
+            ->disableOriginalConstructor()
+            ->setMethods(null)
+            ->getMock();
+
+        $session->dispatcher = new \Thruway\Event\EventDispatcher();
+
+        $expected = (object) [
+            'broker' => (object) [
+                'features' => (object) [
+                    'subscriber_blackwhite_listing' => true,
+                    'publisher_exclusion' => true,
+                    'subscriber_metaevents' => true,
+                ]
+            ],
+            'dealer' => (object) [
+                'features' => (object) [
+                    'caller_identification' => true,
+                    'progressive_call_results' => true,
+                ]
+            ]
+        ];
+
+        $helloMessage = new \Thruway\Message\HelloMessage('realm1', (object) [
+            'roles' => (object) [
+                'subscriber' => (object) [
+                    'features' => (object) [
+                        'publisher_identification' => true,
+                        'pattern_based_subscription' => true,
+                        'subscription_revocation' => true,
+                        'payload_transparency' => true,
+                        'payload_encryption_cryptobox' => true,
+                    ]
+                ],
+                'publisher' => (object) [
+                    'features' => (object) [
+                        'publisher_identification' => true,
+                        'subscriber_blackwhite_listing' => true,
+                        'publisher_exclusion' => true,
+                        'payload_transparency' => true,
+                        'x_acknowledged_event_delivery' => true,
+                        'payload_encryption_cryptobox' => true,
+                    ]
+                ],
+                'caller' => (object) [
+                    'features' => (object) [
+                        'caller_identification' => true,
+                        'progressive_call_results' => true,
+                        'payload_transparency' => true,
+                        'payload_encryption_cryptobox' => true,
+                    ]
+                ],
+                'callee' => (object) [
+                    'features' => (object) [
+                        'caller_identification' => true,
+                        'pattern_based_registration' => true,
+                        'shared_registration' => true,
+                        'progressive_call_results' => true,
+                        'registration_revocation' => true,
+                        'payload_transparency' => true,
+                        'payload_encryption_cryptobox' => true,
+                    ]
+                ]
+            ]
+        ]);
+
+        $session->setHelloMessage($helloMessage);
+
+        $welcomeMessage = new \Thruway\Message\WelcomeMessage(
+            $session->getSessionId(),
+            $helloMessage->getDetails()
+        );
+
+        $welcomeMessage->addFeatures('broker', $expected->broker->features);
+        $welcomeMessage->addFeatures('dealer', $expected->dealer->features);
+
+        $realm->handleSendWelcomeMessage(new \Thruway\Event\MessageEvent($session, $welcomeMessage));
+
+        $this->assertNotEmpty($welcomeMessage->getDetails()->roles);
+        $this->assertEquals($expected, $welcomeMessage->getDetails()->roles);
+    }
+
     // This should be irrelevant when dispatcher is complete
     // because the dealer shouldn't even be attached yet
 //    public function testCallBeforeWelcome() {
