@@ -65,6 +65,10 @@ Download Thruway and dependencies
 
       $ php composer.phar require voryx/thruway
 
+If you're going to also use the Thruway Client install a client transport.  You'll need this to run the examples
+
+      $ php composer.phar require thruway/pawl-transport
+
 Start the WAMP router
 
       $ php vendor/voryx/thruway/Examples/SimpleWsRouter.php
