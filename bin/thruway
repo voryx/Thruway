@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+use Thruway\Peer\Router;
+use Thruway\Transport\RatchetTransportProvider;
+
+if (PHP_SAPI !== 'cli') {
+    echo 'Warning: Thruway should be invoked via the CLI version of PHP, not the ' . PHP_SAPI . ' SAPI' . PHP_EOL;
+}
+
+require __DIR__ . '/../vendor/autoload.php';
+
+error_reporting(-1);
+if (!isset($argv[1]) || !isset($argv[2])) {
+    echo 'Warning:  No ip address and port provided.  Using 127.0.0.1 9090', PHP_EOL;
+    echo "You can provide a WAMP ip address and port.  ie.  {$argv[0]} 127.0.0.1 8080", PHP_EOL;
+    $ip   = '127.0.0.1';
+    $port = 9090;
+} else {
+    $ip   = $argv[1];
+    $port = $argv[2];
+}
+
+$router = new Router();
+
+$transportProvider = new RatchetTransportProvider($ip, $port);
+
+$router->addTransportProvider($transportProvider);
+
+$router->start();
