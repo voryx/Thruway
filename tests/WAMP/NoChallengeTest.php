@@ -115,6 +115,12 @@ class NoChallengeTest extends PHPUnit_Framework_TestCase
         $this->assertObjectHasAttribute('authmethod', $args[0]);
         $this->assertEquals('auto_auth', $args[0]->authmethod);
 
+        $this->assertObjectHasAttribute('authrole', $args[0]);
+        $this->assertEquals('authenticated_user', $args[0]->authrole);
+
+        $this->assertObjectHasAttribute('authroles', $args[0]);
+        $this->assertEquals('authenticated_user', $args[0]->authroles[0]);
+
         $this->assertNotNull($this->_resultPS);
         $this->assertTrue(is_object($this->_resultPS));
         $this->assertObjectHasAttribute('_thruway_authextra', $this->_resultPS);
