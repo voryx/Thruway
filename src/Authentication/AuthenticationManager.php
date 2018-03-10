@@ -293,14 +293,10 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
                     break;
 
                 case 'NOCHALLENGE':
-                    $details             = new \stdClass();
-                    $details->authid     = $res[1]->authid;
+                    $details             = $res[1];
                     $details->authmethod = $session->getAuthenticationDetails()->getAuthMethod();
-                    if (isset($res[1]->_thruway_authextra)) {
-                        $session->getAuthenticationDetails()->setAuthExtra($res[1]->_thruway_authextra);
-                    }
 
-                    $session->sendMessage(new WelcomeMessage($session->getSessionId(), $details));
+                    $this->sendWelcomeMessage($session, $details);
                     break;
 
                 default:
@@ -370,40 +366,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
             // message so that the roles and extras that go along with it can be
             // filled in
             if ($res[0] === 'SUCCESS') {
-                $welcomeDetails = new \stdClass();
-
-                if (isset($res[1]->authid)) {
-                    $session->getAuthenticationDetails()->setAuthId($res[1]->authid);
-                } else {
-                    $session->getAuthenticationDetails()->setAuthId('authenticated_user');
-                }
-
-                $authRole = 'authenticated_user';
-                $session->getAuthenticationDetails()->addAuthRole($authRole);
-                if (isset($res[1]->authroles)) {
-                    $session->getAuthenticationDetails()->addAuthRole($res[1]->authroles);
-                }
-
-                if (isset($res[1]->authrole)) {
-                    $session->getAuthenticationDetails()->addAuthRole($res[1]->authrole);
-                }
-
-                if (isset($res[1]->_thruway_authextra)) {
-                    $session->getAuthenticationDetails()->setAuthExtra($res[1]->_thruway_authextra);
-                }
-
-                if (isset($res[1]) && is_object($res[1])) {
-                    $res[1]->authrole  = $session->getAuthenticationDetails()->getAuthRole();
-                    $res[1]->authroles = $session->getAuthenticationDetails()->getAuthRoles();
-                    $res[1]->authid    = $session->getAuthenticationDetails()->getAuthId();
-                    foreach ($res[1] as $k => $v) {
-                        $welcomeDetails->$k = $v;
-                    }
-                }
-
-                $session->setAuthenticated(true);
-                $session->sendMessage(new WelcomeMessage($session->getSessionId(), $welcomeDetails));
-
+                $this->sendWelcomeMessage($session, $res[1]);
             } elseif (isset($res[0]) && $res[0] === 'FAILURE') {
                 $this->abortSessionUsingResponse($session, $res);
             } else {
@@ -433,6 +396,49 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         $this->session->call($onAuthenticateHandler, [$arguments])
             ->then($onAuthenticateSuccess, $onAuthenticateError);
 
+    }
+
+    /**
+     * @param $session
+     * @param $authenticatedDetails
+     */
+    private function sendWelcomeMessage(Session $session, \stdClass $authenticatedDetails)
+    {
+        $welcomeDetails = new \stdClass();
+
+        $authenticationDetails = $session->getAuthenticationDetails();
+
+        if (isset($authenticatedDetails->authid)) {
+            $authenticationDetails->setAuthId($authenticatedDetails->authid);
+        } else {
+            $authenticationDetails->setAuthId('authenticated_user');
+        }
+
+        $authRole = 'authenticated_user';
+        $authenticationDetails->addAuthRole($authRole);
+        if (isset($authenticatedDetails->authroles)) {
+            $authenticationDetails->addAuthRole($authenticatedDetails->authroles);
+        }
+
+        if (isset($authenticatedDetails->authrole)) {
+            $authenticationDetails->addAuthRole($authenticatedDetails->authrole);
+        }
+
+        if (isset($authenticatedDetails->_thruway_authextra)) {
+            $authenticationDetails->setAuthExtra($authenticatedDetails->_thruway_authextra);
+        }
+
+        if (isset($authenticatedDetails) && \is_object($authenticationDetails)) {
+            $authenticatedDetails->authrole  = $authenticationDetails->getAuthRole();
+            $authenticatedDetails->authroles = $authenticationDetails->getAuthRoles();
+            $authenticatedDetails->authid    = $authenticationDetails->getAuthId();
+            foreach ((array)$authenticatedDetails as $k => $v) {
+                $welcomeDetails->$k = $v;
+            }
+        }
+
+        $session->setAuthenticated(true);
+        $session->sendMessage(new WelcomeMessage($session->getSessionId(), $welcomeDetails));
     }
 
     /**
