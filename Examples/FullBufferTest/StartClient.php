@@ -13,18 +13,12 @@ $client->start(false);
 
 $loop = $client->getLoop();
 
-$looping = true;
 $loop->addTimer(
     5,
-    function () use (&$looping) {
-        $looping = false;
+    function () use (&$loop) {
+        $loop->stop();
     }
 );
-
-while ($looping) {
-    usleep(1000);
-    $loop->tick();
-}
 
 echo "Looping no more...\n";
 
