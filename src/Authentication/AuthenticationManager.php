@@ -224,7 +224,7 @@ class AuthenticationManager extends RouterModuleClient implements RealmModuleInt
         }
 
         // If no authentication providers are registered for this realm send an abort message
-        if ($this->realmHasAuthProvider($realm->getRealmName())) {
+        if ($this->realmHasAuthProvider($realm->getRealmName()) === false) {
             $session->abort(new \stdClass(), 'wamp.error.not_authorized');
 
             return;
