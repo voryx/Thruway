@@ -2,7 +2,9 @@
 set -x
 
 cd crossbar
-chmod 777 .
+mkdir .crossbar
+cp ../tests/Crossbar/config.json .crossbar
+chmod -R 777 .
 docker run -u 1000 -v ${PWD}:/node -p 8080:8080 --name crossbar --rm crossbario/crossbar &
 cd ..
 
