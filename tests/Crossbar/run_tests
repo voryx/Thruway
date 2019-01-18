@@ -1,10 +1,9 @@
 #!/bin/sh
 set -x
 
-cd crossbar/crossbar-starter/crossbar
-chmod 777 . -R
+cd crossbar
 docker run -u 1000 -v ${PWD}:/node -p 8080:8080 --name crossbar --rm crossbario/crossbar &
-cd ../../..
+cd ..
 
 sleep 20
 
