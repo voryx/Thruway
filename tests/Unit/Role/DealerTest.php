@@ -538,7 +538,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         
         //$this->assertEquals(0, count($dealer->getProcedures()));
         
-        $this->assertEquals(0, count($dealer->getProcedures()['some.proc']->getRegistrations()));
+        $this->assertArrayNotHasKey('some.proc', $dealer->getProcedures());
 
         $dealer->handleCancelMessage(new MessageEvent($callerSession, new CancelMessage(2345, (object)[])));
 
@@ -602,5 +602,370 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($invocationMessage->getRequestId(), $interruptMessage->getRequestId());
 
         $this->assertEquals(0, $dealer->getProcedures()['some.proc']->getRegistrations()[0]->getCurrentCallCount());
+    }
+
+    public function testUnregisterNonExistentProcedure() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $unregisterMsg = new UnregisterMessage(1, 12345);
+        $dealer->handleUnregisterMessage(new MessageEvent($calleeSession, $unregisterMsg));
+
+        /** @var ErrorMessage $errorMsg */
+        $errorMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errorMsg);
+        $this->assertEquals('wamp.error.no_such_registration', $errorMsg->getErrorURI());
+    }
+
+    public function testRegisterHookForNonExistentProcedure() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+
+        $this->assertInstanceOf(ErrorMessage::class, $calleeTransport->getLastMessageSent());
+    }
+
+    public function testRegisterHookWithNonSingleInvoke() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(1, (object)[], 'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true, 'invoke' => \Thruway\Registration::ROUNDROBIN_REGISTRATION],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        /** @var ErrorMessage $errorMessage */
+        $errorMessage = $hookTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errorMessage);
+        $this->assertEquals('thruway.error.hook.failed', $errorMessage->getErrorURI());
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true,
+                'invoke' => 'single',
+                'thruway_multiregister' => true
+            ],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $errorMessage = $hookTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errorMessage);
+        $this->assertEquals('thruway.error.hook.failed', $errorMessage->getErrorURI());
+    }
+
+    public function testSimpleHook() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(1, (object)[], 'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+        
+        $callerTransport = new DummyTransport();
+        $callerSession = new Session($callerTransport);
+        $callMsg = new CallMessage(1, (object)[], 'test.rpc');
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMsg));
+
+        // the hook should get this invocation
+        $this->assertInstanceOf(InvocationMessage::class, $hookTransport->getLastMessageSent());
+        // the callee should have heard nothing new
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        $unregMsg = new UnregisterMessage(5, $hookRegistrationId);
+        $dealer->handleUnregisterMessage(new MessageEvent($hookSession, $unregMsg));
+        $this->assertInstanceOf(UnregisteredMessage::class, $hookTransport->getLastMessageSent());
+
+        // next call should go to original caller
+        $callMsg->setRequestId(10);
+        $callMsg->setArguments(['New call']);
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMsg));
+        /** @var InvocationMessage $invocationMsg */
+        $invocationMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
+        $this->assertEquals(['New call'], $invocationMsg->getArguments());
+    }
+
+    public function testDoubleHook() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(1, (object)[], 'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+
+        $hook2Transport = new DummyTransport();
+        $hook2Session = new Session($hook2Transport);
+        $dealer->handleRegisterMessage(new MessageEvent($hook2Session, $hookRegisterMsg));
+        /** @var RegisteredMessage $hook2RegisteredMsg */
+        $hook2RegisteredMsg = $hook2Transport->getLastMessageSent();
+        $this->assertInstanceOf(RegisteredMessage::class, $hook2RegisteredMsg);
+
+        $callerTransport = new DummyTransport();
+        $callerSession = new Session($callerTransport);
+        $callMsg = new CallMessage(1, (object)[], 'test.rpc');
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMsg));
+
+        // the second hook should get this invocation
+        $this->assertInstanceOf(InvocationMessage::class, $hook2Transport->getLastMessageSent());
+        // the first hook should have heard nothing new
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        // the callee should have heard nothing new
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        // unregister middle hook
+        $unregMsg = new UnregisterMessage(5, $hookRegistrationId);
+        $dealer->handleUnregisterMessage(new MessageEvent($hookSession, $unregMsg));
+        $this->assertInstanceOf(UnregisteredMessage::class, $hookTransport->getLastMessageSent());
+
+        // this call should go to hook2 still
+        $callMsg->setRequestId(9);
+        $callMsg->setArguments(['Call to hook2']);
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMsg));
+        /** @var InvocationMessage $invocationMsg */
+        $invocationMsg = $hook2Transport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
+        $this->assertEquals(['Call to hook2'], $invocationMsg->getArguments());
+
+        // unregister hook2
+        $unregMsg = new UnregisterMessage(6, $hook2RegisteredMsg->getRegistrationId());
+        $dealer->handleUnregisterMessage(new MessageEvent($hook2Session, $unregMsg));
+        $this->assertInstanceOf(UnregisteredMessage::class, $hook2Transport->getLastMessageSent());
+
+        // next call should go to original caller
+        $callMsg->setRequestId(10);
+        $callMsg->setArguments(['New call']);
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $callMsg));
+        /** @var InvocationMessage $invocationMsg */
+        $invocationMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
+        $this->assertEquals(['New call'], $invocationMsg->getArguments());
+    }
+
+    public function testHookCallingHooked() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(1, (object)[], 'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+
+        $callMsg = new CallMessage(
+            47,
+            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var InvocationMessage $invocationMsg */
+        $invocationMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
+        $this->assertEquals(['Calling hooked'], $invocationMsg->getArguments());
+    }
+
+    public function testHookCallingUnownedHooked() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(1, (object)[], 'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+
+        $callMsg = new CallMessage(
+            47,
+            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($calleeSession, $callMsg));
+
+        /** @var ErrorMessage $errorMsg */
+        $errorMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errorMsg);
+        $this->assertEquals(47, $errorMsg->getRequestId());
+        $this->assertEquals('thruway.error.hook.not_yours', $errorMsg->getErrorURI());
+    }
+
+    public function testHookCallingUnhooked() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(1, (object)[], 'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+        /** @var RegisteredMessage $originalRegisteredMsg */
+        $originalRegisteredMsg = $calleeTransport->getLastMessageSent();
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+
+        $callMsg = new CallMessage(
+            47,
+            (object)['x_thruway_call_hooked' => $originalRegisteredMsg->getRegistrationId()],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($calleeSession, $callMsg));
+
+        /** @var ErrorMessage $errorMsg */
+        $errorMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errorMsg);
+        $this->assertEquals(47, $errorMsg->getRequestId());
+        $this->assertEquals('thruway.error.hook.not_hooked', $errorMsg->getErrorURI());
+    }
+
+    public function testHookCallingNonexistentHooked() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(1, (object)[], 'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+        /** @var RegisteredMessage $originalRegisteredMsg */
+        $originalRegisteredMsg = $calleeTransport->getLastMessageSent();
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+
+        $callMsg = new CallMessage(
+            47,
+            (object)['x_thruway_call_hooked' => 12345],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($calleeSession, $callMsg));
+
+        /** @var ErrorMessage $errorMsg */
+        $errorMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errorMsg);
+        $this->assertEquals(47, $errorMsg->getRequestId());
+        $this->assertEquals('thruway.error.hook.bad_registration', $errorMsg->getErrorURI());
     }
 }

@@ -420,7 +420,7 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
         /** @var \Thruway\Message\InvocationMessage $invocationMsg */
         $invocationMsg = null;
 
-        $session->expects($this->exactly(4))
+        $session->expects($this->exactly(3))
                 ->method("sendMessage")
                 ->withConsecutive(
                         [
@@ -435,12 +435,6 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
                         $this->assertInstanceOf('\Thruway\Message\InvocationMessage', $msg);
                         $invocationMsg = $msg;
 
-                        return true;
-                    })
-                        ], [
-                    $this->callback(function ($msg) {
-                        $this->assertInstanceOf('\Thruway\Message\ErrorMessage', $msg);
-                        $this->assertEquals('wamp.error.no_such_registration', $msg->getErrorUri());
                         return true;
                     })
                         ], [$this->isInstanceOf('\Thruway\Message\UnregisteredMessage')]
