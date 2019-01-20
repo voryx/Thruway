@@ -845,6 +845,116 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(['Calling hooked'], $invocationMsg->getArguments());
     }
 
+    public function testHookCallingHookedWithCallerFrom() {
+        $realm = new Realm('my_realm');
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+        $calleeSession->setRealm($realm);
+
+        $registerMsg = new RegisterMessage(
+            1,
+            (object)['disclose_caller'=>true],
+            'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true, 'disclose_caller' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $hookSession->setRealm($realm);
+        $hookAuthDetails = new \Thruway\Authentication\AuthenticationDetails();
+        $hookAuthDetails->setAuthId('admin');
+        $hookAuthDetails->setAuthRoles(['admin', 'something']);
+        $hookSession->setAuthenticated(true);
+        $hookSession->setAuthenticationDetails($hookAuthDetails);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+
+        // setup a caller here to copy the session info of
+        $callerTransport = new DummyTransport();
+        $callerSession = new Session($callerTransport);
+        $callerAuthDetails = new \Thruway\Authentication\AuthenticationDetails();
+        $callerAuthDetails->setAuthId('the_user');
+        $callerAuthDetails->setAuthRoles(['the_role']);
+        $callerSession->setRealm($realm);
+        $callerSession->setAuthenticationDetails($callerAuthDetails);
+
+        $origCall = new CallMessage(9876, (object)[], 'test.rpc', ['some arg']);
+
+        $dealer->handleCallMessage(new MessageEvent($callerSession, $origCall));
+        // The hook should get the invocation
+        /** @var InvocationMessage $origInvocationMessage */
+        $origInvocationMessage = $hookTransport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $origInvocationMessage);
+        $this->assertObjectHasAttribute('caller', $origInvocationMessage->getDetails());
+        $this->assertEquals($callerSession->getSessionId(), $origInvocationMessage->getDetails()->caller);
+
+        $callMsg = new CallMessage(
+            47,
+            (object)[
+                'x_thruway_call_hooked' => $hookRegistrationId,
+                'x_thruway_call_hooked_with_caller_from' => $origInvocationMessage->getRequestId()
+            ],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var InvocationMessage $invocationMsg */
+        $invocationMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
+        $this->assertEquals(['Calling hooked'], $invocationMsg->getArguments());
+        $this->assertObjectHasAttribute('caller', $invocationMsg->getDetails());
+        $this->assertEquals($callerSession->getSessionId(), $invocationMsg->getDetails()->caller);
+        $this->assertEquals('the_user', $invocationMsg->getDetails()->authid);
+
+        // call with non-existent invocation id
+        $callMsg = new CallMessage(
+            47,
+            (object)[
+                'x_thruway_call_hooked' => $hookRegistrationId,
+                'x_thruway_call_hooked_with_caller_from' => 1234
+            ],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var ErrorMessage $errMsg */
+        $errMsg = $hookTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errMsg);
+        $this->assertEquals('thruway.error.hook.caller_from_invalid', $errMsg->getErrorURI());
+
+        // call with invocation id from callee's invocation - I should only be able to use
+        // and invocation that was sent to the hook's session
+        $callMsg = new CallMessage(
+            47,
+            (object)[
+                'x_thruway_call_hooked' => $hookRegistrationId,
+                'x_thruway_call_hooked_with_caller_from' => $invocationMsg->getRequestId()
+            ],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var ErrorMessage $errMsg */
+        $errMsg = $hookTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errMsg);
+        $this->assertEquals('thruway.error.hook.caller_from_not_yours', $errMsg->getErrorURI());
+    }
+
     public function testHookCallingUnownedHooked() {
         $dealer = new Dealer();
         $helloMessage = new HelloMessage('some.realm', (object)[]);

@@ -320,6 +320,8 @@ class Dealer implements RealmModuleInterface
         /* @var $procedure \Thruway\Procedure */
         $procedure = $this->procedures[$msg->getProcedureName()];
 
+        $overrideCallerSession = null;
+
         // A Hook wants to call the hooked RPC
         if (isset($msg->getOptions()->x_thruway_call_hooked)) {
             $registrationId = $msg->getOptions()->x_thruway_call_hooked;
@@ -343,6 +345,25 @@ class Dealer implements RealmModuleInterface
                         return;
                     }
                     $procedure = $procedure->getHookedProcedure();
+
+                    // see if they want to use a concurrent call to override the
+                    // caller info so it will look like the original call to the
+                    // hooked procedure with_caller_from is an invocation request id
+                    if (isset($msg->getOptions()->x_thruway_call_hooked_with_caller_from)) {
+                        $callerFromInvocationId = $msg->getOptions()->x_thruway_call_hooked_with_caller_from;
+                        if (!isset($this->callInvocationIndex[$callerFromInvocationId])) {
+                            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.caller_from_invalid'));
+                            return;
+                        }
+                        $callerFromCall = $this->callInvocationIndex[$callerFromInvocationId];
+
+                        if ($callerFromCall->getCalleeSession() !== $session) {
+                            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.caller_from_not_yours'));
+                            return;
+                        }
+
+                        $overrideCallerSession = $callerFromCall->getCallerSession();
+                    }
                     break;
                 }
                 $procedure = $procedure->getHookedProcedure();
@@ -354,7 +375,7 @@ class Dealer implements RealmModuleInterface
             }
         }
 
-        $call = new Call($session, $msg, $procedure);
+        $call = new Call($session, $msg, $procedure, $overrideCallerSession);
 
         $this->callInvocationIndex[$call->getInvocationRequestId()] = $call;
         $this->callRequestIndex[$msg->getRequestId()]               = $call;
