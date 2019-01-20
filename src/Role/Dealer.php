@@ -200,6 +200,12 @@ class Dealer implements RealmModuleInterface
             // This is treated as a new procedure and the existing one is subjugated
             $procedure = Procedure::createForHook($msg->getProcedureName(), $this->procedures[$msg->getProcedureName()]);
             $this->procedures[$msg->getProcedureName()] = $procedure;
+        } else {
+            // This is not a hook - we need to traverse the hook-chain so any regular registrations
+            // end up on the regular one
+            while ($procedure->getHookedProcedure() !== null) {
+                $procedure = $procedure->getHookedProcedure();
+            }
         }
 
         if ($procedure->processRegister($session, $msg)) {

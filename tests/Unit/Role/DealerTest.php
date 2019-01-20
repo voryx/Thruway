@@ -968,4 +968,90 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(47, $errorMsg->getRequestId());
         $this->assertEquals('thruway.error.hook.bad_registration', $errorMsg->getErrorURI());
     }
+
+    public function testRegisterRegularAfterHooked() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(
+            1,
+            (object)[ 'invoke' => \Thruway\Registration::ROUNDROBIN_REGISTRATION ],
+            'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        /** @var RegisteredMessage $registeredMessage */
+        $registeredMessage = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(RegisteredMessage::class, $registeredMessage);
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+
+        $callMsg = new CallMessage(
+            47,
+            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var InvocationMessage $invocationMsg */
+        $invocationMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
+        $this->assertEquals(['Calling hooked'], $invocationMsg->getArguments());
+        $this->assertEquals($registeredMessage->getRegistrationId(), $invocationMsg->getRegistrationId());
+
+        // register another to see if it adds the registration to the correct place
+        $registerMsg2 = new RegisterMessage(
+            100,
+            (object)[ 'invoke' => \Thruway\Registration::ROUNDROBIN_REGISTRATION ],
+            'test.rpc');
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg2));
+        /** @var RegisteredMessage $registeredMessage2 */
+        $registeredMessage2 = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(RegisteredMessage::class, $registeredMessage2);
+
+        // make another call - this should call the new one because of the round robin
+        $callMsg = new CallMessage(
+            48,
+            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            'test.rpc',
+            ['Calling hooked again']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var InvocationMessage $invocationMsg */
+        $invocationMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
+        $this->assertEquals(['Calling hooked again'], $invocationMsg->getArguments());
+        $this->assertEquals($registeredMessage2->getRegistrationId(), $invocationMsg->getRegistrationId());
+
+        // make a 3rd call - this should invoke the first one because of the round robin
+        $callMsg = new CallMessage(
+            49,
+            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            'test.rpc',
+            ['Calling hooked - 3rd time']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var InvocationMessage $invocationMsg */
+        $invocationMsg = $calleeTransport->getLastMessageSent();
+        $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
+        $this->assertEquals(['Calling hooked - 3rd time'], $invocationMsg->getArguments());
+        $this->assertEquals($registeredMessage->getRegistrationId(), $invocationMsg->getRegistrationId());
+
+    }
 }
