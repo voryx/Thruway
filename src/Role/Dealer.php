@@ -324,7 +324,18 @@ class Dealer implements RealmModuleInterface
 
         // A Hook wants to call the hooked RPC
         if (isset($msg->getOptions()->x_thruway_call_hooked)) {
-            $registrationId = $msg->getOptions()->x_thruway_call_hooked;
+            $callHookedOptions = $msg->getOptions()->x_thruway_call_hooked;
+            if (!is_object($callHookedOptions)) {
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.invalid_call_options'));
+
+                return;
+            }
+            if (!isset($callHookedOptions->registration_id) || !is_numeric($callHookedOptions->registration_id)) {
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.invalid_call_registration_id'));
+
+                return;
+            }
+            $registrationId = $callHookedOptions->registration_id;
             while ($procedure !== null) {
                 $registration = $procedure->getRegistrationById($registrationId);
                 if ($registration) {
@@ -349,8 +360,12 @@ class Dealer implements RealmModuleInterface
                     // see if they want to use a concurrent call to override the
                     // caller info so it will look like the original call to the
                     // hooked procedure with_caller_from is an invocation request id
-                    if (isset($msg->getOptions()->x_thruway_call_hooked_with_caller_from)) {
-                        $callerFromInvocationId = $msg->getOptions()->x_thruway_call_hooked_with_caller_from;
+                    if (isset($callHookedOptions->with_caller_from)) {
+                        if (!is_numeric($callHookedOptions->with_caller_from)) {
+                            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.caller_from_invalid'));
+                            return;
+                        }
+                        $callerFromInvocationId = $callHookedOptions->with_caller_from;
                         if (!isset($this->callInvocationIndex[$callerFromInvocationId])) {
                             $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.caller_from_invalid'));
                             return;

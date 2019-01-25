@@ -833,7 +833,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         $callMsg = new CallMessage(
             47,
-            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            (object)['x_thruway_call_hooked' => (object)[ 'registration_id' => $hookRegistrationId ]],
             'test.rpc',
             ['Calling hooked']
         );
@@ -843,6 +843,46 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $invocationMsg = $calleeTransport->getLastMessageSent();
         $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
         $this->assertEquals(['Calling hooked'], $invocationMsg->getArguments());
+    }
+
+    public function testHookCallingHookedBadOptions() {
+        $dealer = new Dealer();
+        $helloMessage = new HelloMessage('some.realm', (object)[]);
+
+        $calleeTransport = new DummyTransport();
+        $calleeSession = new Session($calleeTransport);
+        // make sure this callee supports call cancellation
+        $calleeSession->setHelloMessage($helloMessage);
+
+        $registerMsg = new RegisterMessage(1, (object)[], 'test.rpc');
+
+        $dealer->handleRegisterMessage(new MessageEvent($calleeSession, $registerMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $calleeTransport->getLastMessageSent());
+
+        $hookRegisterMsg = new RegisterMessage(
+            1,
+            (object)['x_thruway_hook' => true],
+            'test.rpc'
+        );
+        $hookTransport = new DummyTransport();
+        $hookSession = new Session($hookTransport);
+        $dealer->handleRegisterMessage(new MessageEvent($hookSession, $hookRegisterMsg));
+        $this->assertInstanceOf(RegisteredMessage::class, $hookTransport->getLastMessageSent());
+        $hookRegistrationId = $hookTransport->getLastMessageSent()->getRegistrationId();
+
+        $callMsg = new CallMessage(
+            47,
+            (object)['x_thruway_call_hooked' => 12345],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var ErrorMessage $errorMsg */
+        $errorMsg = $hookTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errorMsg);
+        $this->assertEquals(47, $errorMsg->getRequestId());
+        $this->assertEquals('thruway.error.hook.invalid_call_options', $errorMsg->getErrorURI());
     }
 
     public function testHookCallingHookedWithCallerFrom() {
@@ -903,8 +943,10 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $callMsg = new CallMessage(
             47,
             (object)[
-                'x_thruway_call_hooked' => $hookRegistrationId,
-                'x_thruway_call_hooked_with_caller_from' => $origInvocationMessage->getRequestId()
+                'x_thruway_call_hooked' => (object)[
+                    'registration_id' => $hookRegistrationId,
+                    'with_caller_from' => $origInvocationMessage->getRequestId()
+                ]
             ],
             'test.rpc',
             ['Calling hooked']
@@ -923,8 +965,10 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $callMsg = new CallMessage(
             47,
             (object)[
-                'x_thruway_call_hooked' => $hookRegistrationId,
-                'x_thruway_call_hooked_with_caller_from' => 1234
+                'x_thruway_call_hooked' => (object)[
+                    'registration_id' => $hookRegistrationId,
+                    'with_caller_from' => 1234
+                ]
             ],
             'test.rpc',
             ['Calling hooked']
@@ -941,8 +985,10 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $callMsg = new CallMessage(
             47,
             (object)[
-                'x_thruway_call_hooked' => $hookRegistrationId,
-                'x_thruway_call_hooked_with_caller_from' => $invocationMsg->getRequestId()
+                'x_thruway_call_hooked' => (object)[
+                    'registration_id' => $hookRegistrationId,
+                    'with_caller_from' => $invocationMsg->getRequestId()
+                ]
             ],
             'test.rpc',
             ['Calling hooked']
@@ -953,6 +999,43 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $errMsg = $hookTransport->getLastMessageSent();
         $this->assertInstanceOf(ErrorMessage::class, $errMsg);
         $this->assertEquals('thruway.error.hook.caller_from_not_yours', $errMsg->getErrorURI());
+
+        // call with invalid with_caller_from
+        $callMsg = new CallMessage(
+            47,
+            (object)[
+                'x_thruway_call_hooked' => (object)[
+                    'registration_id' => $hookRegistrationId,
+                    'with_caller_from' => (object)['x' => 'y']
+                ]
+            ],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var ErrorMessage $errMsg */
+        $errMsg = $hookTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errMsg);
+        $this->assertEquals('thruway.error.hook.caller_from_invalid', $errMsg->getErrorURI());
+
+        // call with no registration_id
+        $callMsg = new CallMessage(
+            47,
+            (object)[
+                'x_thruway_call_hooked' => (object)[
+                    'with_caller_from' => (object)['x' => 'y']
+                ]
+            ],
+            'test.rpc',
+            ['Calling hooked']
+        );
+        $dealer->handleCallMessage(new MessageEvent($hookSession, $callMsg));
+
+        /** @var ErrorMessage $errMsg */
+        $errMsg = $hookTransport->getLastMessageSent();
+        $this->assertInstanceOf(ErrorMessage::class, $errMsg);
+        $this->assertEquals('thruway.error.hook.invalid_call_registration_id', $errMsg->getErrorURI());
     }
 
     public function testHookCallingUnownedHooked() {
@@ -982,7 +1065,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         $callMsg = new CallMessage(
             47,
-            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            (object)['x_thruway_call_hooked' => (object)[ 'registration_id' => $hookRegistrationId ]],
             'test.rpc',
             ['Calling hooked']
         );
@@ -1024,7 +1107,10 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         $callMsg = new CallMessage(
             47,
-            (object)['x_thruway_call_hooked' => $originalRegisteredMsg->getRegistrationId()],
+            (object)['x_thruway_call_hooked' => (object)[
+                    'registration_id' => $originalRegisteredMsg->getRegistrationId()
+                ]
+            ],
             'test.rpc',
             ['Calling hooked']
         );
@@ -1066,7 +1152,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         $callMsg = new CallMessage(
             47,
-            (object)['x_thruway_call_hooked' => 12345],
+            (object)['x_thruway_call_hooked' => (object)[ 'registration_id' => 12345 ]],
             'test.rpc',
             ['Calling hooked']
         );
@@ -1111,7 +1197,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         $callMsg = new CallMessage(
             47,
-            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            (object)['x_thruway_call_hooked' => (object)[ 'registration_id' => $hookRegistrationId ]],
             'test.rpc',
             ['Calling hooked']
         );
@@ -1136,7 +1222,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         // make another call - this should call the new one because of the round robin
         $callMsg = new CallMessage(
             48,
-            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            (object)['x_thruway_call_hooked' => (object)[ 'registration_id' => $hookRegistrationId ]],
             'test.rpc',
             ['Calling hooked again']
         );
@@ -1151,7 +1237,7 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         // make a 3rd call - this should invoke the first one because of the round robin
         $callMsg = new CallMessage(
             49,
-            (object)['x_thruway_call_hooked' => $hookRegistrationId],
+            (object)['x_thruway_call_hooked' => (object)[ 'registration_id' => $hookRegistrationId ]],
             'test.rpc',
             ['Calling hooked - 3rd time']
         );
@@ -1162,6 +1248,13 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf(InvocationMessage::class, $invocationMsg);
         $this->assertEquals(['Calling hooked - 3rd time'], $invocationMsg->getArguments());
         $this->assertEquals($registeredMessage->getRegistrationId(), $invocationMsg->getRegistrationId());
-
     }
+
+//    public function testRegisteringOnHookedRPC() {
+//        $this->markTestSkipped('Not implemented');
+//    }
+//
+//    public function testHookPassingCredentialsOfCaller() {
+//        $this->markTestSkipped('Not implemented');
+//    }
 }
