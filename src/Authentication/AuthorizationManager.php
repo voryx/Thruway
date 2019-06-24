@@ -333,7 +333,23 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
      */
     public function removeAuthorizationRule($args)
     {
-        throw new Exception('remove_authorization_rule is not implemented yet');
+        $rule = $this->getRuleFromArgs($args);
+
+        if($rule === false){
+            return 'ERROR';
+        }
+
+        $role      = $rule->role;
+        $actionUri = $rule->action . '.' . $rule->uri;
+        $allow     = $rule->allow;
+
+        if(!isset($this->rules[$role])){
+            $this->rules[$role] = [];
+        }
+
+        if(isset($this->rules[$role][$actionUri]) && $this->rules[$role][$actionUri] == $allow){
+            unset($this->rules[$role][$actionUri]);
+        }
     }
 
     /**
