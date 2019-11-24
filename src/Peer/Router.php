@@ -124,7 +124,7 @@ class Router implements RouterInterface, EventSubscriberInterface
 
         $this->started = true;
 
-        $this->eventDispatcher->dispatch('router.start', new RouterStartEvent());
+        $this->eventDispatcher->dispatch(new RouterStartEvent(), 'router.start');
 
         if ($runLoop) {
             Logger::info($this, 'Starting loop');
@@ -137,7 +137,7 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function stop($gracefully = true)
     {
-        $this->getEventDispatcher()->dispatch('router.stop', new RouterStopEvent());
+        $this->getEventDispatcher()->dispatch(new RouterStopEvent(), 'router.stop');
     }
 
     /**
