@@ -2,6 +2,7 @@
 
 namespace Thruway\Peer;
 
+use Symfony\Component\EventDispatcher\LegacyEventDispatcherProxy;
 use Thruway\Common\Utils;
 use Thruway\Event\ConnectionCloseEvent;
 use Thruway\Event\EventDispatcher;
@@ -57,7 +58,7 @@ class Router implements RouterInterface, EventSubscriberInterface
 
         $this->loop            = $loop ?: Factory::create();
         $this->realmManager    = new RealmManager();
-        $this->eventDispatcher = new EventDispatcher();
+        $this->eventDispatcher = LegacyEventDispatcherProxy::decorate(new EventDispatcher());
 
         $this->eventDispatcher->addSubscriber($this);
 
@@ -124,7 +125,7 @@ class Router implements RouterInterface, EventSubscriberInterface
 
         $this->started = true;
 
-        $this->eventDispatcher->dispatch('router.start', new RouterStartEvent());
+        $this->eventDispatcher->dispatch(new RouterStartEvent(), 'router.start');
 
         if ($runLoop) {
             Logger::info($this, 'Starting loop');
@@ -137,7 +138,7 @@ class Router implements RouterInterface, EventSubscriberInterface
      */
     public function stop($gracefully = true)
     {
-        $this->getEventDispatcher()->dispatch('router.stop', new RouterStopEvent());
+        $this->getEventDispatcher()->dispatch(new RouterStopEvent(), 'router.stop');
     }
 
     /**

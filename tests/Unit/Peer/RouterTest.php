@@ -55,7 +55,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $session = new \Thruway\Session($transport);
 
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session), 'connection_open');
 
         $this->assertGreaterThan(0, count($router->managerGetSessionCount()));
 
@@ -78,7 +78,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
         $session = new \Thruway\Session($transport);
 
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session), 'connection_open');
 
         return ['router' => $router, 'session' => $session];
     }
@@ -415,7 +415,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue(["type" => "ratchet", "transport_address" => "127.0.0.1"]));
 
         //Simulate onOpen
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session), 'connection_open');
 
         //Simulate a HelloMessage
         $helloMessage = new \Thruway\Message\HelloMessage("test.realm", []);
@@ -472,7 +472,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $session = new \Thruway\Session($transport);
 
         //Simulate onOpen
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session), 'connection_open');
 
         //Simulate HelloMessage
         $helloMessage = new \Thruway\Message\HelloMessage("test.realm2", []);
@@ -534,7 +534,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $session = new \Thruway\Session($transport);
 
         //Simulate onOpen
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session), 'connection_open');
 
         //Simulate a AbortMessage
         $abortMessage = new \Thruway\Message\AbortMessage(["message" => "Client is shutting down"], "wamp.error.system_shutdown");
@@ -576,7 +576,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $session = new \Thruway\Session($transport);
 
         //Simulate onOpen
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session), 'connection_open');
 
         //Simulate a GoodbyeMessage
         $goodbyeMessage = new \Thruway\Message\GoodbyeMessage(["message" => "Client is shutting down"],
@@ -619,7 +619,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $session = new \Thruway\Session($transport);
 
         //Simulate onOpen
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session), 'connection_open');
 
         //Simulate a HelloMessage with an empty Realm
         $helloMessage = new \Thruway\Message\HelloMessage("", []);
@@ -677,9 +677,9 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
 
 
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session1));
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session2));
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionPublisher));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session1), 'connection_open');
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session2), 'connection_open');
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionPublisher), 'connection_open');
 
         // send in a few hellos
         $helloMsg = new \Thruway\Message\HelloMessage("realm_issue53", (object)[]);
@@ -779,8 +779,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $sessionStateHandler = new \Thruway\Session($transportStateHandler);
         $sessionSubscriber = new \Thruway\Session($transportSubscriber);
 
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler));
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler), 'connection_open');
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber), 'connection_open');
 
         $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
 
@@ -886,8 +886,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $sessionStateHandler = new \Thruway\Session($transportStateHandler);
         $sessionSubscriber = new \Thruway\Session($transportSubscriber);
 
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler));
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler), 'connection_open');
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber), 'connection_open');
 
         $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
 
@@ -992,8 +992,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $sessionStateHandler = new \Thruway\Session($transportStateHandler);
         $sessionSubscriber = new \Thruway\Session($transportSubscriber);
 
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler));
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler), 'connection_open');
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber), 'connection_open');
 
         $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
 
@@ -1095,8 +1095,8 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $sessionStateHandler = new \Thruway\Session($transportStateHandler);
         $sessionSubscriber = new \Thruway\Session($transportSubscriber);
 
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler));
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionStateHandler), 'connection_open');
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($sessionSubscriber), 'connection_open');
 
         $hello = new \Thruway\Message\HelloMessage('state.test.realm', (object)[]);
 
@@ -1216,7 +1216,7 @@ class RouterTest extends \PHPUnit_Framework_TestCase
         $transport = new \Thruway\Transport\DummyTransport();
         $session = $router->createNewSession($transport);
         $prevMsg = null;
-        $router->getEventDispatcher()->dispatch("connection_open", new \Thruway\Event\ConnectionOpenEvent($session));
+        $router->getEventDispatcher()->dispatch(new \Thruway\Event\ConnectionOpenEvent($session), 'connection_open');
 
         $fromRouter = [];
 

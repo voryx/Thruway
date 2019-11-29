@@ -156,7 +156,7 @@ class RealmManager extends Module\RouterModule implements RealmModuleInterface
 
         $this->realms[$realm->getRealmName()] = $realm;
 
-        $this->router->getEventDispatcher()->dispatch('new_realm', new NewRealmEvent($realm));
+        $this->router->getEventDispatcher()->dispatch(new NewRealmEvent($realm), 'new_realm');
     }
 
     /**

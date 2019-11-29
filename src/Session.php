@@ -2,6 +2,7 @@
 
 namespace Thruway;
 
+use Symfony\Component\EventDispatcher\LegacyEventDispatcherProxy;
 use Thruway\Authentication\AuthenticationDetails;
 use Thruway\Common\Utils;
 use Thruway\Event\EventDispatcher;
@@ -63,7 +64,7 @@ class Session extends AbstractSession implements RealmModuleInterface
         $this->realm                 = null;
         $this->sessionStart          = new \DateTime();
         $this->authenticationDetails = null;
-        $this->dispatcher            = new EventDispatcher();
+        $this->dispatcher            = LegacyEventDispatcherProxy::decorate(new EventDispatcher());
 
         $this->dispatcher->addRealmSubscriber($this);
     }
@@ -134,7 +135,7 @@ class Session extends AbstractSession implements RealmModuleInterface
                 // metaevent
                 $this->getRealm()->publishMeta('wamp.metaevent.session.on_leave', [$this->getMetaInfo()]);
             }
-            $this->dispatcher->dispatch('LeaveRealm', new LeaveRealmEvent($this->realm, $this));
+            $this->dispatcher->dispatch(new LeaveRealmEvent($this->realm, $this), 'LeaveRealm');
 
             $this->realm = null;
         }
@@ -339,8 +340,8 @@ class Session extends AbstractSession implements RealmModuleInterface
         $shortName = (new \ReflectionClass($message))->getShortName();
 
         if ($message instanceof HelloMessage) {
-            $this->dispatcher->dispatch('Pre' . $shortName . 'Event', new MessageEvent($this, $message));
+            $this->dispatcher->dispatch(new MessageEvent($this, $message), 'Pre' . $shortName . 'Event');
         }
-        $this->dispatcher->dispatch($eventNamePrefix . $shortName . 'Event', new MessageEvent($this, $message));
+        $this->dispatcher->dispatch(new MessageEvent($this, $message), $eventNamePrefix . $shortName . 'Event');
     }
 }
