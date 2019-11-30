@@ -1,6 +1,6 @@
 <?php
 
-class HelloMessageTest extends PHPUnit_Framework_TestCase
+class HelloMessageTest extends PHPUnit\Framework\TestCase
 {
     /**
      * @expectedException InvalidArgumentException

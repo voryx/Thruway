@@ -7,7 +7,7 @@ use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
 use Thruway\ClientSession;
 
-class CrossbarTest extends PHPUnit_Framework_TestCase
+class CrossbarTest extends \PHPUnit\Framework\TestCase
 {
 
     /**

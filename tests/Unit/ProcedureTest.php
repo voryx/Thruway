@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../bootstrap.php';
 
-class ProcedureTest extends PHPUnit_Framework_TestCase
+class ProcedureTest extends PHPUnit\Framework\TestCase
 {
 
     /**

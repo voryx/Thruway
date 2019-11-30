@@ -1,6 +1,6 @@
 <?php
 
-class PingTest extends \PHPUnit_Framework_TestCase {
+class PingTest extends \PHPUnit\Framework\TestCase {
     /**
      * @var \Thruway\Connection
      */

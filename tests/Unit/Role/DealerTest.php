@@ -18,7 +18,7 @@ use Thruway\Role\Dealer;
 use Thruway\Session;
 use Thruway\Transport\DummyTransport;
 
-class DealerTest extends PHPUnit_Framework_TestCase {
+class DealerTest extends PHPUnit\Framework\TestCase {
     /** @var \Thruway\Message\HelloMessage */
     private $_helloMessage;
 

@@ -61,7 +61,7 @@ class InternalClientTransportProvider extends AbstractRouterTransportProvider
         $this->session = $session;
 
         // connect the transport to the Router/Peer
-        $this->router->getEventDispatcher()->dispatch('connection_open', new ConnectionOpenEvent($session));
+        $this->router->getEventDispatcher()->backwardsCompatibleDispatch(new ConnectionOpenEvent($session), 'connection_open');
 
         // open the client side
         $this->internalClient->onOpen($clientTransport);

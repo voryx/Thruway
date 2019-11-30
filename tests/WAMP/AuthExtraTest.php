@@ -30,7 +30,7 @@ class TheAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient
 
 }
 
-class AuthExtraTest extends PHPUnit_Framework_TestCase {
+class AuthExtraTest extends PHPUnit\Framework\TestCase {
     /*
      * This is a complex test - should do this a better way
      */

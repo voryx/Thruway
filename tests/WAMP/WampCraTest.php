@@ -4,7 +4,7 @@
 use Thruway\ClientSession;
 use Thruway\Message\ChallengeMessage;
 
-class WampCraTest extends PHPUnit_Framework_TestCase
+class WampCraTest extends PHPUnit\Framework\TestCase
 {
 
     private $_error;

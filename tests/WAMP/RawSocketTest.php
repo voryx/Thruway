@@ -5,7 +5,7 @@
  *
  *
  */
-class RawSocketTest extends PHPUnit_Framework_TestCase {
+class RawSocketTest extends PHPUnit\Framework\TestCase {
     private $_result;
 
     public function test() {

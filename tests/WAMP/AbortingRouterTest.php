@@ -1,6 +1,6 @@
 <?php
 
-class AbortingRouterTest extends \PHPUnit_Framework_TestCase {
+class AbortingRouterTest extends \PHPUnit\Framework\TestCase {
     public function testAbortFollowingHello() {
         $this->_testResult = null;
         $this->_error = null;

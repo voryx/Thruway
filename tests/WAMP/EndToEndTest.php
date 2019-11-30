@@ -4,7 +4,7 @@ use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
 use Thruway\ClientSession;
 
-class EndToEndTest extends PHPUnit_Framework_TestCase
+class EndToEndTest extends \PHPUnit\Framework\TestCase
 {
 
     /**

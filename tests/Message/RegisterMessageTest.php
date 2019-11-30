@@ -11,7 +11,7 @@ use Thruway\Message\RegisterMessage;
  *
  * <code>[REGISTER, Request|id, Options|dict, Procedure|uri]</code>
  */
-class RegisterMessageTest extends \PHPUnit_Framework_TestCase
+class RegisterMessageTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testEmptyArrayOptions()

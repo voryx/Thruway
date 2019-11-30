@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../bootstrap.php';
 
-class BrokerTest extends PHPUnit_Framework_TestCase
+class BrokerTest extends PHPUnit\Framework\TestCase
 {
     public function testUnsubscribeFromNonExistentSubscription()
     {

@@ -16,7 +16,7 @@ class AutoAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClien
     }
 }
 
-class NoChallengeTest extends PHPUnit_Framework_TestCase
+class NoChallengeTest extends PHPUnit\Framework\TestCase
 {
     /*
      * This is a complex test - should do this a better way

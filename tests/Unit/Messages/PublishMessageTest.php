@@ -1,7 +1,7 @@
 <?php
 
 
-class PublishMessageTest extends \PHPUnit_Framework_TestCase
+class PublishMessageTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testPublishBlackWhiteListing()

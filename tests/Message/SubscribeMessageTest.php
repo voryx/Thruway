@@ -11,7 +11,7 @@ use Thruway\Message\SubscribeMessage;
  *
  * <code>[SUBSCRIBE, Request|id, Options|dict, Topic|uri]</code>
  */
-class SubscribeMessageTest extends \PHPUnit_Framework_TestCase
+class SubscribeMessageTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testEmptyArrayOptions()

@@ -1,7 +1,7 @@
 <?php
 
 
-class AuthorizingRealmTest extends PHPUnit_Framework_TestCase {
+class AuthorizingRealmTest extends \PHPUnit\Framework\TestCase {
     /**
      * @var \Thruway\Connection
      */

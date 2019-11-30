@@ -1,6 +1,6 @@
 <?php
 
-class SessionMetaTest extends PHPUnit_Framework_TestCase {
+class SessionMetaTest extends \PHPUnit\Framework\TestCase {
     protected $_conn;
     protected $_conn2;
     protected $_joinInfo;

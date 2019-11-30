@@ -1,7 +1,7 @@
 <?php
 
 
-class SessionTest extends PHPUnit_Framework_TestCase {
+class SessionTest extends PHPUnit\Framework\TestCase {
     public function testTransportSendMessage() {
         $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
             ->getMock();

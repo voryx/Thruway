@@ -1,7 +1,7 @@
 <?php
 
 
-class Issue100Test extends PHPUnit_Framework_TestCase {
+class Issue100Test extends PHPUnit\Framework\TestCase {
     public function testUnsubscribeSendingUnsubThenError() {
         $broker = new \Thruway\Role\Broker();
 

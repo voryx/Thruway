@@ -1,6 +1,6 @@
 <?php
 
-class ReplaceOrphanedSessionTest extends PHPUnit_Framework_TestCase {
+class ReplaceOrphanedSessionTest extends \PHPUnit\Framework\TestCase {
     /**
      * @var \Thruway\Connection
      */

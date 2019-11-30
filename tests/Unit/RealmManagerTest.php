@@ -1,7 +1,7 @@
 <?php
 
 
-class RealmManagerTest extends PHPUnit_Framework_TestCase {
+class RealmManagerTest extends PHPUnit\Framework\TestCase {
 
     /**
      * @expectedException \Thruway\Exception\RealmNotFoundException

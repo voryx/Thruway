@@ -1,7 +1,7 @@
 <?php
 
 
-class WelcomeMessageTest extends \PHPUnit_Framework_TestCase
+class WelcomeMessageTest extends \PHPUnit\Framework\TestCase
 {
 
     public function testBrokerFeatures()

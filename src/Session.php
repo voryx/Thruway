@@ -134,7 +134,7 @@ class Session extends AbstractSession implements RealmModuleInterface
                 // metaevent
                 $this->getRealm()->publishMeta('wamp.metaevent.session.on_leave', [$this->getMetaInfo()]);
             }
-            $this->dispatcher->dispatch('LeaveRealm', new LeaveRealmEvent($this->realm, $this));
+            $this->dispatcher->backwardsCompatibleDispatch(new LeaveRealmEvent($this->realm, $this), 'LeaveRealm');
 
             $this->realm = null;
         }
@@ -339,8 +339,8 @@ class Session extends AbstractSession implements RealmModuleInterface
         $shortName = (new \ReflectionClass($message))->getShortName();
 
         if ($message instanceof HelloMessage) {
-            $this->dispatcher->dispatch('Pre' . $shortName . 'Event', new MessageEvent($this, $message));
+            $this->dispatcher->backwardsCompatibleDispatch(new MessageEvent($this, $message), 'Pre' . $shortName . 'Event');
         }
-        $this->dispatcher->dispatch($eventNamePrefix . $shortName . 'Event', new MessageEvent($this, $message));
+        $this->dispatcher->backwardsCompatibleDispatch(new MessageEvent($this, $message), $eventNamePrefix . $shortName . 'Event');
     }
 }

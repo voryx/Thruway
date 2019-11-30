@@ -15,7 +15,7 @@ use Thruway\Message\Message;
 use Thruway\Message\ResultMessage;
 use Thruway\Serializer\JsonSerializer;
 
-class MessageTest extends \PHPUnit_Framework_TestCase {
+class MessageTest extends \PHPUnit\Framework\TestCase {
     function testSomething() {
         $this->assertTrue(true);
     }

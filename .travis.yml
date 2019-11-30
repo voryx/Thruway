@@ -56,7 +56,8 @@ matrix:
       env:
         - dependencies=highest
         - dropPlatform=false
-
+  allow_failures:
+    - php: nightly
 
 before_install:
     - export PATH=$HOME/.local/bin:$PATH

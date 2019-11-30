@@ -3,7 +3,7 @@
 
 use Thruway\ClientSession;
 
-class QueryParamAuthTest extends PHPUnit_Framework_TestCase
+class QueryParamAuthTest extends \PHPUnit\Framework\TestCase
 {
 
     private $_error;

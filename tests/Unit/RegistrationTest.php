@@ -1,7 +1,7 @@
 <?php
 
 
-class RegistrationTest extends PHPUnit_Framework_TestCase
+class RegistrationTest extends PHPUnit\Framework\TestCase
 {
     /**
      * @var \Thruway\Session

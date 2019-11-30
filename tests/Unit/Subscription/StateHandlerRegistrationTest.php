@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../../bootstrap.php';
 
-class StateHandlerRegistrationTest extends PHPUnit_Framework_TestCase {
+class StateHandlerRegistrationTest extends PHPUnit\Framework\TestCase {
     public function testSubgroupStateHandlerCheck() {
         $session = $this->getMockBuilder('Thruway\Session')
             ->disableOriginalConstructor()

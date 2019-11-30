@@ -1,7 +1,7 @@
 <?php
 
 
-class FeatureAnnouncementTest extends PHPUnit_Framework_TestCase
+class FeatureAnnouncementTest extends PHPUnit\Framework\TestCase
 {
     /**
      * @var \Thruway\Connection

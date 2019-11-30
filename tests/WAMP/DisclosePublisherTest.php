@@ -1,7 +1,7 @@
 <?php
 
 
-class DisclosePublisherTest extends PHPUnit_Framework_TestCase
+class DisclosePublisherTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Thruway\Connection

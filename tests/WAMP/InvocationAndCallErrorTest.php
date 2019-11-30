@@ -6,7 +6,7 @@
  * Time: 11:46 PM
  */
 
-class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
+class InvocationAndCallErrorTest extends \PHPUnit\Framework\TestCase {
     private $_conn;
     private $_testResult;
     private $_error;

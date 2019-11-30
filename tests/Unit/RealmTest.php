@@ -2,7 +2,7 @@
 
 require_once __DIR__.'/../bootstrap.php';
 
-class RealmTest extends PHPUnit_Framework_TestCase
+class RealmTest extends PHPUnit\Framework\TestCase
 {
     private $_sessions;
 
