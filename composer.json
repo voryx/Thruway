@@ -38,7 +38,7 @@
         "thruway/ratchet-transport": "^0.5.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.5.4",
+        "phpunit/phpunit": "^5.7",
         "thruway/pawl-transport": "^0.5.0",
         "thruway/raw-socket-transport": "^0.5.0"
     }
