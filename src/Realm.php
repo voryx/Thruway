@@ -80,7 +80,7 @@ class Realm implements RealmModuleInterface
             'AbortMessageEvent'        => ['handleAbortMessage', 10],
             'AuthenticateMessageEvent' => ['handleAuthenticateMessage', 10],
             'LeaveRealm'               => ['handleLeaveRealm', 10],
-            'SendWelcomeMessageEvent'  => ['handleSendWelcomeMessage', 10],
+            'SendWelcomeMessageEvent'  => ['handleSendWelcomeMessage', 15],
         ];
     }
 
