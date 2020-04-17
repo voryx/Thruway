@@ -189,6 +189,25 @@ class Dealer implements RealmModuleInterface
             $this->procedures[$msg->getProcedureName()] = $procedure;
         }
 
+        if (isset($msg->getOptions()->x_thruway_hook) && $msg->getOptions()->x_thruway_hook === true) {
+            if (count($procedure->getRegistrations()) === 0) {
+                $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.failed');
+                $errorMsg->setArguments(['Unable to hook non-existent procedure ' . $msg->getProcedureName()]);
+                $session->sendMessage($errorMsg);
+
+                return;
+            }
+            // This is treated as a new procedure and the existing one is subjugated
+            $procedure = Procedure::createForHook($msg->getProcedureName(), $this->procedures[$msg->getProcedureName()]);
+            $this->procedures[$msg->getProcedureName()] = $procedure;
+        } else {
+            // This is not a hook - we need to traverse the hook-chain so any regular registrations
+            // end up on the regular one
+            while ($procedure->getHookedProcedure() !== null) {
+                $procedure = $procedure->getHookedProcedure();
+            }
+        }
+
         if ($procedure->processRegister($session, $msg)) {
             // registration succeeded
             // make sure we have the registration in the collection
@@ -203,6 +222,18 @@ class Dealer implements RealmModuleInterface
                 
                 $this->registrationsBySession[$session] = $registrationsForThisSession;
             }
+
+            return;
+        }
+
+        // Registration failed
+        if ($procedure->getHookedProcedure() !== null) {
+            // restore previous procedure as hook registration failed
+            $this->procedures[$msg->getProcedureName()] = $procedure->getHookedProcedure();
+        }
+
+        if (count($procedure->getRegistrations()) === 0) {
+            unset($this->procedures[$msg->getProcedureName()]);
         }
     }
 
@@ -218,25 +249,51 @@ class Dealer implements RealmModuleInterface
         $registration = $this->getRegistrationById($msg->getRegistrationId());
 
         if ($registration && $this->procedures[$registration->getProcedureName()]) {
+            $prevProcedure = null;
             $procedure = $this->procedures[$registration->getProcedureName()];
-            if ($procedure) {
-                if ($procedure->processUnregister($session, $msg)) {
-                    // Unregistration was successful - remove from this sessions
-                    // list of registrations
-                    if ($this->registrationsBySession->contains($session) &&
-                        in_array($procedure, $this->registrationsBySession[$session], true)
-                    ) {
-                        $registrationsInSession = $this->registrationsBySession[$session];
-                        array_splice($registrationsInSession, array_search($procedure, $registrationsInSession, true), 1);
+            while ($procedure !== null && !$procedure->processUnregister($session, $msg)) {
+                $prevProcedure = $procedure;
+                $procedure = $procedure->getHookedProcedure();
+            }
+            if ($procedure === null) {
+                // this appears to be unreachable as the registration has already been found somewhere
+                // in the procedure
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_registration'));
+                return false;
+            }
+            // Unregistration was successful - remove from this sessions
+            // list of registrations
+            if ($this->registrationsBySession->contains($session) &&
+                in_array($procedure, $this->registrationsBySession[$session], true)
+            ) {
+                $registrationsInSession = $this->registrationsBySession[$session];
+                array_splice($registrationsInSession, array_search($procedure, $registrationsInSession, true), 1);
+            }
+
+            if (count($procedure->getRegistrations()) === 0) {
+                // if this is the top of the stack
+                if ($procedure === $this->procedures[$registration->getProcedureName()]) {
+                    $this->procedures[$registration->getProcedureName()] = $procedure->getHookedProcedure();
+                    if ($this->procedures[$registration->getProcedureName()] === null) {
+                        unset($this->procedures[$registration->getProcedureName()]);
                     }
+
+                    return true;
+                }
+
+                // this is not the top of the stack, so we need to
+                // reset the hookedProcedure of the procedure above to
+                // our hooked procedure
+                if ($prevProcedure !== null) {
+                    $prevProcedure->setHookedProcedure($procedure->getHookedProcedure());
                 }
             }
 
-            return;
+            return true;
         }
 
         // apparently we didn't find anything to unregister
-        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_procedure'));
+        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_registration'));
     }
 
     /**
@@ -263,7 +320,77 @@ class Dealer implements RealmModuleInterface
         /* @var $procedure \Thruway\Procedure */
         $procedure = $this->procedures[$msg->getProcedureName()];
 
-        $call = new Call($session, $msg, $procedure);
+        $overrideCallerSession = null;
+
+        // A Hook wants to call the hooked RPC
+        if (isset($msg->getOptions()->x_thruway_call_hooked)) {
+            $callHookedOptions = $msg->getOptions()->x_thruway_call_hooked;
+            if (!is_object($callHookedOptions)) {
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.invalid_call_options'));
+
+                return;
+            }
+            if (!isset($callHookedOptions->registration_id) || !is_numeric($callHookedOptions->registration_id)) {
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.invalid_call_registration_id'));
+
+                return;
+            }
+            $registrationId = $callHookedOptions->registration_id;
+            while ($procedure !== null) {
+                $registration = $procedure->getRegistrationById($registrationId);
+                if ($registration) {
+                    if (!in_array($registration, $procedure->getRegistrations(), true)) {
+                        $procedure = $procedure->getHookedProcedure();
+                        continue;
+                    }
+                    // we have found the registration in the current procedure
+                    // sanity and security checks
+                    if ($session->getSessionId() !== $registration->getSession()->getSessionId()) {
+                        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.not_yours'));
+
+                        return;
+                    }
+                    if ($procedure->getHookedProcedure() === null) {
+                        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.not_hooked'));
+
+                        return;
+                    }
+                    $procedure = $procedure->getHookedProcedure();
+
+                    // see if they want to use a concurrent call to override the
+                    // caller info so it will look like the original call to the
+                    // hooked procedure with_caller_from is an invocation request id
+                    if (isset($callHookedOptions->with_caller_from)) {
+                        if (!is_numeric($callHookedOptions->with_caller_from)) {
+                            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.caller_from_invalid'));
+                            return;
+                        }
+                        $callerFromInvocationId = $callHookedOptions->with_caller_from;
+                        if (!isset($this->callInvocationIndex[$callerFromInvocationId])) {
+                            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.caller_from_invalid'));
+                            return;
+                        }
+                        $callerFromCall = $this->callInvocationIndex[$callerFromInvocationId];
+
+                        if ($callerFromCall->getCalleeSession() !== $session) {
+                            $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.caller_from_not_yours'));
+                            return;
+                        }
+
+                        $overrideCallerSession = $callerFromCall->getCallerSession();
+                    }
+                    break;
+                }
+                $procedure = $procedure->getHookedProcedure();
+            }
+            if ($procedure === null) {
+                $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.bad_registration'));
+
+                return;
+            }
+        }
+
+        $call = new Call($session, $msg, $procedure, $overrideCallerSession);
 
         $this->callInvocationIndex[$call->getInvocationRequestId()] = $call;
         $this->callRequestIndex[$msg->getRequestId()]               = $call;

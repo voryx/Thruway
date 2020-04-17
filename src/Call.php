@@ -82,17 +82,21 @@ class Call
 
     private $invocationRequestId;
 
+    private $overrideCallerSession;
+
     /**
      * Constructor
      *
      * @param \Thruway\Session $callerSession
      * @param \Thruway\Message\CallMessage $callMessage
      * @param Procedure $procedure
+     * @param Session|null $overrideCallerSession
      */
     public function __construct(
         Session $callerSession,
         CallMessage $callMessage,
-        Procedure $procedure
+        Procedure $procedure,
+        Session $overrideCallerSession = null
     )
     {
         $this->callMessage   = $callMessage;
@@ -101,6 +105,8 @@ class Call
 
         $this->callStart           = microtime(true);
         $this->invocationRequestId = Utils::getUniqueId();
+
+        $this->overrideCallerSession = $overrideCallerSession;
     }
 
     /**
@@ -296,19 +302,23 @@ class Call
 
             $details = [];
 
-            if ($this->getRegistration()->getDiscloseCaller() === true && $this->getCallerSession()->getAuthenticationDetails()) {
-                $authenticationDetails = $this->getCallerSession()->getAuthenticationDetails();
-                $details               = [
-                    'caller'     => $this->getCallerSession()->getSessionId(),
-                    'authid'     => $authenticationDetails->getAuthId(),
-                    'authrole'   => $authenticationDetails->getAuthRole(),
-                    'authroles'  => $authenticationDetails->getAuthRoles(),
-                    'authmethod' => $authenticationDetails->getAuthMethod(),
-                ];
+            $sessionForDetails = $this->overrideCallerSession === null ? $this->getCallerSession() : $this->overrideCallerSession;
 
-                if ($authenticationDetails->getAuthExtra() !== null) {
-                    $details['_thruway_authextra'] = $authenticationDetails->getAuthExtra();
+            if ($this->getRegistration()->getDiscloseCaller() === true) {
+                if ($sessionForDetails->getAuthenticationDetails()) {
+                    $authenticationDetails = $sessionForDetails->getAuthenticationDetails();
+                    $details               = [
+                        'authid'     => $authenticationDetails->getAuthId(),
+                        'authrole'   => $authenticationDetails->getAuthRole(),
+                        'authroles'  => $authenticationDetails->getAuthRoles(),
+                        'authmethod' => $authenticationDetails->getAuthMethod(),
+                    ];
+
+                    if ($authenticationDetails->getAuthExtra() !== null) {
+                        $details['_thruway_authextra'] = $authenticationDetails->getAuthExtra();
+                    }
                 }
+                $details['caller'] = $sessionForDetails->getSessionId();
             }
 
             // TODO: check to see if callee supports progressive call

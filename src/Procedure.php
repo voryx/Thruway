@@ -49,6 +49,13 @@ class Procedure
     private $callQueue;
 
     /**
+     * If this procedure is a hook, the original procedure lives here
+     *
+     * @var Procedure
+     */
+    private $hookedProcedure;
+
+    /**
      * Constructor
      *
      * @param string $procedureName
@@ -65,6 +72,13 @@ class Procedure
         $this->callQueue = new SplQueue();
     }
 
+    public static function createForHook($procedureName, Procedure $hookedProcedure) {
+        $new = new Procedure($procedureName);
+        $new->hookedProcedure = $hookedProcedure;
+
+        return $new;
+    }
+
     /**
      * Process register
      *
@@ -76,6 +90,14 @@ class Procedure
     public function processRegister(Session $session, RegisterMessage $msg)
     {
         $registration = Registration::createRegistrationFromRegisterMessage($session, $msg);
+
+        if ($registration->getAllowMultipleRegistrations() && $this->getHookedProcedure() !== null) {
+            $errorMsg = ErrorMessage::createErrorMessageFromMessage($msg, 'thruway.error.hook.failed');
+            $errorMsg->setArguments(['\'Registration for hooks can only use "\' . $registration::SINGLE_REGISTRATION  . \'" invocation type.\'']);
+            $session->sendMessage($errorMsg);
+
+            return false;
+        }
 
         if (count($this->registrations) > 0) {
             // we already have something registered
@@ -181,6 +203,10 @@ class Procedure
             }
         }
 
+        if ($this->hookedProcedure !== null) {
+            return $this->hookedProcedure->getRegistrationById($registrationId);
+        }
+
         return false;
     }
 
@@ -196,7 +222,7 @@ class Procedure
         for ($i = 0; $i < count($this->registrations); $i++) {
             /** @var Registration $registration */
             $registration = $this->registrations[$i];
-            if ($registration->getId() == $msg->getRegistrationId()) {
+            if ($registration->getId() === $msg->getRegistrationId()) {
 
                 // make sure the session is the correct session
                 if ($registration->getSession() !== $session) {
@@ -213,8 +239,6 @@ class Procedure
                 return true;
             }
         }
-
-        $session->sendMessage(ErrorMessage::createErrorMessageFromMessage($msg, 'wamp.error.no_such_registration'));
 
         return false;
     }
@@ -478,6 +502,24 @@ class Procedure
     {
         return $this->registrations;
     }
+
+    /**
+     * @return Procedure
+     */
+    public function getHookedProcedure()
+    {
+        return $this->hookedProcedure;
+    }
+
+    /**
+     * @param Procedure $hookedProcedure
+     */
+    public function setHookedProcedure($hookedProcedure)
+    {
+        $this->hookedProcedure = $hookedProcedure;
+    }
+
+
 
     /**
      * process session leave
