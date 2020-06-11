@@ -1,5 +1,5 @@
 <?php
-require "../bootstrap.php";
+require __DIR__ . "/../bootstrap.php";
 require 'SimpleAuthProviderClient.php';
 
 use Thruway\Peer\Router;
