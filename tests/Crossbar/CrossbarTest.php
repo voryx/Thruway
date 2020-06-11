@@ -26,9 +26,7 @@ class CrossbarTest extends \Thruway\Tests\TestCase
     /** @var LoopInterface */
     private $loop;
 
-
-
-    public function setUp()
+    public function setUp(): void
     {
         $this->_testArgs   = null;
         $this->_testResult = null;
