@@ -1,14 +1,15 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
 
-class Issue100Test extends PHPUnit_Framework_TestCase {
+class Issue100Test extends \Thruway\Tests\TestCase {
     public function testUnsubscribeSendingUnsubThenError() {
         $broker = new \Thruway\Role\Broker();
 
         $transport = new \Thruway\Transport\DummyTransport();
         $session = new \Thruway\Session($transport);
 
-        $subscribeMsg = new \Thruway\Message\SubscribeMessage(123, new stdClass(), 'issue100');
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(123, new \stdClass(), 'issue100');
 
         $broker->handleSubscribeMessage(new \Thruway\Event\MessageEvent($session, $subscribeMsg));
 
@@ -19,7 +20,7 @@ class Issue100Test extends PHPUnit_Framework_TestCase {
         $subId = $msg->getSubscriptionId();
 
         // subscribe to a second that is in a different sub group
-        $subscribeMsg = new \Thruway\Message\SubscribeMessage(234, new stdClass(), 'issue100_again');
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(234, new \stdClass(), 'issue100_again');
 
         $broker->handleSubscribeMessage(new \Thruway\Event\MessageEvent($session, $subscribeMsg));
 

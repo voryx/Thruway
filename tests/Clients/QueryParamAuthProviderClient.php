@@ -1,5 +1,6 @@
 <?php
 
+namespace Thruway\Tests\Clients;
 
 use Thruway\Message\HelloMessage;
 

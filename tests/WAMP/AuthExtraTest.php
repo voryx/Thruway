@@ -1,5 +1,7 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
+
 class TheAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient {
     /**
      * @return mixed
@@ -30,7 +32,7 @@ class TheAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient
 
 }
 
-class AuthExtraTest extends PHPUnit_Framework_TestCase {
+class AuthExtraTest extends \Thruway\Tests\TestCase {
     /*
      * This is a complex test - should do this a better way
      */
@@ -112,8 +114,8 @@ class AuthExtraTest extends PHPUnit_Framework_TestCase {
 
         $router->start();
 
-        $this->assertNull($this->_error, $this->_error);
-        $this->assertNull($this->_errorPS, $this->_errorPS);
+        $this->assertNull($this->_error, '' . $this->_error);
+        $this->assertNull($this->_errorPS, '' . $this->_errorPS);
 
         $this->assertNotNull($this->_result);
         $args = $this->_result;
@@ -213,8 +215,8 @@ class AuthExtraTest extends PHPUnit_Framework_TestCase {
 
         $router->start();
 
-        $this->assertNull($this->_error, $this->_error);
-        $this->assertNull($this->_errorPS, $this->_errorPS);
+        $this->assertNull($this->_error, '' . $this->_error);
+        $this->assertNull($this->_errorPS, '' . $this->_errorPS);
 
         $this->assertNotNull($this->_result);
         $args = $this->_result;

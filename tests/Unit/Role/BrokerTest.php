@@ -1,7 +1,8 @@
 <?php
-require_once __DIR__ . '/../../bootstrap.php';
 
-class BrokerTest extends PHPUnit_Framework_TestCase
+namespace Thruway\Tests\Unit\Role;
+
+class BrokerTest extends \Thruway\Tests\TestCase
 {
     public function testUnsubscribeFromNonExistentSubscription()
     {
@@ -80,7 +81,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase
 
     public function testPrefixMatcherValidUris() {
 
-        $prefixMatcher = new Thruway\Subscription\PrefixMatcher();
+        $prefixMatcher = new \Thruway\Subscription\PrefixMatcher();
         $options = (object)[];
 
         $this->assertTrue($prefixMatcher->uriIsValid('', $options));
@@ -304,7 +305,7 @@ class BrokerTest extends PHPUnit_Framework_TestCase
                 [$this->isInstanceOf('\Thruway\Message\SubscribedMessage')]
             );
 
-        $subscribeMsg = new \Thruway\Message\SubscribeMessage(1, new stdClass(), 'test.topic');
+        $subscribeMsg = new \Thruway\Message\SubscribeMessage(1, new \stdClass(), 'test.topic');
         $messageEvent = new \Thruway\Event\MessageEvent($session, $subscribeMsg);
         $broker->handleSubscribeMessage($messageEvent);
     }

@@ -1,7 +1,8 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
 
-class WampErrorExceptionTest extends PHPUnit_Framework_TestCase {
+class WampErrorExceptionTest extends \Thruway\Tests\TestCase {
     function testWampErrorException() {
         $loop = \React\EventLoop\Factory::create();
 

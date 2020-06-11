@@ -1,15 +1,17 @@
 <?php
 
-class HelloMessageTest extends PHPUnit_Framework_TestCase
+namespace Thruway\Tests\Unit\Messages;
+
+class HelloMessageTest extends \Thruway\Tests\TestCase
 {
     /**
-     * @expectedException InvalidArgumentException
      * @throws \Thruway\Message\MessageException
      */
     public function testObjectAsRealmName()
     {
+        $this->expectException('\InvalidArgumentException');
         $msg = \Thruway\Message\Message::createMessageFromArray(
-            [\Thruway\Message\Message::MSG_HELLO, new stdClass(), new stdClass()]
+            [\Thruway\Message\Message::MSG_HELLO, new \stdClass(), new \stdClass()]
         );
     }
 }

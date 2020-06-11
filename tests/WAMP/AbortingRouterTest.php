@@ -1,6 +1,8 @@
 <?php
 
-class AbortingRouterTest extends \PHPUnit_Framework_TestCase {
+namespace Thruway\Tests\WAMP;
+
+class AbortingRouterTest extends \Thruway\Tests\TestCase {
     public function testAbortFollowingHello() {
         $this->_testResult = null;
         $this->_error = null;

@@ -1,7 +1,8 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
 
-class AuthorizingRealmTest extends PHPUnit_Framework_TestCase {
+class AuthorizingRealmTest extends \Thruway\Tests\TestCase {
     /**
      * @var \Thruway\Connection
      */
@@ -9,10 +10,6 @@ class AuthorizingRealmTest extends PHPUnit_Framework_TestCase {
 
     private $_testResult;
     private $_error;
-
-    public function setup() {
-
-    }
 
     public function testNotAuthorized() {
         $this->_conn = new \Thruway\Connection([
@@ -70,7 +67,7 @@ class AuthorizingRealmTest extends PHPUnit_Framework_TestCase {
                 }
             );
 
-            React\Promise\all($promises)->then(
+            \React\Promise\all($promises)->then(
                 function () {
                     $this->_conn->close();
                 },

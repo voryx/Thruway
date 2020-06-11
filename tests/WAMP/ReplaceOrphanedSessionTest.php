@@ -1,6 +1,8 @@
 <?php
 
-class ReplaceOrphanedSessionTest extends PHPUnit_Framework_TestCase {
+namespace Thruway\Tests\WAMP;
+
+class ReplaceOrphanedSessionTest extends \Thruway\Tests\TestCase {
     /**
      * @var \Thruway\Connection
      */
@@ -8,7 +10,7 @@ class ReplaceOrphanedSessionTest extends PHPUnit_Framework_TestCase {
     private $_testResult;
     private $_error;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->testArgs = null;
         $this->_testResult = null;

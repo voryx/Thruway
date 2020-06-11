@@ -1,9 +1,9 @@
 <?php
 
-namespace Message;
-
+namespace Thruway\Tests\Message;
 
 use Thruway\Message\RegisterMessage;
+use Thruway\Tests\TestCase;
 
 /**
  * Class RegisterMessageTest
@@ -11,7 +11,7 @@ use Thruway\Message\RegisterMessage;
  *
  * <code>[REGISTER, Request|id, Options|dict, Procedure|uri]</code>
  */
-class RegisterMessageTest extends \PHPUnit_Framework_TestCase
+class RegisterMessageTest extends TestCase
 {
 
     public function testEmptyArrayOptions()

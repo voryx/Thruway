@@ -1,5 +1,7 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
+
 class AutoAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClient
 {
     /**
@@ -16,7 +18,7 @@ class AutoAuthProvider extends \Thruway\Authentication\AbstractAuthProviderClien
     }
 }
 
-class NoChallengeTest extends PHPUnit_Framework_TestCase
+class NoChallengeTest extends \Thruway\Tests\TestCase
 {
     /*
      * This is a complex test - should do this a better way
@@ -100,8 +102,8 @@ class NoChallengeTest extends PHPUnit_Framework_TestCase
 
         $router->start();
 
-        $this->assertNull($this->_error, $this->_error);
-        $this->assertNull($this->_errorPS, $this->_errorPS);
+        $this->assertNull($this->_error, '' . $this->_error);
+        $this->assertNull($this->_errorPS, '' . $this->_errorPS);
 
         $this->assertNotNull($this->_result);
         $args = $this->_result;

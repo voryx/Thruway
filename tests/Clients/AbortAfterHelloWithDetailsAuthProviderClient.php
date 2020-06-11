@@ -1,5 +1,7 @@
 <?php
 
+namespace Thruway\Tests\Clients;
+
 class AbortAfterHelloWithDetailsAuthProviderClient extends \Thruway\Authentication\AbstractAuthProviderClient {
     /**
      * @return string

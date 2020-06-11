@@ -1,7 +1,8 @@
 <?php
 
+namespace Thruway\Tests\Unit;
 
-class SessionTest extends PHPUnit_Framework_TestCase {
+class SessionTest extends \Thruway\Tests\TestCase {
     public function testTransportSendMessage() {
         $transport = $this->getMockBuilder('\Thruway\Transport\TransportInterface')
             ->getMock();

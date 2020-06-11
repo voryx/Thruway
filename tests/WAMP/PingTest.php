@@ -1,13 +1,15 @@
 <?php
 
-class PingTest extends \PHPUnit_Framework_TestCase {
+namespace Thruway\Tests\WAMP;
+
+class PingTest extends \Thruway\Tests\TestCase {
     /**
      * @var \Thruway\Connection
      */
     private $_conn;
     private $_result;
 
-    function setUp() {
+    function setUp(): void {
         $this->_conn = new \Thruway\Connection(
             array(
                 "realm" => 'testRealm',

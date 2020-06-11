@@ -1,12 +1,13 @@
 <?php
 
-require_once __DIR__.'/../bootstrap.php';
+namespace Thruway\Tests\Unit;
 
-class RealmTest extends PHPUnit_Framework_TestCase
+class RealmTest extends \Thruway\Tests\TestCase
 {
     private $_sessions;
 
     /**
+     * @doesNotPerformAssertions
      *
      * @return \Thruway\Realm
      */

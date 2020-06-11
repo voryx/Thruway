@@ -1,6 +1,8 @@
 <?php
 
-class SessionMetaTest extends PHPUnit_Framework_TestCase {
+namespace Thruway\Tests\WAMP;
+
+class SessionMetaTest extends \Thruway\Tests\TestCase {
     protected $_conn;
     protected $_conn2;
     protected $_joinInfo;
@@ -10,7 +12,7 @@ class SessionMetaTest extends PHPUnit_Framework_TestCase {
     protected $_leaveCount = 0;
 
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->_testResult = null;
         $this->_joinInfo = [];

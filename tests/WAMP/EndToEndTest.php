@@ -1,10 +1,12 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
+
 use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
 use Thruway\ClientSession;
 
-class EndToEndTest extends PHPUnit_Framework_TestCase
+class EndToEndTest extends \Thruway\Tests\TestCase
 {
 
     /**
@@ -32,7 +34,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
 
     protected $_connOptions;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->_testArgs = null;
         $this->_testResult = null;
@@ -171,7 +173,7 @@ class EndToEndTest extends PHPUnit_Framework_TestCase
                     },
                     function () use ($session) {
                         $session->close();
-                        throw new Exception("subscribe failed.");
+                        throw new \Exception("subscribe failed.");
                     });
             }
         );

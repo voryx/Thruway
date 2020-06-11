@@ -1,12 +1,11 @@
 <?php
 
+namespace Thruway\Tests\Unit;
 
-class RealmManagerTest extends PHPUnit_Framework_TestCase {
+class RealmManagerTest extends \Thruway\Tests\TestCase {
 
-    /**
-     * @expectedException \Thruway\Exception\RealmNotFoundException
-     */
     public function testRealmNotFound() {
+        $this->expectException('\Thruway\Exception\RealmNotFoundException');
         $realmManager = new \Thruway\RealmManager();
 
         $realmManager->setAllowRealmAutocreate(false);
@@ -14,12 +13,12 @@ class RealmManagerTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      * @throws \Thruway\Exception\InvalidRealmNameException
      *
-     * @expectedException \Exception
      */
     public function testAddRealmWithSameNameAsExisting() {
+        $this->expectException('\Exception');
         $realmManager = new \Thruway\RealmManager();
         $realmManager->initModule(new \Thruway\Peer\Router(), \React\EventLoop\Factory::create());
 

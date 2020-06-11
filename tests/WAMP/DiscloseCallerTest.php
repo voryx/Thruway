@@ -1,7 +1,8 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
 
-class DiscloseCallerTest extends PHPUnit_Framework_TestCase
+class DiscloseCallerTest extends \Thruway\Tests\TestCase
 {
     /**
      * @var \Thruway\Connection
@@ -15,7 +16,7 @@ class DiscloseCallerTest extends PHPUnit_Framework_TestCase
     protected $_testAuthRole;
 
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->_testResult = null;
         $this->_error = null;

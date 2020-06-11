@@ -1,12 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 9/6/14
- * Time: 11:46 PM
- */
 
-class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
+namespace Thruway\Tests\WAMP;
+
+class InvocationAndCallErrorTest extends \Thruway\Tests\TestCase {
     private $_conn;
     private $_testResult;
     private $_error;
@@ -14,7 +10,7 @@ class InvocationAndCallErrorTest extends PHPUnit_Framework_TestCase {
     private $_progressMessages;
     private $_loop;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->testArgs = null;
         $this->_testResult = null;

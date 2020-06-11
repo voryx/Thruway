@@ -1,5 +1,7 @@
 <?php
 
+namespace Thruway\Tests\Clients;
+
 /**
  * This class registers a stored proc and upon receiving the registered
  * message goes into an endless loop so it cannot process anything

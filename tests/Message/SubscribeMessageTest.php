@@ -1,9 +1,9 @@
 <?php
 
-namespace Message;
-
+namespace Thruway\Tests\Message;
 
 use Thruway\Message\SubscribeMessage;
+use Thruway\Tests\TestCase;
 
 /**
  * Class SubscribeMessageTest
@@ -11,7 +11,7 @@ use Thruway\Message\SubscribeMessage;
  *
  * <code>[SUBSCRIBE, Request|id, Options|dict, Topic|uri]</code>
  */
-class SubscribeMessageTest extends \PHPUnit_Framework_TestCase
+class SubscribeMessageTest extends TestCase
 {
 
     public function testEmptyArrayOptions()

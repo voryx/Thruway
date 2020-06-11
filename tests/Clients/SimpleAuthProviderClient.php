@@ -1,5 +1,6 @@
 <?php
 
+namespace Thruway\Tests\Clients;
 
 class SimpleAuthProviderClient extends \Thruway\Authentication\AbstractAuthProviderClient
 {

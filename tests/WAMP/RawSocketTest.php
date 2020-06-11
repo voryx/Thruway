@@ -1,11 +1,13 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
+
 /**
  * Class RawSocketTest
  *
  *
  */
-class RawSocketTest extends PHPUnit_Framework_TestCase {
+class RawSocketTest extends \Thruway\Tests\TestCase {
     private $_result;
 
     public function test() {

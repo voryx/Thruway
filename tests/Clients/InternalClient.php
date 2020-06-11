@@ -1,7 +1,7 @@
 <?php
 
-/**
- */
+namespace Thruway\Tests\Clients;
+
 class InternalClient extends \Thruway\Module\RouterModuleClient
 {
 

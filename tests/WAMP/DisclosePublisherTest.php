@@ -1,7 +1,8 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
 
-class DisclosePublisherTest extends PHPUnit_Framework_TestCase
+class DisclosePublisherTest extends \Thruway\Tests\TestCase
 {
     /**
      * @var \Thruway\Connection
@@ -16,7 +17,7 @@ class DisclosePublisherTest extends PHPUnit_Framework_TestCase
     protected $_testTopic;
 
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->_testResult      = null;
         $this->_error           = null;
@@ -80,7 +81,7 @@ class DisclosePublisherTest extends PHPUnit_Framework_TestCase
             },
               function () use ($session) {
                   $session->close();
-                  throw new Exception("subscribe failed.");
+                  throw new \Exception("subscribe failed.");
               });
         }
         );

@@ -1,5 +1,7 @@
 <?php
 
+namespace Thruway\Tests\Unit\Role;
+
 use Thruway\Event\LeaveRealmEvent;
 use Thruway\Event\MessageEvent;
 use Thruway\Message\CallMessage;
@@ -18,11 +20,11 @@ use Thruway\Role\Dealer;
 use Thruway\Session;
 use Thruway\Transport\DummyTransport;
 
-class DealerTest extends PHPUnit_Framework_TestCase {
+class DealerTest extends \Thruway\Tests\TestCase {
     /** @var \Thruway\Message\HelloMessage */
     private $_helloMessage;
 
-    public function setup() {
+    public function setUp(): void {
         $this->_helloMessage = new \Thruway\Message\HelloMessage("some_realm", (object)[
             "roles" => (object)[
                 "callee" => (object)[
@@ -47,10 +49,8 @@ class DealerTest extends PHPUnit_Framework_TestCase {
 
         $calleeSession->expects($this->exactly(2))
             ->method("sendMessage")
-            ->withConsecutive(
-                $this->isInstanceOf('\Thruway\Message\RegisteredMessage'),
-                $this->isInstanceOf('\Thruway\Message\InvocationMessage')
-                );
+            ->withConsecutive([$this->isInstanceOf('\Thruway\Message\RegisteredMessage')],
+                               [$this->isInstanceOf('\Thruway\Message\InvocationMessage')]);
 
         $registerMsg = new \Thruway\Message\RegisterMessage(\Thruway\Common\Utils::getUniqueId(), [], "test.procedure");
 
@@ -371,14 +371,14 @@ class DealerTest extends PHPUnit_Framework_TestCase {
         $calleeSession = new Session($calleeTransport);
 
         // register from callee
-        $registerMsg = new \Thruway\Message\RegisterMessage(1, new stdClass(), 'test_proc_name');
+        $registerMsg = new \Thruway\Message\RegisterMessage(1, new \stdClass(), 'test_proc_name');
         $dealer->handleRegisterMessage(new \Thruway\Event\MessageEvent($calleeSession, $registerMsg));
 
         $this->assertInstanceOf('\Thruway\Message\RegisteredMessage', $calleeTransport->getLastMessageSent());
 
         // call from one session
         $callRequestId = \Thruway\Common\Utils::getUniqueId();
-        $callMsg = new \Thruway\Message\CallMessage($callRequestId, new stdClass(), 'test_proc_name');
+        $callMsg = new \Thruway\Message\CallMessage($callRequestId, new \stdClass(), 'test_proc_name');
         $dealer->handleCallMessage(new \Thruway\Event\MessageEvent($callerSession, $callMsg));
 
         $this->assertInstanceOf('\Thruway\Message\InvocationMessage', $calleeTransport->getLastMessageSent());

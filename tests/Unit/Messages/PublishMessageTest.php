@@ -1,7 +1,8 @@
 <?php
 
+namespace Thruway\Tests\Unit\Messages;
 
-class PublishMessageTest extends \PHPUnit_Framework_TestCase
+class PublishMessageTest extends \Thruway\Tests\TestCase
 {
 
     public function testPublishBlackWhiteListing()

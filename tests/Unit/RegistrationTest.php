@@ -1,7 +1,8 @@
 <?php
 
+namespace Thruway\Tests\Unit;
 
-class RegistrationTest extends PHPUnit_Framework_TestCase
+class RegistrationTest extends \Thruway\Tests\TestCase
 {
     /**
      * @var \Thruway\Session
@@ -16,7 +17,7 @@ class RegistrationTest extends PHPUnit_Framework_TestCase
      */
     private $_registration;
 
-    public function setup()
+    public function setUp(): void
     {
         $this->_calleeSession = new \Thruway\Session(new \Thruway\Transport\DummyTransport());
         $this->_callerSession = new \Thruway\Session(new \Thruway\Transport\DummyTransport());

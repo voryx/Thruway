@@ -1,10 +1,11 @@
 <?php
 
+namespace Thruway\Tests\WAMP;
 
 use Thruway\ClientSession;
 use Thruway\Message\ChallengeMessage;
 
-class WampCraTest extends PHPUnit_Framework_TestCase
+class WampCraTest extends \Thruway\Tests\TestCase
 {
 
     private $_error;
@@ -13,7 +14,7 @@ class WampCraTest extends PHPUnit_Framework_TestCase
     private $_user;
     private $_password;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->_error    = null;
         $this->_result   = null;

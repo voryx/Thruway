@@ -1,13 +1,14 @@
 <?php
 
+namespace Thruway\Tests\Crossbar;
+
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
-use React\EventLoop\Timer\Timer;
 use React\Promise\CancellablePromiseInterface;
 use React\Promise\Deferred;
 use Thruway\ClientSession;
 
-class CrossbarTest extends PHPUnit_Framework_TestCase
+class CrossbarTest extends \Thruway\Tests\TestCase
 {
 
     /**

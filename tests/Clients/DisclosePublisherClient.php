@@ -1,5 +1,7 @@
 <?php
 
+namespace Thruway\Tests\Clients;
+
 /**
  * This is an example of how to use the InternalClientTransportProvider
  *

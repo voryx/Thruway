@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../bootstrap.php';
+namespace Thruway\Tests\Unit;
 
-class ProcedureTest extends PHPUnit_Framework_TestCase
+class ProcedureTest extends \Thruway\Tests\TestCase
 {
 
     /**
@@ -15,10 +15,9 @@ class ProcedureTest extends PHPUnit_Framework_TestCase
      */
     private $_session;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->_proc = new \Thruway\Procedure("test_procedure");
-        //$this->_session = new \Thruway\Session(new \Thruway\Transport\DummyTransport());
     }
 
     public function testProcessRegisterWithNameMismatch()

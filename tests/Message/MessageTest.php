@@ -1,21 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: matt
- * Date: 8/23/14
- * Time: 12:21 AM
- */
 
-namespace Message;
-
+namespace Thruway\Tests\Message;
 
 use Thruway\CallResult;
 use Thruway\Message\ErrorMessage;
 use Thruway\Message\Message;
 use Thruway\Message\ResultMessage;
 use Thruway\Serializer\JsonSerializer;
+use Thruway\Tests\TestCase;
 
-class MessageTest extends \PHPUnit_Framework_TestCase {
+class MessageTest extends TestCase {
     function testSomething() {
         $this->assertTrue(true);
     }
