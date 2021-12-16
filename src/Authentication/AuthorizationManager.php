@@ -271,7 +271,7 @@ class AuthorizationManager extends RouterModuleClient implements RealmModuleInte
             isset($rule->allow)
         ) {
             if ($this->isValidAction($rule->action) &&
-                static::isValidRuleUri($rule->uri) && Utils::uriIsValid($rule->role)
+                static::isValidRuleUri($rule->uri)
             ) {
                 if ($rule->allow === true || $rule->allow === false) {
                     return (object)[
