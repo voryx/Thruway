@@ -273,6 +273,11 @@ class Broker implements RealmModuleInterface
         }
     }
 
+  /**
+   * Called when a session unsubscribe or leave the group.
+   * Will clean and remove the group if this was the last subscription to it
+   * @param $key
+   */
     private function cleanSubscriptionGroup($key)
     {
       $subscriptions = $this->subscriptionGroups[$key]->getSubscriptions();

@@ -72,6 +72,7 @@ class SubscriptionGroup
     }
 
     /**
+     * Is subscription group already a meta event?
      * @return bool
      */
     public function isMetaSubscription()
@@ -80,6 +81,7 @@ class SubscriptionGroup
     }
 
     /**
+     * Publish a meta event ONLY if not already a meta subscription group
      * @param string $metaEvent
      * @param Subscription $subscription
      */
