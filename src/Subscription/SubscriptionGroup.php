@@ -72,10 +72,42 @@ class SubscriptionGroup
     }
 
     /**
+     * @return bool
+     */
+    public function isMetaSubscription()
+    {
+        return strpos($this->uri, 'wamp.metaevent') === 0;
+    }
+
+    /**
+     * @param string $metaEvent
+     * @param Subscription $subscription
+     */
+    public function publishMetaEvent($metaEvent, Subscription $subscription)
+    {
+        if (!$this->isMetaSubscription()) {
+            $session = $subscription->getSession();
+            $realm = $session->getRealm();
+            $realm->publishMeta(
+                $metaEvent,
+                [$session->getMetaInfo(), $this->getMetaInfo()]
+            );
+        }
+    }
+
+    /**
      * @param Subscription $subscription
      */
     public function addSubscription(Subscription $subscription)
     {
+        // We've just been created, this is the first subscription in this URI
+        if (empty($this->subscriptions)) {
+          $this->publishMetaEvent('wamp.metaevent.subscription.on_create', $subscription);
+        }
+
+        // Notify of the subscription
+        $this->publishMetaEvent('wamp.metaevent.subscription.on_subscribe', $subscription);
+
         $this->subscriptions[$subscription->getId()] = $subscription;
     }
 
@@ -86,6 +118,14 @@ class SubscriptionGroup
     {
         if (isset($this->subscriptions[$subscription->getId()])) {
             unset($this->subscriptions[$subscription->getId()]);
+
+            // Notify of the unsubscription
+            $this->publishMetaEvent('wamp.metaevent.subscription.on_unsubscribe', $subscription);
+
+            // Deal with a now empty subscription URI
+            if (empty($this->subscriptions)) {
+              $this->publishMetaEvent('wamp.metaevent.subscription.on_delete', $subscription);
+            }
         }
     }
 
@@ -312,5 +352,18 @@ class SubscriptionGroup
     public function getLastPublicationId()
     {
         return $this->lastPublicationId;
+    }
+
+    /**
+     * Get meta info
+     *
+     * @return array
+     */
+    private function getMetaInfo()
+    {
+      return [
+        'uri'        => $this->uri,
+        'match'      => $this->getMatchType(),
+      ];
     }
 }

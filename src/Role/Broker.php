@@ -201,13 +201,15 @@ class Broker implements RealmModuleInterface
     protected function processUnsubscribe(Session $session, UnsubscribeMessage $msg)
     {
         $subscription = false;
+        $subscriptionKey = "";
         // should probably be more efficient about this - maybe later
         /** @var SubscriptionGroup $subscriptionGroup */
-        foreach ($this->subscriptionGroups as $subscriptionGroup) {
+        foreach ($this->subscriptionGroups as $key => $subscriptionGroup) {
             $result = $subscriptionGroup->processUnsubscribe($session, $msg);
 
             if ($result !== false) {
                 $subscription = $result;
+                $subscriptionKey = $key;
             }
         }
 
@@ -217,6 +219,8 @@ class Broker implements RealmModuleInterface
 
             return;
         }
+
+        $this->cleanSubscriptionGroup($subscriptionKey);
     }
 
     /**
@@ -264,12 +268,17 @@ class Broker implements RealmModuleInterface
                     $subscriptionGroup->removeSubscription($subscription);
                 }
 
-                $subscriptions = $subscriptionGroup->getSubscriptions();
-                if (empty($subscriptions)) {
-                    unset($this->subscriptionGroups[$key]);
-                }
+                $this->cleanSubscriptionGroup($key);
             }
         }
+    }
+
+    private function cleanSubscriptionGroup($key)
+    {
+      $subscriptions = $this->subscriptionGroups[$key]->getSubscriptions();
+      if (empty($subscriptions)) {
+        unset($this->subscriptionGroups[$key]);
+      }
     }
 
     /**
