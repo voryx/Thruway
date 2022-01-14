@@ -34,6 +34,11 @@ class SubscriptionGroup
     private $id;
 
     /**
+     * @var \DateTime
+     */
+    private $created;
+
+    /**
      * @var array
      */
     private $subscriptions = [];
@@ -69,6 +74,8 @@ class SubscriptionGroup
         $this->setUri($uri);
         $this->setMatcher($matcher);
         $this->lastPublicationId = 0;
+        $this->id = Utils::getUniqueId();
+        $this->created = new \DateTime();
     }
 
     /**
@@ -364,6 +371,8 @@ class SubscriptionGroup
     private function getMetaInfo()
     {
       return [
+        'id'         => $this->id,
+        'created'    => $this->created->format(\DateTime::ATOM),
         'uri'        => $this->uri,
         'match'      => $this->getMatchType(),
       ];
