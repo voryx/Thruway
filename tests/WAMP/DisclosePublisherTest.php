@@ -52,7 +52,7 @@ class DisclosePublisherTest extends \Thruway\Tests\TestCase
              * Subscribe to event
              */
             $session->subscribe('com.example.publish',
-              function ($args, $kwargs = null, $details, $publicationId = null) {
+              function ($args, $kwargs, $details, $publicationId = null) {
 
                   $this->_testArgs        = $args;
                   $this->_testPublisherId = $details->publisher;
@@ -96,4 +96,4 @@ class DisclosePublisherTest extends \Thruway\Tests\TestCase
         $this->assertEquals("internalClient", $this->_testAuthMethod);
         $this->assertEquals('com.example.publish', $this->_testTopic);
     }
-} 
+}
