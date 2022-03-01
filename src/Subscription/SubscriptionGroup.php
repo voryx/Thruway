@@ -34,6 +34,11 @@ class SubscriptionGroup
     private $id;
 
     /**
+     * @var \DateTime
+     */
+    private $created;
+
+    /**
      * @var array
      */
     private $subscriptions = [];
@@ -69,6 +74,34 @@ class SubscriptionGroup
         $this->setUri($uri);
         $this->setMatcher($matcher);
         $this->lastPublicationId = 0;
+        $this->id = Utils::getUniqueId();
+        $this->created = new \DateTime();
+    }
+
+    /**
+     * Is subscription group already a meta event?
+     * @return bool
+     */
+    public function isMetaSubscription()
+    {
+        return strpos($this->uri, 'wamp.metaevent') === 0;
+    }
+
+    /**
+     * Publish a meta event ONLY if not already a meta subscription group
+     * @param string $metaEvent
+     * @param Subscription $subscription
+     */
+    public function publishMetaEvent($metaEvent, Subscription $subscription)
+    {
+        if (!$this->isMetaSubscription()) {
+            $session = $subscription->getSession();
+            $realm = $session->getRealm();
+            $realm->publishMeta(
+                $metaEvent,
+                [$session->getMetaInfo(), $this->getMetaInfo()]
+            );
+        }
     }
 
     /**
@@ -76,6 +109,14 @@ class SubscriptionGroup
      */
     public function addSubscription(Subscription $subscription)
     {
+        // We've just been created, this is the first subscription in this URI
+        if (empty($this->subscriptions)) {
+          $this->publishMetaEvent('wamp.metaevent.subscription.on_create', $subscription);
+        }
+
+        // Notify of the subscription
+        $this->publishMetaEvent('wamp.metaevent.subscription.on_subscribe', $subscription);
+
         $this->subscriptions[$subscription->getId()] = $subscription;
     }
 
@@ -86,6 +127,14 @@ class SubscriptionGroup
     {
         if (isset($this->subscriptions[$subscription->getId()])) {
             unset($this->subscriptions[$subscription->getId()]);
+
+            // Notify of the unsubscription
+            $this->publishMetaEvent('wamp.metaevent.subscription.on_unsubscribe', $subscription);
+
+            // Deal with a now empty subscription URI
+            if (empty($this->subscriptions)) {
+              $this->publishMetaEvent('wamp.metaevent.subscription.on_delete', $subscription);
+            }
         }
     }
 
@@ -312,5 +361,20 @@ class SubscriptionGroup
     public function getLastPublicationId()
     {
         return $this->lastPublicationId;
+    }
+
+    /**
+     * Get meta info
+     *
+     * @return array
+     */
+    private function getMetaInfo()
+    {
+      return [
+        'id'         => $this->id,
+        'created'    => $this->created->format(\DateTime::ATOM),
+        'uri'        => $this->uri,
+        'match'      => $this->getMatchType(),
+      ];
     }
 }
