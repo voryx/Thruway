@@ -120,7 +120,7 @@ class SubscriptionGroup
             $authid    = $authenticationDetails->getAuthId();
         }
 
-        if ((!$msg->excludeMe() || $subscription->getSession() != $session)
+        if ((!$msg->excludeMe() || $sessionId!= $session->getSessionId())
             && !$msg->isExcluded($sessionId)
             && $msg->isWhiteListed($sessionId)
             && $msg->hasEligibleAuthrole($authroles)
