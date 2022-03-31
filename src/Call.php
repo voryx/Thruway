@@ -299,10 +299,12 @@ class Call
             if ($this->getRegistration()->getDiscloseCaller() === true && $this->getCallerSession()->getAuthenticationDetails()) {
                 $authenticationDetails = $this->getCallerSession()->getAuthenticationDetails();
                 $details               = [
-                    'caller'     => $this->getCallerSession()->getSessionId(),
-                    'authid'     => $authenticationDetails->getAuthId(),
-                    'authrole'   => $authenticationDetails->getAuthRole(),
-                    'authroles'  => $authenticationDetails->getAuthRoles(),
+                    'caller' => $this->getCallerSession()->getSessionId(),
+                    'authid' => $authenticationDetails->getAuthId(),
+                    'authrole' => $authenticationDetails->getAuthRole(),
+                    'caller_authid' => $authenticationDetails->getAuthId(),
+                    'caller_authrole' => $authenticationDetails->getAuthRole(),
+                    'authroles' => $authenticationDetails->getAuthRoles(),
                     'authmethod' => $authenticationDetails->getAuthMethod(),
                 ];
 
